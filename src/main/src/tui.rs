@@ -31,7 +31,7 @@ pub fn enter() -> Result<Tui> {
     crossterm::execute!(io::stdout(), EnterAlternateScreen, cursor::Hide)?;
     crossterm::execute!(io::stdout(), EnableMouseCapture)?;
     crossterm::execute!(io::stdout(), EnableBracketedPaste)?;
-    crossterm::execute!(io::stdout(), SetTitle("spellclash: Terminal Tower Defense"))?;
+    crossterm::execute!(io::stdout(), SetTitle("✦ spellclash ✦"))?;
     Ok(Terminal::new(CrosstermBackend::new(io::stdout()))?)
 }
 

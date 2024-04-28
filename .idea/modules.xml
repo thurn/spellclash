@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/termdef.iml" filepath="$PROJECT_DIR$/.idea/termdef.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/spellclash.iml" filepath="$PROJECT_DIR$/.idea/spellclash.iml" />
     </modules>
   </component>
 </project>
