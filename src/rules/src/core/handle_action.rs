@@ -13,6 +13,6 @@
 // limitations under the License.
 
 use data::core::actions::GameAction;
-use data::core::game_state::GameState;
+use data::game_states::game_state::GameState;
 
 pub fn handle_game_action(_state: &mut GameState, _action: GameAction) {}

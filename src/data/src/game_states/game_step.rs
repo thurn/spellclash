@@ -12,9 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod card_states;
-pub mod core;
-pub mod delegates;
-pub mod game_states;
-pub mod printed_cards;
-pub mod state_machines;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+pub enum GamePhaseStep {
+    Untap,
+    Upkeep,
+    Draw,
+    PrecombatMain,
+    BeginCombat,
+    DeclareAttackers,
+    DeclareBlockers,
+    FirstStrikeDamage,
+    CombatDamage,
+    EndCombat,
+    PostCombatMain,
+    EndStep,
+    Cleanup,
+}

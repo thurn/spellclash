@@ -12,9 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod card_states;
-pub mod core;
-pub mod delegates;
-pub mod game_states;
-pub mod printed_cards;
-pub mod state_machines;
+use serde::{Deserialize, Serialize};
+
+/// State of an ongoing combat step within a game
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct CombatState {
+    /// True if this combat state represents a currently active game phase.
+    /// False if this is the empty combat state or represents a combat state
+    /// which has been completed.
+    pub currently_active: bool,
+}

@@ -12,9 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod card_states;
-pub mod core;
-pub mod delegates;
-pub mod game_states;
-pub mod printed_cards;
-pub mod state_machines;
+pub mod game_delegates;

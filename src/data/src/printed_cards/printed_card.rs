@@ -17,10 +17,10 @@ use mtgjson::Layout;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::core::card_subtypes::CardSubtypes;
-use crate::core::primitives::{
-    AttractionLight, CardSupertype, CardType, Color, ManaValue, PrintedLoyalty, PrintedPower,
-    PrintedToughness,
+use crate::core::primitives::{CardSupertype, CardType, Color, ManaValue};
+use crate::printed_cards::card_subtypes::CardSubtypes;
+use crate::printed_cards::printed_primitives::{
+    AttractionLight, PrintedLoyalty, PrintedPower, PrintedToughness,
 };
 
 /// Represents the immutable data about a card printing. This should generally

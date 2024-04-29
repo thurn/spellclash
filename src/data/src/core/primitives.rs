@@ -19,6 +19,7 @@ pub type ManaValue = u32;
 pub type Loyalty = u32;
 pub type Power = u32;
 pub type Toughness = u32;
+pub type TurnNumber = u32;
 
 /// The five canonical colors of magic.
 #[derive(Debug, Serialize, Deserialize, EnumSetType)]
@@ -28,57 +29,6 @@ pub enum Color {
     Black,
     Red,
     Green,
-}
-
-/// Attraction lights printed on a card, used on certain Un-Set cards for the
-/// 'attraction' mechanic.
-#[derive(Debug, Serialize, Deserialize, EnumSetType)]
-pub enum AttractionLight {
-    One,
-    Two,
-    Three,
-    Four,
-    Fix,
-    Six,
-}
-
-/// Printed loyalty value on a planeswalker card
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-pub enum PrintedLoyalty {
-    /// Number of starting loyalty counters
-    Number(Loyalty),
-    /// Starting loyalty is defined by rules text
-    X,
-}
-
-/// Printed power value on a card
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-pub enum PrintedPower {
-    /// Numeric power
-    Number(Power),
-    /// Power is defined by rules text
-    X,
-    /// Power is defined by rules text
-    ///
-    /// See <https://yawgatog.com/resources/magic-rules/#R2082>
-    Star,
-    /// Power is defined by rules text plus one
-    StarPlusOne,
-}
-
-/// Printed toughness value on a card
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-pub enum PrintedToughness {
-    /// Numeric toughness
-    Number(Power),
-    /// Toughness is defined by rules text
-    X,
-    /// Toughness is defined by rules text
-    ///
-    /// See <https://yawgatog.com/resources/magic-rules/#R2082>
-    Star,
-    /// Power is defined by rules text plus one
-    StarPlusOne,
 }
 
 /// Supertypes for a card.
@@ -113,4 +63,13 @@ pub enum CardType {
     Sorcery,
     Tribal,
     Vanguard,
+}
+
+/// Identifies one of the players in a game
+#[derive(Debug, Hash, Serialize, Deserialize, EnumSetType)]
+pub enum PlayerName {
+    /// The player who plays first, who is "on the play"
+    One,
+    /// The player who plays second, who is "on the draw"
+    Two,
 }

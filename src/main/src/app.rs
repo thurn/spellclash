@@ -17,7 +17,7 @@ use std::time::Duration;
 use color_eyre::Result;
 use crossterm::event;
 use data::core::actions::InterfaceAction;
-use data::core::game_state::GameState;
+use data::game_states::game_state::GameState;
 use display::core::layout;
 use display::core::render_context::RenderContext;
 use ratatui::layout::Size;

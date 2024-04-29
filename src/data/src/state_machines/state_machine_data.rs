@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod card_states;
-pub mod core;
-pub mod delegates;
-pub mod game_states;
-pub mod printed_cards;
-pub mod state_machines;
+use serde::{Deserialize, Serialize};
+
+/// Data related to ongoing game events. Some types of updates are handled via a
+/// resumable state machine in order to allow interruptions in the resolution
+/// process when a player is required to make a prompt decision.
+///
+/// See the `state_machine` module for more information.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct StateMachines {}

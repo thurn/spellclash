@@ -12,9 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod card_states;
-pub mod core;
-pub mod delegates;
-pub mod game_states;
-pub mod printed_cards;
-pub mod state_machines;
+use serde::{Deserialize, Serialize};
+
+use crate::game_states::game_state::GameState;
+
+/// State for the undo system.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct UndoTracker {
+    /// Previous state to jump to as a result of an 'undo' operation, if any.
+    pub undo: Option<Box<GameState>>,
+}

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::game_state::GameState;
+use data::game_states::game_state::GameState;
 
 pub fn create() -> GameState {
-    GameState {}
+    todo!("")
 }
