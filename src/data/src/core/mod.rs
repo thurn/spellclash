@@ -13,6 +13,9 @@
 // limitations under the License.
 
 pub mod actions;
+pub mod card_subtypes;
 pub mod colors;
 pub mod game_state;
+pub mod primitives;
+pub mod printed_card;
 pub mod widget_id;
