@@ -15,7 +15,7 @@
 use enumset::EnumSetType;
 use serde::{Deserialize, Serialize};
 
-use crate::core::primitives::{Loyalty, Power};
+use crate::core::numerics::{Loyalty, Power, Toughness};
 
 /// Attraction lights printed on a card, used on certain Un-Set cards for the
 /// 'attraction' mechanic.
@@ -43,7 +43,7 @@ pub enum PrintedLoyalty {
 pub enum PrintedPower {
     /// Numeric power
     Number(Power),
-    /// Power is defined by rules text
+    /// Power is defined by X in rules text
     X,
     /// Power is defined by rules text
     ///
@@ -57,8 +57,8 @@ pub enum PrintedPower {
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum PrintedToughness {
     /// Numeric toughness
-    Number(Power),
-    /// Toughness is defined by rules text
+    Number(Toughness),
+    /// Toughness is defined by X in rules text
     X,
     /// Toughness is defined by rules text
     ///

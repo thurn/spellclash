@@ -14,12 +14,7 @@
 
 use enumset::EnumSetType;
 use serde::{Deserialize, Serialize};
-
-pub type ManaValue = u32;
-pub type Loyalty = u32;
-pub type Power = u32;
-pub type Toughness = u32;
-pub type TurnNumber = u32;
+use slotmap::new_key_type;
 
 /// The five canonical colors of magic.
 #[derive(Debug, Serialize, Deserialize, EnumSetType)]
@@ -66,10 +61,82 @@ pub enum CardType {
 }
 
 /// Identifies one of the players in a game
-#[derive(Debug, Hash, Serialize, Deserialize, EnumSetType)]
+#[derive(Debug, Hash, Serialize, Deserialize, EnumSetType, Ord, PartialOrd)]
 pub enum PlayerName {
     /// The player who plays first, who is "on the play"
     One,
     /// The player who plays second, who is "on the draw"
     Two,
+}
+
+/// Identifies a struct that is 1:1 associated with a given [PlayerName].
+pub trait HasOwner {
+    fn owner(&self) -> PlayerName;
+}
+
+impl HasOwner for PlayerName {
+    fn owner(&self) -> PlayerName {
+        *self
+    }
+}
+
+new_key_type! {
+    /// Identifies a card or token in an ongoing game
+    pub struct CardId;
+}
+
+/// Identifies a struct that is 1:1 associated with a given [CardId].
+pub trait HasCardId {
+    fn card_id(&self) -> CardId;
+}
+
+impl HasCardId for CardId {
+    fn card_id(&self) -> CardId {
+        // I know this is the same as Into, I just find it less annoying to have
+        // explicit types :)
+        *self
+    }
+}
+
+/// An identifier for an object within a game.
+///
+/// An object is an ability on the stack, a card, a copy of a card, a token, a
+/// spell, a permanent, or an emblem. Cards receive a new object ID when they
+/// change zones.
+///
+/// See <https://yawgatog.com/resources/magic-rules/#R1091>
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct ObjectId(pub u64);
+
+/// A zone is a place where objects can be during the game.
+///
+/// See <https://yawgatog.com/resources/magic-rules/#R4001>
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, Eq, PartialEq, Hash)]
+pub enum Zone {
+    Hand,
+    Graveyard,
+    Library,
+    Battlefield,
+    Stack,
+    Exiled,
+    Command,
+    OutsideTheGame,
+}
+
+impl Zone {
+    /// Is this zone a public zone?
+    ///
+    /// See <https://yawgatog.com/resources/magic-rules/#R4002>
+    pub fn is_public(&self) -> bool {
+        match self {
+            Zone::Hand => false,
+            Zone::Graveyard => true,
+            Zone::Library => false,
+            Zone::Battlefield => true,
+            Zone::Stack => true,
+            Zone::Exiled => true,
+            Zone::Command => true,
+            Zone::OutsideTheGame => false,
+        }
+    }
 }

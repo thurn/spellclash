@@ -21,5 +21,6 @@ rand_xoshiro = { version = "0.6.0", features = ["serde1"] }
 ratatui = { version = "0.26.0", features = ["serde", "macros", "unstable-widget-ref"] }
 serde = { version = "1.0.198", features = ["derive"] }
 serde_with = "3.8.1"
+slotmap = { version = "1.0.7", features = ["serde"] }
 typed-builder = "0.18.1"
 uuid = "1.8.0"

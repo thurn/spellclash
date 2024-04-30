@@ -12,8 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod actions;
-pub mod colors;
-pub mod numerics;
-pub mod primitives;
-pub mod widget_id;
+use serde::{Deserialize, Serialize};
+use slotmap::SlotMap;
+
+use crate::card_states::card_state::CardState;
+use crate::core::primitives::CardId;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Zones {
+    /// All cards and tokens in the current game.
+    all_cards: SlotMap<CardId, CardState>,
+}
+
+impl Zones {}

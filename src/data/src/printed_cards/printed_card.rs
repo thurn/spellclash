@@ -17,7 +17,8 @@ use mtgjson::Layout;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::core::primitives::{CardSupertype, CardType, Color, ManaValue};
+use crate::core::numerics::ManaValue;
+use crate::core::primitives::{CardSupertype, CardType, Color};
 use crate::printed_cards::card_subtypes::CardSubtypes;
 use crate::printed_cards::printed_primitives::{
     AttractionLight, PrintedLoyalty, PrintedPower, PrintedToughness,
@@ -91,7 +92,7 @@ pub struct PrintedCardFace {
     /// printed in certain Un-sets.
     pub attraction_lights: EnumSet<AttractionLight>,
     /// Another card which this face can be melded with. Both faces combine into
-    /// their shared back face.
+    /// their identical `face_b` back face.
     pub melds_with: Option<Uuid>,
     /// True if the card allows a value other than 4 copies in a deck.
     pub has_alternative_deck_limit: bool,

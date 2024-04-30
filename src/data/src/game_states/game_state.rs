@@ -16,7 +16,9 @@ use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::core::primitives::{PlayerName, TurnNumber};
+use crate::card_states::zones::Zones;
+use crate::core::numerics::TurnNumber;
+use crate::core::primitives::PlayerName;
 use crate::delegates::game_delegates::GameDelegates;
 use crate::game_states::animation_tracker::AnimationTracker;
 use crate::game_states::combat_state::CombatState;
@@ -52,6 +54,10 @@ pub struct GameState {
     /// updates.
     pub state_machines: StateMachines,
 
+    /// Stores state for all cards in this game and tracks which game zone they
+    /// are in.
+    pub zones: Zones,
+
     /// State of the currently active or most recently completed combat phase.
     ///
     /// If no combat phases have occurred this turn, this will contain
@@ -67,11 +73,11 @@ pub struct GameState {
     /// [GameHistory].
     pub history: GameHistory,
 
-    /// Next sorting key to use for card moves.
+    /// Next timestamp to use for card moves.
     ///
     /// Do not reference this directly, it is automatically updated by
     /// [Self::next_sorting_key] and [Self::move_card_internal].
-    pub next_sorting_key: u32,
+    pub next_timestamp: u32,
 
     /// Random number generator to use for this game
     pub rng: Xoshiro256StarStar,
