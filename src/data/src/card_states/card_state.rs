@@ -18,7 +18,7 @@ use uuid::Uuid;
 
 use crate::card_states::counters::Counters;
 use crate::card_states::custom_card_state::CustomCardStateList;
-use crate::card_states::stack_object::StackObjectTrait;
+use crate::card_states::zone_object::ZoneObjectTrait;
 #[allow(unused)] // Used in docs
 use crate::card_states::zones::Zones;
 use crate::core::numerics::{Damage, Timestamp};
@@ -161,7 +161,7 @@ impl HasTimestamp for CardState {
     }
 }
 
-impl StackObjectTrait for CardState {
+impl ZoneObjectTrait for CardState {
     fn targets(&self) -> &[ObjectId] {
         &self.targets
     }

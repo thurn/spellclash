@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod card_state;
-pub mod counters;
-pub mod custom_card_state;
-pub mod stack_ability;
-pub mod zone_object;
-pub mod zones;
+pub mod ability_definition;
+pub mod card_definition;
+pub mod card_name;

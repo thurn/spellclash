@@ -15,7 +15,7 @@
 use serde::{Deserialize, Serialize};
 use slotmap::new_key_type;
 
-use crate::card_states::stack_object::StackObjectTrait;
+use crate::card_states::zone_object::ZoneObjectTrait;
 use crate::core::numerics::Timestamp;
 use crate::core::primitives::{
     CardId, HasCardId, HasController, HasObjectId, HasOwner, HasTimestamp, ObjectId, PlayerName,
@@ -79,7 +79,7 @@ impl HasTimestamp for StackAbility {
     }
 }
 
-impl StackObjectTrait for StackAbility {
+impl ZoneObjectTrait for StackAbility {
     fn targets(&self) -> &[ObjectId] {
         &self.targets
     }

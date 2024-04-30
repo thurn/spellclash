@@ -12,5 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use enumset::EnumSet;
+
+use crate::core::primitives::Zone;
+
+pub type DelegateFn = fn(&mut GameDelegates);
+
+pub struct Delegate {
+    /// [Zone]s in which this delegate should be active.
+    ///
+    /// The [Self::run] function will be invoked to populate this delegate's
+    /// callbacks when its object enters one of these zones, and the callbacks
+    /// will be cleared when it exits one of these zones.
+    pub zones: EnumSet<Zone>,
+
+    /// Function to populate callbacks for this delegate
+    pub run: DelegateFn,
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct GameDelegates {}

@@ -13,77 +13,84 @@
 // limitations under the License.
 
 use crate::card_states::card_state::CardState;
-use crate::card_states::stack_ability::StackAbility;
+use crate::card_states::stack_ability::{StackAbility, StackAbilityId};
 use crate::core::numerics::Timestamp;
 use crate::core::primitives::{
     CardId, HasCardId, HasController, HasObjectId, HasOwner, HasTimestamp, ObjectId, PlayerName,
 };
 
-/// Represents a reference to a card or ability on the stack.
-pub enum StackObject<'a> {
+/// Identifies an ability on the stack, card, copy of a card on the stack,
+/// token, or emblem
+pub enum ZoneObjectId {
+    CardId(CardId),
+    StackAbilityId(StackAbilityId),
+}
+
+/// Represents a reference to an object that can exist in a zone
+pub enum ZoneObject<'a> {
     Card(&'a CardState),
     Ability(&'a StackAbility),
 }
 
-/// Properties exposed by [StackObject].
-pub trait StackObjectTrait:
+/// Properties exposed by [ZoneObject].
+pub trait ZoneObjectTrait:
     HasObjectId + HasOwner + HasController + HasCardId + HasTimestamp
 {
     /// Current targets for this stack object, if any
     fn targets(&self) -> &[ObjectId];
 }
 
-impl<'a> HasObjectId for StackObject<'a> {
+impl<'a> HasObjectId for ZoneObject<'a> {
     fn object_id(&self) -> ObjectId {
         match self {
-            StackObject::Card(card) => card.object_id(),
-            StackObject::Ability(ability) => ability.object_id(),
+            ZoneObject::Card(card) => card.object_id(),
+            ZoneObject::Ability(ability) => ability.object_id(),
         }
     }
 }
 
-impl<'a> HasCardId for StackObject<'a> {
+impl<'a> HasCardId for ZoneObject<'a> {
     fn card_id(&self) -> CardId {
         match self {
-            StackObject::Card(card) => card.card_id(),
-            StackObject::Ability(ability) => ability.card_id(),
+            ZoneObject::Card(card) => card.card_id(),
+            ZoneObject::Ability(ability) => ability.card_id(),
         }
     }
 }
 
-impl<'a> HasOwner for StackObject<'a> {
+impl<'a> HasOwner for ZoneObject<'a> {
     fn owner(&self) -> PlayerName {
         match self {
-            StackObject::Card(card) => card.owner(),
-            StackObject::Ability(ability) => ability.owner(),
+            ZoneObject::Card(card) => card.owner(),
+            ZoneObject::Ability(ability) => ability.owner(),
         }
     }
 }
 
-impl<'a> HasController for StackObject<'a> {
+impl<'a> HasController for ZoneObject<'a> {
     fn controller(&self) -> PlayerName {
         match self {
-            StackObject::Card(card) => card.controller(),
-            StackObject::Ability(ability) => ability.controller(),
+            ZoneObject::Card(card) => card.controller(),
+            ZoneObject::Ability(ability) => ability.controller(),
         }
     }
 }
 
-impl<'a> HasTimestamp for StackObject<'a> {
+impl<'a> HasTimestamp for ZoneObject<'a> {
     fn timestamp(&self) -> Timestamp {
         match self {
-            StackObject::Card(card) => card.timestamp(),
-            StackObject::Ability(ability) => ability.timestamp(),
+            ZoneObject::Card(card) => card.timestamp(),
+            ZoneObject::Ability(ability) => ability.timestamp(),
         }
     }
 }
 
 /// Manual version of enum_dispatch crate
-impl<'a> StackObjectTrait for StackObject<'a> {
+impl<'a> ZoneObjectTrait for ZoneObject<'a> {
     fn targets(&self) -> &[ObjectId] {
         match self {
-            StackObject::Card(card) => card.targets(),
-            StackObject::Ability(ability) => ability.targets(),
+            ZoneObject::Card(card) => card.targets(),
+            ZoneObject::Ability(ability) => ability.targets(),
         }
     }
 }

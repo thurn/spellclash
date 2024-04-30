@@ -152,10 +152,20 @@ impl HasObjectId for PlayerName {
     }
 }
 
+/// Identifies an ability of a card.
+///
+/// Abilities are always written in oracle text separated by a newline
+/// character. This number is the (0-indexed) position of the ability within
+/// that text. One ability definition should be provided for each clause that
+/// appears in card text, and this number is used to produce the displayed text
+/// for that ability.
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
+pub struct AbilityNumber(pub usize);
+
 /// A zone is a place where objects can be during the game.
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R4001>
-#[derive(Debug, Serialize, Deserialize, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Serialize, Deserialize, Hash, EnumSetType)]
 pub enum Zone {
     Hand,
     Graveyard,

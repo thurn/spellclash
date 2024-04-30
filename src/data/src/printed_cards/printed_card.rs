@@ -14,7 +14,6 @@
 
 use enumset::EnumSet;
 use mtgjson::Layout;
-use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::core::numerics::ManaValue;
@@ -26,7 +25,7 @@ use crate::printed_cards::printed_primitives::{
 
 /// Represents the immutable data about a card printing. This should generally
 /// correspond to the definition at <https://mtgjson.com/data-models/card/card-set/>
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct PrintedCard {
     /// The primary face of the card. This represents:
     ///
@@ -44,15 +43,15 @@ pub struct PrintedCard {
     /// - The smaller secondary face of an adventure or aftermath card
     /// - The secondary or 'flipped' face of a flip card
     ///
-    /// Note that for some cards with the 'meld' mechanic, two different cards
-    /// will share copies of the same back face data.
+    /// Note that for cards with the 'meld' mechanic, two different cards will
+    /// share copies of the same back face data.
     pub face_b: Option<PrintedCardFace>,
 }
 
 /// Represents one face of a printed card.
 ///
 /// See the comments in [PrintedCard] for more information.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct PrintedCardFace {
     /// MTG JSON identifier for this face
     pub id: Uuid,
