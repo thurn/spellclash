@@ -12,8 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::card_definitions::ability_definition::{AbilityBuilder, AbilityDefinition};
 use crate::card_definitions::card_name::CardName;
+#[allow(unused)] // Used in docs
+use crate::printed_cards::printed_card::PrintedCard;
 
+/// Contains the game rules definition for a card.
+///
+/// This is combined with the card's Oracle information from the [PrintedCard]
+/// struct to determine overall card behavior. Cards are implemented as zero
+/// argument functions which return an instance of this struct.
 pub struct CardDefinition {
+    /// Name of this card, used to connect the card to its [PrintedCard]
+    /// equivalent.
     pub name: CardName,
+    /// Abilities of this card, which describe how it modifies game rules & game
+    /// state.
+    pub abilities: Vec<AbilityDefinition>,
+}
+
+impl CardDefinition {
+    pub fn new(name: CardName) -> Self {
+        Self { name, abilities: vec![] }
+    }
+
+    /// Adds a new ability to this card definition
+    pub fn ability(mut self, builder: impl AbilityBuilder) -> Self {
+        self.abilities.push(builder.build());
+        self
+    }
 }

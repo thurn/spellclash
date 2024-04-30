@@ -19,12 +19,15 @@ use uuid::Uuid;
 use crate::core::numerics::ManaValue;
 use crate::core::primitives::{CardSupertype, CardType, Color};
 use crate::printed_cards::card_subtypes::CardSubtypes;
+use crate::printed_cards::mana_cost::ManaCost;
 use crate::printed_cards::printed_primitives::{
     AttractionLight, PrintedLoyalty, PrintedPower, PrintedToughness,
 };
 
-/// Represents the immutable data about a card printing. This should generally
-/// correspond to the definition at <https://mtgjson.com/data-models/card/card-set/>
+/// Represents the immutable data about a card.
+///
+/// This describes the physical information printed on a card. It should
+/// generally correspond to the definition at <https://mtgjson.com/data-models/card/card-set/>
 #[derive(Clone, Debug)]
 pub struct PrintedCard {
     /// The primary face of the card. This represents:
@@ -70,6 +73,10 @@ pub struct PrintedCardFace {
     ///
     /// See <https://yawgatog.com/resources/magic-rules/#R2022>
     pub colors: EnumSet<Color>,
+    /// The mana cost for this face.
+    ///
+    /// See <https://yawgatog.com/resources/magic-rules/#R1074>
+    pub mana_cost: ManaCost,
     /// The static mana value of this face.
     ///
     /// This is the printed mana value of the face itself. Note that mana value
