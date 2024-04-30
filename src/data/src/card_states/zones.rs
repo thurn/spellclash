@@ -16,12 +16,19 @@ use serde::{Deserialize, Serialize};
 use slotmap::SlotMap;
 
 use crate::card_states::card_state::CardState;
+use crate::card_states::stack_ability::{StackAbility, StackAbilityId};
+use crate::core::numerics::Timestamp;
 use crate::core::primitives::CardId;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Zones {
-    /// All cards and tokens in the current game.
+    /// All cards, copies of cards on the stack, tokens, and emblems in the
+    /// current game.
     all_cards: SlotMap<CardId, CardState>,
-}
 
-impl Zones {}
+    /// Abilities currently on the stack
+    stack_abilities: SlotMap<StackAbilityId, StackAbility>,
+
+    /// Next timestamp to use for zone moves.
+    next_timestamp: Timestamp,
+}

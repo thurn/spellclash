@@ -12,13 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use enum_map::Enum;
 use enumset::EnumSetType;
 use serde::{Deserialize, Serialize};
 use slotmap::new_key_type;
 
+use crate::core::numerics::Timestamp;
+
 /// The five canonical colors of magic.
-#[derive(Debug, Serialize, Deserialize, EnumSetType)]
+#[derive(Debug, Hash, Serialize, Deserialize, EnumSetType)]
 pub enum Color {
+    White,
+    Blue,
+    Black,
+    Red,
+    Green,
+}
+
+/// Possible colors of mana
+#[derive(Debug, Hash, Serialize, Deserialize, EnumSetType, Enum)]
+pub enum ManaColor {
+    Colorless,
     White,
     Blue,
     Black,
@@ -80,8 +94,13 @@ impl HasOwner for PlayerName {
     }
 }
 
+/// Identifies a struct that has a controller.
+pub trait HasController {
+    fn controller(&self) -> PlayerName;
+}
+
 new_key_type! {
-    /// Identifies a card or token in an ongoing game
+    /// Identifies a card, copy of a card on the stack, token, or emblem in an ongoing game
     pub struct CardId;
 }
 
@@ -101,12 +120,37 @@ impl HasCardId for CardId {
 /// An identifier for an object within a game.
 ///
 /// An object is an ability on the stack, a card, a copy of a card, a token, a
-/// spell, a permanent, or an emblem. Cards receive a new object ID when they
-/// change zones.
+/// spell, a permanent, emblem, or player. Cards receive a new object ID when
+/// they change zones.
+///
+/// Note that 'players' are not considered objects for the purposes of the CR
+/// but are treated as such here.
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R1091>
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct ObjectId(pub u64);
+
+pub const PLAYER_ONE_ID: ObjectId = ObjectId(1);
+pub const PLAYER_TWO_ID: ObjectId = ObjectId(2);
+
+pub trait HasObjectId {
+    fn object_id(&self) -> ObjectId;
+}
+
+impl HasObjectId for ObjectId {
+    fn object_id(&self) -> ObjectId {
+        *self
+    }
+}
+
+impl HasObjectId for PlayerName {
+    fn object_id(&self) -> ObjectId {
+        match self {
+            PlayerName::One => PLAYER_ONE_ID,
+            PlayerName::Two => PLAYER_TWO_ID,
+        }
+    }
+}
 
 /// A zone is a place where objects can be during the game.
 ///
@@ -138,5 +182,16 @@ impl Zone {
             Zone::Command => true,
             Zone::OutsideTheGame => false,
         }
+    }
+}
+
+/// Represents a struct which is 1:1 associated with a [Timestamp].
+pub trait HasTimestamp {
+    fn timestamp(&self) -> Timestamp;
+}
+
+impl HasTimestamp for Timestamp {
+    fn timestamp(&self) -> Timestamp {
+        *self
     }
 }

@@ -12,9 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod card_state;
-pub mod counters;
-pub mod custom_card_state;
-pub mod stack_ability;
-pub mod stack_object;
-pub mod zones;
+use enum_map::EnumMap;
+use serde::{Deserialize, Serialize};
+
+use crate::core::numerics::ManaValue;
+use crate::core::primitives::ManaColor;
+
+/// Represents mana currently in a player's mana pool.
+///
+/// Normally this empties at the end of each step.
+///
+/// See <https://yawgatog.com/resources/magic-rules/#R1064>
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ManaPool {
+    /// Mana which has no usage restriction associated with it
+    pub unrestricted: EnumMap<ManaColor, ManaValue>,
+}

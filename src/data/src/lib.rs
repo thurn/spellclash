@@ -16,5 +16,6 @@ pub mod card_states;
 pub mod core;
 pub mod delegates;
 pub mod game_states;
+pub mod player_states;
 pub mod printed_cards;
 pub mod state_machines;

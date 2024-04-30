@@ -18,15 +18,16 @@ use serde::{Deserialize, Serialize};
 
 use crate::core::numerics::Loyalty;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// Represents counters currently on a card or player
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Counters {
-    /// The quantity of +1/+1 counters on this card
+    /// The quantity of +1/+1 counters on this object
     pub p1p1: u32,
-    /// The quantity of -1/-1 counters on this card
+    /// The quantity of -1/-1 counters on this object
     pub m1m1: u32,
-    /// The quantity of Loyalty counters on this card,
+    /// The quantity of Loyalty counters on this object,
     pub loyalty: Loyalty,
-    /// Quantity of counters other than +1/+1, -1/-1, and Loyalty on this card
+    /// Quantity of counters other than the above options on this player
     pub other_counters: HashMap<CounterType, u32>,
 }
 

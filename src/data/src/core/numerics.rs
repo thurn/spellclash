@@ -17,9 +17,9 @@ use derive_more::{
 };
 use serde::{Deserialize, Serialize};
 
-pub type TurnNumber = u32;
+pub type TurnNumber = u64;
 
-/// The statistic formerly known as Converted Mana Cost
+/// A quantity of mana of any color.
 #[derive(
     Debug,
     Display,
@@ -30,6 +30,7 @@ pub type TurnNumber = u32;
     Ord,
     PartialOrd,
     Hash,
+    Default,
     From,
     Add,
     Sub,
@@ -44,7 +45,7 @@ pub type TurnNumber = u32;
     Serialize,
     Deserialize,
 )]
-pub struct ManaValue(pub u32);
+pub struct ManaValue(pub u64);
 
 #[derive(
     Debug,
@@ -56,6 +57,7 @@ pub struct ManaValue(pub u32);
     Ord,
     PartialOrd,
     Hash,
+    Default,
     From,
     Add,
     Sub,
@@ -70,7 +72,7 @@ pub struct ManaValue(pub u32);
     Serialize,
     Deserialize,
 )]
-pub struct Loyalty(pub u32);
+pub struct Loyalty(pub u64);
 
 #[derive(
     Debug,
@@ -82,6 +84,7 @@ pub struct Loyalty(pub u32);
     Ord,
     PartialOrd,
     Hash,
+    Default,
     From,
     Add,
     Sub,
@@ -96,7 +99,7 @@ pub struct Loyalty(pub u32);
     Serialize,
     Deserialize,
 )]
-pub struct Power(pub u32);
+pub struct Power(pub u64);
 
 #[derive(
     Debug,
@@ -108,6 +111,7 @@ pub struct Power(pub u32);
     Ord,
     PartialOrd,
     Hash,
+    Default,
     From,
     Add,
     Sub,
@@ -122,7 +126,7 @@ pub struct Power(pub u32);
     Serialize,
     Deserialize,
 )]
-pub struct Toughness(pub u32);
+pub struct Toughness(pub u64);
 
 #[derive(
     Debug,
@@ -134,6 +138,7 @@ pub struct Toughness(pub u32);
     Ord,
     PartialOrd,
     Hash,
+    Default,
     From,
     Add,
     Sub,
@@ -148,4 +153,33 @@ pub struct Toughness(pub u32);
     Serialize,
     Deserialize,
 )]
-pub struct Damage(pub u32);
+pub struct Damage(pub u64);
+
+/// Monotonically increasing counter representing when an object arrived in a
+/// zone.
+#[derive(
+    Debug,
+    Display,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    Ord,
+    PartialOrd,
+    Hash,
+    Default,
+    From,
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Sum,
+    AddAssign,
+    SubAssign,
+    MulAssign,
+    DivAssign,
+    Into,
+    Serialize,
+    Deserialize,
+)]
+pub struct Timestamp(pub u64);

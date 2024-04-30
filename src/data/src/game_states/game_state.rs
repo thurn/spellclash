@@ -25,6 +25,7 @@ use crate::game_states::combat_state::CombatState;
 use crate::game_states::game_step::GamePhaseStep;
 use crate::game_states::history_data::GameHistory;
 use crate::game_states::undo_state::UndoTracker;
+use crate::player_states::player_state::Players;
 use crate::state_machines::state_machine_data::StateMachines;
 
 /// This is the state of a single ongoing game of Magic (i.e. one duel, not a
@@ -54,8 +55,11 @@ pub struct GameState {
     /// updates.
     pub state_machines: StateMachines,
 
-    /// Stores state for all cards in this game and tracks which game zone they
-    /// are in.
+    /// State for the players within this game
+    pub players: Players,
+
+    /// Stores state for all cards and abilities in this game and tracks which
+    /// game zone they are in.
     pub zones: Zones,
 
     /// State of the currently active or most recently completed combat phase.
@@ -72,12 +76,6 @@ pub struct GameState {
     ///  History of events which have happened during this game. See
     /// [GameHistory].
     pub history: GameHistory,
-
-    /// Next timestamp to use for card moves.
-    ///
-    /// Do not reference this directly, it is automatically updated by
-    /// [Self::next_sorting_key] and [Self::move_card_internal].
-    pub next_timestamp: u32,
 
     /// Random number generator to use for this game
     pub rng: Xoshiro256StarStar,

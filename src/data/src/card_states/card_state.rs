@@ -18,20 +18,28 @@ use uuid::Uuid;
 
 use crate::card_states::counters::Counters;
 use crate::card_states::custom_card_state::CustomCardStateList;
-use crate::core::numerics::Damage;
-use crate::core::primitives::{CardId, HasCardId, ObjectId, PlayerName, Zone};
+use crate::card_states::stack_object::StackObjectTrait;
+use crate::core::numerics::{Damage, Timestamp};
+use crate::core::primitives::{
+    CardId, HasCardId, HasController, HasObjectId, HasOwner, HasTimestamp, ObjectId, PlayerName,
+    Zone,
+};
 use crate::printed_cards::printed_card::PrintedCard;
 
-/// Represents the state of a card or token within an ongoing game.
+/// Represents the state of a card, copy of a card on the stack, token, or
+/// emblem within an ongoing game.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CardState {
     /// Unique identifier for this card in the [Zones] struct.
-    pub id: CardId,
+    pub card_id: CardId,
 
     /// Object ID for this card. Cards receive an Object ID when they are
-    /// created and then get a new one every time they change zones. In most
-    /// typical game situations the rules only 'remember' effects that happen to
-    /// a specific object.
+    /// created and then get a new one every time they change zones.
+    ///
+    /// In most typical game situations the rules only 'remember' effects that
+    /// happen to a specific object, e.g. if you exile a card and return it to
+    /// the battlefield it gets a new object ID and effects targeting it will
+    /// end.
     pub object_id: ObjectId,
 
     /// ID of the printed card for this card, used to populate the result of the
@@ -41,15 +49,33 @@ pub struct CardState {
     /// JSON data. Tokens *do* have an associated printed card as well.
     pub printed_card_id: Uuid,
 
-    /// Current game zone for this card. Call [Self::set_zone_internal] instead
-    /// of setting this value directly.
+    /// The player who this card belongs to, who starts the game with this card
+    /// or who creates this token.
+    ///
+    /// See <https://yawgatog.com/resources/magic-rules/#R1083>
+    pub owner: PlayerName,
+
+    /// The player who can currently make decisions about this card.
+    ///
+    /// For cards which are not currently on the battlefield or on the stack,
+    /// this will be the card's owner.
+    ///
+    /// See <https://yawgatog.com/resources/magic-rules/#R1084>
+    pub controller: PlayerName,
+
+    /// Current game zone location for this card.
+    ///
+    /// Please update [Self::timestamp] and [Self::object_id] whenever this
+    /// changes.
     pub zone: Zone,
 
     /// Whether this card is currently face down or has one of its faces up.
     ///
-    /// A card that is not on the battlefield is face-down in the library or
-    /// hand and is face-up in the graveyard, on the stack, or in the command
-    /// zone. A card in exile can be either face down or face up.
+    /// A card that is not on the battlefield is:
+    /// - Face-down in the library or hand
+    /// - Face-up in the graveyard, on the stack, or in the command zone.
+    /// - Either face up or face down in exile depending on the effect that put
+    ///   it there
     pub facing: CardFacing,
 
     /// Whether this card is current tapped.
@@ -72,9 +98,20 @@ pub struct CardState {
     /// A card that is not on the battlefield always has 0 damage.
     pub damage: Damage,
 
-    /// Timestamp at which this card arrived in its current zone. Call
-    /// [Self::set_zone_internal] instead of setting this value directly.
-    pub timestamp: u32,
+    /// Timestamp at which this card arrived in its current zone.
+    pub timestamp: Timestamp,
+
+    /// Targets for this card, selected when it is placed on the stack.
+    ///
+    /// Cards which are not on the stack cannot have targets.
+    pub targets: Vec<ObjectId>,
+
+    /// The object this card is attached to.
+    ///
+    /// Cards such as Equipment, Auras, and Fortifications can be attached to a
+    /// permanent or player. Cards that are not on the battlefield cannot be
+    /// attached to each other.
+    pub attached_to: Option<ObjectId>,
 
     /// Stores custom state entries for this card.
     ///
@@ -84,16 +121,47 @@ pub struct CardState {
     /// Printed Card associated with this card. Use the [Self::printed] method
     /// instead of accessing this directly.
     ///
-    /// This is populated immediately after deserialization with a static
-    /// reference to the printed card, it should basically always be fine to
-    /// .unwrap() this value.
+    /// All cards must have a [PrintedCard] and this is populated immediately
+    /// after deserialization with a static reference. It should basically
+    /// always be fine to .unwrap() this value by calling the
+    /// [Self::printed] method.
     #[serde(skip)]
     pub printed_card_reference: Option<&'static PrintedCard>,
 }
 
 impl HasCardId for CardState {
     fn card_id(&self) -> CardId {
-        self.id
+        self.card_id
+    }
+}
+
+impl HasObjectId for CardState {
+    fn object_id(&self) -> ObjectId {
+        self.object_id
+    }
+}
+
+impl HasOwner for CardState {
+    fn owner(&self) -> PlayerName {
+        self.owner
+    }
+}
+
+impl HasController for CardState {
+    fn controller(&self) -> PlayerName {
+        self.controller
+    }
+}
+
+impl HasTimestamp for CardState {
+    fn timestamp(&self) -> Timestamp {
+        self.timestamp
+    }
+}
+
+impl StackObjectTrait for CardState {
+    fn targets(&self) -> &[ObjectId] {
+        &self.targets
     }
 }
 
@@ -101,12 +169,6 @@ impl CardState {
     /// Returns the [PrintedCard] for this card
     pub fn printed(&self) -> &'static PrintedCard {
         self.printed_card_reference.unwrap()
-    }
-
-    /// Sets the position of this card.
-    pub fn set_zone_internal(&mut self, sorting_key: u32, zone: Zone) {
-        self.timestamp = sorting_key;
-        self.zone = zone;
     }
 }
 
