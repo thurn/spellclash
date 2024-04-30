@@ -20,6 +20,7 @@ use crate::card_states::stack_ability::{StackAbility, StackAbilityId};
 use crate::core::numerics::Timestamp;
 use crate::core::primitives::CardId;
 
+/// Stores the state of all cards and all abilities currently on the stack.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Zones {
     /// All cards, copies of cards on the stack, tokens, and emblems in the

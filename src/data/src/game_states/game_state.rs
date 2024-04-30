@@ -20,7 +20,9 @@ use crate::card_states::zones::Zones;
 use crate::core::numerics::TurnNumber;
 use crate::core::primitives::PlayerName;
 use crate::delegates::game_delegates::GameDelegates;
-use crate::game_states::animation_tracker::AnimationTracker;
+use crate::game_states::animation_tracker::{
+    AnimationState, AnimationStep, AnimationTracker, GameAnimation,
+};
 use crate::game_states::combat_state::CombatState;
 use crate::game_states::game_step::GamePhaseStep;
 use crate::game_states::history_data::GameHistory;
@@ -86,6 +88,22 @@ pub struct GameState {
     /// Active Delegates for the game. See [GameDelegates].
     #[serde(skip)]
     pub delegates: GameDelegates,
+}
+
+impl GameState {
+    pub fn add_animation(&mut self, update: impl FnOnce() -> GameAnimation) {
+        if self.animations.state == AnimationState::Track {
+            // Snapshot current game state, omit things that aren't important for display
+            // logic.
+            let clone = Self {
+                animations: AnimationTracker::new(AnimationState::Ignore),
+                undo_tracker: Default::default(),
+                ..self.clone()
+            };
+
+            self.animations.steps.push(AnimationStep { snapshot: clone, update: update() });
+        }
+    }
 }
 
 /// Identifies a turn within the game.
