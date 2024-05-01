@@ -16,14 +16,10 @@ use std::time::Duration;
 
 use color_eyre::Result;
 use crossterm::event;
-use data::actions::new_game_action::NewGameAction;
-use data::game_states::game_state::GameState;
 use ratatui::layout::Size;
 use ratatui::prelude::*;
 use ratatui::symbols::border;
 use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
-use rules::actions::new_game;
-use rules::core::handle_action;
 use tracing::info;
 
 use crate::core::interface_action::InterfaceAction;
@@ -32,7 +28,6 @@ use crate::core::render_context::RenderContext;
 use crate::tui::Tui;
 
 pub fn run(tui: &mut Tui) -> Result<()> {
-    let mut data = new_game::create(NewGameAction {});
     let mut context = RenderContext::default();
     while !context.should_exit() {
         context.set_last_event(if event::poll(Duration::from_millis(16))? {
@@ -41,7 +36,7 @@ pub fn run(tui: &mut Tui) -> Result<()> {
             None
         });
         tui.draw(|frame| {
-            frame.render_stateful_widget(App { data: &data }, frame.size(), &mut context);
+            frame.render_stateful_widget(App {}, frame.size(), &mut context);
 
             let Some(action) = context.finish_render() else {
                 return;
@@ -50,7 +45,6 @@ pub fn run(tui: &mut Tui) -> Result<()> {
             match action {
                 InterfaceAction::GameAction(game_action) => {
                     info!(?game_action, "Handling GameAction");
-                    handle_action::handle_game_action(&mut data, game_action);
                 }
                 InterfaceAction::NewGameAction(new_game) => {
                     info!(?new_game, "Handling NewGameAction");
@@ -67,14 +61,12 @@ pub fn run(tui: &mut Tui) -> Result<()> {
     Ok(())
 }
 
-pub struct App<'a> {
-    pub data: &'a GameState,
-}
+pub struct App {}
 
 const SCREEN_HEIGHT: u16 = 40;
 const SCREEN_WIDTH: u16 = 56;
 
-impl<'a> StatefulWidget for App<'a> {
+impl StatefulWidget for App {
     type State = RenderContext;
 
     fn render(self, area: Rect, buf: &mut Buffer, _context: &mut RenderContext) {

@@ -28,7 +28,7 @@ use rand_xoshiro::rand_core::SeedableRng;
 use rand_xoshiro::Xoshiro256StarStar;
 use uuid::Uuid;
 
-pub fn create(_: NewGameAction) -> GameState {
+pub fn _create(_: NewGameAction) -> GameState {
     GameState {
         id: GameId(Uuid::new_v4()),
         status: GameStatus::Setup,

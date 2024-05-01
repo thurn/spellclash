@@ -731,6 +731,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "display"
+version = "0.0.0"
+dependencies = [
+ "data",
+ "rules",
+]
+
+[[package]]
 name = "dlv-list"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2385,6 +2393,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "server"
+version = "0.0.0"
+dependencies = [
+ "color-eyre",
+ "data",
+ "database",
+ "display",
+ "enum-iterator",
+ "enumset",
+ "itertools",
+ "once_cell",
+ "rand",
+ "rand_xoshiro",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "sha1_smol"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2471,34 +2497,6 @@ name = "smallvec"
 version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
-
-[[package]]
-name = "spellclash"
-version = "0.0.0"
-dependencies = [
- "all_cards",
- "better-panic",
- "clap",
- "color-eyre",
- "config",
- "crossterm",
- "data",
- "directories",
- "human-panic",
- "lazy_static",
- "libc",
- "log",
- "rand",
- "ratatui",
- "rules",
- "rusty-hook",
- "strip-ansi-escapes",
- "tracing",
- "tracing-error",
- "tracing-subscriber",
- "typed-builder",
- "vergen",
-]
 
 [[package]]
 name = "stability"
@@ -2601,6 +2599,35 @@ checksum = "21bebf2b7c9e0a515f6e0f8c51dc0f8e4696391e6f1ff30379559f8365fb0df7"
 dependencies = [
  "rustix",
  "windows-sys 0.48.0",
+]
+
+[[package]]
+name = "terminal_ui"
+version = "0.0.0"
+dependencies = [
+ "all_cards",
+ "better-panic",
+ "clap",
+ "color-eyre",
+ "config",
+ "crossterm",
+ "data",
+ "directories",
+ "human-panic",
+ "lazy_static",
+ "libc",
+ "log",
+ "rand",
+ "ratatui",
+ "rules",
+ "rusty-hook",
+ "server",
+ "strip-ansi-escapes",
+ "tracing",
+ "tracing-error",
+ "tracing-subscriber",
+ "typed-builder",
+ "vergen",
 ]
 
 [[package]]

@@ -12,4 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod requests;
+use data::core::primitives::PlayerName;
+use data::game_states::game_state::GameState;
+
+use crate::commands::command::Command;
+
+/// Returns a series of [Command]s which fully describe the current state of the
+/// provided game
+pub fn connect(_game: &GameState, _player: PlayerName) -> Vec<Command> {
+    vec![]
+}

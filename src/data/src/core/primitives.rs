@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use enum_iterator::Sequence;
 use enum_map::Enum;
 use enumset::EnumSetType;
 use serde::{Deserialize, Serialize};
@@ -21,7 +22,7 @@ use uuid::Uuid;
 use crate::core::numerics::Timestamp;
 
 /// The five canonical colors of magic.
-#[derive(Debug, Hash, Serialize, Deserialize, EnumSetType)]
+#[derive(Debug, Hash, Serialize, Deserialize, EnumSetType, Sequence)]
 pub enum Color {
     White,
     Blue,
@@ -31,7 +32,7 @@ pub enum Color {
 }
 
 /// Possible colors of mana
-#[derive(Debug, Hash, Serialize, Deserialize, EnumSetType, Enum)]
+#[derive(Debug, Hash, Serialize, Deserialize, EnumSetType, Enum, Sequence)]
 pub enum ManaColor {
     Colorless,
     White,
@@ -76,7 +77,7 @@ pub enum CardType {
 }
 
 /// Identifies one of the players in a game
-#[derive(Debug, Hash, Serialize, Deserialize, EnumSetType, Ord, PartialOrd)]
+#[derive(Debug, Hash, Serialize, Deserialize, EnumSetType, Ord, PartialOrd, Sequence)]
 pub enum PlayerName {
     /// The player who plays first, who is "on the play"
     One,

@@ -12,4 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod requests;
+use color_eyre::Result;
+use data::users::user_state::UserState;
+use database::database::Database;
+use display::commands::scene_name::SceneName;
+use tracing::info;
+
+use crate::requests;
+use crate::server_data::{ClientData, GameResponse};
+
+/// Connect to the main menu scene
+pub async fn connect(_: &impl Database, user: &UserState) -> Result<GameResponse> {
+    info!(?user.id, "Connected");
+    let commands = vec![requests::load_scene(SceneName::MainMenu)];
+    let client_data = ClientData { user_id: user.id, game_id: None };
+    Ok(GameResponse::new(client_data).commands(commands))
+}

@@ -12,4 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod requests;
+use crate::commands::scene_name::SceneName;
+
+/// Represents an instruction to the client to perform some visual update.
+#[derive(Clone, Debug)]
+pub enum Command {
+    /// Requests to load a new top-level game scene
+    LoadScene {
+        /// Name of scene to load
+        name: SceneName,
+        /// Add this scene to the set of available scenes
+        additive: bool,
+        /// Loading this scene even if it is currently being displayed
+        load_if_current: bool,
+    },
+}
