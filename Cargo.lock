@@ -2237,7 +2237,9 @@ dependencies = [
  "itertools",
  "once_cell",
  "rand",
+ "rand_xoshiro",
  "tracing",
+ "uuid",
 ]
 
 [[package]]

@@ -36,6 +36,9 @@ pub struct GameState {
     /// Unique ID for this game
     pub id: GameId,
 
+    /// Status of the game: whether it is starting, is ongoing, or has ended.
+    pub status: GameStatus,
+
     /// Current game phase step.
     ///
     /// If the game has not yet started, this will be "Upkeep". If the game has
@@ -103,6 +106,32 @@ impl GameState {
             self.animations.steps.push(AnimationStep { snapshot: clone, update: update() });
         }
     }
+}
+
+/// Status of the game: whether it is starting, is ongoing, or has ended.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum GameStatus {
+    /// Initial step of game setup. Players reveal commanders, companions,
+    /// sticker sheets, etc.
+    ///
+    /// See <https://yawgatog.com/resources/magic-rules/#R1032>
+    Setup,
+
+    /// Players resolve mulligans in sequence.
+    ///
+    /// See <https://yawgatog.com/resources/magic-rules/#R1035>
+    ResolveMulligans,
+
+    /// Players take actions with cards in their opening hands
+    ///
+    /// See <https://yawgatog.com/resources/magic-rules/#R1036>
+    PreGameActions,
+
+    /// Game is currently ongoing
+    Playing,
+
+    /// Game has ended and the [PlayerName] player has won.
+    GameOver(PlayerName),
 }
 
 /// Identifies a turn within the game.

@@ -26,6 +26,15 @@ pub struct Players {
     player_2: PlayerState,
 }
 
+impl Default for Players {
+    fn default() -> Self {
+        Self {
+            player_1: PlayerState::new(PlayerName::One),
+            player_2: PlayerState::new(PlayerName::Two),
+        }
+    }
+}
+
 impl Players {
     /// Looks up a player by name
     pub fn player(&self, name: PlayerName) -> &PlayerState {

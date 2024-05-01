@@ -25,4 +25,4 @@ serde = { version = "1.0.198", features = ["derive"] }
 serde_with = "3.8.1"
 slotmap = { version = "1.0.7", features = ["serde"] }
 typed-builder = "0.18.1"
-uuid = "1.8.0"
+uuid = { version = "1.8.0", features = ["v4"] }
