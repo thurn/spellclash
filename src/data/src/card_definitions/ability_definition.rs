@@ -19,7 +19,8 @@ use enumset::EnumSet;
 use crate::core::primitives::Zone;
 use crate::costs::cost::Cost;
 use crate::delegates::ability_context::AbilityContext;
-use crate::delegates::game_delegates::{Delegate, DelegateFn};
+#[allow(unused)] // Used in docs
+use crate::delegates::game_delegates::{Delegate, DelegateFn, GameDelegates};
 use crate::effects::effect::EffectList;
 use crate::game_states::game_state::GameState;
 
@@ -286,7 +287,7 @@ impl AbilityBuilder for TriggeredAbility<WithCondition, WithEffects> {
 /// with the ability is on the battlefield and has the ability, or while the
 /// object with the ability is in the appropriate zone.
 ///
-/// https://yawgatog.com/resources/magic-rules/#R1133d
+/// <https://yawgatog.com/resources/magic-rules/#R1133d>
 pub struct StaticAbility {
     delegates: Vec<Delegate>,
 }

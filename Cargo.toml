@@ -1,5 +1,6 @@
 [workspace]
-members = ["src/*"]
+members = ["src/*", "src/cards/*"]
+exclude = ["src/cards"]
 resolver = "2"
 
 [profile.dev]

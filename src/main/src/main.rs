@@ -14,6 +14,7 @@
 
 use std::env;
 
+use all_cards::card_list;
 use clap::Parser;
 use cli::Cli;
 use color_eyre::eyre::Result;
@@ -30,6 +31,7 @@ fn main() -> Result<()> {
         utils::initialize_panic_handler()?;
     }
     Cli::parse();
+    card_list::initialize();
 
     let mut tui = tui::enter()?;
     let commit = env!("VERGEN_GIT_SHA");

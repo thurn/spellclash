@@ -39,6 +39,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "all_cards"
+version = "0.0.0"
+dependencies = [
+ "cards_d",
+ "data",
+ "regex",
+ "walkdir",
+]
+
+[[package]]
 name = "allocator-api2"
 version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -230,6 +240,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c59e92b5a388f549b863a7bea62612c09f24c8393560709a54558a9abdfb3b9c"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "cards_d"
+version = "0.0.0"
+dependencies = [
+ "data",
+ "rules",
 ]
 
 [[package]]
@@ -572,9 +590,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "dashmap"
+version = "5.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "978747c1d849a7d2ee5e8adc0159961c48fb7e5db2f06af6723b80123bb53856"
+dependencies = [
+ "cfg-if",
+ "hashbrown 0.14.3",
+ "lock_api",
+ "once_cell",
+ "parking_lot_core",
+]
+
+[[package]]
 name = "data"
 version = "0.0.0"
 dependencies = [
+ "dashmap",
  "derive_more",
  "enum-iterator",
  "enum-kinds",
@@ -2327,6 +2359,7 @@ checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 name = "spellclash"
 version = "0.0.0"
 dependencies = [
+ "all_cards",
  "better-panic",
  "clap",
  "color-eyre",

@@ -1,0 +1,17 @@
+[package]
+name = "all_cards"
+version = "0.0.0"
+edition = "2021"
+
+[lib]
+test = false
+doctest = false
+bench = false
+
+[dependencies]
+cards_d = { path = "../cards_d", version = "0.0.0" }
+data = { path = "../../data", version = "0.0.0" }
+
+[build-dependencies]
+regex = "1.7.1"
+walkdir = "2.3.2"

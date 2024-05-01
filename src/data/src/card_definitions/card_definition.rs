@@ -37,6 +37,9 @@ impl CardDefinition {
     }
 
     /// Adds a new ability to this card definition
+    ///
+    /// Each clause of the card's oracle text should correspond to one ability
+    /// in sequence.
     pub fn ability(mut self, builder: impl AbilityBuilder) -> Self {
         self.abilities.push(builder.build());
         self

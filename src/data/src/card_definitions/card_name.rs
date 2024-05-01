@@ -15,4 +15,6 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub enum CardName {}
+pub enum CardName {
+    DanDan,
+}
