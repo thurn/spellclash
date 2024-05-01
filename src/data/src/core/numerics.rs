@@ -154,32 +154,3 @@ pub struct Toughness(pub u64);
     Deserialize,
 )]
 pub struct Damage(pub u64);
-
-/// Monotonically increasing counter representing when an object arrived in a
-/// zone.
-#[derive(
-    Debug,
-    Display,
-    Copy,
-    Clone,
-    PartialEq,
-    Eq,
-    Ord,
-    PartialOrd,
-    Hash,
-    Default,
-    From,
-    Add,
-    Sub,
-    Mul,
-    Div,
-    Sum,
-    AddAssign,
-    SubAssign,
-    MulAssign,
-    DivAssign,
-    Into,
-    Serialize,
-    Deserialize,
-)]
-pub struct Timestamp(pub u64);

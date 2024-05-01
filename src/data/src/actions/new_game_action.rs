@@ -13,9 +13,31 @@
 // limitations under the License.
 
 use crate::actions::user_action::UserAction;
+use crate::core::primitives::{GameId, UserId};
+use crate::decks::deck_name::DeckName;
 
+/// Debug options for a new game
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub struct NewGameAction {}
+pub struct NewGameDebugOptions {
+    /// Set the created game to have this ID
+    pub override_game_id: Option<GameId>,
+}
+
+/// Action to create a new game
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub struct NewGameAction {
+    /// Deck to use for this game
+    pub deck: DeckName,
+
+    /// Deck for opponent to use
+    pub opponent_deck: DeckName,
+
+    /// Optionally, a [UserId] for this player
+    pub opponent_id: Option<UserId>,
+
+    /// Debug options
+    pub debug_options: NewGameDebugOptions,
+}
 
 impl From<NewGameAction> for UserAction {
     fn from(value: NewGameAction) -> Self {

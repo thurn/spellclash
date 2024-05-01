@@ -32,4 +32,6 @@ impl EffectList {
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R6091>
 #[derive(Clone, Debug)]
-pub enum Effect {}
+pub enum Effect {
+    DealOpeningHands,
+}

@@ -18,14 +18,14 @@ use display::commands::command::Command;
 /// A response to a user request.
 #[derive(Debug, Clone)]
 pub struct GameResponse {
-    _context: ClientData,
-    commands: Vec<Command>,
-    opponent_response: Option<(UserId, Vec<Command>)>,
+    pub client_data: ClientData,
+    pub commands: Vec<Command>,
+    pub opponent_responses: Vec<(UserId, Vec<Command>)>,
 }
 
 impl GameResponse {
-    pub fn new(_context: ClientData) -> Self {
-        Self { _context, commands: vec![], opponent_response: None }
+    pub fn new(client_data: ClientData) -> Self {
+        Self { client_data, commands: vec![], opponent_responses: vec![] }
     }
 
     pub fn command(mut self, command: impl Into<Command>) -> Self {
@@ -46,15 +46,26 @@ impl GameResponse {
         self
     }
 
-    pub fn opponent_response(mut self, opponent_id: UserId, commands: Vec<Command>) -> Self {
-        self.opponent_response = Some((opponent_id, commands));
+    pub fn opponent_response(mut self, commands: Vec<Command>) -> Self {
+        for opponent_id in &self.client_data.opponent_ids {
+            self.opponent_responses.push((*opponent_id, commands.clone()));
+        }
         self
     }
 }
 
 /// Standard parameters for a client response
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct ClientData {
     pub user_id: UserId,
     pub game_id: Option<GameId>,
+
+    /// Other user who are opponents in this game.
+    pub opponent_ids: Vec<UserId>,
+}
+
+impl ClientData {
+    pub fn for_user(user_id: UserId) -> Self {
+        Self { user_id, game_id: None, opponent_ids: vec![] }
+    }
 }

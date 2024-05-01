@@ -14,9 +14,10 @@
 
 use color_eyre::eyre::ContextCompat;
 use color_eyre::Result;
-use data::core::primitives::GameId;
+use data::core::primitives::{GameId, UserId};
 use data::game_states::animation_tracker::{AnimationState, AnimationTracker};
 use data::game_states::game_state::GameState;
+use data::users::user_state::UserState;
 use database::database::Database;
 use display::commands::command::Command;
 use display::commands::scene_name::SceneName;
@@ -27,8 +28,13 @@ pub fn load_scene(name: SceneName) -> Command {
 }
 
 /// Command to load a named scene, even if it is currently active
-pub fn _force_load_scene(name: SceneName) -> Command {
+pub fn force_load_scene(name: SceneName) -> Command {
     Command::LoadScene { name, additive: false, load_if_current: true }
+}
+
+/// Looks up a user by ID in the database.
+pub async fn fetch_user(database: &impl Database, user_id: UserId) -> Result<UserState> {
+    database.fetch_user(user_id).await?.with_context(|| format!("User not found {user_id:?}"))
 }
 
 /// Looks up a game by ID in the database.

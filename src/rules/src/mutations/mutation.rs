@@ -12,10 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod server;
-pub mod server_data;
+use data::effects::effect::Effect;
+use data::game_states::game_state::GameState;
 
-mod game_action_server;
-mod main_menu_server;
-mod new_game;
-mod requests;
+pub fn apply_effect(_game: &mut GameState, _effect: Effect) {}

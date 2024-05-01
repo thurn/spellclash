@@ -14,4 +14,4 @@
 
 pub mod game_action;
 pub mod new_game_action;
-mod user_action;
+pub mod user_action;

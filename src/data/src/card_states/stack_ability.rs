@@ -16,9 +16,8 @@ use serde::{Deserialize, Serialize};
 use slotmap::new_key_type;
 
 use crate::card_states::zone_object::ZoneObjectTrait;
-use crate::core::numerics::Timestamp;
 use crate::core::primitives::{
-    CardId, HasCardId, HasController, HasObjectId, HasOwner, HasTimestamp, ObjectId, PlayerName,
+    CardId, HasCardId, HasController, HasObjectId, HasOwner, ObjectId, PlayerName,
 };
 
 new_key_type! {
@@ -41,9 +40,6 @@ pub struct StackAbility {
 
     /// The player who can currently make decisions about this ability.
     pub controller: PlayerName,
-
-    /// Timestamp at which this object arrived on the stack
-    pub timestamp: Timestamp,
 
     /// Targets for this ability, selected when it is placed on the stack.
     pub targets: Vec<ObjectId>,
@@ -70,12 +66,6 @@ impl HasOwner for StackAbility {
 impl HasController for StackAbility {
     fn controller(&self) -> PlayerName {
         self.controller
-    }
-}
-
-impl HasTimestamp for StackAbility {
-    fn timestamp(&self) -> Timestamp {
-        self.timestamp
     }
 }
 

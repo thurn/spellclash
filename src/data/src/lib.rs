@@ -17,6 +17,7 @@ pub mod card_definitions;
 pub mod card_states;
 pub mod core;
 pub mod costs;
+pub mod decks;
 pub mod delegates;
 pub mod effects;
 pub mod game_states;

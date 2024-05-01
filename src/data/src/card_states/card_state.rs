@@ -14,17 +14,16 @@
 
 use enumset::EnumSet;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
+use crate::card_definitions::card_name::CardName;
 use crate::card_states::counters::Counters;
 use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::card_states::zone_object::ZoneObjectTrait;
 #[allow(unused)] // Used in docs
 use crate::card_states::zones::Zones;
-use crate::core::numerics::{Damage, Timestamp};
+use crate::core::numerics::Damage;
 use crate::core::primitives::{
-    CardId, HasCardId, HasController, HasObjectId, HasOwner, HasTimestamp, ObjectId, PlayerName,
-    Zone,
+    CardId, HasCardId, HasController, HasObjectId, HasOwner, ObjectId, PlayerName, Zone,
 };
 use crate::printed_cards::printed_card::PrintedCard;
 
@@ -44,12 +43,9 @@ pub struct CardState {
     /// end.
     pub object_id: ObjectId,
 
-    /// ID of the printed card for this card, used to populate the result of the
-    /// [Self::printed] method after deserialization.
-    ///
-    /// Note that this is actually the ID of 'Face A' of the card in the MTG
-    /// JSON data. Tokens *do* have an associated printed card as well.
-    pub printed_card_id: Uuid,
+    /// Name of the printed card for this card, used to populate the result of
+    /// the [Self::printed] method after deserialization.
+    pub card_name: CardName,
 
     /// The player who this card belongs to, who starts the game with this card
     /// or who creates this token.
@@ -67,8 +63,7 @@ pub struct CardState {
 
     /// Current game zone location for this card.
     ///
-    /// Please update [Self::timestamp] and [Self::object_id] whenever this
-    /// changes.
+    /// Please update [Self::object_id] whenever this changes.
     pub zone: Zone,
 
     /// Whether this card is currently face down or has one of its faces up.
@@ -99,9 +94,6 @@ pub struct CardState {
     ///
     /// A card that is not on the battlefield always has 0 damage.
     pub damage: Damage,
-
-    /// Timestamp at which this card arrived in its current zone.
-    pub timestamp: Timestamp,
 
     /// Targets for this card, selected when it is placed on the stack.
     ///
@@ -152,12 +144,6 @@ impl HasOwner for CardState {
 impl HasController for CardState {
     fn controller(&self) -> PlayerName {
         self.controller
-    }
-}
-
-impl HasTimestamp for CardState {
-    fn timestamp(&self) -> Timestamp {
-        self.timestamp
     }
 }
 

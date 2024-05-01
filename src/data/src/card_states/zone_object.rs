@@ -14,9 +14,8 @@
 
 use crate::card_states::card_state::CardState;
 use crate::card_states::stack_ability::{StackAbility, StackAbilityId};
-use crate::core::numerics::Timestamp;
 use crate::core::primitives::{
-    CardId, HasCardId, HasController, HasObjectId, HasOwner, HasTimestamp, ObjectId, PlayerName,
+    CardId, HasCardId, HasController, HasObjectId, HasOwner, ObjectId, PlayerName,
 };
 
 /// Identifies an ability on the stack, card, copy of a card on the stack,
@@ -33,9 +32,7 @@ pub enum ZoneObject<'a> {
 }
 
 /// Properties exposed by [ZoneObject].
-pub trait ZoneObjectTrait:
-    HasObjectId + HasOwner + HasController + HasCardId + HasTimestamp
-{
+pub trait ZoneObjectTrait: HasObjectId + HasOwner + HasController + HasCardId {
     /// Current targets for this stack object, if any
     fn targets(&self) -> &[ObjectId];
 }
@@ -72,15 +69,6 @@ impl<'a> HasController for ZoneObject<'a> {
         match self {
             ZoneObject::Card(card) => card.controller(),
             ZoneObject::Ability(ability) => ability.controller(),
-        }
-    }
-}
-
-impl<'a> HasTimestamp for ZoneObject<'a> {
-    fn timestamp(&self) -> Timestamp {
-        match self {
-            ZoneObject::Card(card) => card.timestamp(),
-            ZoneObject::Ability(ability) => ability.timestamp(),
         }
     }
 }

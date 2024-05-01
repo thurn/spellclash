@@ -12,10 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod server;
-pub mod server_data;
-
-mod game_action_server;
-mod main_menu_server;
-mod new_game;
-mod requests;
+pub mod deck;
+pub mod deck_name;

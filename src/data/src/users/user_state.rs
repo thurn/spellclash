@@ -15,7 +15,7 @@
 use serde::Deserialize;
 use slotmap::__impl::Serialize;
 
-use crate::core::primitives::{GameId, PlayerName, UserId};
+use crate::core::primitives::{GameId, UserId};
 
 /// Holds state for a user.
 ///
@@ -35,6 +35,6 @@ pub enum UserActivity {
     /// No current activity.
     Menu,
 
-    /// Playing in the identified game as the [PlayerName] player.
-    Playing(GameId, PlayerName),
+    /// Playing in the identified game
+    Playing(GameId),
 }

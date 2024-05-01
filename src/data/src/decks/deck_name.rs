@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod server;
-pub mod server_data;
+use serde::{Deserialize, Serialize};
+use uuid::{uuid, Uuid};
 
-mod game_action_server;
-mod main_menu_server;
-mod new_game;
-mod requests;
+/// Unique identifier for a deck.
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct DeckName(pub Uuid);
+
+pub const ALL_GRIZZLY_BEARS: DeckName = DeckName(uuid!("9eefebd4-25c0-4f46-91ab-6b3efff302e4"));

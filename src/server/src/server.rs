@@ -13,13 +13,20 @@
 // limitations under the License.
 
 use color_eyre::Result;
+use data::actions::user_action::UserAction;
 use data::core::primitives::UserId;
 use data::users::user_state::{UserActivity, UserState};
 use database::database::Database;
-use tracing::info;
+use tracing::{info, info_span};
 
-use crate::server_data::GameResponse;
-use crate::{game_action_server, main_menu_server};
+use crate::server_data::{ClientData, GameResponse};
+use crate::{game_action_server, main_menu_server, new_game};
+
+/// Synchronous entrypoint (via tokio::main) equivalent of [handle_connect]
+#[tokio::main]
+pub async fn connect_sync(database: &impl Database, user_id: UserId) -> Result<GameResponse> {
+    handle_connect(database, user_id).await
+}
 
 /// Connects to the current game scene.
 ///
@@ -29,8 +36,8 @@ pub async fn handle_connect(database: &impl Database, user_id: UserId) -> Result
     let user = fetch_or_create_user(database, user_id).await?;
     let result = match user.activity {
         UserActivity::Menu => main_menu_server::connect(database, &user).await,
-        UserActivity::Playing(game_id, player_name) => {
-            game_action_server::connect(database, &user, game_id, player_name).await
+        UserActivity::Playing(game_id) => {
+            game_action_server::connect(database, &user, game_id).await
         }
     }?;
 
@@ -46,4 +53,22 @@ async fn fetch_or_create_user(database: &impl Database, user_id: UserId) -> Resu
         info!(?user_id, "Created new user");
         user
     })
+}
+
+/// Handles a [UserAction] from the client.
+///
+/// The most recently-returned [ClientData] (from a call to this function or
+/// [handle_connect] must be provided.
+pub async fn handle_action(
+    database: &impl Database,
+    data: ClientData,
+    action: UserAction,
+) -> Result<GameResponse> {
+    let _span = info_span!("handle_action", ?data.user_id, ?data.game_id);
+    match action {
+        UserAction::NewGameAction(action) => new_game::create(database, data, action).await,
+        UserAction::GameAction(action) => {
+            game_action_server::handle_game_action(database, data, action).await
+        }
+    }
 }

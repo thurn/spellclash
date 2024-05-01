@@ -25,6 +25,6 @@ use crate::server_data::{ClientData, GameResponse};
 pub async fn connect(_: &impl Database, user: &UserState) -> Result<GameResponse> {
     info!(?user.id, "Connected");
     let commands = vec![requests::load_scene(SceneName::MainMenu)];
-    let client_data = ClientData { user_id: user.id, game_id: None };
+    let client_data = ClientData::for_user(user.id);
     Ok(GameResponse::new(client_data).commands(commands))
 }

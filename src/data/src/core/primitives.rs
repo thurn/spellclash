@@ -19,8 +19,6 @@ use serde::{Deserialize, Serialize};
 use slotmap::new_key_type;
 use uuid::Uuid;
 
-use crate::core::numerics::Timestamp;
-
 /// The five canonical colors of magic.
 #[derive(Debug, Hash, Serialize, Deserialize, EnumSetType, Sequence)]
 pub enum Color {
@@ -129,7 +127,9 @@ impl HasCardId for CardId {
 /// but are treated as such here.
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R1091>
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Copy, Default, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize,
+)]
 pub struct ObjectId(pub u64);
 
 pub const PLAYER_ONE_ID: ObjectId = ObjectId(1);
@@ -169,6 +169,8 @@ pub struct AbilityNumber(pub usize);
 /// See <https://yawgatog.com/resources/magic-rules/#R4001>
 #[derive(Debug, Serialize, Deserialize, Hash, EnumSetType)]
 pub enum Zone {
+    /// Note that the 'deck' is not a zone in the CR
+    Deck,
     Hand,
     Graveyard,
     Library,
@@ -185,6 +187,7 @@ impl Zone {
     /// See <https://yawgatog.com/resources/magic-rules/#R4002>
     pub fn is_public(&self) -> bool {
         match self {
+            Zone::Deck => false,
             Zone::Hand => false,
             Zone::Graveyard => true,
             Zone::Library => false,
@@ -194,17 +197,6 @@ impl Zone {
             Zone::Command => true,
             Zone::OutsideTheGame => false,
         }
-    }
-}
-
-/// Represents a struct which is 1:1 associated with a [Timestamp].
-pub trait HasTimestamp {
-    fn timestamp(&self) -> Timestamp;
-}
-
-impl HasTimestamp for Timestamp {
-    fn timestamp(&self) -> Timestamp {
-        *self
     }
 }
 

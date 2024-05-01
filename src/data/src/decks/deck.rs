@@ -12,10 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod server;
-pub mod server_data;
+use std::collections::HashMap;
 
-mod game_action_server;
-mod main_menu_server;
-mod new_game;
-mod requests;
+use enumset::EnumSet;
+use serde::{Deserialize, Serialize};
+use serde_with::serde_as;
+
+use crate::card_definitions::card_name::CardName;
+use crate::core::primitives::Color;
+
+/// Data for a deck
+#[serde_as]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Deck {
+    /// Which colors are associated with this deck?
+    pub colors: EnumSet<Color>,
+
+    /// Quantities of cards in this deck
+    #[serde_as(as = "Vec<(_, _)>")]
+    pub cards: HashMap<CardName, u64>,
+}

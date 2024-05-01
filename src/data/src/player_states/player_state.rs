@@ -15,7 +15,9 @@
 use serde::{Deserialize, Serialize};
 
 use crate::card_states::counters::Counters;
-use crate::core::primitives::{CardId, HasController, HasObjectId, HasOwner, ObjectId, PlayerName};
+use crate::core::primitives::{
+    CardId, HasController, HasObjectId, HasOwner, ObjectId, PlayerName, UserId,
+};
 use crate::player_states::mana_pool::ManaPool;
 use crate::player_states::prompt_stack::PromptStack;
 
@@ -26,18 +28,18 @@ pub struct Players {
     player_2: PlayerState,
 }
 
-impl Default for Players {
-    fn default() -> Self {
+impl Players {
+    pub fn new(p1: Option<UserId>, p2: Option<UserId>) -> Self {
         Self {
-            player_1: PlayerState::new(PlayerName::One),
-            player_2: PlayerState::new(PlayerName::Two),
+            player_1: PlayerState::new(PlayerName::One, p1),
+            player_2: PlayerState::new(PlayerName::Two, p2),
         }
     }
 }
 
 impl Players {
     /// Looks up a player by name
-    pub fn player(&self, name: PlayerName) -> &PlayerState {
+    pub fn get(&self, name: PlayerName) -> &PlayerState {
         match name {
             PlayerName::One => &self.player_1,
             PlayerName::Two => &self.player_2,
@@ -45,7 +47,7 @@ impl Players {
     }
 
     /// Mutable reference to a player by name
-    pub fn player_mut(&mut self, name: PlayerName) -> &mut PlayerState {
+    pub fn get_mut(&mut self, name: PlayerName) -> &mut PlayerState {
         match name {
             PlayerName::One => &mut self.player_1,
             PlayerName::Two => &mut self.player_2,
@@ -58,6 +60,9 @@ impl Players {
 pub struct PlayerState {
     /// Name of this player
     pub name: PlayerName,
+
+    /// Optionally, the ID of a user who is this player
+    pub user_id: Option<UserId>,
 
     /// Object ID for this player
     pub object_id: ObjectId,
@@ -84,9 +89,10 @@ pub struct PlayerState {
 }
 
 impl PlayerState {
-    pub fn new(name: PlayerName) -> Self {
+    pub fn new(name: PlayerName, user_id: Option<UserId>) -> Self {
         Self {
             name,
+            user_id,
             object_id: name.object_id(),
             controller: name,
             counters: Counters::default(),
