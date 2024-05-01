@@ -181,8 +181,6 @@ pub struct AbilityNumber(pub usize);
 /// See <https://yawgatog.com/resources/magic-rules/#R4001>
 #[derive(Debug, Serialize, Deserialize, Hash, EnumSetType)]
 pub enum Zone {
-    /// Note that the 'deck' is not a zone in the CR
-    Deck,
     Hand,
     Graveyard,
     Library,
@@ -199,7 +197,6 @@ impl Zone {
     /// See <https://yawgatog.com/resources/magic-rules/#R4002>
     pub fn is_public(&self) -> bool {
         match self {
-            Zone::Deck => false,
             Zone::Hand => false,
             Zone::Graveyard => true,
             Zone::Library => false,

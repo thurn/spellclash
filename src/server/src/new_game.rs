@@ -136,7 +136,7 @@ fn create_game(
 fn create_cards_in_deck(zones: &mut Zones, deck: Deck, owner: PlayerName) {
     for (&name, &quantity) in &deck.cards {
         for _ in 0..quantity {
-            zones.create_hidden_card(name, CardKind::Normal, owner, Zone::Deck);
+            zones.create_hidden_card(name, CardKind::Normal, owner, Zone::Library);
         }
     }
 }

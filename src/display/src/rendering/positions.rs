@@ -13,19 +13,34 @@
 // limitations under the License.
 
 use data::card_states::card_state::CardState;
-use data::core::primitives::PlayerName;
+use data::core::primitives::{CardType, PlayerName, Zone};
 use data::game_states::game_state::GameState;
 
-use crate::core::object_position::{ObjectPosition, Position};
+use crate::core::object_position::{BattlefieldPosition, ObjectPosition, Position};
 use crate::core::response_builder::ResponseBuilder;
 
 /// Calculates the game position in which the provided card should be displayed.
-pub fn calculate(
-    _builder: &ResponseBuilder,
-    _game: &GameState,
-    _card: &CardState,
-) -> ObjectPosition {
-    todo!("")
+pub fn calculate(builder: &ResponseBuilder, _game: &GameState, card: &CardState) -> ObjectPosition {
+    let owner = builder.to_display_player(card.owner);
+    let position = match card.zone {
+        Zone::Hand => Position::Hand(owner),
+        Zone::Graveyard => Position::DiscardPile(owner),
+        Zone::Library => Position::Deck(owner),
+        Zone::Battlefield => Position::Battlefield(
+            builder.to_display_player(card.controller),
+            if card.printed().face.card_types.contains(CardType::Land) {
+                BattlefieldPosition::Mana
+            } else {
+                BattlefieldPosition::Permanents
+            },
+        ),
+        Zone::Stack => Position::Stack,
+        Zone::Exiled => Position::Exile(owner),
+        Zone::Command => Position::CommandZone(owner),
+        Zone::OutsideTheGame => Position::Offscreen,
+    };
+
+    for_card(card, position)
 }
 
 pub fn for_card(card: &CardState, position: Position) -> ObjectPosition {

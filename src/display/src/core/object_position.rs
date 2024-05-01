@@ -37,8 +37,7 @@ impl Default for ObjectPosition {
 #[derive(Clone, Debug, Copy, PartialEq, Eq)]
 pub enum BattlefieldPosition {
     Mana,
-    NonCreatures,
-    Creatures,
+    Permanents,
 }
 
 /// Possible types of display positions
@@ -55,6 +54,9 @@ pub enum Position {
     /// being played.
     Played,
 
+    /// Object is on the stack
+    Stack,
+
     /// Object is in this player's hand
     Hand(DisplayPlayer),
 
@@ -63,6 +65,12 @@ pub enum Position {
 
     /// Object is in this player's discard pile
     DiscardPile(DisplayPlayer),
+
+    /// Object is in this player's exile zone
+    Exile(DisplayPlayer),
+
+    /// Object is in this player's command zone
+    CommandZone(DisplayPlayer),
 
     /// Object is controlled by this player in a given battlefield position
     Battlefield(DisplayPlayer, BattlefieldPosition),
