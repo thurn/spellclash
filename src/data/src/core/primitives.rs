@@ -210,3 +210,10 @@ impl HasTimestamp for Timestamp {
 /// Unique identifier for a game
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct GameId(pub Uuid);
+
+/// Unique identifier for a user
+///
+/// A 'user' is an operator of this software outside of the context of any game.
+/// A 'player' is a participate within a game who may or may not be a user.
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct UserId(pub Uuid);

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::actions::game_action::GameAction;
-use data::game_states::game_state::GameState;
-
-pub fn handle_game_action(_state: &mut GameState, _action: GameAction) {}
+pub mod game_action;
+pub mod interface_action;
+pub mod new_game_action;

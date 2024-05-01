@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::core::widget_id::WidgetId;
+use crate::actions::interface_action::InterfaceAction;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum GameAction {}
@@ -21,11 +21,4 @@ impl From<GameAction> for InterfaceAction {
     fn from(value: GameAction) -> Self {
         InterfaceAction::GameAction(value)
     }
-}
-
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub enum InterfaceAction {
-    GameAction(GameAction),
-    SetHover(Option<WidgetId>),
-    SetMouseDown(Option<WidgetId>),
 }

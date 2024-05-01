@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crossterm::event::{Event, KeyCode, KeyEventKind, MouseButton, MouseEventKind};
-use data::core::actions::InterfaceAction;
+use data::actions::interface_action::InterfaceAction;
 use data::core::widget_id::WidgetId;
 use ratatui::layout::Position;
 use ratatui::prelude::*;

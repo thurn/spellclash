@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::actions::InterfaceAction;
+use data::actions::interface_action::InterfaceAction;
 use data::core::colors;
 use data::core::widget_id::WidgetId;
 use ratatui::prelude::*;

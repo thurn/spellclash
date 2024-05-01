@@ -12,7 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::actions::game_action::GameAction;
-use data::game_states::game_state::GameState;
+use crate::actions::interface_action::InterfaceAction;
 
-pub fn handle_game_action(_state: &mut GameState, _action: GameAction) {}
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub struct NewGameAction {}
+
+impl From<NewGameAction> for InterfaceAction {
+    fn from(value: NewGameAction) -> Self {
+        InterfaceAction::NewGameAction(value)
+    }
+}

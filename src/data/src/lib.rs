@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+pub mod actions;
 pub mod card_definitions;
 pub mod card_states;
 pub mod core;
@@ -22,3 +23,4 @@ pub mod game_states;
 pub mod player_states;
 pub mod printed_cards;
 pub mod state_machines;
+pub mod users;

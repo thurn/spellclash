@@ -15,8 +15,9 @@
 use async_trait::async_trait;
 use color_eyre::eyre::Context;
 use color_eyre::Result;
-use data::core::primitives::GameId;
+use data::core::primitives::{GameId, UserId};
 use data::game_states::game_state::GameState;
+use data::users::user_state::UserState;
 use serde_json::{de, ser};
 use sled::{Db, Tree};
 
@@ -33,6 +34,10 @@ impl SledDatabase {
 
     fn games(&self) -> Result<Tree> {
         self.db.open_tree("games").with_context(|| "Error opening the 'games' tree")
+    }
+
+    fn users(&self) -> Result<Tree> {
+        self.db.open_tree("users").with_context(|| "Error opening the 'users' tree")
     }
 }
 
@@ -57,8 +62,32 @@ impl Database for SledDatabase {
         self.db.flush()?;
         Ok(())
     }
+
+    async fn fetch_user(&self, id: UserId) -> Result<Option<UserState>> {
+        self.users()?
+            .get(user_id_key(id))
+            .with_context(|| format!("Error fetching user {id:?}"))?
+            .map(|slice| {
+                de::from_slice::<UserState>(&slice)
+                    .with_context(|| format!("Error deserializing user {id:?}"))
+            })
+            .transpose()
+    }
+
+    async fn write_user(&self, user: &UserState) -> Result<()> {
+        self.users()?.insert(
+            user_id_key(user.id),
+            ser::to_vec(user).with_context(|| format!("Error serializing user {:?}", user.id))?,
+        )?;
+        self.db.flush()?;
+        Ok(())
+    }
 }
 
 fn game_id_key(game_id: GameId) -> [u8; 16] {
     game_id.0.as_u128().to_be_bytes()
+}
+
+fn user_id_key(user_id: UserId) -> [u8; 16] {
+    user_id.0.as_u128().to_be_bytes()
 }

@@ -12,7 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::actions::game_action::GameAction;
-use data::game_states::game_state::GameState;
+use crate::actions::game_action::GameAction;
+use crate::actions::new_game_action::NewGameAction;
+use crate::core::widget_id::WidgetId;
 
-pub fn handle_game_action(_state: &mut GameState, _action: GameAction) {}
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub enum InterfaceAction {
+    NewGameAction(NewGameAction),
+    GameAction(GameAction),
+    SetHover(Option<WidgetId>),
+    SetMouseDown(Option<WidgetId>),
+}

@@ -16,7 +16,7 @@ use std::time::Duration;
 
 use color_eyre::Result;
 use crossterm::event;
-use data::core::actions::InterfaceAction;
+use data::actions::interface_action::InterfaceAction;
 use data::game_states::game_state::GameState;
 use display::core::layout;
 use display::core::render_context::RenderContext;
@@ -49,6 +49,9 @@ pub fn run(tui: &mut Tui) -> Result<()> {
                 InterfaceAction::GameAction(game_action) => {
                     info!(?game_action, "Handling GameAction");
                     handle_action::handle_game_action(&mut data, game_action);
+                }
+                InterfaceAction::NewGameAction(new_game) => {
+                    info!(?new_game, "Handling NewGameAction");
                 }
                 InterfaceAction::SetHover(id) => {
                     context.set_current_hover(id);
