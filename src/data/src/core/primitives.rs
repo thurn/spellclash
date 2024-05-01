@@ -16,6 +16,7 @@ use enum_map::Enum;
 use enumset::EnumSetType;
 use serde::{Deserialize, Serialize};
 use slotmap::new_key_type;
+use uuid::Uuid;
 
 use crate::core::numerics::Timestamp;
 
@@ -205,3 +206,7 @@ impl HasTimestamp for Timestamp {
         *self
     }
 }
+
+/// Unique identifier for a game
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct GameId(pub Uuid);

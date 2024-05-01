@@ -14,11 +14,10 @@
 
 use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 use crate::card_states::zones::Zones;
 use crate::core::numerics::TurnNumber;
-use crate::core::primitives::PlayerName;
+use crate::core::primitives::{GameId, PlayerName};
 use crate::delegates::game_delegates::GameDelegates;
 use crate::game_states::animation_tracker::{
     AnimationState, AnimationStep, AnimationTracker, GameAnimation,
@@ -35,7 +34,7 @@ use crate::state_machines::state_machine_data::StateMachines;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GameState {
     /// Unique ID for this game
-    pub id: Uuid,
+    pub id: GameId,
 
     /// Current game phase step.
     ///
