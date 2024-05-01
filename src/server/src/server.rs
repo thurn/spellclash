@@ -44,17 +44,6 @@ pub async fn connect(database: &impl Database, user_id: UserId) -> Result<GameRe
     Ok(result)
 }
 
-async fn fetch_or_create_user(database: &impl Database, user_id: UserId) -> Result<UserState> {
-    Ok(if let Some(player) = database.fetch_user(user_id).await? {
-        player
-    } else {
-        let user = UserState { id: user_id, activity: UserActivity::Menu };
-        database.write_user(&user).await?;
-        info!(?user_id, "Created new user");
-        user
-    })
-}
-
 /// Synchronous entrypoint equivalent (via tokio::main) of [handle_action]
 #[tokio::main]
 pub async fn handle_action_sync(
@@ -81,4 +70,15 @@ pub async fn handle_action(
             game_action_server::handle_game_action(database, data, action).await
         }
     }
+}
+
+async fn fetch_or_create_user(database: &impl Database, user_id: UserId) -> Result<UserState> {
+    Ok(if let Some(player) = database.fetch_user(user_id).await? {
+        player
+    } else {
+        let user = UserState { id: user_id, activity: UserActivity::Menu };
+        database.write_user(&user).await?;
+        info!(?user_id, "Created new user");
+        user
+    })
 }

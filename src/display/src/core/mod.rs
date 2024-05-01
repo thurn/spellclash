@@ -12,6 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod commands;
-pub mod core;
-pub mod rendering;
+pub mod card_view;
+pub mod game_view;
+pub mod object_position;

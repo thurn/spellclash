@@ -47,6 +47,34 @@ pub type TurnNumber = u64;
 )]
 pub struct ManaValue(pub u64);
 
+/// A life total of a player
+#[derive(
+    Debug,
+    Display,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    Ord,
+    PartialOrd,
+    Hash,
+    Default,
+    From,
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Sum,
+    AddAssign,
+    SubAssign,
+    MulAssign,
+    DivAssign,
+    Into,
+    Serialize,
+    Deserialize,
+)]
+pub struct LifeValue(pub u64);
+
 #[derive(
     Debug,
     Display,

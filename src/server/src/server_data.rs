@@ -53,7 +53,7 @@ impl GameResponse {
     }
 }
 
-/// Standard parameters for a client response
+/// Standard parameters for a client request & response
 #[derive(Debug, Clone)]
 pub struct ClientData {
     pub user_id: UserId,
