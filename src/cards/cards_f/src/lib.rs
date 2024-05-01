@@ -12,9 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_definitions::card_definition::CardDefinition;
-use data::card_definitions::card_name;
-
-pub fn dandan() -> CardDefinition {
-    CardDefinition::new(card_name::DANDAN)
-}
+pub mod cards_fo;

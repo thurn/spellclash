@@ -15,6 +15,6 @@
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 
-pub fn dandan() -> CardDefinition {
-    CardDefinition::new(card_name::DANDAN)
+pub fn grizzly_bears() -> CardDefinition {
+    CardDefinition::new(card_name::GRIZZLY_BEARS)
 }

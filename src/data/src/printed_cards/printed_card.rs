@@ -91,8 +91,9 @@ pub struct PrintedCardFace {
     pub toughness: Option<PrintedToughness>,
     /// Starting loyalty value for a Planeswalker card
     pub loyalty: Option<PrintedLoyalty>,
-    /// Card layout, describing its printed structure. For tokens this will be
-    /// "Token".
+    /// Card layout, describing its printed structure.
+    ///
+    /// See <https://scryfall.com/docs/api/layouts> for descriptions & examples of layouts.
     pub layout: Layout,
     /// A list of attraction lights found on a card, available only to cards
     /// printed in certain Un-sets.

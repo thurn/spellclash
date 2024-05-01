@@ -43,6 +43,8 @@ name = "all_cards"
 version = "0.0.0"
 dependencies = [
  "cards_d",
+ "cards_f",
+ "cards_g",
  "data",
  "regex",
  "walkdir",
@@ -244,6 +246,22 @@ dependencies = [
 
 [[package]]
 name = "cards_d"
+version = "0.0.0"
+dependencies = [
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_f"
+version = "0.0.0"
+dependencies = [
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_g"
 version = "0.0.0"
 dependencies = [
  "data",

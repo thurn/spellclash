@@ -10,6 +10,8 @@ bench = false
 
 [dependencies]
 cards_d = { path = "../cards_d", version = "0.0.0" }
+cards_f = { path = "../cards_f", version = "0.0.0" }
+cards_g = { path = "../cards_g", version = "0.0.0" }
 data = { path = "../../data", version = "0.0.0" }
 
 [build-dependencies]
