@@ -13,4 +13,3 @@
 // limitations under the License.
 
 pub mod handle_action;
-pub mod new_game;

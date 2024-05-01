@@ -13,11 +13,12 @@
 // limitations under the License.
 
 use crossterm::event::{Event, KeyCode, KeyEventKind, MouseButton, MouseEventKind};
-use data::actions::interface_action::InterfaceAction;
-use data::core::widget_id::WidgetId;
 use ratatui::layout::Position;
 use ratatui::prelude::*;
 use tracing::info;
+
+use crate::core::interface_action::InterfaceAction;
+use crate::core::widget_id::WidgetId;
 
 #[derive(Default)]
 pub struct RenderContext {

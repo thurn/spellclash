@@ -16,21 +16,23 @@ use std::time::Duration;
 
 use color_eyre::Result;
 use crossterm::event;
-use data::actions::interface_action::InterfaceAction;
+use data::actions::new_game_action::NewGameAction;
 use data::game_states::game_state::GameState;
-use display::core::layout;
-use display::core::render_context::RenderContext;
 use ratatui::layout::Size;
 use ratatui::prelude::*;
 use ratatui::symbols::border;
 use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
-use rules::core::{handle_action, new_game};
+use rules::actions::new_game;
+use rules::core::handle_action;
 use tracing::info;
 
+use crate::core::interface_action::InterfaceAction;
+use crate::core::layout;
+use crate::core::render_context::RenderContext;
 use crate::tui::Tui;
 
 pub fn run(tui: &mut Tui) -> Result<()> {
-    let mut data = new_game::create();
+    let mut data = new_game::create(NewGameAction {});
     let mut context = RenderContext::default();
     while !context.should_exit() {
         context.set_last_event(if event::poll(Duration::from_millis(16))? {

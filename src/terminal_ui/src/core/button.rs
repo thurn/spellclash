@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::actions::interface_action::InterfaceAction;
-use data::core::colors;
-use data::core::widget_id::WidgetId;
 use ratatui::prelude::*;
 use ratatui::symbols::border;
 use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
 use typed_builder::TypedBuilder;
 
+use crate::core::colors;
+use crate::core::interface_action::InterfaceAction;
 use crate::core::render_context::RenderContext;
+use crate::core::widget_id::WidgetId;
 
 #[derive(TypedBuilder)]
 #[builder(builder_method(name = new))]

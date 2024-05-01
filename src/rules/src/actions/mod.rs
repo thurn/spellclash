@@ -13,3 +13,4 @@
 // limitations under the License.
 
 pub mod new_game;
+pub mod requests;

@@ -12,4 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod core;
+use crate::actions::game_action::GameAction;
+use crate::actions::new_game_action::NewGameAction;
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub enum UserAction {
+    NewGameAction(NewGameAction),
+    GameAction(GameAction),
+}

@@ -12,5 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod numerics;
-pub mod primitives;
+pub mod app;
+pub mod cli;
+pub mod tui;
+pub mod utils;

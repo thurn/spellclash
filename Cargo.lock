@@ -731,21 +731,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "display"
-version = "0.0.0"
-dependencies = [
- "crossterm",
- "data",
- "enumset",
- "itertools",
- "log",
- "ratatui",
- "rules",
- "tracing",
- "typed-builder",
-]
-
-[[package]]
 name = "dlv-list"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2232,6 +2217,7 @@ name = "rules"
 version = "0.0.0"
 dependencies = [
  "data",
+ "database",
  "enum-iterator",
  "enumset",
  "itertools",
@@ -2498,7 +2484,6 @@ dependencies = [
  "crossterm",
  "data",
  "directories",
- "display",
  "human-panic",
  "lazy_static",
  "libc",
@@ -2511,6 +2496,7 @@ dependencies = [
  "tracing",
  "tracing-error",
  "tracing-subscriber",
+ "typed-builder",
  "vergen",
 ]
 
@@ -2821,18 +2807,18 @@ dependencies = [
 
 [[package]]
 name = "typed-builder"
-version = "0.18.1"
+version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "444d8748011b93cb168770e8092458cb0f8854f931ff82fdf6ddfbd72a9c933e"
+checksum = "77739c880e00693faef3d65ea3aad725f196da38b22fdc7ea6ded6e1ce4d3add"
 dependencies = [
  "typed-builder-macro",
 ]
 
 [[package]]
 name = "typed-builder-macro"
-version = "0.18.1"
+version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "563b3b88238ec95680aef36bdece66896eaa7ce3c0f1b4f39d38fb2435261352"
+checksum = "1f718dfaf347dcb5b983bfc87608144b0bad87970aebcbea5ce44d2a30c08e63"
 dependencies = [
  "proc-macro2",
  "quote",

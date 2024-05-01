@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::actions::interface_action::InterfaceAction;
+use crate::actions::user_action::UserAction;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct NewGameAction {}
 
-impl From<NewGameAction> for InterfaceAction {
+impl From<NewGameAction> for UserAction {
     fn from(value: NewGameAction) -> Self {
-        InterfaceAction::NewGameAction(value)
+        UserAction::NewGameAction(value)
     }
 }

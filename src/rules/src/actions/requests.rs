@@ -12,31 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::env;
+use data::core::primitives::{GameId, UserId};
 
-use all_cards::card_list;
-use clap::Parser;
-use cli::Cli;
-use color_eyre::eyre::Result;
-use tracing::info;
-
-pub mod app;
-pub mod cli;
-pub mod tui;
-pub mod utils;
-
-fn main() -> Result<()> {
-    utils::initialize_logging()?;
-    if env::var("DISABLE_PANIC_HANDLER").is_err() {
-        utils::initialize_panic_handler()?;
-    }
-    Cli::parse();
-    card_list::initialize();
-
-    let mut tui = tui::enter()?;
-    let commit = env!("VERGEN_GIT_SHA");
-    info!(commit, "Starting game");
-    app::run(&mut tui)?;
-    tui::exit()?;
-    Ok(())
+#[derive(Debug, Clone)]
+pub struct RequestData {
+    pub user_id: UserId,
+    pub game_id: Option<GameId>,
 }
+
+pub struct GameResponse;

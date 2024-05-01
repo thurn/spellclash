@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::actions::interface_action::InterfaceAction;
+use crate::actions::user_action::UserAction;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum GameAction {}
 
-impl From<GameAction> for InterfaceAction {
+impl From<GameAction> for UserAction {
     fn from(value: GameAction) -> Self {
-        InterfaceAction::GameAction(value)
+        UserAction::GameAction(value)
     }
 }

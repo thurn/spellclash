@@ -34,7 +34,7 @@ pub type RequirementFn = fn(&GameState, AbilityContext) -> bool;
 ///
 /// Each ability for a card should be defined sequentially in the same order
 /// in which they appear in that card's oracle text, as this will be used to
-/// generate text to display in-game.
+/// generate text to terminal_ui in-game.
 ///
 /// This struct should never be instantiated directly. Always use one of the
 /// builders defined in this file instead.

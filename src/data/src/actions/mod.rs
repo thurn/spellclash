@@ -13,5 +13,5 @@
 // limitations under the License.
 
 pub mod game_action;
-pub mod interface_action;
 pub mod new_game_action;
+mod user_action;

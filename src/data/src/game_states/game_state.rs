@@ -41,7 +41,7 @@ pub struct GameState {
 
     /// Current game phase step.
     ///
-    /// If the game has not yet started, this will be "Upkeep". If the game has
+    /// If the game has not yet started, this will be "Untap". If the game has
     /// ended, this will be the step in which the game ended.
     pub step: GamePhaseStep,
 
@@ -95,8 +95,8 @@ pub struct GameState {
 impl GameState {
     pub fn add_animation(&mut self, update: impl FnOnce() -> GameAnimation) {
         if self.animations.state == AnimationState::Track {
-            // Snapshot current game state, omit things that aren't important for display
-            // logic.
+            // Snapshot current game state, omit things that aren't important for
+            // terminal_ui logic.
             let clone = Self {
                 animations: AnimationTracker::new(AnimationState::Ignore),
                 undo_tracker: Default::default(),
@@ -131,7 +131,7 @@ pub enum GameStatus {
     Playing,
 
     /// Game has ended and the [PlayerName] player has won.
-    GameOver(PlayerName),
+    GameOver { winner: PlayerName },
 }
 
 /// Identifies a turn within the game.
