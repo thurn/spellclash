@@ -33,6 +33,7 @@ use data::player_states::player_state::Players;
 use data::state_machines::state_machine_data::StateMachines;
 use data::users::user_state::UserActivity;
 use database::database::Database;
+use display::commands::display_preferences::DisplayPreferences;
 use display::commands::scene_name::SceneName;
 use enumset::EnumSet;
 use maplit::hashmap;
@@ -68,13 +69,19 @@ pub async fn create(
 
     user.activity = UserActivity::Playing(game.id);
 
+    let opponent_ids = action.opponent_id.map(|o| vec![o]).unwrap_or_default();
+    let opponent_responses = opponent_ids
+        .iter()
+        .map(|&id| (id, vec![requests::force_load_scene(SceneName::Game)]))
+        .collect::<Vec<_>>();
     let result = GameResponse::new(ClientData {
         user_id: user.id,
         game_id: Some(game.id),
-        opponent_ids: action.opponent_id.map(|o| vec![o]).unwrap_or_default(),
+        display_preferences: DisplayPreferences::default(),
+        opponent_ids,
     })
     .command(requests::force_load_scene(SceneName::Game))
-    .opponent_response(vec![requests::force_load_scene(SceneName::Game)]);
+    .opponent_responses(opponent_responses);
 
     database.write_game(&game).await?;
     database.write_user(&user).await?;

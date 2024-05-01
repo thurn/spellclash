@@ -13,4 +13,5 @@
 // limitations under the License.
 
 pub mod command;
+pub mod display_preferences;
 pub mod scene_name;

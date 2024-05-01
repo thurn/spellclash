@@ -14,6 +14,7 @@
 
 use data::core::primitives::{GameId, UserId};
 use display::commands::command::Command;
+use display::commands::display_preferences::DisplayPreferences;
 
 /// A response to a user request.
 #[derive(Debug, Clone)]
@@ -46,10 +47,8 @@ impl GameResponse {
         self
     }
 
-    pub fn opponent_response(mut self, commands: Vec<Command>) -> Self {
-        for opponent_id in &self.client_data.opponent_ids {
-            self.opponent_responses.push((*opponent_id, commands.clone()));
-        }
+    pub fn opponent_responses(mut self, response: Vec<(UserId, Vec<Command>)>) -> Self {
+        self.opponent_responses = response;
         self
     }
 }
@@ -60,12 +59,20 @@ pub struct ClientData {
     pub user_id: UserId,
     pub game_id: Option<GameId>,
 
+    /// Options for how the game state should be visually rendered
+    pub display_preferences: DisplayPreferences,
+
     /// Other user who are opponents in this game.
     pub opponent_ids: Vec<UserId>,
 }
 
 impl ClientData {
     pub fn for_user(user_id: UserId) -> Self {
-        Self { user_id, game_id: None, opponent_ids: vec![] }
+        Self {
+            user_id,
+            game_id: None,
+            display_preferences: DisplayPreferences::default(),
+            opponent_ids: vec![],
+        }
     }
 }

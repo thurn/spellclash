@@ -12,5 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod apply_game_action;
-pub mod requests;
+use data::actions::game_action::GameAction;
+use data::core::primitives::PlayerName;
+use data::game_states::game_state::GameState;
+
+pub fn run(_state: &mut GameState, _player: PlayerName, _action: GameAction) {}

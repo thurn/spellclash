@@ -16,9 +16,25 @@ use data::core::primitives::PlayerName;
 use data::game_states::game_state::GameState;
 
 use crate::commands::command::Command;
+use crate::commands::display_preferences::DisplayPreferences;
 
 /// Returns a series of [Command]s which fully describe the current state of the
 /// provided game
-pub fn connect(_game: &GameState, _player: PlayerName) -> Vec<Command> {
+pub fn connect(
+    _game: &GameState,
+    _player: PlayerName,
+    _preferences: DisplayPreferences,
+) -> Vec<Command> {
+    vec![]
+}
+
+/// Returns a series of commands which contain animations for recent changes to
+/// game states, followed by a snapshot of the current game state as returned by
+/// [connect].
+pub fn render_updates(
+    _game: &GameState,
+    _player_name: PlayerName,
+    _preferences: DisplayPreferences,
+) -> Vec<Command> {
     vec![]
 }

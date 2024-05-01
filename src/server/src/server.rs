@@ -22,17 +22,17 @@ use tracing::{info, info_span};
 use crate::server_data::{ClientData, GameResponse};
 use crate::{game_action_server, main_menu_server, new_game};
 
-/// Synchronous entrypoint (via tokio::main) equivalent of [handle_connect]
+/// Synchronous entrypoint equivalent (via tokio::main) of [connect]
 #[tokio::main]
 pub async fn connect_sync(database: &impl Database, user_id: UserId) -> Result<GameResponse> {
-    handle_connect(database, user_id).await
+    connect(database, user_id).await
 }
 
 /// Connects to the current game scene.
 ///
 /// This returns commands to load & render the current game state. It's expected
 /// that this will be invoked on application start and on scene change.
-pub async fn handle_connect(database: &impl Database, user_id: UserId) -> Result<GameResponse> {
+pub async fn connect(database: &impl Database, user_id: UserId) -> Result<GameResponse> {
     let user = fetch_or_create_user(database, user_id).await?;
     let result = match user.activity {
         UserActivity::Menu => main_menu_server::connect(database, &user).await,
@@ -55,10 +55,20 @@ async fn fetch_or_create_user(database: &impl Database, user_id: UserId) -> Resu
     })
 }
 
+/// Synchronous entrypoint equivalent (via tokio::main) of [handle_action]
+#[tokio::main]
+pub async fn handle_action_sync(
+    database: &impl Database,
+    data: ClientData,
+    action: UserAction,
+) -> Result<GameResponse> {
+    handle_action(database, data, action).await
+}
+
 /// Handles a [UserAction] from the client.
 ///
 /// The most recently-returned [ClientData] (from a call to this function or
-/// [handle_connect] must be provided.
+/// [connect]) must be provided.
 pub async fn handle_action(
     database: &impl Database,
     data: ClientData,
