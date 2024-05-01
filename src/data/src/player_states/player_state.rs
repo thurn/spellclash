@@ -15,6 +15,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::card_states::counters::Counters;
+use crate::core::numerics::LifeValue;
 use crate::core::primitives::{
     CardId, HasController, HasObjectId, HasOwner, ObjectId, PlayerName, UserId,
 };
@@ -29,10 +30,10 @@ pub struct Players {
 }
 
 impl Players {
-    pub fn new(p1: Option<UserId>, p2: Option<UserId>) -> Self {
+    pub fn new(p1: Option<UserId>, p2: Option<UserId>, starting_life: LifeValue) -> Self {
         Self {
-            player_1: PlayerState::new(PlayerName::One, p1),
-            player_2: PlayerState::new(PlayerName::Two, p2),
+            player_1: PlayerState::new(PlayerName::One, p1, starting_life),
+            player_2: PlayerState::new(PlayerName::Two, p2, starting_life),
         }
     }
 }
@@ -67,6 +68,9 @@ pub struct PlayerState {
     /// Object ID for this player
     pub object_id: ObjectId,
 
+    /// Current amount of life for this player
+    pub life: LifeValue,
+
     /// Player currently controlling this player
     pub controller: PlayerName,
 
@@ -89,11 +93,12 @@ pub struct PlayerState {
 }
 
 impl PlayerState {
-    pub fn new(name: PlayerName, user_id: Option<UserId>) -> Self {
+    pub fn new(name: PlayerName, user_id: Option<UserId>, life: LifeValue) -> Self {
         Self {
             name,
             user_id,
             object_id: name.object_id(),
+            life,
             controller: name,
             counters: Counters::default(),
             mana_pool: ManaPool::default(),

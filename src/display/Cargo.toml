@@ -11,5 +11,3 @@ bench = false
 [dependencies]
 data = { path = "../data", version = "0.0.0" }
 rules = { path = "../rules", version = "0.0.0" }
-
-mtgjson = "0.2.0"

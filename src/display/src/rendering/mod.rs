@@ -12,4 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+pub mod animations;
+pub mod card_sync;
+pub mod card_view_context;
+pub mod positions;
 pub mod render;
+pub mod sync;

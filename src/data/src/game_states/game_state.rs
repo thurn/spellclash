@@ -52,6 +52,18 @@ pub struct GameState {
     /// the game has ended, this will be the turn on which the game ended.
     pub current_turn: TurnData,
 
+    /// Player who can currently take a game action.
+    ///
+    /// This is somewhat more expansive than the 'priority' concept in the CR.
+    /// Actions are always handled sequentially, there is no such thing as a
+    /// 'simultaneous' action, hence there is always exactly one player who can
+    /// currently act.
+    ///
+    /// If the game has not yet started, this will be player one. if the game
+    /// has ended, this will be the player who held priority at the end of the
+    /// game.
+    pub priority: PlayerName,
+
     /// Options controlling overall gameplay
     pub configuration: GameConfiguration,
 

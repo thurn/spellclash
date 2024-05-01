@@ -332,10 +332,8 @@ checksum = "a21f936df1771bf62b77f047b726c4625ff2e8aa607c01ec06e5a05bd8463401"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
- "js-sys",
  "num-traits",
  "serde",
- "wasm-bindgen",
  "windows-targets 0.52.4",
 ]
 
@@ -652,7 +650,6 @@ dependencies = [
  "enum-map",
  "enumset",
  "linkme",
- "mtgjson",
  "once_cell",
  "rand",
  "rand_xoshiro",
@@ -735,7 +732,6 @@ name = "display"
 version = "0.0.0"
 dependencies = [
  "data",
- "mtgjson",
  "rules",
 ]
 
@@ -1814,18 +1810,6 @@ dependencies = [
  "log",
  "wasi",
  "windows-sys 0.48.0",
-]
-
-[[package]]
-name = "mtgjson"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8fc76d0dea01b2e88e27c1880a5b319f048ee24b531f2e277d5470f7646d6a51"
-dependencies = [
- "chrono",
- "semver",
- "serde",
- "uuid",
 ]
 
 [[package]]

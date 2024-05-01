@@ -17,24 +17,45 @@ use data::game_states::game_state::GameState;
 
 use crate::commands::command::Command;
 use crate::commands::display_preferences::DisplayPreferences;
+use crate::core::response_builder::{ResponseBuilder, ResponseState};
+use crate::rendering::{animations, sync};
 
 /// Returns a series of [Command]s which fully describe the current state of the
 /// provided game
 pub fn connect(
-    _game: &GameState,
-    _player: PlayerName,
-    _preferences: DisplayPreferences,
+    game: &GameState,
+    player: PlayerName,
+    display_preferences: DisplayPreferences,
 ) -> Vec<Command> {
-    vec![]
+    let mut builder = ResponseBuilder::new(player, ResponseState {
+        animate: false,
+        is_final_update: true,
+        display_preferences,
+    });
+    sync::run(&mut builder, game);
+    builder.commands
 }
 
 /// Returns a series of commands which contain animations for recent changes to
-/// game states, followed by a snapshot of the current game state as returned by
-/// [connect].
+/// game states, followed by a snapshot of the current game state in the same
+/// manner as returned by [connect].
 pub fn render_updates(
-    _game: &GameState,
-    _player_name: PlayerName,
-    _preferences: DisplayPreferences,
+    game: &GameState,
+    player: PlayerName,
+    display_preferences: DisplayPreferences,
 ) -> Vec<Command> {
-    vec![]
+    let mut builder = ResponseBuilder::new(player, ResponseState {
+        animate: true,
+        is_final_update: false,
+        display_preferences,
+    });
+
+    for step in &game.animations.steps {
+        sync::run(&mut builder, &step.snapshot);
+        animations::render(&mut builder, &step.update, &step.snapshot);
+    }
+
+    builder.state.is_final_update = true;
+    sync::run(&mut builder, game);
+    builder.commands
 }

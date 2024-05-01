@@ -12,7 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod card_view;
-pub mod game_view;
-pub mod object_position;
-pub mod response_builder;
+use data::game_states::animation_tracker::GameAnimation;
+use data::game_states::game_state::GameState;
+
+use crate::core::response_builder::ResponseBuilder;
+
+/// Populates commands in this [ResponseBuilder] corresponding to the provided
+/// [GameAnimation] for this [GameState].
+pub fn render(_builder: &mut ResponseBuilder, _animation: &GameAnimation, _snapshot: &GameState) {}

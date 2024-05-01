@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::{CardId, PlayerName};
+use data::core::primitives::CardId;
+
+use crate::core::game_view::DisplayPlayer;
 
 /// Represents the position of some object in the UI
 #[derive(Clone, Debug)]
@@ -23,6 +25,12 @@ pub struct ObjectPosition {
     pub sorting_key: u64,
     /// Sub-key, used to break ties in sorting
     pub sorting_sub_key: u64,
+}
+
+impl Default for ObjectPosition {
+    fn default() -> Self {
+        Self { position: Position::Default, sorting_key: 0, sorting_sub_key: 0 }
+    }
 }
 
 /// Sub-positions for objects within the battlefield.
@@ -36,6 +44,10 @@ pub enum BattlefieldPosition {
 /// Possible types of display positions
 #[derive(Clone, Debug)]
 pub enum Position {
+    /// Object position used in interface elements like the deck viewer which
+    /// don't rely on game positioning.
+    Default,
+
     /// Object is not visible.
     Offscreen,
 
@@ -44,23 +56,23 @@ pub enum Position {
     Played,
 
     /// Object is in this player's hand
-    Hand(PlayerName),
+    Hand(DisplayPlayer),
 
     /// Object is in this player's deck
-    Deck(PlayerName),
+    Deck(DisplayPlayer),
 
     /// Object is in this player's discard pile
-    DiscardPile(PlayerName),
+    DiscardPile(DisplayPlayer),
 
     /// Object is controlled by this player in a given battlefield position
-    Battlefield(PlayerName, BattlefieldPosition),
+    Battlefield(DisplayPlayer, BattlefieldPosition),
 
     /// Object is in attack position for this player
-    Attacking(PlayerName),
+    Attacking(DisplayPlayer),
 
     /// Object is controlled by this player and is blocking the provided set of
     /// attackers
-    Blocking(PlayerName, Vec<CardId>),
+    Blocking(DisplayPlayer, Vec<CardId>),
 
     /// Object is being displayed in a card browser, e.g. to select from a list
     /// of cards

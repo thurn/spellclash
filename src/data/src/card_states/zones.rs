@@ -17,22 +17,18 @@ use serde::{Deserialize, Serialize};
 use slotmap::SlotMap;
 
 use crate::card_definitions::card_name::CardName;
+use crate::card_states::card_kind::CardKind;
 use crate::card_states::card_state::{CardFacing, CardState, TappedState};
 use crate::card_states::counters::Counters;
 use crate::card_states::custom_card_state::CustomCardStateList;
-use crate::card_states::stack_ability::{StackAbility, StackAbilityId};
 use crate::core::numerics::Damage;
 use crate::core::primitives::{CardId, ObjectId, PlayerName, Zone};
 
-/// Stores the state of all cards and all abilities currently on the stack.
+/// Stores the state & position of all cards and card-like objects
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct Zones {
-    /// All cards, copies of cards on the stack, tokens, and emblems in the
-    /// current game.
+    /// All cards and card-like objects in the current game
     all_cards: SlotMap<CardId, CardState>,
-
-    /// Abilities currently on the stack
-    stack_abilities: SlotMap<StackAbilityId, StackAbility>,
 
     /// Next object id to use for zone moves.
     next_object_id: ObjectId,
@@ -47,14 +43,16 @@ impl Zones {
     pub fn create_hidden_card(
         &mut self,
         name: CardName,
+        kind: CardKind,
         owner: PlayerName,
         zone: Zone,
     ) -> &CardState {
-        let object_id = self.create_object_id();
+        let object_id = self.new_object_id();
         let id = self.all_cards.insert(CardState {
             card_id: CardId::default(),
             object_id: ObjectId::default(),
             card_name: name,
+            kind,
             owner,
             controller: owner,
             zone,
@@ -74,7 +72,13 @@ impl Zones {
         card
     }
 
-    fn create_object_id(&mut self) -> ObjectId {
+    /// Returns an iterator over all cards and card-like objects which have
+    /// currently been defined
+    pub fn all_cards(&self) -> impl Iterator<Item = &CardState> + '_ {
+        self.all_cards.values()
+    }
+
+    fn new_object_id(&mut self) -> ObjectId {
         let result = self.next_object_id;
         self.next_object_id = ObjectId(result.0 + 1);
         result

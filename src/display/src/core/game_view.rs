@@ -13,15 +13,17 @@
 // limitations under the License.
 
 use data::core::numerics::LifeValue;
-use data::core::primitives::PlayerName;
 
 use crate::core::card_view::CardView;
 
 /// Represents the visual state of an ongoing game
 #[derive(Clone, Debug)]
 pub struct GameView {
-    /// Players in the game
-    pub players: Vec<PlayerView>,
+    /// Player who is operating the client
+    pub viewer: PlayerView,
+
+    /// Opponent of viewer
+    pub opponent: PlayerView,
 
     /// Visual state of cards in the game
     pub cards: Vec<CardView>,
@@ -38,12 +40,19 @@ pub enum GameViewState {
     CombatActive,
 }
 
+/// Identifies a player in the context of the user interface.
+#[derive(Clone, Debug, Eq, PartialEq, Copy)]
+pub enum DisplayPlayer {
+    /// Player who is currently operating the client
+    Viewer,
+
+    /// Opponent of viewer
+    Opponent,
+}
+
 /// Represents the visual state of a player in a game
 #[derive(Clone, Debug)]
 pub struct PlayerView {
-    /// Identifies this player within the game
-    pub name: PlayerName,
-
     /// Current life total
     pub life: LifeValue,
 

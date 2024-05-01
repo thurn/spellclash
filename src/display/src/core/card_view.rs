@@ -15,7 +15,7 @@
 use data::card_states::card_state::{CardFacing, TappedState};
 use data::core::numerics::Damage;
 use data::core::primitives::CardId;
-use mtgjson::Layout;
+use data::printed_cards::layout::{CardLayout, FaceLayout};
 
 use crate::core::object_position::ObjectPosition;
 
@@ -27,9 +27,6 @@ pub struct CardView {
 
     /// Position of this card in the UI
     pub position: ObjectPosition,
-
-    /// Visual style of this card
-    pub layout: Layout,
 
     /// If this card is revealed to the viewer, contains information on the
     /// revealed face of the card.
@@ -63,9 +60,25 @@ pub struct CardView {
 /// Visual state of a revealed card
 #[derive(Clone, Debug)]
 pub struct RevealedCardView {
-    /// Name of this card
+    /// Primary face of this card
+    pub face: RevealedCardFace,
+
+    /// Secondary or additional face of this card, if any
+    pub face_b: Option<RevealedCardFace>,
+
+    /// Visual style of this card, how the faces are displayed
+    pub layout: CardLayout,
+}
+
+/// Visual state of a revealed card face
+#[derive(Clone, Debug)]
+pub struct RevealedCardFace {
+    /// Name of this face
     pub name: String,
 
-    /// Rules text for this card
-    pub rules_text: String,
+    /// Visual style of specifically this face
+    pub layout: FaceLayout,
+
+    /// Rules text for this face, if any.
+    pub rules_text: Option<String>,
 }

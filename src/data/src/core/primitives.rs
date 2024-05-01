@@ -100,7 +100,13 @@ pub trait HasController {
 }
 
 new_key_type! {
-    /// Identifies a card, copy of a card on the stack, token, or emblem in an ongoing game
+    /// Identifies a card or card-like object such as:
+    ///
+    /// - A normal card
+    /// - A copy of a card on the stack
+    /// - An ability on the stack
+    /// - A token
+    /// - An emblem
     pub struct CardId;
 }
 
@@ -131,6 +137,12 @@ impl HasCardId for CardId {
     Debug, Clone, Copy, Default, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize,
 )]
 pub struct ObjectId(pub u64);
+
+impl ObjectId {
+    pub fn as_u64(&self) -> u64 {
+        self.0
+    }
+}
 
 pub const PLAYER_ONE_ID: ObjectId = ObjectId(1);
 pub const PLAYER_TWO_ID: ObjectId = ObjectId(2);

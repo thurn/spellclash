@@ -13,12 +13,12 @@
 // limitations under the License.
 
 use enumset::EnumSet;
-use mtgjson::Layout;
 use uuid::Uuid;
 
 use crate::core::numerics::ManaValue;
 use crate::core::primitives::{CardSupertype, CardType, Color};
 use crate::printed_cards::card_subtypes::CardSubtypes;
+use crate::printed_cards::layout::{CardLayout, FaceLayout};
 use crate::printed_cards::mana_cost::ManaCost;
 use crate::printed_cards::printed_primitives::{
     AttractionLight, PrintedLoyalty, PrintedPower, PrintedToughness,
@@ -49,6 +49,12 @@ pub struct PrintedCard {
     /// Note that for cards with the 'meld' mechanic, two different cards will
     /// share copies of the same back face data.
     pub face_b: Option<PrintedCardFace>,
+
+    /// Describes how the multiple faces of the card are organized in relation
+    /// to each other.
+    ///
+    /// See <https://scryfall.com/docs/api/layouts>
+    pub layout: CardLayout,
 }
 
 /// Represents one face of a printed card.
@@ -91,10 +97,10 @@ pub struct PrintedCardFace {
     pub toughness: Option<PrintedToughness>,
     /// Starting loyalty value for a Planeswalker card
     pub loyalty: Option<PrintedLoyalty>,
-    /// Card layout, describing its printed structure.
+    /// Face layout, describing its printed structure.
     ///
     /// See <https://scryfall.com/docs/api/layouts> for descriptions & examples of layouts.
-    pub layout: Layout,
+    pub layout: FaceLayout,
     /// A list of attraction lights found on a card, available only to cards
     /// printed in certain Un-sets.
     pub attraction_lights: EnumSet<AttractionLight>,

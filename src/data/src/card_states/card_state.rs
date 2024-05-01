@@ -16,9 +16,9 @@ use enumset::EnumSet;
 use serde::{Deserialize, Serialize};
 
 use crate::card_definitions::card_name::CardName;
+use crate::card_states::card_kind::CardKind;
 use crate::card_states::counters::Counters;
 use crate::card_states::custom_card_state::CustomCardStateList;
-use crate::card_states::zone_object::ZoneObjectTrait;
 #[allow(unused)] // Used in docs
 use crate::card_states::zones::Zones;
 use crate::core::numerics::Damage;
@@ -27,8 +27,15 @@ use crate::core::primitives::{
 };
 use crate::printed_cards::printed_card::PrintedCard;
 
-/// Represents the state of a card, copy of a card on the stack, token, or
-/// emblem within an ongoing game.
+/// Represents the state of a card or card-like object.
+///
+/// The term "card" is used very broadly here to include:
+///
+/// - A normal card
+/// - A copy of a card on the stack
+/// - An ability on the stack
+/// - A token
+/// - An emblem
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CardState {
     /// Unique identifier for this card in the [Zones] struct.
@@ -46,6 +53,11 @@ pub struct CardState {
     /// Name of the printed card for this card, used to populate the result of
     /// the [Self::printed] method after deserialization.
     pub card_name: CardName,
+
+    /// Describes which kind of card-like object this is.
+    ///
+    /// See [CardKind].
+    pub kind: CardKind,
 
     /// The player who this card belongs to, who starts the game with this card
     /// or who creates this token.
@@ -147,14 +159,11 @@ impl HasController for CardState {
     }
 }
 
-impl ZoneObjectTrait for CardState {
-    fn targets(&self) -> &[ObjectId] {
-        &self.targets
-    }
-}
-
 impl CardState {
-    /// Returns the [PrintedCard] for this card
+    /// Returns the [PrintedCard] for this card.
+    ///
+    /// For abilities on the stack, this returns the [PrintedCard] which
+    /// *produced* this ability.
     pub fn printed(&self) -> &'static PrintedCard {
         self.printed_card_reference.unwrap()
     }

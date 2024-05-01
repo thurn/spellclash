@@ -13,6 +13,7 @@
 // limitations under the License.
 
 pub mod card_subtypes;
+pub mod layout;
 pub mod mana_cost;
 pub mod printed_card;
 pub mod printed_primitives;

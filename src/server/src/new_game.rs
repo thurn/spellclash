@@ -16,7 +16,9 @@ use color_eyre::eyre::bail;
 use color_eyre::Result;
 use data::actions::new_game_action::NewGameAction;
 use data::card_definitions::card_name;
+use data::card_states::card_kind::CardKind;
 use data::card_states::zones::Zones;
+use data::core::numerics::LifeValue;
 use data::core::primitives::{Color, GameId, PlayerName, UserId, Zone};
 use data::decks::deck::Deck;
 use data::decks::deck_name;
@@ -117,9 +119,10 @@ fn create_game(
         status: GameStatus::Setup,
         step: GamePhaseStep::Untap,
         current_turn: TurnData { turn: PlayerName::One, turn_number: 0 },
+        priority: PlayerName::One,
         configuration: GameConfiguration::default(),
         state_machines: StateMachines::default(),
-        players: Players::new(p1, p2),
+        players: Players::new(p1, p2, LifeValue(20)),
         zones,
         combat: CombatState::default(),
         animations: AnimationTracker::default(),
@@ -133,7 +136,7 @@ fn create_game(
 fn create_cards_in_deck(zones: &mut Zones, deck: Deck, owner: PlayerName) {
     for (&name, &quantity) in &deck.cards {
         for _ in 0..quantity {
-            zones.create_hidden_card(name, owner, Zone::Deck);
+            zones.create_hidden_card(name, CardKind::Normal, owner, Zone::Deck);
         }
     }
 }
