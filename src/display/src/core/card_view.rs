@@ -79,6 +79,6 @@ pub struct RevealedCardFace {
     /// Visual style of specifically this face
     pub layout: FaceLayout,
 
-    /// Rules text for this face, if any.
+    /// Rules text_strings for this face, if any.
     pub rules_text: Option<String>,
 }

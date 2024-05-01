@@ -33,8 +33,8 @@ pub type RequirementFn = fn(&GameState, AbilityContext) -> bool;
 /// Defines the game rules for an ability.
 ///
 /// Each ability for a card should be defined sequentially in the same order
-/// in which they appear in that card's oracle text, as this will be used to
-/// generate text to terminal_ui in-game.
+/// in which they appear in that card's oracle text_strings, as this will be
+/// used to generate text_strings to terminal_ui in-game.
 ///
 /// This struct should never be instantiated directly. Always use one of the
 /// builders defined in this file instead.
@@ -82,10 +82,10 @@ pub struct WithEffects(pub EffectFn);
 /// Builder for spell abilities.
 ///
 /// Spell abilities are abilities that are followed as instructions while an
-/// instant or sorcery spell is resolving. Any text on an instant or sorcery
-/// spell is a spell ability unless it's an activated ability, a triggered
-/// ability, or a static ability that fits the criteria described in rule
-/// 113.6.
+/// instant or sorcery spell is resolving. Any text_strings on an instant or
+/// sorcery spell is a spell ability unless it's an activated ability, a
+/// triggered ability, or a static ability that fits the criteria described in
+/// rule 113.6.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R1133a>
 pub struct SpellAbility<TEffects> {

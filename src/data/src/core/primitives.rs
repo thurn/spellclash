@@ -168,11 +168,11 @@ impl HasObjectId for PlayerName {
 
 /// Identifies an ability of a card.
 ///
-/// Abilities are always written in oracle text separated by a newline
+/// Abilities are always written in oracle text_strings separated by a newline
 /// character. This number is the (0-indexed) position of the ability within
-/// that text. One ability definition should be provided for each clause that
-/// appears in card text, and this number is used to produce the displayed text
-/// for that ability.
+/// that text_strings. One ability definition should be provided for each clause
+/// that appears in card text_strings, and this number is used to produce the
+/// displayed text_strings for that ability.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct AbilityNumber(pub usize);
 

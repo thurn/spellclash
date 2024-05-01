@@ -67,7 +67,8 @@ pub async fn create(
 
     info!(?game_id, "Creating new game");
     let mut game = create_game(game_id, user.id, user_deck, action.opponent_id, opponent_deck);
-    mutation::apply_effect(&mut game, Effect::DealOpeningHands);
+    mutation::apply_effect(&mut game, PlayerName::One, Effect::DealOpeningHand);
+    mutation::apply_effect(&mut game, PlayerName::Two, Effect::DealOpeningHand);
 
     user.activity = UserActivity::Playing(game.id);
 

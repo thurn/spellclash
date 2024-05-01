@@ -12,12 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::{HasObjectId, ObjectId};
-use data::effects::effect::Effect;
-use data::game_states::game_state::GameState;
+use serde::{Deserialize, Serialize};
 
-pub fn apply_effect(game: &mut GameState, objects: impl HasObjectId, effect: Effect) {
-    apply_effects(game, vec![objects.object_id()], effect);
-}
-
-pub fn apply_effects(_game: &mut GameState, _objects: Vec<ObjectId>, _effect: Effect) {}
+/// Canonical text displayed in the user interface, suitable for localization
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub enum Text {}

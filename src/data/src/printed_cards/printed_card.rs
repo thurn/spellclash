@@ -72,10 +72,10 @@ pub struct PrintedCardFace {
     pub card_types: EnumSet<CardType>,
     /// The set of subtypes for this face, found after em-dash.
     pub subtypes: CardSubtypes,
-    /// The rules text for this face.
+    /// The rules text_strings for this face.
     pub oracle_text: Option<String>,
     /// Colors of this face. This incorporates the mana cost and color
-    /// indicators as well as static rules text modifiers like Devoid.
+    /// indicators as well as static rules text_strings modifiers like Devoid.
     ///
     /// See <https://yawgatog.com/resources/magic-rules/#R2022>
     pub colors: EnumSet<Color>,

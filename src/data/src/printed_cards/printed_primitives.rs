@@ -34,7 +34,7 @@ pub enum AttractionLight {
 pub enum PrintedLoyalty {
     /// Number of starting loyalty counters
     Number(Loyalty),
-    /// Starting loyalty is defined by rules text
+    /// Starting loyalty is defined by rules text_strings
     X,
 }
 
@@ -43,13 +43,13 @@ pub enum PrintedLoyalty {
 pub enum PrintedPower {
     /// Numeric power
     Number(Power),
-    /// Power is defined by X in rules text
+    /// Power is defined by X in rules text_strings
     X,
-    /// Power is defined by rules text
+    /// Power is defined by rules text_strings
     ///
     /// See <https://yawgatog.com/resources/magic-rules/#R2082>
     Star,
-    /// Power is defined by rules text plus one
+    /// Power is defined by rules text_strings plus one
     StarPlusOne,
 }
 
@@ -58,12 +58,12 @@ pub enum PrintedPower {
 pub enum PrintedToughness {
     /// Numeric toughness
     Number(Toughness),
-    /// Toughness is defined by X in rules text
+    /// Toughness is defined by X in rules text_strings
     X,
-    /// Toughness is defined by rules text
+    /// Toughness is defined by rules text_strings
     ///
     /// See <https://yawgatog.com/resources/magic-rules/#R2082>
     Star,
-    /// Power is defined by rules text plus one
+    /// Power is defined by rules text_strings plus one
     StarPlusOne,
 }

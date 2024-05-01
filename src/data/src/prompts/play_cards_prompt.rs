@@ -12,12 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::{HasObjectId, ObjectId};
-use data::effects::effect::Effect;
-use data::game_states::game_state::GameState;
+use serde::{Deserialize, Serialize};
 
-pub fn apply_effect(game: &mut GameState, objects: impl HasObjectId, effect: Effect) {
-    apply_effects(game, vec![objects.object_id()], effect);
+use crate::core::primitives::{CardId, Zone};
+use crate::effects::effect::Effect;
+
+/// A prompt shown to the user to allow them to play one or more cards from a
+/// set of cards.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlayCardsPrompt {
+    /// Zone of origin for the cards being played.
+    pub from_zone: Zone,
+    /// Identifies the choices of cards that the user can possibly play.
+    pub cards: Vec<CardId>,
+    /// Effect to apply to cards which are *not* played
+    pub unplayed_effects: Vec<Effect>,
 }
-
-pub fn apply_effects(_game: &mut GameState, _objects: Vec<ObjectId>, _effect: Effect) {}

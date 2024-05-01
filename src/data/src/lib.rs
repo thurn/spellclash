@@ -23,5 +23,7 @@ pub mod effects;
 pub mod game_states;
 pub mod player_states;
 pub mod printed_cards;
+pub mod prompts;
 pub mod state_machines;
+pub mod text_strings;
 pub mod users;
