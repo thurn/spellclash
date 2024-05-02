@@ -16,9 +16,9 @@ use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};
 
 use crate::card_states::card_state::CardState;
-use crate::card_states::zones::Zones;
+use crate::card_states::zones::{Zones, ZonesTrait};
 use crate::core::numerics::TurnNumber;
-use crate::core::primitives::{GameId, HasCardId, PlayerName};
+use crate::core::primitives::{CardId, GameId, HasCardId, PlayerName};
 use crate::delegates::game_delegates::GameDelegates;
 use crate::game_states::animation_tracker::{
     AnimationState, AnimationStep, AnimationTracker, GameAnimation,
@@ -111,14 +111,6 @@ pub struct GameState {
 }
 
 impl GameState {
-    pub fn card(&self, card_id: impl HasCardId) -> &CardState {
-        self.zones.get(card_id.card_id())
-    }
-
-    pub fn card_mut(&mut self, card_id: impl HasCardId) -> &mut CardState {
-        self.zones.get_mut(card_id.card_id())
-    }
-
     pub fn add_animation(&mut self, update: impl FnOnce() -> GameAnimation) {
         if self.animations.state == AnimationState::Track {
             // Snapshot current game state, omit things that aren't important for
@@ -131,6 +123,20 @@ impl GameState {
 
             self.animations.steps.push(AnimationStep { snapshot: clone, update: update() });
         }
+    }
+}
+
+impl ZonesTrait for GameState {
+    fn card(&self, id: impl HasCardId) -> &CardState {
+        self.zones.card(id)
+    }
+
+    fn card_mut(&mut self, id: impl HasCardId) -> &mut CardState {
+        self.zones.card_mut(id)
+    }
+
+    fn hand(&self, player: PlayerName) -> impl Iterator<Item = CardId> {
+        self.zones.hand(player)
     }
 }
 

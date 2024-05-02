@@ -25,7 +25,8 @@ use crate::rendering::card_view_context::CardViewContext;
 pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
     let cards = game
         .zones
-        .all_cards()
+        .all_cards
+        .values()
         .map(|c| card_sync::card_view(builder, &CardViewContext::Game(c.printed(), game, c)))
         .collect::<Vec<_>>();
 
