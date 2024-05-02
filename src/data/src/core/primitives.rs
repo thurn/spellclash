@@ -97,12 +97,12 @@ impl PlayerName {
 }
 
 /// Identifies a struct that is 1:1 associated with a given [PlayerName].
-pub trait HasOwner {
-    fn owner(&self) -> PlayerName;
+pub trait HasPlayerName {
+    fn player_name(&self) -> PlayerName;
 }
 
-impl HasOwner for PlayerName {
-    fn owner(&self) -> PlayerName {
+impl HasPlayerName for PlayerName {
+    fn player_name(&self) -> PlayerName {
         *self
     }
 }
@@ -133,6 +133,12 @@ impl HasCardId for CardId {
         // I know this is the same as Into, I just find it less annoying to have
         // explicit types :)
         *self
+    }
+}
+
+impl<T: HasCardId> HasCardId for &T {
+    fn card_id(&self) -> CardId {
+        (*self).card_id()
     }
 }
 
@@ -245,3 +251,24 @@ pub struct GameId(pub Uuid);
 /// A 'player' is a participate within a game who may or may not be a user.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct UserId(pub Uuid);
+
+/// Describes the source of some game mutation.
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub enum Source {
+    /// Mutation caused by the rules of the game, e.g. drawing a card for turn.
+    Game,
+
+    /// Mutation caused by an ability
+    Ability { controller: PlayerName, card_id: CardId, ability_number: AbilityNumber },
+}
+
+/// Marker trait for objects which have a source
+pub trait HasSource {
+    fn source(&self) -> Source;
+}
+
+impl HasSource for Source {
+    fn source(&self) -> Source {
+        *self
+    }
+}

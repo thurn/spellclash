@@ -18,16 +18,16 @@ use enumset::EnumSet;
 
 use crate::core::primitives::Zone;
 use crate::costs::cost::Cost;
-use crate::delegates::ability_context::AbilityContext;
 #[allow(unused)] // Used in docs
 use crate::delegates::game_delegates::{Delegate, DelegateFn, GameDelegates};
+use crate::delegates::scope::Scope;
 use crate::game_states::game_state::GameState;
 
 /// A function to produce a list of requested mutations to [GameState].
-pub type EffectFn = fn(&mut GameState, AbilityContext);
+pub type EffectFn = fn(&mut GameState, Scope);
 
 /// A predicate to apply to a delegate activation.
-pub type RequirementFn = fn(&GameState, AbilityContext) -> bool;
+pub type RequirementFn = fn(&GameState, Scope) -> bool;
 
 /// Defines the game rules for an ability.
 ///

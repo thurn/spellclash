@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 use crate::card_states::counters::Counters;
 use crate::core::numerics::LifeValue;
 use crate::core::primitives::{
-    CardId, HasController, HasObjectId, HasOwner, ObjectId, PlayerName, UserId,
+    CardId, HasController, HasObjectId, HasPlayerName, ObjectId, PlayerName, UserId,
 };
 use crate::player_states::mana_pool::ManaPool;
 use crate::player_states::prompt_stack::PromptStack;
@@ -114,8 +114,8 @@ impl HasObjectId for PlayerState {
     }
 }
 
-impl HasOwner for PlayerState {
-    fn owner(&self) -> PlayerName {
+impl HasPlayerName for PlayerState {
+    fn player_name(&self) -> PlayerName {
         self.name
     }
 }

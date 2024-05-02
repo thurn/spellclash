@@ -12,17 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::{CardId, PlayerName};
-use data::game_states::game_state::GameState;
+use crate::core::primitives::{AbilityNumber, CardId, HasCardId, HasSource, PlayerName, Source};
 
-pub enum LibraryPosition {
-    Top,
-    Bottom,
-    Shuffled,
+#[derive(Copy, Clone, Debug)]
+pub struct Scope {
+    pub controller: PlayerName,
+    pub number: AbilityNumber,
+    pub card_id: CardId,
 }
 
-pub fn deal_opening_hand(_game: &mut GameState, _player: PlayerName) {}
+impl HasCardId for Scope {
+    fn card_id(&self) -> CardId {
+        self.card_id
+    }
+}
 
-pub fn move_to_library(_game: &mut GameState, _position: LibraryPosition, _cards: Vec<CardId>) {}
-
-pub fn draw(_game: &mut GameState, _count: u32) {}
+impl HasSource for Scope {
+    fn source(&self) -> Source {
+        Source::Ability {
+            controller: self.controller,
+            card_id: self.card_id,
+            ability_number: self.number,
+        }
+    }
+}

@@ -19,7 +19,7 @@ use data::card_definitions::card_name;
 use data::card_states::card_kind::CardKind;
 use data::card_states::zones::Zones;
 use data::core::numerics::LifeValue;
-use data::core::primitives::{Color, GameId, PlayerName, UserId};
+use data::core::primitives::{Color, GameId, PlayerName, Source, UserId};
 use data::decks::deck::Deck;
 use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
@@ -42,7 +42,7 @@ use maplit::hashmap;
 use rand::prelude::SliceRandom;
 use rand_xoshiro::rand_core::SeedableRng;
 use rand_xoshiro::Xoshiro256StarStar;
-use rules::mutations::cards;
+use rules::mutations::deck;
 use tracing::info;
 use uuid::Uuid;
 
@@ -67,8 +67,10 @@ pub async fn create(
 
     info!(?game_id, "Creating new game");
     let mut game = create_game(game_id, user.id, user_deck, action.opponent_id, opponent_deck);
-    cards::deal_opening_hand(&mut game, PlayerName::One);
-    cards::deal_opening_hand(&mut game, PlayerName::Two);
+    game.shuffle_library(PlayerName::One);
+    deck::draw_cards(&mut game, PlayerName::One, Source::Game, 7);
+    game.shuffle_library(PlayerName::Two);
+    deck::draw_cards(&mut game, PlayerName::Two, Source::Game, 7);
 
     user.activity = UserActivity::Playing(game.id);
 

@@ -20,7 +20,7 @@ use serde::{Deserialize, Serialize};
 use crate::card_states::card_state::CardState;
 use crate::card_states::zones::{ZoneQueries, Zones};
 use crate::core::numerics::TurnNumber;
-use crate::core::primitives::{CardId, GameId, HasCardId, PlayerName};
+use crate::core::primitives::{CardId, GameId, HasCardId, HasPlayerName, PlayerName};
 use crate::delegates::game_delegates::GameDelegates;
 use crate::game_states::animation_tracker::{
     AnimationState, AnimationStep, AnimationTracker, GameAnimation,
@@ -142,27 +142,27 @@ impl ZoneQueries for GameState {
         self.zones.card_mut(id)
     }
 
-    fn library(&self, player: PlayerName) -> &VecDeque<CardId> {
+    fn library(&self, player: impl HasPlayerName) -> &VecDeque<CardId> {
         self.zones.library(player)
     }
 
-    fn hand(&self, player: PlayerName) -> &HashSet<CardId> {
+    fn hand(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
         self.zones.hand(player)
     }
 
-    fn graveyard(&self, player: PlayerName) -> &VecDeque<CardId> {
+    fn graveyard(&self, player: impl HasPlayerName) -> &VecDeque<CardId> {
         self.zones.graveyard(player)
     }
 
-    fn battlefield(&self, player: PlayerName) -> &HashSet<CardId> {
+    fn battlefield(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
         self.zones.battlefield(player)
     }
 
-    fn battlefield_owned(&self, player: PlayerName) -> &HashSet<CardId> {
+    fn battlefield_owned(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
         self.zones.battlefield_owned(player)
     }
 
-    fn exile(&self, player: PlayerName) -> &HashSet<CardId> {
+    fn exile(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
         self.zones.exile(player)
     }
 
@@ -170,11 +170,11 @@ impl ZoneQueries for GameState {
         self.zones.stack()
     }
 
-    fn command_zone(&self, player: PlayerName) -> &HashSet<CardId> {
+    fn command_zone(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
         self.zones.command_zone(player)
     }
 
-    fn outside_the_game_zone(&self, player: PlayerName) -> &HashSet<CardId> {
+    fn outside_the_game_zone(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
         self.zones.outside_the_game_zone(player)
     }
 }

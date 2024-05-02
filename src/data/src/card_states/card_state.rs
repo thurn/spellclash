@@ -24,7 +24,7 @@ use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::card_states::zones::Zones;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
-    CardId, HasCardId, HasController, HasObjectId, HasOwner, ObjectId, PlayerName, Zone,
+    CardId, HasCardId, HasController, HasObjectId, HasPlayerName, ObjectId, PlayerName, Zone,
 };
 use crate::printed_cards::printed_card::PrintedCard;
 
@@ -49,6 +49,9 @@ pub struct CardState {
     /// happen to a specific object, e.g. if you exile a card and return it to
     /// the battlefield it gets a new object ID and effects targeting it will
     /// end.
+    ///
+    /// Do not mutate this field directly, use the methods on the [Zones] struct
+    /// instead.
     pub object_id: ObjectId,
 
     /// Name of the printed card for this card, used to populate the result of
@@ -61,7 +64,7 @@ pub struct CardState {
     pub kind: CardKind,
 
     /// The player who this card belongs to, who starts the game with this card
-    /// or who creates this token.
+    /// or who creates this token. Do not mutate this field.
     ///
     /// See <https://yawgatog.com/resources/magic-rules/#R1083>
     pub owner: PlayerName,
@@ -71,12 +74,16 @@ pub struct CardState {
     /// For cards which are not currently on the battlefield or on the stack,
     /// this will be the card's owner.
     ///
+    /// Do not mutate this field directly, use the methods on the [Zones] struct
+    /// instead.
+    ///
     /// See <https://yawgatog.com/resources/magic-rules/#R1084>
     pub controller: PlayerName,
 
     /// Current game zone location for this card.
     ///
-    /// Please update [Self::object_id] whenever this changes.
+    /// Do not mutate this field directly, use the methods on the [Zones] struct
+    /// instead.
     pub zone: Zone,
 
     /// Whether this card is currently face down or has one of its faces up.
@@ -148,8 +155,8 @@ impl HasObjectId for CardState {
     }
 }
 
-impl HasOwner for CardState {
-    fn owner(&self) -> PlayerName {
+impl HasPlayerName for CardState {
+    fn player_name(&self) -> PlayerName {
         self.owner
     }
 }

@@ -26,7 +26,7 @@ use crate::card_states::card_state::{CardFacing, CardState, TappedState};
 use crate::card_states::counters::Counters;
 use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::core::numerics::Damage;
-use crate::core::primitives::{CardId, HasCardId, ObjectId, PlayerName, Zone};
+use crate::core::primitives::{CardId, HasCardId, HasPlayerName, ObjectId, PlayerName, Zone};
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::GameState;
 
@@ -41,55 +41,58 @@ pub trait ZoneQueries {
 
     /// Returns the IDs of cards and card-like objects owned by a player in
     /// their library, in order (last element in result is top card).
-    fn library(&self, player: PlayerName) -> &VecDeque<CardId>;
+    fn library(&self, player: impl HasPlayerName) -> &VecDeque<CardId>;
 
     /// Returns the IDs of cards and card-like objects owned by a player in
     /// their hand
-    fn hand(&self, player: PlayerName) -> &HashSet<CardId>;
+    fn hand(&self, player: impl HasPlayerName) -> &HashSet<CardId>;
 
     /// Equivalent function to [Self::hand] which returns an iterator over
     /// [CardState]s in an undefined order.
-    fn hand_cards(&self, player: PlayerName) -> impl Iterator<Item = &CardState> {
+    fn hand_cards(&self, player: impl HasPlayerName) -> impl Iterator<Item = &CardState> {
         self.hand(player).iter().map(move |id| self.card(*id))
     }
 
     /// Returns the IDs of cards and card-like objects owned by a player in
     /// their graveyard, in order (last element in result is top card).
-    fn graveyard(&self, player: PlayerName) -> &VecDeque<CardId>;
+    fn graveyard(&self, player: impl HasPlayerName) -> &VecDeque<CardId>;
 
     /// Equivalent function to [Self::graveyard] which returns an iterator over
     /// [CardState]s in order.
-    fn graveyard_cards(&self, player: PlayerName) -> impl Iterator<Item = &CardState> {
+    fn graveyard_cards(&self, player: impl HasPlayerName) -> impl Iterator<Item = &CardState> {
         self.graveyard(player).iter().map(move |id| self.card(*id))
     }
 
     /// Returns the IDs of cards and card-like objects ***controlled*** by a
     /// player on the battlefield
-    fn battlefield(&self, player: PlayerName) -> &HashSet<CardId>;
+    fn battlefield(&self, player: impl HasPlayerName) -> &HashSet<CardId>;
 
     /// Equivalent function to [Self::battlefield] which returns an
     /// iterator over [CardState]s in an undefined order.
-    fn battlefield_cards(&self, player: PlayerName) -> impl Iterator<Item = &CardState> {
+    fn battlefield_cards(&self, player: impl HasPlayerName) -> impl Iterator<Item = &CardState> {
         self.battlefield(player).iter().map(move |id| self.card(*id))
     }
 
     /// Returns the IDs of cards and card-like objects owned by a player on the
     /// battlefield
-    fn battlefield_owned(&self, player: PlayerName) -> &HashSet<CardId>;
+    fn battlefield_owned(&self, player: impl HasPlayerName) -> &HashSet<CardId>;
 
     /// Equivalent function to [Self::battlefield_owned] which returns an
     /// iterator over [CardState]s in an undefined order.
-    fn battlefield_owned_cards(&self, player: PlayerName) -> impl Iterator<Item = &CardState> {
+    fn battlefield_owned_cards(
+        &self,
+        player: impl HasPlayerName,
+    ) -> impl Iterator<Item = &CardState> {
         self.battlefield_owned(player).iter().map(move |id| self.card(*id))
     }
 
     /// Returns the IDs of cards and card-like objects owned by a player in
     /// exile
-    fn exile(&self, player: PlayerName) -> &HashSet<CardId>;
+    fn exile(&self, player: impl HasPlayerName) -> &HashSet<CardId>;
 
     /// Equivalent function to [Self::exile] which returns an iterator over
     /// [CardState]s in an undefined order.
-    fn exile_cards(&self, player: PlayerName) -> impl Iterator<Item = &CardState> {
+    fn exile_cards(&self, player: impl HasPlayerName) -> impl Iterator<Item = &CardState> {
         self.exile(player).iter().map(move |id| self.card(*id))
     }
     /// Returns the IDs of all cards and card-like objects currently on the
@@ -104,11 +107,11 @@ pub trait ZoneQueries {
 
     /// Returns the IDs of cards and card-like objects owned by a player in the
     /// command zone
-    fn command_zone(&self, player: PlayerName) -> &HashSet<CardId>;
+    fn command_zone(&self, player: impl HasPlayerName) -> &HashSet<CardId>;
 
     /// Returns the IDs of cards and card-like objects owned by a player outside
     /// the game
-    fn outside_the_game_zone(&self, player: PlayerName) -> &HashSet<CardId>;
+    fn outside_the_game_zone(&self, player: impl HasPlayerName) -> &HashSet<CardId>;
 }
 
 /// Stores the state & position of all cards and card-like objects
@@ -140,40 +143,40 @@ impl ZoneQueries for Zones {
         &mut self.all_cards[id.card_id()]
     }
 
-    fn library(&self, player: PlayerName) -> &VecDeque<CardId> {
-        self.libraries.cards(player)
+    fn library(&self, player: impl HasPlayerName) -> &VecDeque<CardId> {
+        self.libraries.cards(player.player_name())
     }
 
-    fn hand(&self, player: PlayerName) -> &HashSet<CardId> {
-        self.hands.cards(player)
+    fn hand(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
+        self.hands.cards(player.player_name())
     }
 
-    fn graveyard(&self, player: PlayerName) -> &VecDeque<CardId> {
-        self.graveyards.cards(player)
+    fn graveyard(&self, player: impl HasPlayerName) -> &VecDeque<CardId> {
+        self.graveyards.cards(player.player_name())
     }
 
-    fn battlefield(&self, player: PlayerName) -> &HashSet<CardId> {
-        self.battlefield_controlled.cards(player)
+    fn battlefield(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
+        self.battlefield_controlled.cards(player.player_name())
     }
 
-    fn battlefield_owned(&self, player: PlayerName) -> &HashSet<CardId> {
-        self.battlefield_owned.cards(player)
+    fn battlefield_owned(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
+        self.battlefield_owned.cards(player.player_name())
     }
 
-    fn exile(&self, player: PlayerName) -> &HashSet<CardId> {
-        self.exile.cards(player)
+    fn exile(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
+        self.exile.cards(player.player_name())
     }
 
     fn stack(&self) -> &[CardId] {
         &self.stack
     }
 
-    fn command_zone(&self, player: PlayerName) -> &HashSet<CardId> {
-        self.command_zone.cards(player)
+    fn command_zone(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
+        self.command_zone.cards(player.player_name())
     }
 
-    fn outside_the_game_zone(&self, player: PlayerName) -> &HashSet<CardId> {
-        self.outside_the_game_zone.cards(player)
+    fn outside_the_game_zone(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
+        self.outside_the_game_zone.cards(player.player_name())
     }
 }
 
@@ -221,8 +224,12 @@ impl Zones {
         card
     }
 
-    /// Moves a card to a new zone and updates indices.
-    pub fn move_card(&mut self, card_id: CardId, zone: Zone) {
+    /// Moves a card to a new zone, updates indices, and assigns a new
+    /// [ObjectId] to it.
+    ///
+    /// Panics if this card was not found in its previous zone.
+    pub fn move_card(&mut self, id: impl HasCardId, zone: Zone) {
+        let card_id = id.card_id();
         let old_zone = self.card_mut(card_id).zone;
         let owner = self.card_mut(card_id).owner;
         self.remove_from_zone(owner, card_id, old_zone);
@@ -232,7 +239,8 @@ impl Zones {
     }
 
     /// Changes the controller for a card.
-    pub fn change_control(&mut self, card_id: CardId, controller: PlayerName) {
+    pub fn change_control(&mut self, id: impl HasCardId, controller: PlayerName) {
+        let card_id = id.card_id();
         let card = self.card_mut(card_id);
         let old_controller = card.controller;
         card.controller = controller;
@@ -243,8 +251,8 @@ impl Zones {
     }
 
     /// Shuffles the order of cards in a player's library
-    pub fn shuffle_library(&mut self, player: PlayerName, rng: &mut Xoshiro256StarStar) {
-        self.libraries.cards_mut(player).make_contiguous().shuffle(rng);
+    pub fn shuffle_library(&mut self, player: impl HasPlayerName, rng: &mut Xoshiro256StarStar) {
+        self.libraries.cards_mut(player.player_name()).make_contiguous().shuffle(rng);
     }
 
     fn remove_from_zone(&mut self, owner: PlayerName, card_id: CardId, zone: Zone) {
