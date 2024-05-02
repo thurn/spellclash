@@ -11,3 +11,5 @@ bench = false
 [dependencies]
 data = { path = "../data", version = "0.0.0" }
 rules = { path = "../rules", version = "0.0.0" }
+
+schemars = "0.8.17"

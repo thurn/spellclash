@@ -15,8 +15,11 @@
 use enum_iterator::Sequence;
 use enum_map::Enum;
 use enumset::EnumSetType;
+use schemars::gen::SchemaGenerator;
+use schemars::schema::Schema;
+use schemars::{schema_for_value, JsonSchema};
 use serde::{Deserialize, Serialize};
-use slotmap::new_key_type;
+use slotmap::{new_key_type, DefaultKey};
 use uuid::Uuid;
 
 /// The five canonical colors of magic.
@@ -120,6 +123,19 @@ impl HasCardId for CardId {
         // I know this is the same as Into, I just find it less annoying to have
         // explicit types :)
         *self
+    }
+}
+
+impl JsonSchema for CardId {
+    fn schema_name() -> String {
+        "CardId".to_string()
+    }
+
+    fn json_schema(_: &mut SchemaGenerator) -> Schema {
+        // new_key_type! is documented as having the same structure as
+        // DefaultKey
+        let root = schema_for_value!(DefaultKey::default());
+        Schema::Object(root.schema)
     }
 }
 

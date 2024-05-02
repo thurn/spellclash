@@ -15,6 +15,7 @@
 use derive_more::{
     Add, AddAssign, Display, Div, DivAssign, From, Into, Mul, MulAssign, Sub, SubAssign, Sum,
 };
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 pub type TurnNumber = u64;
@@ -44,6 +45,7 @@ pub type TurnNumber = u64;
     Into,
     Serialize,
     Deserialize,
+    JsonSchema,
 )]
 pub struct ManaValue(pub u64);
 
@@ -72,6 +74,7 @@ pub struct ManaValue(pub u64);
     Into,
     Serialize,
     Deserialize,
+    JsonSchema,
 )]
 pub struct LifeValue(pub u64);
 
@@ -99,6 +102,7 @@ pub struct LifeValue(pub u64);
     Into,
     Serialize,
     Deserialize,
+    JsonSchema,
 )]
 pub struct Loyalty(pub u64);
 
@@ -126,6 +130,7 @@ pub struct Loyalty(pub u64);
     Into,
     Serialize,
     Deserialize,
+    JsonSchema,
 )]
 pub struct Power(pub u64);
 
@@ -153,6 +158,7 @@ pub struct Power(pub u64);
     Into,
     Serialize,
     Deserialize,
+    JsonSchema,
 )]
 pub struct Toughness(pub u64);
 
@@ -180,5 +186,6 @@ pub struct Toughness(pub u64);
     Into,
     Serialize,
     Deserialize,
+    JsonSchema,
 )]
 pub struct Damage(pub u64);

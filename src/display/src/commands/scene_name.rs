@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use schemars::JsonSchema;
+
 /// Top-level states the user interface can be in
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, JsonSchema)]
 pub enum SceneName {
     MainMenu,
     Game,
