@@ -19,7 +19,7 @@ use data::card_definitions::card_name;
 use data::card_states::card_kind::CardKind;
 use data::card_states::zones::Zones;
 use data::core::numerics::LifeValue;
-use data::core::primitives::{Color, GameId, PlayerName, UserId, Zone};
+use data::core::primitives::{Color, GameId, PlayerName, UserId};
 use data::decks::deck::Deck;
 use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
@@ -138,7 +138,7 @@ fn create_game(
 fn create_cards_in_deck(zones: &mut Zones, deck: Deck, owner: PlayerName) {
     for (&name, &quantity) in &deck.cards {
         for _ in 0..quantity {
-            zones.create_hidden_card(name, CardKind::Normal, owner, Zone::Library);
+            zones.create_card_in_library(name, CardKind::Normal, owner);
         }
     }
 }

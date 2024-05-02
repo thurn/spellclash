@@ -158,6 +158,10 @@ impl ZoneQueries for GameState {
         self.zones.battlefield(player)
     }
 
+    fn battlefield_owned(&self, player: PlayerName) -> &HashSet<CardId> {
+        self.zones.battlefield_owned(player)
+    }
+
     fn exile(&self, player: PlayerName) -> &HashSet<CardId> {
         self.zones.exile(player)
     }

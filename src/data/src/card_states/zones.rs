@@ -39,11 +39,12 @@ pub trait ZoneQueries {
     /// Mutable equivalent of [Self::card]
     fn card_mut(&mut self, id: impl HasCardId) -> &mut CardState;
 
-    /// Returns the cards and card-like objects in a player's library, in order
-    /// (last element in result is top card of deck).
+    /// Returns the IDs of cards and card-like objects owned by a player in
+    /// their library, in order (last element in result is top card).
     fn library(&self, player: PlayerName) -> &VecDeque<CardId>;
 
-    /// Returns the set of cards and card-like objects in a player's hand
+    /// Returns the IDs of cards and card-like objects owned by a player in
+    /// their hand
     fn hand(&self, player: PlayerName) -> &HashSet<CardId>;
 
     /// Equivalent function to [Self::hand] which returns an iterator over
@@ -52,8 +53,8 @@ pub trait ZoneQueries {
         self.hand(player).iter().map(move |id| self.card(*id))
     }
 
-    /// Returns the cards and card-like objects in a player's graveyard, in
-    /// order (last element in result is top card).
+    /// Returns the IDs of cards and card-like objects owned by a player in
+    /// their graveyard, in order (last element in result is top card).
     fn graveyard(&self, player: PlayerName) -> &VecDeque<CardId>;
 
     /// Equivalent function to [Self::graveyard] which returns an iterator over
@@ -62,17 +63,28 @@ pub trait ZoneQueries {
         self.graveyard(player).iter().map(move |id| self.card(*id))
     }
 
-    /// Returns the set of cards and card-like objects in a player's
-    /// battlefield.
+    /// Returns the IDs of cards and card-like objects ***controlled*** by a
+    /// player on the battlefield
     fn battlefield(&self, player: PlayerName) -> &HashSet<CardId>;
 
-    /// Equivalent function to [Self::battlefield] which returns an iterator
-    /// over [CardState]s in an undefined order.
+    /// Equivalent function to [Self::battlefield] which returns an
+    /// iterator over [CardState]s in an undefined order.
     fn battlefield_cards(&self, player: PlayerName) -> impl Iterator<Item = &CardState> {
         self.battlefield(player).iter().map(move |id| self.card(*id))
     }
 
-    /// Returns the set of cards and card-like objects in a player's exile
+    /// Returns the IDs of cards and card-like objects owned by a player on the
+    /// battlefield
+    fn battlefield_owned(&self, player: PlayerName) -> &HashSet<CardId>;
+
+    /// Equivalent function to [Self::battlefield_owned] which returns an
+    /// iterator over [CardState]s in an undefined order.
+    fn battlefield_owned_cards(&self, player: PlayerName) -> impl Iterator<Item = &CardState> {
+        self.battlefield_owned(player).iter().map(move |id| self.card(*id))
+    }
+
+    /// Returns the IDs of cards and card-like objects owned by a player in
+    /// exile
     fn exile(&self, player: PlayerName) -> &HashSet<CardId>;
 
     /// Equivalent function to [Self::exile] which returns an iterator over
@@ -80,9 +92,8 @@ pub trait ZoneQueries {
     fn exile_cards(&self, player: PlayerName) -> impl Iterator<Item = &CardState> {
         self.exile(player).iter().map(move |id| self.card(*id))
     }
-
-    /// Returns the cards and card-like objects currently on the stack (last
-    /// element in result is top of stack).
+    /// Returns the IDs of all cards and card-like objects currently on the
+    /// stack (last element in result is top of stack).
     fn stack(&self) -> &[CardId];
 
     /// Equivalent function to [Self::stack] which returns an iterator over
@@ -91,12 +102,12 @@ pub trait ZoneQueries {
         self.stack().iter().map(move |id| self.card(*id))
     }
 
-    /// Returns the set of cards and card-like objects in a player's command
-    /// zone
+    /// Returns the IDs of cards and card-like objects owned by a player in the
+    /// command zone
     fn command_zone(&self, player: PlayerName) -> &HashSet<CardId>;
 
-    /// Returns the set of cards and card-like objects in a player's 'outside
-    /// the game' zone
+    /// Returns the IDs of cards and card-like objects owned by a player outside
+    /// the game
     fn outside_the_game_zone(&self, player: PlayerName) -> &HashSet<CardId>;
 }
 
@@ -112,7 +123,8 @@ pub struct Zones {
     libraries: OrderedZone,
     hands: UnorderedZone,
     graveyards: OrderedZone,
-    battlefield: UnorderedZone,
+    battlefield_controlled: UnorderedZone,
+    battlefield_owned: UnorderedZone,
     exile: UnorderedZone,
     stack: Vec<CardId>,
     command_zone: UnorderedZone,
@@ -141,7 +153,11 @@ impl ZoneQueries for Zones {
     }
 
     fn battlefield(&self, player: PlayerName) -> &HashSet<CardId> {
-        self.battlefield.cards(player)
+        self.battlefield_controlled.cards(player)
+    }
+
+    fn battlefield_owned(&self, player: PlayerName) -> &HashSet<CardId> {
+        self.battlefield_owned.cards(player)
     }
 
     fn exile(&self, player: PlayerName) -> &HashSet<CardId> {
@@ -168,16 +184,15 @@ impl Zones {
     }
 
     /// Creates a new named card, owned & controlled by the `owner` player in
-    /// the provided `zone`.
+    /// the player's library.
     ///
     /// The card is created in a face-down state and is not visible to any
     /// player. The card is assigned a [CardId] and [ObjectId] on creation.
-    pub fn create_hidden_card(
+    pub fn create_card_in_library(
         &mut self,
         name: CardName,
         kind: CardKind,
         owner: PlayerName,
-        zone: Zone,
     ) -> &CardState {
         let object_id = self.new_object_id();
         let id = self.all_cards.insert(CardState {
@@ -187,7 +202,7 @@ impl Zones {
             kind,
             owner,
             controller: owner,
-            zone,
+            zone: Zone::Library,
             facing: CardFacing::FaceDown,
             tapped_state: TappedState::Untapped,
             revealed_to: EnumSet::empty(),
@@ -199,7 +214,7 @@ impl Zones {
             printed_card_reference: None,
         });
 
-        self.add_to_zone(owner, id, zone);
+        self.add_to_zone(owner, id, Zone::Library);
 
         let card = &mut self.all_cards[id];
         card.card_id = id;
@@ -214,6 +229,17 @@ impl Zones {
         self.add_to_zone(owner, card_id, zone);
         self.card_mut(card_id).zone = zone;
         self.card_mut(card_id).object_id = self.new_object_id();
+    }
+
+    /// Changes the controller for a card.
+    pub fn change_control(&mut self, card_id: CardId, controller: PlayerName) {
+        let card = self.card_mut(card_id);
+        let old_controller = card.controller;
+        card.controller = controller;
+        if card.zone == Zone::Battlefield && old_controller != controller {
+            self.battlefield_controlled.remove(card_id, old_controller);
+            self.battlefield_controlled.cards_mut(controller).insert(card_id);
+        }
     }
 
     /// Shuffles the order of cards in a player's library
@@ -233,7 +259,10 @@ impl Zones {
                 self.libraries.remove(card_id, owner);
             }
             Zone::Battlefield => {
-                self.battlefield.remove(card_id, owner);
+                self.battlefield_owned.remove(card_id, owner);
+                if !self.battlefield_controlled.cards_mut(owner).remove(&card_id) {
+                    self.battlefield_controlled.cards_mut(owner.next()).remove(&card_id);
+                }
             }
             Zone::Stack => {
                 if let Some(p) = self.stack.iter().rev().position(|&id| id == card_id) {
@@ -260,7 +289,8 @@ impl Zones {
             }
             Zone::Graveyard => self.graveyards.cards_mut(owner).push_back(card_id),
             Zone::Battlefield => {
-                self.battlefield.cards_mut(owner).insert(card_id);
+                self.battlefield_owned.cards_mut(owner).insert(card_id);
+                self.battlefield_controlled.cards_mut(owner).insert(card_id);
             }
             Zone::Exiled => {
                 self.exile.cards_mut(owner).insert(card_id);
