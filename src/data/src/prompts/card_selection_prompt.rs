@@ -12,14 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
-
 use crate::core::primitives::CardId;
-use crate::effects::effect::Effect;
+use crate::game_states::game_state::GameState;
 
 /// A prompt for a player to select one or more cards from a set of cards to
 /// apply some effect to.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct CardSelectionPrompt {
     /// Cards which should be displayed in the browser and which have not
     /// been selected by dragging them to the target. Initially, this should
@@ -29,30 +27,17 @@ pub struct CardSelectionPrompt {
     /// For example, this would contain cards that should be kept in hand during
     /// the 'discard to hand size' flow.
     pub unchosen_subjects: Vec<CardId>,
-    /// Cards which have been selected, e.g. the cards that should be discarded
-    /// when performing the 'discard to hand size' flow. This should initially
-    /// be empty.
-    pub chosen_subjects: Vec<CardId>,
-    /// Effects to apply to the chosen subjects
-    pub effects: Vec<Effect>,
-    /// Describes which configurations of subjects are valid and should allow
-    /// the prompt to be exited.
-    pub validation: CardSelectionPromptValidation,
-    /// If true, the player seeing this prompt can rearrange the cards within
-    /// the `target` position.
-    pub can_reorder: bool,
-}
 
-/// Describes which configurations of subjects for a [CardSelectionPrompt] are
-/// valid and should allow the prompt to be exited.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum CardSelectionPromptValidation {
-    /// User may select zero or more cards
-    Any,
-    /// User must select an exact quantity of cards.
-    ExactlyCount(usize),
-    /// User must select at most this many cards.
-    LessThanOrEqualTo(usize),
-    /// User must move all subject cards
-    AllSubjects,
+    /// Cards which have been selected so far, e.g. the cards that should be
+    /// discarded when performing the 'discard to hand size' flow. This
+    /// should initially be empty.
+    pub chosen_subjects: Vec<CardId>,
+
+    /// If true, the player seeing this prompt can rearrange the cards within
+    /// the `target` position. The chosen order will be reflected in the vector
+    /// passed to [Self::callback].
+    pub can_reorder: bool,
+
+    /// Callback invoked when cards are selected
+    pub callback: fn(&mut GameState, Vec<CardId>),
 }

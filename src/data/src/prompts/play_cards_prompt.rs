@@ -12,19 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
-
 use crate::core::primitives::{CardId, Zone};
-use crate::effects::effect::Effect;
+use crate::game_states::game_state::GameState;
 
 /// A prompt shown to the user to allow them to play one or more cards from a
 /// set of cards.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct PlayCardsPrompt {
     /// Zone of origin for the cards being played.
     pub from_zone: Zone,
     /// Identifies the choices of cards that the user can possibly play.
     pub cards: Vec<CardId>,
-    /// Effect to apply to cards which are *not* played
-    pub unplayed_effects: Vec<Effect>,
+    /// Callback invoked when cards are chosen to be played.
+    pub callback: fn(&mut GameState, Vec<CardId>),
 }

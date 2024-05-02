@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use enumset::EnumSetType;
 use serde::{Deserialize, Serialize};
 
 #[allow(unused)] // Used in docs
 use crate::card_states::card_state::CardState;
 
 /// Possible kinds of game objects represented by the [CardState] struct.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Hash, EnumSetType, Serialize, Deserialize)]
 pub enum CardKind {
     /// Standard magic card
     Normal,

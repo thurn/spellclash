@@ -15,9 +15,10 @@
 use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};
 
+use crate::card_states::card_state::CardState;
 use crate::card_states::zones::Zones;
 use crate::core::numerics::TurnNumber;
-use crate::core::primitives::{GameId, PlayerName};
+use crate::core::primitives::{GameId, HasCardId, PlayerName};
 use crate::delegates::game_delegates::GameDelegates;
 use crate::game_states::animation_tracker::{
     AnimationState, AnimationStep, AnimationTracker, GameAnimation,
@@ -27,6 +28,7 @@ use crate::game_states::game_step::GamePhaseStep;
 use crate::game_states::history_data::GameHistory;
 use crate::game_states::undo_state::UndoTracker;
 use crate::player_states::player_state::Players;
+use crate::prompts::prompt_stack::PromptStack;
 use crate::state_machines::state_machine_data::StateMachines;
 
 /// This is the state of a single ongoing game of Magic (i.e. one duel, not a
@@ -78,6 +80,13 @@ pub struct GameState {
     /// game zone they are in.
     pub zones: Zones,
 
+    /// Prompts currently being shown to the players in this game.
+    ///
+    /// Cannot be serialized, serialization should only happen when this is
+    /// empty.
+    #[serde(skip)]
+    pub prompts: PromptStack,
+
     /// State of the currently active or most recently completed combat phase.
     ///
     /// If no combat phases have occurred this turn, this will contain
@@ -105,6 +114,14 @@ pub struct GameState {
 }
 
 impl GameState {
+    pub fn card(&self, card_id: impl HasCardId) -> &CardState {
+        self.zones.get(card_id.card_id())
+    }
+
+    pub fn card_mut(&mut self, card_id: impl HasCardId) -> &mut CardState {
+        self.zones.get_mut(card_id.card_id())
+    }
+
     pub fn add_animation(&mut self, update: impl FnOnce() -> GameAnimation) {
         if self.animations.state == AnimationState::Track {
             // Snapshot current game state, omit things that aren't important for

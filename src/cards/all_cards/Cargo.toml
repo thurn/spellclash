@@ -9,6 +9,7 @@ doctest = false
 bench = false
 
 [dependencies]
+cards_b = { path = "../cards_b", version = "0.0.0" }
 cards_d = { path = "../cards_d", version = "0.0.0" }
 cards_f = { path = "../cards_f", version = "0.0.0" }
 cards_g = { path = "../cards_g", version = "0.0.0" }

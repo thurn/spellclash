@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
-
 use crate::core::primitives::PlayerName;
 use crate::prompts::card_selection_prompt::CardSelectionPrompt;
 use crate::prompts::choice_prompt::ChoicePrompt;
@@ -23,7 +21,7 @@ use crate::text_strings::Text;
 /// Data for showing a prompt to a player.
 ///
 /// Prompts allow players to make a choice within the game interface.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct Prompt {
     /// Player who is being prompted
     pub player: PlayerName,
@@ -34,12 +32,8 @@ pub struct Prompt {
 }
 
 /// Possible types of prompts
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub enum PromptType {
-    /// Prompt for the player to pass priority or take any other legal game
-    /// actions in the current game state.
-    Priority,
-
     /// A blocking choice for a player to pick one of a list of options before
     /// any other game actions can occur.
     Choice(ChoicePrompt),

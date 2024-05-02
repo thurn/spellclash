@@ -33,6 +33,7 @@ use uuid::{uuid, Uuid};
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct CardName(pub Uuid);
 
+pub const BRAINSTORM: CardName = CardName(uuid!("36cd2364-d113-47d1-b2c4-b088d9eb88dd"));
 pub const DANDAN: CardName = CardName(uuid!("88929373-b2c8-4a81-a809-fed87fd5b0d7"));
 pub const FOREST: CardName = CardName(uuid!("b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6"));
 pub const GRIZZLY_BEARS: CardName = CardName(uuid!("14c8f55d-d177-4c25-a931-ebeb9e6062a0"));

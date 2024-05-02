@@ -21,11 +21,10 @@ use crate::costs::cost::Cost;
 use crate::delegates::ability_context::AbilityContext;
 #[allow(unused)] // Used in docs
 use crate::delegates::game_delegates::{Delegate, DelegateFn, GameDelegates};
-use crate::effects::effect::EffectList;
 use crate::game_states::game_state::GameState;
 
 /// A function to produce a list of requested mutations to [GameState].
-pub type EffectFn = fn(&GameState, AbilityContext, &mut EffectList);
+pub type EffectFn = fn(&mut GameState, AbilityContext);
 
 /// A predicate to apply to a delegate activation.
 pub type RequirementFn = fn(&GameState, AbilityContext) -> bool;

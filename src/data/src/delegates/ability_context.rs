@@ -12,9 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::core::primitives::AbilityNumber;
+use crate::core::primitives::{AbilityNumber, CardId, HasCardId, PlayerName};
 
 #[derive(Copy, Clone, Debug)]
 pub struct AbilityContext {
+    pub controller: PlayerName,
     pub number: AbilityNumber,
+    pub card_id: CardId,
+}
+
+impl HasCardId for AbilityContext {
+    fn card_id(&self) -> CardId {
+        self.card_id
+    }
 }

@@ -12,8 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod card_selection_prompt;
-pub mod choice_prompt;
-pub mod play_cards_prompt;
-pub mod prompt;
-pub mod prompt_stack;
+pub mod cards_br;

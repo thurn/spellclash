@@ -16,8 +16,10 @@
       <sourceFolder url="file://$MODULE_DIR$/src/driver/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/server/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/strings/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/cards/cards_b/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/terminal_ui/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/terminal_ui/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/src/cards/cards_b/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

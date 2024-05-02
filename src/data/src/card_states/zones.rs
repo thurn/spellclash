@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::iter;
+
 use enumset::EnumSet;
 use serde::{Deserialize, Serialize};
 use slotmap::SlotMap;
@@ -35,6 +37,16 @@ pub struct Zones {
 }
 
 impl Zones {
+    /// Look up a card by [CardId].
+    pub fn get(&self, card_id: CardId) -> &CardState {
+        &self.all_cards[card_id]
+    }
+
+    /// Mutable equivalent of [Self::get].
+    pub fn get_mut(&mut self, card_id: CardId) -> &mut CardState {
+        &mut self.all_cards[card_id]
+    }
+
     /// Creates a new named card, owned & controlled by the `owner` player in
     /// the provided `zone`.
     ///
@@ -76,6 +88,18 @@ impl Zones {
     /// currently been defined
     pub fn all_cards(&self) -> impl Iterator<Item = &CardState> + '_ {
         self.all_cards.values()
+    }
+
+    pub fn find_cards(
+        &self,
+        _controller: PlayerName,
+        _zone: Zone,
+    ) -> impl Iterator<Item = &CardState> {
+        iter::empty()
+    }
+
+    pub fn find_cards_ordered(&self, _controller: PlayerName, _zone: Zone) -> Vec<CardId> {
+        vec![]
     }
 
     fn new_object_id(&mut self) -> ObjectId {

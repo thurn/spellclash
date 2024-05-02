@@ -16,4 +16,6 @@ use serde::{Deserialize, Serialize};
 
 /// Canonical text displayed in the user interface, suitable for localization
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
-pub enum Text {}
+pub enum Text {
+    ReturnToTopOfDeck(usize),
+}
