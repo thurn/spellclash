@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::CardId;
+use data::core::primitives::{CardId, PlayerName};
 use data::game_states::game_state::GameState;
 
 pub enum LibraryPosition {
@@ -20,6 +20,8 @@ pub enum LibraryPosition {
     Bottom,
     Shuffled,
 }
+
+pub fn deal_opening_hand(_game: &mut GameState, _player: PlayerName) {}
 
 pub fn move_to_library(_game: &mut GameState, _position: LibraryPosition, _cards: Vec<CardId>) {}
 

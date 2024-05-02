@@ -24,7 +24,6 @@ use data::decks::deck::Deck;
 use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
 use data::delegates::game_delegates::GameDelegates;
-use data::effects::effect::Effect;
 use data::game_states::animation_tracker::AnimationTracker;
 use data::game_states::combat_state::CombatState;
 use data::game_states::game_state::{GameConfiguration, GameState, GameStatus, TurnData};
@@ -43,7 +42,7 @@ use maplit::hashmap;
 use rand::prelude::SliceRandom;
 use rand_xoshiro::rand_core::SeedableRng;
 use rand_xoshiro::Xoshiro256StarStar;
-use rules::mutations::mutation;
+use rules::mutations::cards;
 use tracing::info;
 use uuid::Uuid;
 
@@ -68,8 +67,8 @@ pub async fn create(
 
     info!(?game_id, "Creating new game");
     let mut game = create_game(game_id, user.id, user_deck, action.opponent_id, opponent_deck);
-    mutation::apply_effect(&mut game, PlayerName::One, Effect::DealOpeningHand);
-    mutation::apply_effect(&mut game, PlayerName::Two, Effect::DealOpeningHand);
+    cards::deal_opening_hand(&mut game, PlayerName::One);
+    cards::deal_opening_hand(&mut game, PlayerName::Two);
 
     user.activity = UserActivity::Playing(game.id);
 
