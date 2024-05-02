@@ -40,7 +40,7 @@ pub trait ZoneQueries {
     fn card_mut(&mut self, id: impl HasCardId) -> &mut CardState;
 
     /// Returns the IDs of cards and card-like objects owned by a player in
-    /// their library, in order (last element in result is top card).
+    /// their library, in order (`.back()` element in result is top card).
     fn library(&self, player: impl HasPlayerName) -> &VecDeque<CardId>;
 
     /// Returns the IDs of cards and card-like objects owned by a player in
@@ -54,7 +54,7 @@ pub trait ZoneQueries {
     }
 
     /// Returns the IDs of cards and card-like objects owned by a player in
-    /// their graveyard, in order (last element in result is top card).
+    /// their graveyard, in order (`.back()` element in result is top card).
     fn graveyard(&self, player: impl HasPlayerName) -> &VecDeque<CardId>;
 
     /// Equivalent function to [Self::graveyard] which returns an iterator over
@@ -226,6 +226,8 @@ impl Zones {
 
     /// Moves a card to a new zone, updates indices, and assigns a new
     /// [ObjectId] to it.
+    ///
+    /// The card is added as the top card of the target zone if it is ordered.
     ///
     /// Panics if this card was not found in its previous zone.
     pub fn move_card(&mut self, id: impl HasCardId, zone: Zone) {

@@ -18,17 +18,16 @@ use data::card_definitions::card_name;
 use data::card_states::zones::ZoneQueries;
 use data::prompts::card_selection_prompt::CardSelectionPrompt;
 use data::text_strings::Text;
-use rules::mutations::cards;
-use rules::mutations::cards::LibraryPosition;
+use rules::mutations::library;
 
 pub fn brainstorm() -> CardDefinition {
     CardDefinition::new(card_name::BRAINSTORM).ability(SpellAbility::new().effects(|g, c| {
-        cards::draw(g, 3);
+        library::draw_cards(g, c.controller, c, 3);
         let card_ids =
             g.prompts.select_cards(c.controller, Text::ReturnToTopOfDeck(2), CardSelectionPrompt {
                 choices: g.hand(c.controller).iter().copied().collect(),
                 can_reorder: true,
             });
-        cards::move_to_library(g, LibraryPosition::Top, card_ids);
+        library::move_all_to_top(g, card_ids.iter());
     }))
 }
