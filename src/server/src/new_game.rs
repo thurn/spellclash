@@ -32,7 +32,7 @@ use data::game_states::game_step::GamePhaseStep;
 use data::game_states::history_data::GameHistory;
 use data::game_states::undo_state::UndoTracker;
 use data::player_states::player_state::Players;
-use data::prompts::prompt_stack::PromptStack;
+use data::prompts::prompt_manager::PromptManager;
 use data::state_machines::state_machine_data::StateMachines;
 use data::users::user_state::UserActivity;
 use database::database::Database;
@@ -126,7 +126,7 @@ fn create_game(
         state_machines: StateMachines::default(),
         players: Players::new(p1, p2, LifeValue(20)),
         zones,
-        prompts: PromptStack::default(),
+        prompts: PromptManager::default(),
         combat: CombatState::default(),
         animations: AnimationTracker::default(),
         history: GameHistory::default(),

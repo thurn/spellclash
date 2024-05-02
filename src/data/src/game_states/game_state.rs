@@ -28,7 +28,7 @@ use crate::game_states::game_step::GamePhaseStep;
 use crate::game_states::history_data::GameHistory;
 use crate::game_states::undo_state::UndoTracker;
 use crate::player_states::player_state::Players;
-use crate::prompts::prompt_stack::PromptStack;
+use crate::prompts::prompt_manager::PromptManager;
 use crate::state_machines::state_machine_data::StateMachines;
 
 /// This is the state of a single ongoing game of Magic (i.e. one duel, not a
@@ -80,12 +80,9 @@ pub struct GameState {
     /// game zone they are in.
     pub zones: Zones,
 
-    /// Prompts currently being shown to the players in this game.
-    ///
-    /// Cannot be serialized, serialization should only happen when this is
-    /// empty.
+    /// Handles sending prompts for user actions to players in this game
     #[serde(skip)]
-    pub prompts: PromptStack,
+    pub prompts: PromptManager,
 
     /// State of the currently active or most recently completed combat phase.
     ///
