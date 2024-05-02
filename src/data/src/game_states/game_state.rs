@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::collections::{HashSet, VecDeque};
+
 use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};
 
 use crate::card_states::card_state::CardState;
-use crate::card_states::zones::{Zones, ZonesTrait};
+use crate::card_states::zones::{ZoneQueries, Zones};
 use crate::core::numerics::TurnNumber;
 use crate::core::primitives::{CardId, GameId, HasCardId, PlayerName};
 use crate::delegates::game_delegates::GameDelegates;
@@ -124,9 +126,14 @@ impl GameState {
             self.animations.steps.push(AnimationStep { snapshot: clone, update: update() });
         }
     }
+
+    /// Shuffles the order of cards in a player's library
+    pub fn shuffle_library(&mut self, player: PlayerName) {
+        self.zones.shuffle_library(player, &mut self.rng);
+    }
 }
 
-impl ZonesTrait for GameState {
+impl ZoneQueries for GameState {
     fn card(&self, id: impl HasCardId) -> &CardState {
         self.zones.card(id)
     }
@@ -135,8 +142,36 @@ impl ZonesTrait for GameState {
         self.zones.card_mut(id)
     }
 
-    fn hand(&self, player: PlayerName) -> impl Iterator<Item = CardId> {
+    fn library(&self, player: PlayerName) -> &VecDeque<CardId> {
+        self.zones.library(player)
+    }
+
+    fn hand(&self, player: PlayerName) -> &HashSet<CardId> {
         self.zones.hand(player)
+    }
+
+    fn graveyard(&self, player: PlayerName) -> &VecDeque<CardId> {
+        self.zones.graveyard(player)
+    }
+
+    fn battlefield(&self, player: PlayerName) -> &HashSet<CardId> {
+        self.zones.battlefield(player)
+    }
+
+    fn exile(&self, player: PlayerName) -> &HashSet<CardId> {
+        self.zones.exile(player)
+    }
+
+    fn stack(&self) -> &[CardId] {
+        self.zones.stack()
+    }
+
+    fn command_zone(&self, player: PlayerName) -> &HashSet<CardId> {
+        self.zones.command_zone(player)
+    }
+
+    fn outside_the_game_zone(&self, player: PlayerName) -> &HashSet<CardId> {
+        self.zones.outside_the_game_zone(player)
     }
 }
 

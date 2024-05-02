@@ -86,6 +86,16 @@ pub enum PlayerName {
     Two,
 }
 
+impl PlayerName {
+    /// Returns the next player in turn order after this player
+    pub fn next(&self) -> Self {
+        match self {
+            PlayerName::One => PlayerName::Two,
+            PlayerName::Two => PlayerName::One,
+        }
+    }
+}
+
 /// Identifies a struct that is 1:1 associated with a given [PlayerName].
 pub trait HasOwner {
     fn owner(&self) -> PlayerName;

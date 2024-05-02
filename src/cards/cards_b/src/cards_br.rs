@@ -15,7 +15,7 @@
 use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::card_states::zones::ZonesTrait;
+use data::card_states::zones::ZoneQueries;
 use data::prompts::card_selection_prompt::CardSelectionPrompt;
 use data::text_strings::Text;
 use rules::mutations::cards;
@@ -26,7 +26,7 @@ pub fn brainstorm() -> CardDefinition {
         cards::draw(g, 3);
         let card_ids =
             g.prompts.select_cards(c.controller, Text::ReturnToTopOfDeck(2), CardSelectionPrompt {
-                choices: g.hand(c.controller).collect(),
+                choices: g.hand(c.controller).iter().copied().collect(),
                 can_reorder: true,
             });
         cards::move_to_library(g, LibraryPosition::Top, card_ids);
