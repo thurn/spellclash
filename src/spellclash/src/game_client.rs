@@ -14,7 +14,10 @@
 
 use std::sync::Arc;
 
+use data::actions::new_game_action::{NewGameAction, NewGameDebugOptions};
+use data::actions::user_action::UserAction;
 use data::core::primitives::{GameId, UserId};
+use data::decks::deck_name;
 use database::sled_database::SledDatabase;
 use dioxus::desktop::{Config, WindowBuilder};
 use dioxus::prelude::*;
@@ -23,7 +26,7 @@ use display::commands::scene_name::SceneName;
 use once_cell::sync::Lazy;
 use server;
 use server::game;
-use server::server_data::ClientData;
+use server::server_data::{ClientData, GameResponse};
 use uuid::Uuid;
 
 use crate::initialize;
@@ -94,17 +97,44 @@ fn Loading() -> Element {
     // }
 }
 
+async fn new_game(data: ClientData, mut game_response: Signal<Option<GameResponse>>) {
+    let data = game::handle_action(
+        DATABASE.as_ref(),
+        data,
+        UserAction::NewGameAction(NewGameAction {
+            deck: deck_name::ALL_GRIZZLY_BEARS,
+            opponent_deck: deck_name::ALL_GRIZZLY_BEARS,
+            opponent_id: None,
+            debug_options: NewGameDebugOptions::default(),
+        }),
+    )
+    .await;
+
+    *game_response.write() = Some(data.expect("Error creating new game"));
+}
+
 #[component]
 fn MainMenu() -> Element {
-    let mut client_data = consume_context::<Signal<ClientData>>();
+    let client_data = consume_context::<Signal<ClientData>>();
+    let game_response = use_signal(|| None);
     rsx! {
-        div { "Main Menu" }
+        div {
+            h1 {
+                class: "text-4xl font-bold m-8",
+                "Main Menu"
+            }
+            button {
+                class: "m-8 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none",
+                onclick: move |_| new_game(client_data().clone(), game_response),
+                "New Game "
+            }
+        }
     }
 }
 
 #[component]
 fn Game(id: GameId) -> Element {
-    let mut client_data = consume_context::<Signal<ClientData>>();
+    let _client_data = consume_context::<Signal<ClientData>>();
     rsx! {
         div { "Game" }
     }

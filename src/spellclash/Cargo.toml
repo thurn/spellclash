@@ -5,6 +5,12 @@ edition = "2021"
 build = "build.rs"
 default-run = "spellclash"
 
+[[bin]]
+name = "spellclash"
+test = false
+doctest = false
+bench = false
+
 [dependencies]
 all_cards = { path = "../cards/all_cards", version = "0.0.0" }
 data = { path = "../data", version = "0.0.0" }
