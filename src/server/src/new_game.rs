@@ -77,7 +77,7 @@ pub async fn create(
     let opponent_ids = action.opponent_id.map(|o| vec![o]).unwrap_or_default();
     let opponent_responses = opponent_ids
         .iter()
-        .map(|&id| (id, vec![requests::force_load_scene(SceneName::Game)]))
+        .map(|&id| (id, vec![requests::force_load_scene(SceneName::Game(game_id))]))
         .collect::<Vec<_>>();
     let result = GameResponse::new(ClientData {
         user_id: user.id,
@@ -85,7 +85,7 @@ pub async fn create(
         display_preferences: DisplayPreferences::default(),
         opponent_ids,
     })
-    .command(requests::force_load_scene(SceneName::Game))
+    .command(requests::force_load_scene(SceneName::Game(game_id)))
     .opponent_responses(opponent_responses);
 
     database.write_game(&game).await?;

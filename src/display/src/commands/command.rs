@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use schemars::JsonSchema;
-
 use crate::commands::scene_name::SceneName;
 use crate::core::game_view::GameView;
 
 /// Represents an instruction to the client to perform some visual update.
-#[derive(Clone, Debug, JsonSchema)]
+#[derive(Clone, Debug)]
 pub enum Command {
     /// Requests to load a new top-level game scene
     LoadScene {

@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![allow(non_snake_case)]
-
 use std::env;
 
 use all_cards::card_list;
@@ -25,18 +23,19 @@ use crate::cli::Cli;
 
 pub mod cli;
 pub mod game_client;
-pub mod utils;
+pub mod initialize;
 
 fn main() -> Result<()> {
-    utils::initialize_logging()?;
+    initialize::initialize_logging()?;
     if env::var("DISABLE_PANIC_HANDLER").is_err() {
-        utils::initialize_panic_handler()?;
+        initialize::initialize_panic_handler()?;
     }
     Cli::parse();
     card_list::initialize();
 
     let commit = env!("VERGEN_GIT_SHA");
     info!(commit, "Starting game");
+
     game_client::launch();
     Ok(())
 }

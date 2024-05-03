@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::path::Path;
+
 use async_trait::async_trait;
 use data::core::primitives::{GameId, UserId};
 use data::game_states::game_state::GameState;
@@ -28,8 +30,8 @@ pub struct SledDatabase {
 }
 
 impl SledDatabase {
-    pub fn new(path: impl Into<String>) -> Self {
-        Self { db: sled::open(path.into()).expect("Unable to open database") }
+    pub fn new(path: impl AsRef<Path>) -> Self {
+        Self { db: sled::open(path).expect("Unable to open database") }
     }
 
     fn games(&self) -> Value<Tree> {

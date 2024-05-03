@@ -22,12 +22,6 @@ use utils::outcome::Value;
 use crate::server_data::{ClientData, GameResponse};
 use crate::{game_action_server, main_menu_server, new_game};
 
-/// Synchronous entrypoint equivalent (via tokio::main) of [connect]
-#[tokio::main]
-pub async fn connect_sync(database: &impl Database, user_id: UserId) -> Value<GameResponse> {
-    connect(database, user_id).await
-}
-
 /// Connects to the current game scene.
 ///
 /// This returns commands to load & render the current game state. It's expected
@@ -42,16 +36,6 @@ pub async fn connect(database: &impl Database, user_id: UserId) -> Value<GameRes
     }?;
 
     Ok(result)
-}
-
-/// Synchronous entrypoint equivalent (via tokio::main) of [handle_action]
-#[tokio::main]
-pub async fn handle_action_sync(
-    database: &impl Database,
-    data: ClientData,
-    action: UserAction,
-) -> Value<GameResponse> {
-    handle_action(database, data, action).await
 }
 
 /// Handles a [UserAction] from the client.

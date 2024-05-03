@@ -14,7 +14,7 @@
 
 use clap::Parser;
 
-use crate::utils::version;
+use crate::initialize::version;
 
 #[derive(Parser, Debug)]
 #[command(version = version(), about)]

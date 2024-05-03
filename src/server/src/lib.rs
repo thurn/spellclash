@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod server;
+pub mod game;
 pub mod server_data;
 
 mod game_action_server;

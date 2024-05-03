@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::str::FromStr;
+
+use derive_more::Display;
 use enum_iterator::Sequence;
 use enum_map::Enum;
 use enumset::EnumSetType;
@@ -242,8 +245,16 @@ impl Zone {
 }
 
 /// Unique identifier for a game
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Display, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct GameId(pub Uuid);
+
+impl FromStr for GameId {
+    type Err = uuid::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(GameId(Uuid::try_parse(s)?))
+    }
+}
 
 /// Unique identifier for a user
 ///

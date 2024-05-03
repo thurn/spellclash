@@ -49,7 +49,7 @@ pub async fn connect(
     }
 
     info!(?user.id, ?game.id, "Connected to game");
-    let mut commands = vec![requests::load_scene(SceneName::Game)];
+    let mut commands = vec![requests::load_scene(SceneName::Game(game_id))];
     commands.append(&mut render::connect(&game, player_name, DisplayPreferences::default()));
     let client_data = ClientData {
         user_id: user.id,
