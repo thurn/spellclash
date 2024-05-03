@@ -23,12 +23,14 @@ use dioxus::desktop::{Config, WindowBuilder};
 use dioxus::prelude::*;
 use display::commands::command::Command;
 use display::commands::scene_name::SceneName;
+use display::core::game_view::GameView;
 use once_cell::sync::Lazy;
 use server;
 use server::game;
 use server::server_data::{ClientData, GameResponse};
 use uuid::Uuid;
 
+use crate::game_components::game_component::GameComponent;
 use crate::initialize;
 
 static DATABASE: Lazy<Arc<SledDatabase>> =
@@ -66,6 +68,8 @@ pub fn launch() {
 fn App() -> Element {
     let user_id = UserId(Uuid::default());
     use_context_provider(|| Signal::new(ClientData::for_user(user_id)));
+    let view_signal_data: Option<GameView> = None;
+    use_context_provider(|| Signal::new(view_signal_data));
     rsx! {
         style { {include_str!("../assets/style.css")} }
         Router::<Route> {}
@@ -74,33 +78,28 @@ fn App() -> Element {
 
 #[component]
 fn Loading() -> Element {
-    let client_data = consume_context::<Signal<ClientData>>();
-    let d = client_data();
-    let connection = use_resource(move || game::connect(DATABASE.as_ref(), d.user_id));
+    let client_data_signal = consume_context::<Signal<ClientData>>();
+    let client_data = client_data_signal();
+    let view_signal = consume_context::<Signal<Option<GameView>>>();
+    let connection = use_resource(move || game::connect(DATABASE.as_ref(), client_data.user_id));
     let nav = use_navigator();
     match &*connection.read_unchecked() {
         Some(Ok(response)) => {
-            handle_commands(&d, &response.commands, nav);
+            handle_commands(response.clone(), nav, view_signal);
             rsx! { "Got response {response:?}" }
         }
         Some(Err(err)) => rsx! { "Error: {err:?}",  },
         None => rsx! { "Loading... " },
     }
-
-    // rsx! {
-    //     style { {include_str!("../assets/style.css")} }
-    //     div { id: "wrapper",
-    //         div { class: "w-32 h-32 bg-lime-500 rounded"}
-    //         div { style: "margin-left: 10px" }
-    //         div { class: "card blue" }
-    //     }
-    // }
 }
 
-async fn new_game(data: ClientData, mut game_response: Signal<Option<GameResponse>>) {
+async fn new_game() {
+    let client_data = consume_context::<Signal<ClientData>>();
+    let view_signal = consume_context::<Signal<Option<GameView>>>();
+    let nav = use_navigator();
     let data = game::handle_action(
         DATABASE.as_ref(),
-        data,
+        client_data(),
         UserAction::NewGameAction(NewGameAction {
             deck: deck_name::ALL_GRIZZLY_BEARS,
             opponent_deck: deck_name::ALL_GRIZZLY_BEARS,
@@ -110,13 +109,11 @@ async fn new_game(data: ClientData, mut game_response: Signal<Option<GameRespons
     )
     .await;
 
-    *game_response.write() = Some(data.expect("Error creating new game"));
+    handle_commands(data.expect("Error in game response"), nav, view_signal);
 }
 
 #[component]
 fn MainMenu() -> Element {
-    let client_data = consume_context::<Signal<ClientData>>();
-    let game_response = use_signal(|| None);
     rsx! {
         div {
             h1 {
@@ -125,7 +122,7 @@ fn MainMenu() -> Element {
             }
             button {
                 class: "m-8 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none",
-                onclick: move |_| new_game(client_data().clone(), game_response),
+                onclick: move |_| new_game(),
                 "New Game "
             }
         }
@@ -134,24 +131,36 @@ fn MainMenu() -> Element {
 
 #[component]
 fn Game(id: GameId) -> Element {
-    let _client_data = consume_context::<Signal<ClientData>>();
-    rsx! {
-        div { "Game" }
+    let view_signal = consume_context::<Signal<Option<GameView>>>();
+    let view = view_signal();
+    match view {
+        Some(game) => rsx! {
+            GameComponent { view: game }
+        },
+        None => rsx! {
+            "No GameView"
+        },
     }
 }
 
-fn handle_commands(_data: &ClientData, commands: &[Command], navigator: Navigator) {
-    for command in commands {
+fn handle_commands(
+    response: GameResponse,
+    navigator: Navigator,
+    mut view_signal: Signal<Option<GameView>>,
+) {
+    for command in response.commands {
         match command {
             Command::LoadScene { name, .. } => match name {
                 SceneName::MainMenu => {
                     navigator.replace(Route::MainMenu {});
                 }
                 SceneName::Game(id) => {
-                    navigator.replace(Route::Game { id: *id });
+                    navigator.replace(Route::Game { id });
                 }
             },
-            Command::UpdateGameView { .. } => {}
+            Command::UpdateGameView { view, .. } => {
+                *view_signal.write() = Some(view);
+            }
         }
     }
 }

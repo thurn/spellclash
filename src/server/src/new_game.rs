@@ -35,6 +35,7 @@ use data::users::user_state::UserActivity;
 use database::database::Database;
 use display::commands::display_preferences::DisplayPreferences;
 use display::commands::scene_name::SceneName;
+use display::rendering::render;
 use enumset::EnumSet;
 use maplit::hashmap;
 use oracle::card_database;
@@ -80,8 +81,16 @@ pub async fn create(
     let opponent_ids = action.opponent_id.map(|o| vec![o]).unwrap_or_default();
     let opponent_responses = opponent_ids
         .iter()
-        .map(|&id| (id, vec![requests::force_load_scene(SceneName::Game(game_id))]))
-        .collect::<Vec<_>>();
+        .map(|&id| {
+            let mut commands = vec![requests::force_load_scene(SceneName::Game(game_id))];
+            commands.append(&mut render::connect(
+                &game,
+                game.find_player_name(id)?,
+                DisplayPreferences::default(),
+            ));
+            Ok((id, commands))
+        })
+        .collect::<Result<Vec<_>, _>>()?;
     let result = GameResponse::new(ClientData {
         user_id: user.id,
         game_id: Some(game.id),
@@ -89,6 +98,11 @@ pub async fn create(
         opponent_ids,
     })
     .command(requests::force_load_scene(SceneName::Game(game_id)))
+    .commands(render::connect(
+        &game,
+        game.find_player_name(user.id)?,
+        DisplayPreferences::default(),
+    ))
     .opponent_responses(opponent_responses);
 
     database.write_game(&game).await?;

@@ -16,12 +16,13 @@ use std::collections::{HashSet, VecDeque};
 
 use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};
-use utils::outcome::Outcome;
+use utils::fail;
+use utils::outcome::{Outcome, Value};
 
 use crate::card_states::card_state::CardState;
 use crate::card_states::zones::{ZoneQueries, Zones};
 use crate::core::numerics::TurnNumber;
-use crate::core::primitives::{CardId, GameId, HasCardId, HasPlayerName, PlayerName};
+use crate::core::primitives::{CardId, GameId, HasCardId, HasPlayerName, PlayerName, UserId};
 use crate::delegates::game_delegates::GameDelegates;
 use crate::game_states::animation_tracker::{
     AnimationState, AnimationStep, AnimationTracker, GameAnimation,
@@ -131,6 +132,18 @@ impl GameState {
     /// Shuffles the order of cards in a player's library
     pub fn shuffle_library(&mut self, player: PlayerName) -> Outcome {
         self.zones.shuffle_library(player, &mut self.rng)
+    }
+
+    /// Finds the name of the player with the given user ID
+    ///
+    /// Returns an error this user is not a player in this game.
+    pub fn find_player_name(&self, user_id: UserId) -> Value<PlayerName> {
+        for name in enum_iterator::all::<PlayerName>() {
+            if self.players.get(name).user_id == Some(user_id) {
+                return Ok(name);
+            }
+        }
+        fail!("User {user_id:?} is not a player in game {:?}", self.id);
     }
 }
 

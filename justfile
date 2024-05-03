@@ -50,6 +50,10 @@ outdated:
     # Check for outdated dependencies, consider installing cargo-edit and running 'cargo upgrade' if this fails
     cargo outdated --exit-code 1
 
+clear-data:
+    rm -r ~/Library/Application\ Support/com.spellclash.spellclash/
+    mkdir ~/Library/Application\ Support/com.spellclash.spellclash/
+
 upgrade:
     cargo upgrade --workspace
 

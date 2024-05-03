@@ -18,7 +18,7 @@ use schemars::JsonSchema;
 use crate::core::card_view::CardView;
 
 /// Represents the visual state of an ongoing game
-#[derive(Clone, Debug, JsonSchema)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct GameView {
     /// Player who is operating the client
     pub viewer: PlayerView,
@@ -52,7 +52,7 @@ pub enum DisplayPlayer {
 }
 
 /// Represents the visual state of a player in a game
-#[derive(Clone, Debug, JsonSchema)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PlayerView {
     /// Current life total
     pub life: LifeValue,

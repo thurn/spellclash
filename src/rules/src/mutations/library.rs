@@ -20,10 +20,12 @@ use utils::outcome::Outcome;
 
 /// Draws a card from the top of the `player`'s library.
 ///
-/// Returns `outcome::GAME_OVER` if this causes the game to end due to drawing
-/// from an empty library.
+/// Marks the card as revealed to its owner. Returns `outcome::GAME_OVER` if
+/// this causes the game to end due to drawing from an empty library.
 pub fn draw(game: &mut GameState, player: impl HasPlayerName, _source: impl HasSource) -> Outcome {
     let Some(&id) = game.library(player).back() else { return outcome::GAME_OVER };
+    let card = game.card_mut(id);
+    card.revealed_to.insert(card.owner);
     game.zones.move_card(id, Zone::Hand)
 }
 

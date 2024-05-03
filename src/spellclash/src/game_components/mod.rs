@@ -12,31 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::env;
-
-use all_cards::card_list;
-use clap::Parser;
-use color_eyre::Result;
-use tracing::info;
-
-use crate::cli::Cli;
-
-pub mod cli;
-pub mod game_client;
-mod game_components;
-pub mod initialize;
-
-fn main() -> Result<()> {
-    initialize::initialize_logging()?;
-    if env::var("DISABLE_PANIC_HANDLER").is_err() {
-        initialize::initialize_panic_handler()?;
-    }
-    Cli::parse();
-    card_list::initialize();
-
-    let commit = env!("VERGEN_GIT_SHA");
-    info!(commit, "Starting game");
-
-    game_client::launch();
-    Ok(())
-}
+pub mod card_component;
+pub mod game_component;

@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::PlayerName;
+use data::card_states::card_state::CardState;
+use data::core::primitives::{PlayerName, Zone};
 use data::game_states::game_state::GameState;
 
 use crate::core::game_view::{GameView, GameViewState, PlayerView};
@@ -26,6 +27,7 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
     let cards = game
         .zones
         .all_cards()
+        .filter(|c| !skip_sending_to_client(c))
         .map(|c| card_sync::card_view(builder, &CardViewContext::Game(c.printed(), game, c)))
         .collect::<Vec<_>>();
 
@@ -46,4 +48,8 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
 
 fn player_view(game: &GameState, player: PlayerName) -> PlayerView {
     PlayerView { life: game.players.get(player).life, can_act: game.priority == player }
+}
+
+pub fn skip_sending_to_client(card: &CardState) -> bool {
+    card.revealed_to.is_empty() && card.zone == Zone::Library
 }

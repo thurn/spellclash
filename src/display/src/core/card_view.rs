@@ -16,12 +16,11 @@ use data::card_states::card_state::{CardFacing, TappedState};
 use data::core::numerics::Damage;
 use data::core::primitives::CardId;
 use data::printed_cards::layout::{CardLayout, FaceLayout};
-use schemars::JsonSchema;
 
 use crate::core::object_position::ObjectPosition;
 
 /// Represents the visual state of a card or ability in a game
-#[derive(Clone, Debug, JsonSchema)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CardView {
     /// Identifier for this card
     pub id: CardId,
@@ -59,7 +58,7 @@ pub struct CardView {
 }
 
 /// Visual state of a revealed card
-#[derive(Clone, Debug, JsonSchema)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct RevealedCardView {
     /// Primary face of this card
     pub face: RevealedCardFace,
@@ -72,7 +71,7 @@ pub struct RevealedCardView {
 }
 
 /// Visual state of a revealed card face
-#[derive(Clone, Debug, JsonSchema)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct RevealedCardFace {
     /// Name of this face
     pub name: String,

@@ -13,8 +13,7 @@
 // limitations under the License.
 
 use data::actions::game_action::GameAction;
-use data::core::primitives::{GameId, PlayerName, UserId};
-use data::game_states::game_state::GameState;
+use data::core::primitives::{GameId, PlayerName};
 use data::users::user_state::UserState;
 use database::database::Database;
 use display::commands::display_preferences::DisplayPreferences;
@@ -22,7 +21,6 @@ use display::commands::scene_name::SceneName;
 use display::rendering::render;
 use rules::actions::apply_game_action;
 use tracing::info;
-use utils::fail;
 use utils::outcome::Value;
 use utils::with_error::WithError;
 
@@ -37,7 +35,7 @@ pub async fn connect(
     game_id: GameId,
 ) -> Value<GameResponse> {
     let game = requests::fetch_game(database, game_id).await?;
-    let player_name = find_player_name(&game, user.id)?;
+    let player_name = game.find_player_name(user.id)?;
     let mut opponent_ids = vec![];
     for name in enum_iterator::all::<PlayerName>() {
         match game.players.get(name).user_id {
@@ -68,14 +66,14 @@ pub async fn handle_game_action(
     let mut game =
         requests::fetch_game(database, data.game_id.with_error(|| "Expected current game ID")?)
             .await?;
-    let player_name = find_player_name(&game, data.user_id)?;
+    let player_name = game.find_player_name(data.user_id)?;
     apply_game_action::run(&mut game, player_name, action);
 
     let user_result = render::render_updates(&game, player_name, data.display_preferences);
 
     let mut opponent_responses = vec![];
     for &opponent_id in &data.opponent_ids {
-        let opponent_name = find_player_name(&game, opponent_id)?;
+        let opponent_name = game.find_player_name(opponent_id)?;
         opponent_responses.push((
             opponent_id,
             render::render_updates(&game, opponent_name, DisplayPreferences::default()),
@@ -84,14 +82,4 @@ pub async fn handle_game_action(
 
     database.write_game(&game).await?;
     Ok(GameResponse::new(data).commands(user_result).opponent_responses(opponent_responses))
-}
-
-fn find_player_name(game: &GameState, user_id: UserId) -> Value<PlayerName> {
-    for name in enum_iterator::all::<PlayerName>() {
-        if game.players.get(name).user_id == Some(user_id) {
-            return Ok(name);
-        }
-    }
-
-    fail!("User {user_id:?} is not a player in game {:?}", game.id);
 }
