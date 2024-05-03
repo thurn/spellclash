@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use color_eyre::eyre::{bail, ContextCompat};
-use color_eyre::Result;
 use data::actions::game_action::GameAction;
 use data::core::primitives::{GameId, PlayerName, UserId};
 use data::game_states::game_state::GameState;
@@ -24,6 +22,9 @@ use display::commands::scene_name::SceneName;
 use display::rendering::render;
 use rules::actions::apply_game_action;
 use tracing::info;
+use utils::fail;
+use utils::outcome::Value;
+use utils::with_error::WithError;
 
 use crate::requests;
 use crate::server_data::{ClientData, GameResponse};
@@ -34,7 +35,7 @@ pub async fn connect(
     database: &impl Database,
     user: &UserState,
     game_id: GameId,
-) -> Result<GameResponse> {
+) -> Value<GameResponse> {
     let game = requests::fetch_game(database, game_id).await?;
     let player_name = find_player_name(&game, user.id)?;
     let mut opponent_ids = vec![];
@@ -63,9 +64,9 @@ pub async fn handle_game_action(
     database: &impl Database,
     data: ClientData,
     action: GameAction,
-) -> Result<GameResponse> {
+) -> Value<GameResponse> {
     let mut game =
-        requests::fetch_game(database, data.game_id.with_context(|| "Expected current game ID")?)
+        requests::fetch_game(database, data.game_id.with_error(|| "Expected current game ID")?)
             .await?;
     let player_name = find_player_name(&game, data.user_id)?;
     apply_game_action::run(&mut game, player_name, action);
@@ -85,12 +86,12 @@ pub async fn handle_game_action(
     Ok(GameResponse::new(data).commands(user_result).opponent_responses(opponent_responses))
 }
 
-fn find_player_name(game: &GameState, user_id: UserId) -> Result<PlayerName> {
+fn find_player_name(game: &GameState, user_id: UserId) -> Value<PlayerName> {
     for name in enum_iterator::all::<PlayerName>() {
         if game.players.get(name).user_id == Some(user_id) {
             return Ok(name);
         }
     }
 
-    bail!("User {user_id:?} is not a player in game {:?}", game.id);
+    fail!("User {user_id:?} is not a player in game {:?}", game.id);
 }

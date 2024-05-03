@@ -9,6 +9,9 @@ doctest = false
 bench = false
 
 [dependencies]
+utils = { path = "../utils", version = "0.0.0" }
+
+color-eyre = "0.6.2"
 dashmap = "5.4.0"
 derive_more = "0.99.17"
 enum-iterator = "2.0.0"

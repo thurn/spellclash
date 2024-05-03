@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use tokio::sync::{mpsc, oneshot};
+use utils::fail;
+use utils::outcome::{StopCondition, Value};
 
 use crate::core::primitives::{CardId, ObjectId, PlayerName};
 use crate::prompts::card_selection_prompt::CardSelectionPrompt;
@@ -22,52 +23,53 @@ use crate::text_strings::Text;
 
 #[derive(Debug, Clone, Default)]
 pub struct PromptManager {
-    pub sender: Option<mpsc::UnboundedSender<(oneshot::Sender<PromptResponse>, Prompt)>>,
+    pub current_prompt: Option<Prompt>,
+    pub current_response: Option<PromptResponse>,
 }
 
 impl PromptManager {
     pub fn choose_object(
-        &self,
+        &mut self,
         player: PlayerName,
         description: Text,
         choices: Vec<Choice<ObjectId>>,
-    ) -> ObjectId {
-        let response = self.send(Prompt {
+    ) -> Value<ObjectId> {
+        let PromptResponse::ObjectChoice(id) = self.send(Prompt {
             player,
             label: Some(description),
             prompt_type: PromptType::ObjectChoice(ChoicePrompt { optional: false, choices }),
-        });
-
-        let PromptResponse::ObjectChoice(object_id) = response else {
-            panic!("Unexpected prompt response!");
+        })?
+        else {
+            fail!("Unexpected prompt response type!");
         };
 
-        object_id
+        Ok(*id)
     }
 
     pub fn select_cards(
-        &self,
+        &mut self,
         player: PlayerName,
         description: Text,
         prompt: CardSelectionPrompt,
-    ) -> Vec<CardId> {
-        let response = self.send(Prompt {
+    ) -> Value<Vec<CardId>> {
+        let PromptResponse::SelectCards(ids) = self.send(Prompt {
             player,
             label: Some(description),
             prompt_type: PromptType::SelectCards(prompt),
-        });
-
-        let PromptResponse::SelectCards(ids) = response else {
-            panic!("Unexpected prompt response!");
+        })?
+        else {
+            fail!("Unexpected prompt response type!");
         };
 
-        ids
+        Ok(ids.clone())
     }
 
-    fn send(&self, prompt: Prompt) -> PromptResponse {
-        let sender = &self.sender.as_ref().expect("No prompt sender");
-        let (respond, receive) = oneshot::channel();
-        sender.send((respond, prompt)).expect("Error sending message");
-        receive.blocking_recv().expect("Error receiving prompt response")
+    fn send(&mut self, prompt: Prompt) -> Value<&PromptResponse> {
+        if let Some(response) = &self.current_response {
+            Ok(response)
+        } else {
+            self.current_prompt = Some(prompt);
+            Err(StopCondition::Prompt)
+        }
     }
 }

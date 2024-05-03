@@ -19,6 +19,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/cards/cards_b/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/terminal_ui/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/terminal_ui/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/utils/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/src/cards/cards_b/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>

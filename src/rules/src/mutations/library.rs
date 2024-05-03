@@ -15,50 +15,47 @@
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, HasCardId, HasPlayerName, HasSource, Zone};
 use data::game_states::game_state::GameState;
+use utils::outcome;
+use utils::outcome::Outcome;
 
 /// Draws a card from the top of the `player`'s library.
 ///
-/// Returns the ID of the card drawn, or None if the draw was prevented or the
-/// library is empty.
-pub fn draw(
-    game: &mut GameState,
-    player: impl HasPlayerName,
-    _source: impl HasSource,
-) -> Option<CardId> {
-    let id = *game.library(player).back()?;
-    game.zones.move_card(id, Zone::Hand);
-    Some(id)
+/// Returns `outcome::GAME_OVER` if this causes the game to end due to drawing
+/// from an empty library.
+pub fn draw(game: &mut GameState, player: impl HasPlayerName, _source: impl HasSource) -> Outcome {
+    let Some(&id) = game.library(player).back() else { return outcome::GAME_OVER };
+    game.zones.move_card(id, Zone::Hand)
 }
 
 /// Draws `count` cards in sequence from the top of the `player`'s library.
 ///
-/// Events are fired one at a time for each individual draw. Returns the number
-/// of cards actually drawn. The result will be zero if e.g. all draws are
-/// prevented.
+/// Events are fired one at a time for each individual draw. Returns
+/// `outcome::GAME_OVER` if this causes the game to end due to drawing from an
+/// empty library.
 pub fn draw_cards(
     game: &mut GameState,
     player: impl HasPlayerName,
     source: impl HasSource,
     count: usize,
-) -> usize {
+) -> Outcome {
     let p = player.player_name();
     let s = source.source();
-    let mut drawn = 0;
     for _ in 0..count {
-        if draw(game, p, s).is_some() {
-            drawn += 1;
-        }
+        draw(game, p, s)?;
     }
-
-    drawn
+    outcome::OK
 }
 
-pub fn move_to_top(game: &mut GameState, card_id: impl HasCardId) {
-    game.zones.move_card(card_id.card_id(), Zone::Library);
+pub fn move_to_top(game: &mut GameState, card_id: impl HasCardId) -> Outcome {
+    game.zones.move_card(card_id.card_id(), Zone::Library)
 }
 
-pub fn move_all_to_top<'a>(game: &mut GameState, cards: impl Iterator<Item = &'a CardId>) {
+pub fn move_all_to_top<'a>(
+    game: &mut GameState,
+    cards: impl Iterator<Item = &'a CardId>,
+) -> Outcome {
     for card_id in cards {
-        move_to_top(game, card_id);
+        move_to_top(game, card_id)?;
     }
+    outcome::OK
 }

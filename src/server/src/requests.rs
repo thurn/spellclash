@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use color_eyre::eyre::ContextCompat;
-use color_eyre::Result;
 use data::core::primitives::{GameId, UserId};
 use data::game_states::animation_tracker::{AnimationState, AnimationTracker};
 use data::game_states::game_state::GameState;
@@ -21,6 +19,8 @@ use data::users::user_state::UserState;
 use database::database::Database;
 use display::commands::command::Command;
 use display::commands::scene_name::SceneName;
+use utils::outcome::Value;
+use utils::with_error::WithError;
 
 /// Command to load a named scene if it is not currently active
 pub fn load_scene(name: SceneName) -> Command {
@@ -33,16 +33,14 @@ pub fn force_load_scene(name: SceneName) -> Command {
 }
 
 /// Looks up a user by ID in the database.
-pub async fn fetch_user(database: &impl Database, user_id: UserId) -> Result<UserState> {
-    database.fetch_user(user_id).await?.with_context(|| format!("User not found {user_id:?}"))
+pub async fn fetch_user(database: &impl Database, user_id: UserId) -> Value<UserState> {
+    database.fetch_user(user_id).await?.with_error(|| format!("User not found {user_id:?}"))
 }
 
 /// Looks up a game by ID in the database.
-pub async fn fetch_game(database: &impl Database, game_id: GameId) -> Result<GameState> {
-    let mut game = database
-        .fetch_game(game_id)
-        .await?
-        .with_context(|| format!("Game not found {game_id:?}"))?;
+pub async fn fetch_game(database: &impl Database, game_id: GameId) -> Value<GameState> {
+    let mut game =
+        database.fetch_game(game_id).await?.with_error(|| format!("Game not found {game_id:?}"))?;
     game.animations = AnimationTracker::new(if game.configuration.simulation {
         AnimationState::Ignore
     } else {

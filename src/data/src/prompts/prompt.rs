@@ -46,6 +46,7 @@ pub enum PromptType {
     PlayCards(PlayCardsPrompt),
 }
 
+#[derive(Clone, Debug)]
 pub enum PromptResponse {
     ObjectChoice(ObjectId),
     SelectCards(Vec<CardId>),

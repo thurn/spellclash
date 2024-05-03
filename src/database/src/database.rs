@@ -13,23 +13,23 @@
 // limitations under the License.
 
 use async_trait::async_trait;
-use color_eyre::Result;
 use data::core::primitives::{GameId, UserId};
 use data::game_states::game_state::GameState;
 use data::users::user_state::UserState;
+use utils::outcome::Value;
 
 /// Trait abstracting over ways of serializing game state
 #[async_trait]
 pub trait Database: Send + Sync {
     /// Read a game from the database
-    async fn fetch_game(&self, id: GameId) -> Result<Option<GameState>>;
+    async fn fetch_game(&self, id: GameId) -> Value<Option<GameState>>;
 
     /// Write a game to the database
-    async fn write_game(&self, game: &GameState) -> Result<()>;
+    async fn write_game(&self, game: &GameState) -> Value<()>;
 
     /// Read a user from the database
-    async fn fetch_user(&self, id: UserId) -> Result<Option<UserState>>;
+    async fn fetch_user(&self, id: UserId) -> Value<Option<UserState>>;
 
     /// Write a user to the database
-    async fn write_user(&self, user: &UserState) -> Result<()>;
+    async fn write_user(&self, user: &UserState) -> Value<()>;
 }

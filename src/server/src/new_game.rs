@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use color_eyre::eyre::bail;
-use color_eyre::Result;
 use data::actions::new_game_action::NewGameAction;
 use data::card_definitions::card_name;
 use data::card_states::card_kind::CardKind;
@@ -44,6 +42,8 @@ use rand_xoshiro::rand_core::SeedableRng;
 use rand_xoshiro::Xoshiro256StarStar;
 use rules::mutations::library;
 use tracing::info;
+use utils::fail;
+use utils::outcome::Value;
 use uuid::Uuid;
 
 use crate::requests;
@@ -53,7 +53,7 @@ pub async fn create(
     database: &impl Database,
     data: ClientData,
     action: NewGameAction,
-) -> Result<GameResponse> {
+) -> Value<GameResponse> {
     let mut user = requests::fetch_user(database, data.user_id).await?;
 
     let user_deck = find_deck(action.deck)?;
@@ -68,9 +68,9 @@ pub async fn create(
     info!(?game_id, "Creating new game");
     let mut game = create_game(game_id, user.id, user_deck, action.opponent_id, opponent_deck);
     game.shuffle_library(PlayerName::One);
-    library::draw_cards(&mut game, PlayerName::One, Source::Game, 7);
+    library::draw_cards(&mut game, PlayerName::One, Source::Game, 7)?;
     game.shuffle_library(PlayerName::Two);
-    library::draw_cards(&mut game, PlayerName::Two, Source::Game, 7);
+    library::draw_cards(&mut game, PlayerName::Two, Source::Game, 7)?;
 
     user.activity = UserActivity::Playing(game.id);
 
@@ -145,7 +145,7 @@ fn create_cards_in_deck(zones: &mut Zones, deck: Deck, owner: PlayerName) {
     }
 }
 
-fn find_deck(name: DeckName) -> Result<Deck> {
+fn find_deck(name: DeckName) -> Value<Deck> {
     Ok(match name {
         deck_name::ALL_GRIZZLY_BEARS => Deck {
             colors: EnumSet::only(Color::Green),
@@ -154,6 +154,8 @@ fn find_deck(name: DeckName) -> Result<Deck> {
                 card_name::FOREST => 25
             },
         },
-        _ => bail!("Unknown deck {name:?}"),
+        _ => {
+            fail!("Unknown deck {name:?}");
+        }
     })
 }

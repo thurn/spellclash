@@ -13,13 +13,13 @@
 // limitations under the License.
 
 use async_trait::async_trait;
-use color_eyre::eyre::Context;
-use color_eyre::Result;
 use data::core::primitives::{GameId, UserId};
 use data::game_states::game_state::GameState;
 use data::users::user_state::UserState;
 use serde_json::{de, ser};
 use sled::{Db, Tree};
+use utils::outcome::Value;
+use utils::with_error::WithError;
 
 use crate::database::Database;
 
@@ -32,54 +32,58 @@ impl SledDatabase {
         Self { db: sled::open(path.into()).expect("Unable to open database") }
     }
 
-    fn games(&self) -> Result<Tree> {
-        self.db.open_tree("games").with_context(|| "Error opening the 'games' tree")
+    fn games(&self) -> Value<Tree> {
+        self.db.open_tree("games").with_error(|| "Error opening the 'games' tree")
     }
 
-    fn users(&self) -> Result<Tree> {
-        self.db.open_tree("users").with_context(|| "Error opening the 'users' tree")
+    fn users(&self) -> Value<Tree> {
+        self.db.open_tree("users").with_error(|| "Error opening the 'users' tree")
     }
 }
 
 #[async_trait]
 impl Database for SledDatabase {
-    async fn fetch_game(&self, id: GameId) -> Result<Option<GameState>> {
+    async fn fetch_game(&self, id: GameId) -> Value<Option<GameState>> {
         self.games()?
             .get(game_id_key(id))
-            .with_context(|| format!("Error fetching game {id:?}"))?
+            .with_error(|| format!("Error fetching game {id:?}"))?
             .map(|slice| {
                 de::from_slice::<GameState>(&slice)
-                    .with_context(|| format!("Error deserializing game {id:?}"))
+                    .with_error(|| format!("Error deserializing game {id:?}"))
             })
             .transpose()
     }
 
-    async fn write_game(&self, game: &GameState) -> Result<()> {
-        self.games()?.insert(
-            game_id_key(game.id),
-            ser::to_vec(game).with_context(|| format!("Error serializing game {:?}", game.id))?,
-        )?;
-        self.db.flush()?;
+    async fn write_game(&self, game: &GameState) -> Value<()> {
+        self.games()?
+            .insert(
+                game_id_key(game.id),
+                ser::to_vec(game).with_error(|| format!("Error serializing game {:?}", game.id))?,
+            )
+            .with_error(|| format!("Error inserting value for game {:?}", game.id))?;
+        self.db.flush().with_error(|| "Error flushing db")?;
         Ok(())
     }
 
-    async fn fetch_user(&self, id: UserId) -> Result<Option<UserState>> {
+    async fn fetch_user(&self, id: UserId) -> Value<Option<UserState>> {
         self.users()?
             .get(user_id_key(id))
-            .with_context(|| format!("Error fetching user {id:?}"))?
+            .with_error(|| format!("Error fetching user {id:?}"))?
             .map(|slice| {
                 de::from_slice::<UserState>(&slice)
-                    .with_context(|| format!("Error deserializing user {id:?}"))
+                    .with_error(|| format!("Error deserializing user {id:?}"))
             })
             .transpose()
     }
 
-    async fn write_user(&self, user: &UserState) -> Result<()> {
-        self.users()?.insert(
-            user_id_key(user.id),
-            ser::to_vec(user).with_context(|| format!("Error serializing user {:?}", user.id))?,
-        )?;
-        self.db.flush()?;
+    async fn write_user(&self, user: &UserState) -> Value<()> {
+        self.users()?
+            .insert(
+                user_id_key(user.id),
+                ser::to_vec(user).with_error(|| format!("Error serializing user {:?}", user.id))?,
+            )
+            .with_error(|| format!("Error inserting value for user {:?}", user.id))?;
+        self.db.flush().with_error(|| "Error flushing db")?;
         Ok(())
     }
 }

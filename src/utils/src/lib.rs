@@ -12,19 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::users::user_state::UserState;
-use database::database::Database;
-use display::commands::scene_name::SceneName;
-use tracing::info;
-use utils::outcome::Value;
-
-use crate::requests;
-use crate::server_data::{ClientData, GameResponse};
-
-/// Connect to the main menu scene
-pub async fn connect(_: &impl Database, user: &UserState) -> Value<GameResponse> {
-    info!(?user.id, "Connected");
-    let commands = vec![requests::load_scene(SceneName::MainMenu)];
-    let client_data = ClientData::for_user(user.id);
-    Ok(GameResponse::new(client_data).commands(commands))
-}
+pub mod outcome;
+pub mod with_error;
