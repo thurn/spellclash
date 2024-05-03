@@ -260,8 +260,13 @@ impl Zones {
     }
 
     /// Shuffles the order of cards in a player's library
-    pub fn shuffle_library(&mut self, player: impl HasPlayerName, rng: &mut Xoshiro256StarStar) {
+    pub fn shuffle_library(
+        &mut self,
+        player: impl HasPlayerName,
+        rng: &mut Xoshiro256StarStar,
+    ) -> Outcome {
         self.libraries.cards_mut(player.player_name()).make_contiguous().shuffle(rng);
+        outcome::OK
     }
 
     fn remove_from_zone(&mut self, owner: PlayerName, card_id: CardId, zone: Zone) -> Outcome {

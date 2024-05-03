@@ -16,6 +16,7 @@ use std::collections::{HashSet, VecDeque};
 
 use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};
+use utils::outcome::Outcome;
 
 use crate::card_states::card_state::CardState;
 use crate::card_states::zones::{ZoneQueries, Zones};
@@ -128,8 +129,8 @@ impl GameState {
     }
 
     /// Shuffles the order of cards in a player's library
-    pub fn shuffle_library(&mut self, player: PlayerName) {
-        self.zones.shuffle_library(player, &mut self.rng);
+    pub fn shuffle_library(&mut self, player: PlayerName) -> Outcome {
+        self.zones.shuffle_library(player, &mut self.rng)
     }
 }
 

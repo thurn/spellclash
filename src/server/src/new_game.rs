@@ -67,9 +67,9 @@ pub async fn create(
 
     info!(?game_id, "Creating new game");
     let mut game = create_game(game_id, user.id, user_deck, action.opponent_id, opponent_deck);
-    game.shuffle_library(PlayerName::One);
+    game.shuffle_library(PlayerName::One)?;
     library::draw_cards(&mut game, PlayerName::One, Source::Game, 7)?;
-    game.shuffle_library(PlayerName::Two);
+    game.shuffle_library(PlayerName::Two)?;
     library::draw_cards(&mut game, PlayerName::Two, Source::Game, 7)?;
 
     user.activity = UserActivity::Playing(game.id);
