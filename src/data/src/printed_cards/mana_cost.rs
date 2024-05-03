@@ -18,7 +18,7 @@ use crate::core::numerics::ManaValue;
 use crate::core::primitives::Color;
 
 /// Represents the printed mana cost of a card or ability
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ManaCost {
     /// List of symbols making up this mana cost
     pub costs: Vec<ManaCostItem>,

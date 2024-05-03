@@ -37,6 +37,7 @@ use display::commands::display_preferences::DisplayPreferences;
 use display::commands::scene_name::SceneName;
 use enumset::EnumSet;
 use maplit::hashmap;
+use oracle::card_database;
 use rand::prelude::SliceRandom;
 use rand_xoshiro::rand_core::SeedableRng;
 use rand_xoshiro::Xoshiro256StarStar;
@@ -67,6 +68,8 @@ pub async fn create(
 
     info!(?game_id, "Creating new game");
     let mut game = create_game(game_id, user.id, user_deck, action.opponent_id, opponent_deck);
+    card_database::populate(database, &mut game).await?;
+
     game.shuffle_library(PlayerName::One)?;
     library::draw_cards(&mut game, PlayerName::One, Source::Game, 7)?;
     game.shuffle_library(PlayerName::Two)?;

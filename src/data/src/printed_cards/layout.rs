@@ -23,6 +23,7 @@ use serde::{Deserialize, Serialize};
 pub enum CardLayout {
     Adventure,
     Aftermath,
+    Battle,
     Flip,
     Meld,
     ModalDfc,
@@ -35,11 +36,14 @@ pub enum CardLayout {
 ///
 /// See <https://scryfall.com/docs/api/layouts>
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum FaceLayout {
     Adventure,
     Aftermath,
     ArtSeries,
     Augment,
+    Battle,
+    Case,
     Class,
     DoubleFacedToken,
     Emblem,

@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/data/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/database/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/display/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/oracle/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/rules/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/server/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/spellclash/src" isTestSource="false" />

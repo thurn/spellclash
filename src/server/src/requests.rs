@@ -19,6 +19,7 @@ use data::users::user_state::UserState;
 use database::database::Database;
 use display::commands::command::Command;
 use display::commands::scene_name::SceneName;
+use oracle::card_database;
 use utils::outcome::Value;
 use utils::with_error::WithError;
 
@@ -46,5 +47,6 @@ pub async fn fetch_game(database: &impl Database, game_id: GameId) -> Value<Game
     } else {
         AnimationState::Track
     });
+    card_database::populate(database, &mut game).await?;
     Ok(game)
 }

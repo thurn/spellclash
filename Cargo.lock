@@ -602,8 +602,10 @@ checksum = "a21f936df1771bf62b77f047b726c4625ff2e8aa607c01ec06e5a05bd8463401"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
+ "js-sys",
  "num-traits",
  "serde",
+ "wasm-bindgen",
  "windows-targets 0.52.5",
 ]
 
@@ -3429,6 +3431,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "mtgjson"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8fc76d0dea01b2e88e27c1880a5b319f048ee24b531f2e277d5470f7646d6a51"
+dependencies = [
+ "chrono",
+ "semver",
+ "serde",
+ "uuid",
+]
+
+[[package]]
 name = "muda"
 version = "0.11.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3640,6 +3654,22 @@ name = "option-ext"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
+
+[[package]]
+name = "oracle"
+version = "0.0.0"
+dependencies = [
+ "color-eyre",
+ "data",
+ "database",
+ "enumset",
+ "mtgjson",
+ "once_cell",
+ "serde",
+ "serde_json",
+ "utils",
+ "uuid",
+]
 
 [[package]]
 name = "ordered-float"
@@ -4625,6 +4655,7 @@ dependencies = [
  "itertools",
  "maplit",
  "once_cell",
+ "oracle",
  "rand 0.8.5",
  "rand_xoshiro",
  "rules",

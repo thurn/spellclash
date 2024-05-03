@@ -188,6 +188,11 @@ impl Zones {
         self.all_cards.values()
     }
 
+    /// Mutable version of [Self::all_cards][
+    pub fn all_cards_mut(&mut self) -> impl Iterator<Item = &mut CardState> {
+        self.all_cards.values_mut()
+    }
+
     /// Creates a new named card, owned & controlled by the `owner` player in
     /// the player's library.
     ///

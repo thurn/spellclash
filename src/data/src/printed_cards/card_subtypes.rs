@@ -19,7 +19,7 @@ use serde::{Deserialize, Serialize};
 /// type.
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R2053>
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct CardSubtypes {
     pub artifact: EnumSet<ArtifactSubtype>,
     pub enchantment: EnumSet<EnchantmentSubtype>,
