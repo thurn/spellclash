@@ -12,7 +12,7 @@ build:
     cargo build --all-targets --all-features
 
 run *args='':
-    cargo run -- $@
+    dx serve --bin spellclash --platform desktop -- $@
 
 test:
     cargo test

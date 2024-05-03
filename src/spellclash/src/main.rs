@@ -12,9 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod button;
-pub mod colors;
-pub mod interface_action;
-pub mod layout;
-pub mod render_context;
-pub mod widget_id;
+#![allow(non_snake_case)]
+
+use std::env;
+
+use all_cards::card_list;
+use clap::Parser;
+use color_eyre::Result;
+use tracing::info;
+
+use crate::cli::Cli;
+
+pub mod cli;
+pub mod game_client;
+pub mod utils;
+
+fn main() -> Result<()> {
+    utils::initialize_logging()?;
+    if env::var("DISABLE_PANIC_HANDLER").is_err() {
+        utils::initialize_panic_handler()?;
+    }
+    Cli::parse();
+    card_list::initialize();
+
+    let commit = env!("VERGEN_GIT_SHA");
+    info!(commit, "Starting game");
+    game_client::launch();
+    Ok(())
+}

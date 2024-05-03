@@ -21,13 +21,10 @@ use color_eyre::eyre;
 use color_eyre::eyre::Result;
 use directories::ProjectDirs;
 use lazy_static::lazy_static;
-use tracing::error;
 use tracing_error::ErrorLayer;
 use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{self, Layer};
-
-use crate::tui;
 
 lazy_static! {
     pub static ref PROJECT_NAME: String = env!("CARGO_CRATE_NAME").to_uppercase().to_string();
@@ -50,13 +47,7 @@ pub fn initialize_panic_handler() -> Result<()> {
 
     // convert from a color_eyre EyreHook to a eyre ErrorHook
     let eyre_hook = eyre_hook.into_eyre_hook();
-    eyre::set_hook(Box::new(move |error: &(dyn std::error::Error + 'static)| {
-        if let Err(r) = tui::exit() {
-            error!("Unable to exit Terminal: {:?}", r);
-        }
-        eyre_hook(error)
-    }))?;
-
+    eyre::set_hook(Box::new(move |error: &(dyn std::error::Error + 'static)| eyre_hook(error)))?;
     panic::set_hook(Box::new(move |panic_info| {
         on_panic(&panic_hook, panic_info);
     }));
@@ -65,10 +56,6 @@ pub fn initialize_panic_handler() -> Result<()> {
 }
 
 fn on_panic(panic_hook: &PanicHook, panic_info: &PanicInfo) {
-    if let Err(r) = tui::exit() {
-        error!("Unable to exit Terminal: {:?}", r);
-    }
-
     let msg = format!("{}", panic_hook.panic_report(panic_info));
     log::error!("Error: {}", strip_ansi_escapes::strip_str(msg));
 
