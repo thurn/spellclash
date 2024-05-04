@@ -28,6 +28,9 @@ pub struct GameView {
     /// Visual state of cards in the game
     pub cards: Vec<CardView>,
 
+    /// Describes the status of the game, e.g. which phase & step the game is in
+    pub status_description: String,
+
     /// High level visual game state
     pub state: GameViewState,
 }

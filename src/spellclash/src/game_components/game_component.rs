@@ -37,11 +37,11 @@ pub fn GameComponent(view: GameView) -> Element {
             class: "flex flex-row",
             div {
                 class: "flex-col",
-                Players { view: view.clone() }
+                Zones { view: view.clone() }
             }
             div {
-                class: "flex-col",
-                Zones { view: view.clone() }
+                class: "flex flex-col justify-between",
+                Players { view: view.clone() }
             }
         }
     }
@@ -63,18 +63,36 @@ fn Players(view: Arc<GameView>) -> Element {
     let nav = use_navigator();
 
     rsx! {
-        button {
-            class: button_component::CLASS,
-            onclick: move |_| leave_game(cd_signal, view_signal, nav),
-            "Leave Game",
+        div {
+            class: "flex flex-col items-center",
+            button {
+                class: button_component::CLASS,
+                onclick: move |_| leave_game(cd_signal, view_signal, nav),
+                "Leave Game",
+            }
+            PlayerComponent {
+                player: view.opponent.clone(),
+                name: "Opponent",
+            }
         }
-        PlayerComponent {
-            player: view.opponent.clone(),
-            name: "Opponent",
+        div {
+            class: "flex flex-col items-center",
+            div {
+                class: "mr-2 text-m",
+                "{view.status_description}"
+            }
         }
-        PlayerComponent {
-            player: view.viewer.clone(),
-            name: "Viewer",
+        div {
+            class: "flex flex-col items-center",
+            PlayerComponent {
+                player: view.viewer.clone(),
+                name: "Viewer",
+            }
+            button {
+                class: button_component::CLASS,
+                onclick: move |_| leave_game(cd_signal, view_signal, nav),
+                "Continue",
+            }
         }
     }
 }
@@ -140,7 +158,7 @@ fn PlayerComponent(name: &'static str, player: PlayerView) -> Element {
     rsx! {
         div {
             style: "width: 100px",
-            class: "m-2",
+            class: "m-2 text-center",
             div {
                 class: "mr-2 text-xl",
                 "{name}"
