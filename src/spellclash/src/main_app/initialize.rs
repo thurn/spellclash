@@ -18,13 +18,11 @@ use std::path::PathBuf;
 
 use color_eyre::config::{HookBuilder, PanicHook};
 use color_eyre::eyre;
-use color_eyre::eyre::Result;
 use directories::ProjectDirs;
 use lazy_static::lazy_static;
-use tracing_error::ErrorLayer;
-use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
-use tracing_subscriber::util::SubscriberInitExt;
-use tracing_subscriber::{self, Layer};
+use utils::outcome;
+use utils::outcome::Outcome;
+use utils::with_error::WithError;
 
 lazy_static! {
     pub static ref PROJECT_NAME: String = env!("CARGO_CRATE_NAME").to_uppercase().to_string();
@@ -34,7 +32,7 @@ lazy_static! {
     pub static ref LOG_FILE: String = format!("{}.log", env!("CARGO_PKG_NAME"));
 }
 
-pub fn initialize_panic_handler() -> Result<()> {
+pub fn initialize_panic_handler() -> Outcome {
     let (panic_hook, eyre_hook) = HookBuilder::default()
         .panic_section(format!(
             "This is a bug. Consider reporting it at {}",
@@ -47,12 +45,13 @@ pub fn initialize_panic_handler() -> Result<()> {
 
     // convert from a color_eyre EyreHook to a eyre ErrorHook
     let eyre_hook = eyre_hook.into_eyre_hook();
-    eyre::set_hook(Box::new(move |error: &(dyn std::error::Error + 'static)| eyre_hook(error)))?;
+    eyre::set_hook(Box::new(move |error: &(dyn std::error::Error + 'static)| eyre_hook(error)))
+        .with_error(|| "Error setting eyre_hook")?;
     panic::set_hook(Box::new(move |panic_info| {
         on_panic(&panic_hook, panic_info);
     }));
 
-    Ok(())
+    outcome::OK
 }
 
 fn on_panic(panic_hook: &PanicHook, panic_info: &PanicInfo) {
@@ -98,28 +97,6 @@ pub fn get_data_dir() -> PathBuf {
         PathBuf::from(".").join(".data")
     };
     directory
-}
-
-pub fn initialize_logging() -> Result<()> {
-    let directory = get_data_dir();
-    std::fs::create_dir_all(directory.clone())?;
-    let log_path = directory.join(LOG_FILE.clone());
-    let log_file = std::fs::File::create(log_path)?;
-    std::env::set_var(
-        "RUST_LOG",
-        std::env::var("RUST_LOG")
-            .or_else(|_| std::env::var(LOG_ENV.clone()))
-            .unwrap_or_else(|_| "info".to_string()),
-    );
-    let file_subscriber = tracing_subscriber::fmt::layer()
-        .with_file(true)
-        .with_line_number(true)
-        .with_writer(log_file)
-        .with_target(false)
-        .with_ansi(false)
-        .with_filter(tracing_subscriber::filter::EnvFilter::from_default_env());
-    tracing_subscriber::registry().with(file_subscriber).with(ErrorLayer::default()).init();
-    Ok(())
 }
 
 pub fn version() -> String {

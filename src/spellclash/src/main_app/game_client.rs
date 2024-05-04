@@ -19,6 +19,7 @@ use data::decks::deck_name;
 use dioxus::desktop::{Config, WindowBuilder};
 use dioxus::prelude::*;
 use display::core::game_view::GameView;
+use log::debug;
 use server;
 use server::server_data::ClientData;
 use uuid::Uuid;
@@ -62,7 +63,7 @@ fn App() -> Element {
     let view_signal_data: Option<GameView> = None;
     use_context_provider(|| Signal::new(view_signal_data));
     rsx! {
-        style { {include_str!("../assets/style.css")} }
+        style { {include_str!("../../assets/style.css")} }
         Router::<Route> {}
     }
 }
@@ -81,8 +82,8 @@ async fn new_game(
     view_signal: Signal<Option<GameView>>,
     nav: Navigator,
 ) {
-    println!("Running new game");
-    client_action::apply_action(
+    debug!("Requesting new game");
+    client_action::apply(
         cd_signal,
         view_signal,
         nav,
@@ -98,7 +99,7 @@ async fn new_game(
 
 #[component]
 fn MainMenu() -> Element {
-    println!("Rendering main menu");
+    debug!("Rendering main menu");
     let cd_signal = consume_context::<Signal<ClientData>>();
     let view_signal = consume_context::<Signal<Option<GameView>>>();
     let nav = use_navigator();

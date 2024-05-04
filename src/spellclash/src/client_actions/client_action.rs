@@ -23,6 +23,7 @@ use display::core::game_view::GameView;
 use once_cell::sync::Lazy;
 use server::game;
 use server::server_data::{ClientData, GameResponse};
+use tracing::{debug, error, info_span};
 
 use crate::game_client::Route;
 use crate::initialize;
@@ -35,35 +36,38 @@ pub async fn connect(
     view_signal: Signal<Option<GameView>>,
     nav: Navigator,
 ) {
+    let _span = info_span!("client_action::connect");
     let client_data = cd_signal();
-    println!("Connecting");
+    debug!("Connecting");
     let result = game::connect(DATABASE.as_ref(), client_data.user_id).await;
     match &result {
         Ok(response) => {
-            println!("Got connection response");
+            debug!("Got connection response");
             handle_commands(response.clone(), nav, view_signal, cd_signal);
         }
         Err(err) => {
-            panic!("Error on connect: {:?}", err);
+            error!("Error on connect: {:?}", err);
         }
     }
 }
-pub async fn apply_action(
+
+pub async fn apply(
     cd_signal: Signal<ClientData>,
     view_signal: Signal<Option<GameView>>,
     nav: Navigator,
     action: UserAction,
 ) {
+    let _span = info_span!("client_action::apply", ?action);
     let client_data = cd_signal();
-    println!("Applying action");
+    debug!("Applying action");
     let result = game::handle_action(DATABASE.as_ref(), client_data, action).await;
     match &result {
         Ok(response) => {
-            println!("Got response");
+            debug!("Got action response");
             handle_commands(response.clone(), nav, view_signal, cd_signal);
         }
         Err(err) => {
-            panic!("Error on action: {:?}, {:?}", err, action);
+            error!("Error on action: {:?}, {:?}", err, action);
         }
     }
 }

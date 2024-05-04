@@ -39,7 +39,6 @@ use display::rendering::render;
 use enumset::EnumSet;
 use maplit::hashmap;
 use oracle::card_database;
-use rand::prelude::SliceRandom;
 use rand_xoshiro::rand_core::SeedableRng;
 use rand_xoshiro::Xoshiro256StarStar;
 use rules::mutations::library;
@@ -123,8 +122,10 @@ fn create_game(
     opponent_id: Option<UserId>,
     opponent_deck: Deck,
 ) -> GameState {
-    let mut rng = Xoshiro256StarStar::seed_from_u64(314159265358979323);
-    let user_player_name = [PlayerName::One, PlayerName::Two].choose(&mut rng).unwrap();
+    // let mut rng = Xoshiro256StarStar::seed_from_u64(314159265358979323);
+    // let user_player_name = [PlayerName::One, PlayerName::Two].choose(&mut
+    // rng).unwrap();
+    let user_player_name = PlayerName::One;
     let (p1, p1_deck, p2, p2_deck) = match user_player_name {
         PlayerName::One => (Some(user_id), user_deck, opponent_id, opponent_deck),
         PlayerName::Two => (opponent_id, opponent_deck, Some(user_id), user_deck),

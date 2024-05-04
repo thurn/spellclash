@@ -21,6 +21,7 @@ use display::core::card_view::CardView;
 use display::core::game_view::{DisplayPlayer, GameView, PlayerView};
 use display::core::object_position::{BattlefieldPosition, Position};
 use server::server_data::ClientData;
+use tracing::debug;
 
 use crate::client_actions::client_action;
 use crate::game_components::button_component;
@@ -51,8 +52,8 @@ async fn leave_game(
     view_signal: Signal<Option<GameView>>,
     nav: Navigator,
 ) {
-    println!("Running leave game");
-    client_action::apply_action(cd_signal, view_signal, nav, UserAction::LeaveGameAction).await;
+    debug!("Request to leave game");
+    client_action::apply(cd_signal, view_signal, nav, UserAction::LeaveGameAction).await;
 }
 
 #[component]
