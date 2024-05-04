@@ -2,13 +2,3 @@
 members = ["src/*", "src/cards/*"]
 exclude = ["src/cards"]
 resolver = "2"
-
-[profile.dev]
-opt-level = 1
-split-debuginfo = "unpacked"
-
-[profile.dev.package."*"]
-opt-level = 3
-
-[profile.release]
-lto = true

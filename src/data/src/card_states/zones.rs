@@ -20,6 +20,7 @@ use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};
 use slotmap::SlotMap;
 use utils::outcome::Outcome;
+use utils::with_error::WithError;
 use utils::{fail, outcome};
 
 use crate::card_definitions::card_name::CardName;
@@ -392,8 +393,10 @@ impl OrderedZone {
     /// The search is started from the top card in the zone. Panics if this
     /// card is not present in this zone owned by `owner`.
     pub fn remove(&mut self, card_id: CardId, owner: PlayerName) -> Outcome {
-        if let Some(p) = self.cards_mut(owner).iter().rev().position(|&id| id == card_id) {
-            self.cards_mut(owner).remove(p);
+        if let Some((i, _)) =
+            self.cards_mut(owner).iter().enumerate().rev().find(|(_, &id)| id == card_id)
+        {
+            self.cards_mut(owner).remove(i).with_error(|| format!("{i} not found"))?;
             outcome::OK
         } else {
             fail!("Card not found {card_id:?}");
