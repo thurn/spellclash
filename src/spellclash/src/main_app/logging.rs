@@ -70,7 +70,7 @@ fn tag_parser(event: &Event) -> Option<Tag> {
         _ if level == Level::ERROR => '🚨',
         _ if level == Level::WARN => '🚧',
         _ if target.contains("rules") => '🎴',
-        _ if target.contains("server") => '💻',
+        _ if target.contains("game") => '💻',
         _ => match level {
             Level::TRACE => '📍',
             Level::DEBUG => '📝',

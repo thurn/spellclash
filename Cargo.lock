@@ -2010,6 +2010,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "game"
+version = "0.0.0"
+dependencies = [
+ "color-eyre",
+ "data",
+ "database",
+ "display",
+ "enum-iterator",
+ "enumset",
+ "itertools",
+ "maplit",
+ "once_cell",
+ "oracle",
+ "rand 0.8.5",
+ "rand_xoshiro",
+ "rules",
+ "tokio",
+ "tracing",
+ "utils",
+ "uuid",
+]
+
+[[package]]
 name = "gdk"
 version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4644,29 +4667,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "server"
-version = "0.0.0"
-dependencies = [
- "color-eyre",
- "data",
- "database",
- "display",
- "enum-iterator",
- "enumset",
- "itertools",
- "maplit",
- "once_cell",
- "oracle",
- "rand 0.8.5",
- "rand_xoshiro",
- "rules",
- "tokio",
- "tracing",
- "utils",
- "uuid",
-]
-
-[[package]]
 name = "server_fn"
 version = "0.6.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4920,6 +4920,7 @@ dependencies = [
  "dioxus-logger",
  "directories",
  "display",
+ "game",
  "human-panic",
  "lazy_static",
  "libc",
@@ -4927,7 +4928,6 @@ dependencies = [
  "once_cell",
  "rules",
  "rusty-hook",
- "server",
  "strip-ansi-escapes",
  "tokio",
  "tracing",

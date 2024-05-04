@@ -20,9 +20,9 @@ use dioxus::prelude::{Navigator, Signal, Writable};
 use display::commands::command::Command;
 use display::commands::scene_name::SceneName;
 use display::core::game_view::GameView;
+use game::server;
+use game::server_data::{ClientData, GameResponse};
 use once_cell::sync::Lazy;
-use server::game;
-use server::server_data::{ClientData, GameResponse};
 use tracing::{debug, error, info_span};
 
 use crate::game_client::Route;
@@ -39,7 +39,7 @@ pub async fn connect(
     let _span = info_span!("client_action::connect");
     let client_data = cd_signal();
     debug!("Connecting");
-    let result = game::connect(DATABASE.as_ref(), client_data.user_id).await;
+    let result = server::connect(DATABASE.as_ref(), client_data.user_id).await;
     match &result {
         Ok(response) => {
             debug!("Got connection response");
@@ -61,7 +61,7 @@ pub async fn apply(
     let _span = info_span!("client_action::apply", ?user_action);
     let client_data = cd_signal();
     debug!("Applying action");
-    let result = game::handle_action(DATABASE.as_ref(), client_data, user_action).await;
+    let result = server::handle_action(DATABASE.as_ref(), client_data, user_action).await;
     match &result {
         Ok(response) => {
             debug!("Got action response");

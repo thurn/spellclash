@@ -16,8 +16,8 @@ all_cards = { path = "../cards/all_cards", version = "0.0.0" }
 data = { path = "../data", version = "0.0.0" }
 database = { path = "../database", version = "0.0.0" }
 display = { path = "../display", version = "0.0.0" }
+game = { path = "../game", version = "0.0.0" }
 rules = { path = "../rules", version = "0.0.0" }
-server = { path = "../server", version = "0.0.0" }
 utils = { path = "../utils", version = "0.0.0" }
 
 better-panic = "0.3.0"

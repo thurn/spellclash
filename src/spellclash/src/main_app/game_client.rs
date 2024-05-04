@@ -19,9 +19,9 @@ use data::decks::deck_name;
 use dioxus::desktop::{Config, WindowBuilder};
 use dioxus::prelude::*;
 use display::core::game_view::GameView;
+use game;
+use game::server_data::ClientData;
 use log::debug;
-use server;
-use server::server_data::ClientData;
 use uuid::Uuid;
 
 use crate::client_actions::client_action;

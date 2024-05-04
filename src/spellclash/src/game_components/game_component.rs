@@ -21,7 +21,7 @@ use dioxus::prelude::*;
 use display::core::card_view::CardView;
 use display::core::game_view::{DisplayPlayer, GameView, PlayerView};
 use display::core::object_position::{BattlefieldPosition, Position};
-use server::server_data::ClientData;
+use game::server_data::ClientData;
 use tracing::debug;
 
 use crate::client_actions::client_action;
