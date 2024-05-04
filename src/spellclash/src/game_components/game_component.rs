@@ -13,18 +13,57 @@
 // limitations under the License.
 
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use dioxus::prelude::*;
 use display::core::card_view::CardView;
-use display::core::game_view::{DisplayPlayer, GameView};
+use display::core::game_view::{DisplayPlayer, GameView, PlayerView};
 use display::core::object_position::{BattlefieldPosition, Position};
 
+use crate::game_components::button_component::ButtonComponent;
 use crate::game_components::card_component::CardComponent;
 
 pub const CARD_HEIGHT: u64 = 120;
 
 #[component]
 pub fn GameComponent(view: GameView) -> Element {
+    let view = Arc::new(view);
+    rsx! {
+        div {
+            class: "flex flex-row",
+            div {
+                class: "flex-col",
+                Players { view: view.clone() }
+            }
+            div {
+                class: "flex-col",
+                Zones { view: view.clone() }
+            }
+        }
+    }
+}
+
+#[component]
+fn Players(view: Arc<GameView>) -> Element {
+    rsx! {
+        ButtonComponent {
+            button {
+                "Quit"
+            }
+        }
+        PlayerComponent {
+            player: view.opponent.clone(),
+            name: "Opponent",
+        }
+        PlayerComponent {
+            player: view.viewer.clone(),
+            name: "Viewer",
+        }
+    }
+}
+
+#[component]
+fn Zones(view: Arc<GameView>) -> Element {
     let positions = card_positions(&view);
     rsx! {
         ZoneComponent {
@@ -77,6 +116,28 @@ fn card_positions(view: &GameView) -> HashMap<Position, Vec<CardView>> {
         result.insert(position, cards.into_iter().map(|(_, card)| card).collect());
     }
     result
+}
+
+#[component]
+fn PlayerComponent(name: &'static str, player: PlayerView) -> Element {
+    rsx! {
+        div {
+            style: "width: 100px",
+            class: "m-2",
+            div {
+                class: "mr-2 text-xl",
+                "{name}"
+            }
+            div {
+                class: "mr-2 text-m",
+                "Life: {player.life}"
+            }
+            div {
+                class: "mr-2 text-m",
+                "Can Act: {player.can_act}"
+            }
+        }
+    }
 }
 
 #[component]

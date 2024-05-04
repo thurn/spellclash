@@ -30,6 +30,7 @@ use server::game;
 use server::server_data::{ClientData, GameResponse};
 use uuid::Uuid;
 
+use crate::game_components::button_component::ButtonComponent;
 use crate::game_components::game_component::GameComponent;
 use crate::initialize;
 
@@ -119,11 +120,12 @@ fn MainMenu() -> Element {
             h1 {
                 class: "text-4xl font-bold m-8",
                 "Main Menu"
-            }
-            button {
-                class: "m-8 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none",
-                onclick: move |_| new_game(),
-                "New Game "
+            },
+            ButtonComponent {
+                button {
+                    onclick: move |_| new_game(),
+                    "New Game"
+                }
             }
         }
     }
