@@ -4933,6 +4933,7 @@ dependencies = [
  "tracing-error",
  "tracing-subscriber",
  "typed-builder",
+ "utils",
  "uuid",
  "vergen",
 ]

@@ -19,7 +19,6 @@ use database::database::Database;
 use display::commands::display_preferences::DisplayPreferences;
 use display::commands::scene_name::SceneName;
 use display::rendering::render;
-use rules::actions::apply_game_action;
 use tracing::info;
 use utils::outcome::Value;
 use utils::with_error::WithError;
@@ -61,14 +60,12 @@ pub async fn connect(
 pub async fn handle_game_action(
     database: &impl Database,
     data: ClientData,
-    action: GameAction,
+    _action: GameAction,
 ) -> Value<GameResponse> {
-    let mut game =
+    let game =
         requests::fetch_game(database, data.game_id.with_error(|| "Expected current game ID")?)
             .await?;
     let player_name = game.find_player_name(data.user_id)?;
-    apply_game_action::run(&mut game, player_name, action);
-
     let user_result = render::render_updates(&game, player_name, data.display_preferences);
 
     let mut opponent_responses = vec![];

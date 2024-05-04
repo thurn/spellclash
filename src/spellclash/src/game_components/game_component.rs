@@ -15,11 +15,14 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use data::actions::user_action::UserAction;
 use dioxus::prelude::*;
 use display::core::card_view::CardView;
 use display::core::game_view::{DisplayPlayer, GameView, PlayerView};
 use display::core::object_position::{BattlefieldPosition, Position};
+use server::server_data::ClientData;
 
+use crate::client_actions::client_action;
 use crate::game_components::button_component::ButtonComponent;
 use crate::game_components::card_component::CardComponent;
 
@@ -43,12 +46,26 @@ pub fn GameComponent(view: GameView) -> Element {
     }
 }
 
+async fn leave_game(
+    cd_signal: Signal<ClientData>,
+    view_signal: Signal<Option<GameView>>,
+    nav: Navigator,
+) {
+    println!("Running leave game");
+    client_action::apply_action(cd_signal, view_signal, nav, UserAction::LeaveGameAction).await;
+}
+
 #[component]
 fn Players(view: Arc<GameView>) -> Element {
+    let cd_signal = consume_context::<Signal<ClientData>>();
+    let view_signal = consume_context::<Signal<Option<GameView>>>();
+    let nav = use_navigator();
+
     rsx! {
         ButtonComponent {
             button {
-                "Quit"
+                onclick: move |_| leave_game(cd_signal, view_signal, nav),
+                "Leave Game",
             }
         }
         PlayerComponent {

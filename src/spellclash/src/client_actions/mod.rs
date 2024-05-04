@@ -12,12 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::{GameId, UserId};
-
-#[derive(Debug, Clone)]
-pub struct RequestData {
-    pub user_id: UserId,
-    pub game_id: Option<GameId>,
-}
-
-pub struct GameResponse;
+pub mod client_action;

@@ -16,6 +16,7 @@ pub mod game;
 pub mod server_data;
 
 mod game_action_server;
+mod leave_game;
 mod main_menu_server;
 mod new_game;
 mod requests;

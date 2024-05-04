@@ -12,34 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::sync::Arc;
-
 use data::actions::new_game_action::{NewGameAction, NewGameDebugOptions};
 use data::actions::user_action::UserAction;
 use data::core::primitives::{GameId, UserId};
 use data::decks::deck_name;
-use database::sled_database::SledDatabase;
 use dioxus::desktop::{Config, WindowBuilder};
 use dioxus::prelude::*;
-use display::commands::command::Command;
-use display::commands::scene_name::SceneName;
 use display::core::game_view::GameView;
-use once_cell::sync::Lazy;
 use server;
-use server::game;
-use server::server_data::{ClientData, GameResponse};
+use server::server_data::ClientData;
 use uuid::Uuid;
 
+use crate::client_actions::client_action;
 use crate::game_components::button_component::ButtonComponent;
 use crate::game_components::game_component::GameComponent;
-use crate::initialize;
-
-static DATABASE: Lazy<Arc<SledDatabase>> =
-    Lazy::new(|| Arc::new(SledDatabase::new(initialize::get_data_dir())));
 
 #[derive(Routable, Clone)]
 #[rustfmt::skip]
-enum Route {
+pub enum Route {
     #[route("/")]
     Loading {},
     
@@ -79,28 +69,23 @@ fn App() -> Element {
 
 #[component]
 fn Loading() -> Element {
-    let client_data_signal = consume_context::<Signal<ClientData>>();
-    let client_data = client_data_signal();
+    let cd_signal = consume_context::<Signal<ClientData>>();
     let view_signal = consume_context::<Signal<Option<GameView>>>();
-    let connection = use_resource(move || game::connect(DATABASE.as_ref(), client_data.user_id));
     let nav = use_navigator();
-    match &*connection.read_unchecked() {
-        Some(Ok(response)) => {
-            handle_commands(response.clone(), nav, view_signal);
-            rsx! { "Got response {response:?}" }
-        }
-        Some(Err(err)) => rsx! { "Error: {err:?}",  },
-        None => rsx! { "Loading... " },
-    }
+    use_future(move || client_action::connect(cd_signal, view_signal, nav));
+    rsx! { "Loading... " }
 }
 
-async fn new_game() {
-    let client_data = consume_context::<Signal<ClientData>>();
-    let view_signal = consume_context::<Signal<Option<GameView>>>();
-    let nav = use_navigator();
-    let data = game::handle_action(
-        DATABASE.as_ref(),
-        client_data(),
+async fn new_game(
+    cd_signal: Signal<ClientData>,
+    view_signal: Signal<Option<GameView>>,
+    nav: Navigator,
+) {
+    println!("Running new game");
+    client_action::apply_action(
+        cd_signal,
+        view_signal,
+        nav,
         UserAction::NewGameAction(NewGameAction {
             deck: deck_name::ALL_GRIZZLY_BEARS,
             opponent_deck: deck_name::ALL_GRIZZLY_BEARS,
@@ -109,12 +94,14 @@ async fn new_game() {
         }),
     )
     .await;
-
-    handle_commands(data.expect("Error in game response"), nav, view_signal);
 }
 
 #[component]
 fn MainMenu() -> Element {
+    println!("Rendering main menu");
+    let cd_signal = consume_context::<Signal<ClientData>>();
+    let view_signal = consume_context::<Signal<Option<GameView>>>();
+    let nav = use_navigator();
     rsx! {
         div {
             h1 {
@@ -123,7 +110,7 @@ fn MainMenu() -> Element {
             },
             ButtonComponent {
                 button {
-                    onclick: move |_| new_game(),
+                    onclick: move |_| new_game(cd_signal, view_signal, nav),
                     "New Game"
                 }
             }
@@ -142,27 +129,5 @@ fn Game(id: GameId) -> Element {
         None => rsx! {
             "No GameView"
         },
-    }
-}
-
-fn handle_commands(
-    response: GameResponse,
-    navigator: Navigator,
-    mut view_signal: Signal<Option<GameView>>,
-) {
-    for command in response.commands {
-        match command {
-            Command::LoadScene { name, .. } => match name {
-                SceneName::MainMenu => {
-                    navigator.replace(Route::MainMenu {});
-                }
-                SceneName::Game(id) => {
-                    navigator.replace(Route::Game { id });
-                }
-            },
-            Command::UpdateGameView { view, .. } => {
-                *view_signal.write() = Some(view);
-            }
-        }
     }
 }

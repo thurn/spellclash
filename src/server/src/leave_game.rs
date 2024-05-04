@@ -12,5 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod apply_game_action;
-pub mod requests;
+use data::users::user_state::UserActivity;
+use database::database::Database;
+use display::commands::scene_name::SceneName;
+use utils::outcome::Value;
+
+use crate::requests;
+use crate::server_data::{ClientData, GameResponse};
+
+pub async fn leave(database: &impl Database, mut data: ClientData) -> Value<GameResponse> {
+    let mut user = requests::fetch_user(database, data.user_id).await?;
+    user.activity = UserActivity::Menu;
+    database.write_user(&user).await?;
+    data.game_id = None;
+    Ok(GameResponse::new(data).command(requests::load_scene(SceneName::MainMenu)))
+}

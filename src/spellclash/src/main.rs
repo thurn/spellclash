@@ -22,6 +22,7 @@ use tracing::info;
 use crate::cli::Cli;
 
 pub mod cli;
+mod client_actions;
 pub mod game_client;
 mod game_components;
 pub mod initialize;

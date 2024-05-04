@@ -19,4 +19,5 @@ use crate::actions::new_game_action::NewGameAction;
 pub enum UserAction {
     NewGameAction(NewGameAction),
     GameAction(GameAction),
+    LeaveGameAction,
 }

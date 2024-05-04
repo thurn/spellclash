@@ -20,7 +20,7 @@ use tracing::{info, info_span};
 use utils::outcome::Value;
 
 use crate::server_data::{ClientData, GameResponse};
-use crate::{game_action_server, main_menu_server, new_game};
+use crate::{game_action_server, leave_game, main_menu_server, new_game};
 
 /// Connects to the current game scene.
 ///
@@ -53,6 +53,7 @@ pub async fn handle_action(
         UserAction::GameAction(action) => {
             game_action_server::handle_game_action(database, data, action).await
         }
+        UserAction::LeaveGameAction => leave_game::leave(database, data).await,
     }
 }
 
