@@ -23,7 +23,7 @@ use display::core::object_position::{BattlefieldPosition, Position};
 use server::server_data::ClientData;
 
 use crate::client_actions::client_action;
-use crate::game_components::button_component::ButtonComponent;
+use crate::game_components::button_component;
 use crate::game_components::card_component::CardComponent;
 
 pub const CARD_HEIGHT: u64 = 120;
@@ -62,11 +62,10 @@ fn Players(view: Arc<GameView>) -> Element {
     let nav = use_navigator();
 
     rsx! {
-        ButtonComponent {
-            button {
-                onclick: move |_| leave_game(cd_signal, view_signal, nav),
-                "Leave Game",
-            }
+        button {
+            class: button_component::CLASS,
+            onclick: move |_| leave_game(cd_signal, view_signal, nav),
+            "Leave Game",
         }
         PlayerComponent {
             player: view.opponent.clone(),

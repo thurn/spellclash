@@ -12,20 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use dioxus::prelude::*;
-
-#[component]
-pub fn ButtonComponent(children: Element) -> Element {
-    let class = "m-8 align-middle select-none font-sans font-bold text-center uppercase\
-     transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none\
-     text-xs py-3 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10\
-     hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none\
-     active:opacity-[0.85] active:shadow-none";
-
-    rsx! {
-        button {
-            class: class,
-            {children}
-        }
-    }
-}
+pub static CLASS: &str = "px-4 py-2 m-8 bg-gray-900 text-white rounded-lg transition-all \
+hover:bg-gray-700 active:bg-gray-500 active:scale-95";

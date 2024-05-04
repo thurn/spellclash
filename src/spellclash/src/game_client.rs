@@ -24,7 +24,7 @@ use server::server_data::ClientData;
 use uuid::Uuid;
 
 use crate::client_actions::client_action;
-use crate::game_components::button_component::ButtonComponent;
+use crate::game_components::button_component;
 use crate::game_components::game_component::GameComponent;
 
 #[derive(Routable, Clone)]
@@ -108,11 +108,12 @@ fn MainMenu() -> Element {
                 class: "text-4xl font-bold m-8",
                 "Main Menu"
             },
-            ButtonComponent {
-                button {
-                    onclick: move |_| new_game(cd_signal, view_signal, nav),
-                    "New Game"
-                }
+            button {
+                class: button_component::CLASS,
+                onclick: move |_| {
+                    new_game(cd_signal, view_signal, nav)
+                },
+                "New Game"
             }
         }
     }
