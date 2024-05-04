@@ -12,16 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::sync::Arc;
+
 use data::users::user_state::UserActivity;
 use database::database::Database;
 use display::commands::scene_name::SceneName;
-use utils::outcome::Value;
+use tokio::sync::mpsc::Sender;
+use utils::outcome::{Outcome, Value};
+use utils::with_error::WithError;
 
 use crate::requests;
 use crate::server_data::{ClientData, GameResponse};
 
-pub async fn leave(database: &impl Database, mut data: ClientData) -> Value<GameResponse> {
-    let mut user = requests::fetch_user(database, data.user_id).await?;
+pub async fn leave(
+    sender: Sender<Value<GameResponse>>,
+    database: Arc<dyn Database>,
+    data: ClientData,
+) -> Outcome {
+    let result = leave_internal(database, data).await;
+    sender.send(result).await.with_error(|| "Error sending leave_game response")
+}
+
+async fn leave_internal(database: Arc<dyn Database>, mut data: ClientData) -> Value<GameResponse> {
+    let mut user = requests::fetch_user(database.clone(), data.user_id).await?;
     user.activity = UserActivity::Menu;
     database.write_user(&user).await?;
     data.game_id = None;

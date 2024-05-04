@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::sync::Arc;
+
 use data::actions::game_action::GameAction;
 use data::core::primitives::{GameId, PlayerName};
 use data::users::user_state::UserState;
@@ -20,8 +22,9 @@ use display::commands::display_preferences::DisplayPreferences;
 use display::commands::scene_name::SceneName;
 use display::rendering::render;
 use rules::actions::action;
+use tokio::sync::mpsc::Sender;
 use tracing::info;
-use utils::outcome::Value;
+use utils::outcome::{Outcome, Value};
 use utils::with_error::WithError;
 
 use crate::requests;
@@ -30,7 +33,7 @@ use crate::server_data::{ClientData, GameResponse};
 /// Connects to an ongoing game scene, returning a [GameResponse] which renders
 /// its current visual state.
 pub async fn connect(
-    database: &impl Database,
+    database: Arc<dyn Database>,
     user: &UserState,
     game_id: GameId,
 ) -> Value<GameResponse> {
@@ -59,13 +62,25 @@ pub async fn connect(
 }
 
 pub async fn handle_game_action(
-    database: &impl Database,
+    sender: Sender<Value<GameResponse>>,
+    database: Arc<dyn Database>,
+    data: ClientData,
+    action: GameAction,
+) -> Outcome {
+    let result = handle_game_action_internal(database, data, action).await;
+    sender.send(result).await.with_error(|| "Failed to send game action response")
+}
+
+pub async fn handle_game_action_internal(
+    database: Arc<dyn Database>,
     data: ClientData,
     action: GameAction,
 ) -> Value<GameResponse> {
-    let mut game =
-        requests::fetch_game(database, data.game_id.with_error(|| "Expected current game ID")?)
-            .await?;
+    let mut game = requests::fetch_game(
+        database.clone(),
+        data.game_id.with_error(|| "Expected current game ID")?,
+    )
+    .await?;
     let player_name = game.find_player_name(data.user_id)?;
     action::handle_game_action(&mut game, player_name, action)?;
     let user_result = render::render_updates(&game, player_name, data.display_preferences);

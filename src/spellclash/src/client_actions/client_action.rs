@@ -39,7 +39,7 @@ pub async fn connect(
     let _span = info_span!("client_action::connect");
     let client_data = cd_signal();
     debug!("Connecting");
-    let result = server::connect(DATABASE.as_ref(), client_data.user_id).await;
+    let result = server::connect(DATABASE.clone(), client_data.user_id).await;
     match &result {
         Ok(response) => {
             debug!("Got connection response");
@@ -61,14 +61,21 @@ pub async fn apply(
     let _span = info_span!("client_action::apply", ?user_action);
     let client_data = cd_signal();
     debug!("Applying action");
-    let result = server::handle_action(DATABASE.as_ref(), client_data, user_action).await;
-    match &result {
-        Ok(response) => {
-            debug!("Got action response");
-            handle_commands(response.clone(), nav, view_signal, cd_signal);
-        }
-        Err(err) => {
-            error!("Error on action: {:?}, {:?}", err, user_action);
+    let mut receiver = server::handle_action(DATABASE.clone(), client_data, user_action).await;
+    loop {
+        let result = receiver.recv().await;
+        match &result {
+            Some(Ok(response)) => {
+                debug!("Got action response");
+                handle_commands(response.clone(), nav, view_signal, cd_signal);
+            }
+            Some(Err(err)) => {
+                error!("Error on action: {:?}, {:?}", err, user_action);
+            }
+            None => {
+                debug!("Done receiving messages");
+                break;
+            }
         }
     }
 }

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::sync::Arc;
+
 use data::core::primitives::{GameId, UserId};
 use data::game_states::animation_tracker::{AnimationState, AnimationTracker};
 use data::game_states::game_state::GameState;
@@ -34,12 +36,12 @@ pub fn force_load_scene(name: SceneName) -> Command {
 }
 
 /// Looks up a user by ID in the database.
-pub async fn fetch_user(database: &impl Database, user_id: UserId) -> Value<UserState> {
+pub async fn fetch_user(database: Arc<dyn Database>, user_id: UserId) -> Value<UserState> {
     database.fetch_user(user_id).await?.with_error(|| format!("User not found {user_id:?}"))
 }
 
 /// Looks up a game by ID in the database.
-pub async fn fetch_game(database: &impl Database, game_id: GameId) -> Value<GameState> {
+pub async fn fetch_game(database: Arc<dyn Database>, game_id: GameId) -> Value<GameState> {
     let mut game =
         database.fetch_game(game_id).await?.with_error(|| format!("Game not found {game_id:?}"))?;
     game.animations = AnimationTracker::new(if game.configuration.simulation {

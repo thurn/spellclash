@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::sync::Arc;
+
 use data::actions::new_game_action::NewGameAction;
 use data::card_definitions::card_name;
 use data::card_states::card_kind::CardKind;
@@ -42,20 +44,32 @@ use oracle::card_database;
 use rand_xoshiro::rand_core::SeedableRng;
 use rand_xoshiro::Xoshiro256StarStar;
 use rules::mutations::library;
+use tokio::sync::mpsc::Sender;
 use tracing::info;
 use utils::fail;
-use utils::outcome::Value;
+use utils::outcome::{Outcome, Value};
+use utils::with_error::WithError;
 use uuid::Uuid;
 
 use crate::requests;
 use crate::server_data::{ClientData, GameResponse};
 
 pub async fn create(
-    database: &impl Database,
+    sender: Sender<Value<GameResponse>>,
+    database: Arc<dyn Database>,
+    data: ClientData,
+    action: NewGameAction,
+) -> Outcome {
+    let result = create_internal(database, data, action).await;
+    sender.send(result).await.with_error(|| "Error sending create_game response")
+}
+
+async fn create_internal(
+    database: Arc<dyn Database>,
     data: ClientData,
     action: NewGameAction,
 ) -> Value<GameResponse> {
-    let mut user = requests::fetch_user(database, data.user_id).await?;
+    let mut user = requests::fetch_user(database.clone(), data.user_id).await?;
 
     let user_deck = find_deck(action.deck)?;
     let opponent_deck = find_deck(action.opponent_deck)?;
@@ -68,7 +82,7 @@ pub async fn create(
 
     info!(?game_id, "Creating new game");
     let mut game = create_game(game_id, user.id, user_deck, action.opponent_id, opponent_deck);
-    card_database::populate(database, &mut game).await?;
+    card_database::populate(database.clone(), &mut game).await?;
 
     game.shuffle_library(PlayerName::One)?;
     library::draw_cards(&mut game, PlayerName::One, Source::Game, 7)?;
@@ -107,7 +121,7 @@ pub async fn create(
     database.write_game(&game).await?;
     database.write_user(&user).await?;
     if let Some(opponent_id) = action.opponent_id {
-        let mut opponent = requests::fetch_user(database, opponent_id).await?;
+        let mut opponent = requests::fetch_user(database.clone(), opponent_id).await?;
         opponent.activity = UserActivity::Playing(game_id);
         database.write_user(&opponent).await?;
     }

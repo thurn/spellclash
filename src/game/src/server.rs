@@ -12,22 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::sync::Arc;
+
 use data::actions::user_action::UserAction;
 use data::core::primitives::UserId;
 use data::users::user_state::{UserActivity, UserState};
 use database::database::Database;
-use tracing::{info, info_span};
+use tokio::sync::mpsc;
+use tokio::sync::mpsc::Receiver;
+use tracing::{debug_span, error, info};
 use utils::outcome::Value;
 
 use crate::server_data::{ClientData, GameResponse};
-use crate::{game_action_server, leave_game, main_menu_server, new_game};
+use crate::{game_action_server, leave_game_server, main_menu_server, new_game_server};
 
 /// Connects to the current game scene.
 ///
 /// This returns commands to load & render the current game state. It's expected
 /// that this will be invoked on application start and on scene change.
-pub async fn connect(database: &impl Database, user_id: UserId) -> Value<GameResponse> {
-    let user = fetch_or_create_user(database, user_id).await?;
+pub async fn connect(database: Arc<dyn Database>, user_id: UserId) -> Value<GameResponse> {
+    let user = fetch_or_create_user(database.clone(), user_id).await?;
     let result = match user.activity {
         UserActivity::Menu => main_menu_server::connect(database, &user).await,
         UserActivity::Playing(game_id) => {
@@ -41,23 +45,41 @@ pub async fn connect(database: &impl Database, user_id: UserId) -> Value<GameRes
 /// Handles a [UserAction] from the client.
 ///
 /// The most recently-returned [ClientData] (from a call to this function or
-/// [connect]) must be provided.
+/// [connect]) must be provided to this call. Returns a [Receiver] which will be
+/// sent the results of incremental updates to the game (e.g. results of AI
+/// actions) along with any errors which occur.
 pub async fn handle_action(
-    database: &impl Database,
+    database: Arc<dyn Database>,
     data: ClientData,
     action: UserAction,
-) -> Value<GameResponse> {
-    let _span = info_span!("handle_action", ?data.user_id, ?data.game_id);
-    match action {
-        UserAction::NewGameAction(action) => new_game::create(database, data, action).await,
-        UserAction::GameAction(action) => {
-            game_action_server::handle_game_action(database, data, action).await
+) -> Receiver<Value<GameResponse>> {
+    let (sender, receiver) = mpsc::channel(4);
+
+    tokio::spawn(async move {
+        let _span = debug_span!("handle_action", ?data.user_id, ?data.game_id);
+        let result = match action {
+            UserAction::NewGameAction(action) => {
+                new_game_server::create(sender.clone(), database, data, action).await
+            }
+            UserAction::GameAction(action) => {
+                game_action_server::handle_game_action(sender.clone(), database, data, action).await
+            }
+            UserAction::LeaveGameAction => {
+                leave_game_server::leave(sender.clone(), database, data).await
+            }
+        };
+
+        if let Err(e) = result {
+            // Error indicates the receiver has been closed or dropped, generally safe to
+            // ignore.
+            error!("Error sending game action response: {:?}", e);
         }
-        UserAction::LeaveGameAction => leave_game::leave(database, data).await,
-    }
+    });
+
+    receiver
 }
 
-async fn fetch_or_create_user(database: &impl Database, user_id: UserId) -> Value<UserState> {
+async fn fetch_or_create_user(database: Arc<dyn Database>, user_id: UserId) -> Value<UserState> {
     Ok(if let Some(player) = database.fetch_user(user_id).await? {
         player
     } else {
