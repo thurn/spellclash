@@ -15,13 +15,15 @@
 use dioxus::prelude::*;
 use display::core::card_view::{CardView, RevealedCardView};
 
+use crate::game_components::game_component::CARD_HEIGHT;
+
 #[component]
 pub fn CardComponent(card: CardView) -> Element {
     let c = card.clone();
     match card.revealed {
         Some(revealed) => rsx! {
             div {
-                RevealedCardComponent { card: c, revealed: revealed },
+                RevealedCardComponent { card: c, revealed },
             }
         },
         None => rsx! {
@@ -34,14 +36,24 @@ pub fn CardComponent(card: CardView) -> Element {
 
 #[component]
 pub fn RevealedCardComponent(card: CardView, revealed: RevealedCardView) -> Element {
+    let width = (CARD_HEIGHT as f64) * (5.0 / 7.0);
     rsx! {
-        "Card: {revealed.face.name} in position {card.position:?}"
+        img {
+            src: revealed.face.image,
+            width: "{width}px",
+            height: "{CARD_HEIGHT}px",
+        }
     }
 }
 
 #[component]
 pub fn HiddenCardComponent(card: CardView) -> Element {
+    let width = (CARD_HEIGHT as f64) * (5.0 / 7.0);
     rsx! {
-        "Hidden Card in position {card.position:?}"
+        img {
+            src: card.card_back,
+            width: "{width}px",
+            height: "{CARD_HEIGHT}px",
+        }
     }
 }

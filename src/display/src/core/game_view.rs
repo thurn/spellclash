@@ -13,7 +13,6 @@
 // limitations under the License.
 
 use data::core::numerics::LifeValue;
-use schemars::JsonSchema;
 
 use crate::core::card_view::CardView;
 
@@ -33,7 +32,7 @@ pub struct GameView {
     pub state: GameViewState,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Copy, JsonSchema)]
+#[derive(Clone, Debug, Eq, PartialEq, Copy)]
 pub enum GameViewState {
     None,
 
@@ -42,7 +41,7 @@ pub enum GameViewState {
 }
 
 /// Identifies a player in the context of the user interface.
-#[derive(Clone, Debug, Eq, PartialEq, Copy, JsonSchema)]
+#[derive(Clone, Debug, Eq, PartialEq, Copy, Hash)]
 pub enum DisplayPlayer {
     /// Player who is currently operating the client
     Viewer,

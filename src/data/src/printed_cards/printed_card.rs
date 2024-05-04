@@ -66,6 +66,8 @@ pub struct PrintedCardFace {
     pub id: Uuid,
     /// The name for this face.
     pub name: String,
+    /// Different printings of this card face
+    pub variants: Vec<PrintedCardFaceVariant>,
     /// The set of face supertypes
     pub supertypes: EnumSet<CardSupertype>,
     /// The set of all card types of the face
@@ -109,4 +111,10 @@ pub struct PrintedCardFace {
     pub melds_with: Option<Uuid>,
     /// True if the card allows a value other than 4 copies in a deck.
     pub has_alternative_deck_limit: bool,
+}
+
+/// A visually unique printed version of a card face.
+#[derive(Clone, Debug)]
+pub struct PrintedCardFaceVariant {
+    pub scryfall_id: Uuid,
 }

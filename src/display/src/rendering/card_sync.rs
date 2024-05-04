@@ -30,6 +30,7 @@ pub fn card_view(builder: &ResponseBuilder, context: &CardViewContext) -> CardVi
         position: context.query_or(ObjectPosition::default(), |game, card| {
             positions::calculate(builder, game, card)
         }),
+        card_back: "https://static.wikia.nocookie.net/mtgsalvation_gamepedia/images/f/f8/Magic_card_back.jpg/revision/latest?cb=20140813141013".to_string(),
         revealed: revealed.then(|| RevealedCardView {
             face: card_face(&context.printed().face),
             face_b: context.printed().face_b.as_ref().map(card_face),
@@ -56,7 +57,15 @@ pub fn card_view(builder: &ResponseBuilder, context: &CardViewContext) -> CardVi
 fn card_face(printed: &PrintedCardFace) -> RevealedCardFace {
     RevealedCardFace {
         name: printed.name.clone(),
+        image: card_image(printed),
         layout: printed.layout,
         rules_text: printed.oracle_text.clone(),
     }
+}
+
+fn card_image(printed: &PrintedCardFace) -> String {
+    let id = printed.variants[0].scryfall_id.to_string();
+    let dir1 = id.chars().next().unwrap();
+    let dir2 = id.chars().nth(1).unwrap();
+    format!("https://cards.scryfall.io/large/front/{dir1}/{dir2}/{id}.jpg")
 }

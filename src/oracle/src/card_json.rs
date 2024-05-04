@@ -20,7 +20,7 @@ use data::core::primitives::{CardSupertype, CardType, Color};
 use data::printed_cards::card_subtypes::CardSubtypes;
 use data::printed_cards::layout::{CardLayout, FaceLayout};
 use data::printed_cards::mana_cost::ManaCost;
-use data::printed_cards::printed_card::{PrintedCard, PrintedCardFace};
+use data::printed_cards::printed_card::{PrintedCard, PrintedCardFace, PrintedCardFaceVariant};
 use data::printed_cards::printed_primitives::{
     AttractionLight, PrintedLoyalty, PrintedPower, PrintedToughness,
 };
@@ -47,15 +47,7 @@ fn build_cards() -> Value<HashMap<CardName, PrintedCard>> {
 }
 
 fn build_printed_card(card: &SetCard) -> Value<(CardName, PrintedCard)> {
-    let name = CardName(
-        Uuid::parse_str(
-            card.identifiers
-                .scryfall_oracle_id
-                .as_ref()
-                .with_error(|| "Missing Scryfall Oracle ID")?,
-        )
-        .with_error(|| "Error parsing Scryfall Oracle ID")?,
-    );
+    let name = CardName(parse_uuid(card.identifiers.scryfall_oracle_id.as_ref())?);
 
     let printed = PrintedCard {
         face: build_face(card)?,
@@ -79,6 +71,9 @@ fn build_face(card: &SetCard) -> Value<PrintedCardFace> {
     Ok(PrintedCardFace {
         id: card.uuid,
         name: card.face_name.clone().unwrap_or_else(|| card.name.clone()),
+        variants: vec![PrintedCardFaceVariant {
+            scryfall_id: parse_uuid(card.identifiers.scryfall_id.as_ref())?,
+        }],
         supertypes: supertypes(&card.supertypes),
         card_types: types(&card.card_types),
         subtypes: subtypes(&card.subtypes),
@@ -130,4 +125,8 @@ fn loyalty(_loyalty: Option<&String>) -> Option<PrintedLoyalty> {
 
 fn attraction_lights(_lights: Vec<u8>) -> EnumSet<AttractionLight> {
     EnumSet::empty()
+}
+
+fn parse_uuid(id: Option<&String>) -> Value<Uuid> {
+    Uuid::parse_str(id.with_error(|| "Missing UUID")?).with_error(|| "Error parsing UUID")
 }

@@ -28,6 +28,9 @@ pub struct CardView {
     /// Position of this card in the UI
     pub position: ObjectPosition,
 
+    /// Card back image
+    pub card_back: String,
+
     /// If this card is revealed to the viewer, contains information on the
     /// revealed face of the card.
     pub revealed: Option<RevealedCardView>,
@@ -75,6 +78,9 @@ pub struct RevealedCardView {
 pub struct RevealedCardFace {
     /// Name of this face
     pub name: String,
+
+    /// Image URL for this card
+    pub image: String,
 
     /// Visual style of specifically this face
     pub layout: FaceLayout,

@@ -34,14 +34,14 @@ impl Default for ObjectPosition {
 }
 
 /// Sub-positions for objects within the battlefield.
-#[derive(Clone, Debug, Copy, PartialEq, Eq)]
+#[derive(Clone, Debug, Copy, PartialEq, Eq, Hash)]
 pub enum BattlefieldPosition {
     Mana,
     Permanents,
 }
 
 /// Possible types of display positions
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Position {
     /// Object position used in interface elements like the deck viewer which
     /// don't rely on game positioning.
