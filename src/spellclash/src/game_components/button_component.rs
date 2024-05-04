@@ -14,3 +14,5 @@
 
 pub static CLASS: &str = "px-4 py-2 m-8 bg-gray-900 text-white rounded-lg transition-all \
 hover:bg-gray-700 active:bg-gray-500 active:scale-95";
+
+pub static DISABLED: &str = "px-4 py-2 m-8 bg-gray-300 text-white rounded-lg";

@@ -15,7 +15,17 @@
 use crate::actions::user_action::UserAction;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub enum GameAction {}
+pub enum GameAction {
+    /// Pass priority on the current stack item or game step.
+    ///
+    /// > If all players pass in succession (that is, if all players pass
+    /// > without taking any actions in between passing), the spell or ability
+    /// > on top of the stack resolves or, if the stack is empty, the phase or
+    /// > step ends.
+    ///
+    /// <https://yawgatog.com/resources/magic-rules/#R1174>
+    PassPriority,
+}
 
 impl From<GameAction> for UserAction {
     fn from(value: GameAction) -> Self {

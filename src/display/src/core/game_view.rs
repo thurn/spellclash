@@ -33,6 +33,9 @@ pub struct GameView {
 
     /// High level visual game state
     pub state: GameViewState,
+
+    /// Whether the viewer can currently take the 'pass priority' action.
+    pub can_pass_priority: bool,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Copy)]

@@ -4371,6 +4371,7 @@ dependencies = [
 name = "rules"
 version = "0.0.0"
 dependencies = [
+ "color-eyre",
  "data",
  "database",
  "enum-iterator",

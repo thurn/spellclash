@@ -55,19 +55,20 @@ pub async fn apply(
     cd_signal: Signal<ClientData>,
     view_signal: Signal<Option<GameView>>,
     nav: Navigator,
-    action: UserAction,
+    action: impl Into<UserAction>,
 ) {
-    let _span = info_span!("client_action::apply", ?action);
+    let user_action = action.into();
+    let _span = info_span!("client_action::apply", ?user_action);
     let client_data = cd_signal();
     debug!("Applying action");
-    let result = game::handle_action(DATABASE.as_ref(), client_data, action).await;
+    let result = game::handle_action(DATABASE.as_ref(), client_data, user_action).await;
     match &result {
         Ok(response) => {
             debug!("Got action response");
             handle_commands(response.clone(), nav, view_signal, cd_signal);
         }
         Err(err) => {
-            error!("Error on action: {:?}, {:?}", err, action);
+            error!("Error on action: {:?}, {:?}", err, user_action);
         }
     }
 }

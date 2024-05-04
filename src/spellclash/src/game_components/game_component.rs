@@ -15,6 +15,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use data::actions::game_action::GameAction;
 use data::actions::user_action::UserAction;
 use dioxus::prelude::*;
 use display::core::card_view::CardView;
@@ -41,7 +42,7 @@ pub fn GameComponent(view: GameView) -> Element {
             }
             div {
                 class: "flex flex-col justify-between",
-                Players { view: view.clone() }
+                GameInfo { view: view.clone() }
             }
         }
     }
@@ -57,7 +58,7 @@ async fn leave_game(
 }
 
 #[component]
-fn Players(view: Arc<GameView>) -> Element {
+fn GameInfo(view: Arc<GameView>) -> Element {
     let cd_signal = consume_context::<Signal<ClientData>>();
     let view_signal = consume_context::<Signal<Option<GameView>>>();
     let nav = use_navigator();
@@ -88,10 +89,23 @@ fn Players(view: Arc<GameView>) -> Element {
                 player: view.viewer.clone(),
                 name: "Viewer",
             }
-            button {
-                class: button_component::CLASS,
-                onclick: move |_| leave_game(cd_signal, view_signal, nav),
-                "Continue",
+            if view.can_pass_priority {
+                button {
+                    class: button_component::CLASS,
+                    onclick: move |_| client_action::apply(
+                        cd_signal,
+                        view_signal,
+                        nav,
+                        GameAction::PassPriority
+                    ),
+                    "Continue",
+                }
+            } else {
+                button {
+                    class: button_component::DISABLED,
+                    disabled: true,
+                    "Continue",
+                }
             }
         }
     }
