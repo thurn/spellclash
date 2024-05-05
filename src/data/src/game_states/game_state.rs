@@ -57,7 +57,7 @@ pub struct GameState {
     ///
     /// If the game has not yet started, this will be turn 0 for player one. If
     /// the game has ended, this will be the turn on which the game ended.
-    pub current_turn: TurnData,
+    pub turn: TurnData,
 
     /// Player who can currently take a game action.
     ///

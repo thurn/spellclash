@@ -156,7 +156,7 @@ fn create_game(
         id: game_id,
         status: GameStatus::Setup,
         step: GamePhaseStep::Untap,
-        current_turn: TurnData { active_player: PlayerName::One, turn_number: 0 },
+        turn: TurnData { active_player: PlayerName::One, turn_number: 0 },
         priority: PlayerName::One,
         passed: EnumSet::empty(),
         configuration: GameConfiguration::new(PlayerName::One | PlayerName::Two),

@@ -24,6 +24,12 @@ use crate::printed_cards::printed_primitives::{
     AttractionLight, PrintedLoyalty, PrintedPower, PrintedToughness,
 };
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum Face {
+    Primary,
+    FaceB,
+}
+
 /// Represents the immutable data about a card.
 ///
 /// This describes the physical information printed on a card. It should
@@ -57,6 +63,16 @@ pub struct PrintedCard {
     pub layout: CardLayout,
 }
 
+impl PrintedCard {
+    /// Returns the named face of this card
+    pub fn face(&self, face: Face) -> Option<&PrintedCardFace> {
+        match face {
+            Face::Primary => Some(&self.face),
+            Face::FaceB => self.face_b.as_ref(),
+        }
+    }
+}
+
 /// Represents one face of a printed card.
 ///
 /// See the comments in [PrintedCard] for more information.
@@ -66,6 +82,8 @@ pub struct PrintedCardFace {
     pub id: Uuid,
     /// The name for this face.
     pub name: String,
+    /// Identifier for this face.
+    pub face_identifier: Face,
     /// Different printings of this card face
     pub variants: Vec<PrintedCardFaceVariant>,
     /// The set of face supertypes

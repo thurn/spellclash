@@ -40,3 +40,12 @@ pub fn next_player_after(game: &GameState, player: PlayerName) -> PlayerName {
         _ => panic!("Unsupported player count"),
     }
 }
+
+/// Returns the number of lands the indicated `player` can still play this turn.
+pub fn land_plays_remaining(game: &GameState, player: PlayerName) -> usize {
+    if game.turn.active_player == player {
+        1
+    } else {
+        0
+    }
+}

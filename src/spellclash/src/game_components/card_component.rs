@@ -42,6 +42,7 @@ pub fn RevealedCardComponent(card: CardView, revealed: RevealedCardView) -> Elem
             src: revealed.face.image,
             width: "{width}px",
             height: "{CARD_HEIGHT}px",
+            class: if  revealed.can_play { "border-2 border-sky-500" }
         }
     }
 }

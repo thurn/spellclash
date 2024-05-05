@@ -225,7 +225,7 @@ impl Zones {
     ) -> &CardState {
         let object_id = self.new_object_id();
         let id = self.all_cards.insert(CardState {
-            card_id: CardId::default(),
+            id: CardId::default(),
             object_id,
             card_name: name,
             kind,
@@ -246,7 +246,7 @@ impl Zones {
         self.add_to_zone(owner, id, Zone::Library);
 
         let card = &mut self.all_cards[id];
-        card.card_id = id;
+        card.id = id;
         card
     }
 

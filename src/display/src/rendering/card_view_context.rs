@@ -49,7 +49,7 @@ impl<'a> CardViewContext<'a> {
     pub fn card_id(&self) -> CardId {
         match self {
             Self::Default(_, id) => *id,
-            Self::Game(_, _, card) => card.card_id,
+            Self::Game(_, _, card) => card.id,
         }
     }
 
@@ -75,7 +75,7 @@ impl<'a> CardViewContext<'a> {
     pub fn query_id_or<T>(&self, default: T, fun: impl Fn(&GameState, CardId) -> T) -> T {
         match self {
             Self::Default(..) => default,
-            Self::Game(_, state, card) => fun(state, card.card_id),
+            Self::Game(_, state, card) => fun(state, card.id),
         }
     }
 }

@@ -49,17 +49,17 @@ pub fn advance(game: &mut GameState) -> Outcome {
 fn begin_step(game: &mut GameState, step: GamePhaseStep) -> Outcome {
     game.clear_passed();
     game.step = step;
-    game.priority = game.current_turn.active_player;
+    game.priority = game.turn.active_player;
     outcome::OK
 }
 
 fn untap(game: &mut GameState) -> Outcome {
     begin_step(game, GamePhaseStep::Untap)?;
-    let next = players::next_player_after(game, game.current_turn.active_player);
+    let next = players::next_player_after(game, game.turn.active_player);
     if next == PlayerName::One {
-        game.current_turn.turn_number += 1;
+        game.turn.turn_number += 1;
     }
-    game.current_turn.active_player = next;
+    game.turn.active_player = next;
 
     // > 502.4. No player receives priority during the untap step, so no spells can
     // > be cast or resolve and no abilities can be activated or resolve. Any
@@ -80,7 +80,7 @@ fn draw(game: &mut GameState) -> Outcome {
     // > 504.1. First, the active player draws a card. This turn-based action
     // doesn't use the stack.
     // <https://yawgatog.com/resources/magic-rules/#R5041>
-    library::draw(game, game.current_turn.active_player, Source::Game)
+    library::draw(game, game.turn.active_player, Source::Game)
 
     // > 504.2. Second, the active player gets priority. (See rule 117, "Timing
     // > and Priority.")

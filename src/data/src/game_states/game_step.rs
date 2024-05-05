@@ -33,3 +33,9 @@ pub enum GamePhaseStep {
     EndStep,
     Cleanup,
 }
+
+impl GamePhaseStep {
+    pub fn is_main_phase(&self) -> bool {
+        matches!(self, GamePhaseStep::PreCombatMain | GamePhaseStep::PostCombatMain)
+    }
+}

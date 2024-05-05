@@ -66,6 +66,9 @@ pub struct RevealedCardView {
     /// Primary face of this card
     pub face: RevealedCardFace,
 
+    /// True if any face of this card can currently be played
+    pub can_play: bool,
+
     /// Secondary or additional face of this card, if any
     pub face_b: Option<RevealedCardFace>,
 

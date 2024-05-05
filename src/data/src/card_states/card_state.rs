@@ -40,7 +40,7 @@ use crate::printed_cards::printed_card::PrintedCard;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CardState {
     /// Unique identifier for this card in the [Zones] struct.
-    pub card_id: CardId,
+    pub id: CardId,
 
     /// Object ID for this card. Cards receive an Object ID when they are
     /// created and then get a new one every time they change zones.
@@ -145,7 +145,7 @@ pub struct CardState {
 
 impl HasCardId for CardState {
     fn card_id(&self) -> CardId {
-        self.card_id
+        self.id
     }
 }
 

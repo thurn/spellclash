@@ -20,7 +20,9 @@ use data::core::primitives::{CardSupertype, CardType, Color};
 use data::printed_cards::card_subtypes::CardSubtypes;
 use data::printed_cards::layout::{CardLayout, FaceLayout};
 use data::printed_cards::mana_cost::ManaCost;
-use data::printed_cards::printed_card::{PrintedCard, PrintedCardFace, PrintedCardFaceVariant};
+use data::printed_cards::printed_card::{
+    Face, PrintedCard, PrintedCardFace, PrintedCardFaceVariant,
+};
 use data::printed_cards::printed_primitives::{
     AttractionLight, PrintedLoyalty, PrintedPower, PrintedToughness,
 };
@@ -50,7 +52,7 @@ fn build_printed_card(card: &SetCard) -> Value<(CardName, PrintedCard)> {
     let name = CardName(parse_uuid(card.identifiers.scryfall_oracle_id.as_ref())?);
 
     let printed = PrintedCard {
-        face: build_face(card)?,
+        face: build_face(card, Face::Primary)?,
         face_b: None,
         layout: match card.layout {
             FaceLayout::Adventure => CardLayout::Adventure,
@@ -67,10 +69,11 @@ fn build_printed_card(card: &SetCard) -> Value<(CardName, PrintedCard)> {
     Ok((name, printed))
 }
 
-fn build_face(card: &SetCard) -> Value<PrintedCardFace> {
+fn build_face(card: &SetCard, face_identifier: Face) -> Value<PrintedCardFace> {
     Ok(PrintedCardFace {
         id: card.uuid,
         name: card.face_name.clone().unwrap_or_else(|| card.name.clone()),
+        face_identifier,
         variants: vec![PrintedCardFaceVariant {
             scryfall_id: parse_uuid(card.identifiers.scryfall_id.as_ref())?,
         }],

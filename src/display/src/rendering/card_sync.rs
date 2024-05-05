@@ -14,6 +14,7 @@
 
 use data::card_states::card_state::{CardFacing, TappedState};
 use data::printed_cards::printed_card::PrintedCardFace;
+use rules::queries::can_play;
 
 use crate::core::card_view::{CardView, RevealedCardFace, RevealedCardView};
 use crate::core::object_position::ObjectPosition;
@@ -33,6 +34,9 @@ pub fn card_view(builder: &ResponseBuilder, context: &CardViewContext) -> CardVi
         card_back: "https://static.wikia.nocookie.net/mtgsalvation_gamepedia/images/f/f8/Magic_card_back.jpg/revision/latest?cb=20140813141013".to_string(),
         revealed: revealed.then(|| RevealedCardView {
             face: card_face(&context.printed().face),
+            can_play: context.query_or(false, |game, card| {
+                can_play::any_face(game, builder.player, card.id)
+            }),
             face_b: context.printed().face_b.as_ref().map(card_face),
             layout: context.printed().layout,
         }),
