@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::PlayerName;
+use data::core::primitives::{PlayerName, Source};
 use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
 use utils::outcome;
 use utils::outcome::Outcome;
 
+use crate::mutations::library;
 use crate::queries::players;
 
 /// Advances the game state to the indicated `step`.
@@ -60,13 +61,11 @@ fn untap(game: &mut GameState) -> Outcome {
     }
     game.current_turn.active_player = next;
 
-    // > No player receives priority during the untap step, so no spells can be cast
-    // > or
-    // > resolve and no abilities can be activated or resolve. Any ability that
-    // > triggers
-    // > during this step will be held until the next time a player would receive
-    // > priority,
-    // > which is usually during the upkeep step. (See rule 503, "Upkeep Step.")
+    // > 502.4. No player receives priority during the untap step, so no spells can
+    // > be cast or resolve and no abilities can be activated or resolve. Any
+    // > ability that triggers during this step will be held until the next time a
+    // > player would receive priority, which is usually during the upkeep step.
+    // > (See rule 503, "Upkeep Step.")
     // <https://yawgatog.com/resources/magic-rules/#R5024>
     advance(game)
 }
@@ -76,7 +75,16 @@ fn upkeep(game: &mut GameState) -> Outcome {
 }
 
 fn draw(game: &mut GameState) -> Outcome {
-    begin_step(game, GamePhaseStep::Draw)
+    begin_step(game, GamePhaseStep::Draw)?;
+
+    // > 504.1. First, the active player draws a card. This turn-based action
+    // doesn't use the stack.
+    // <https://yawgatog.com/resources/magic-rules/#R5041>
+    library::draw(game, game.current_turn.active_player, Source::Game)
+
+    // > 504.2. Second, the active player gets priority. (See rule 117, "Timing
+    // > and Priority.")
+    // <https://yawgatog.com/resources/magic-rules/#R5042>
 }
 
 fn pre_combat_main(game: &mut GameState) -> Outcome {

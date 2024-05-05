@@ -15,6 +15,7 @@
 use data::card_states::card_state::CardState;
 use data::core::primitives::{PlayerName, Zone};
 use data::game_states::game_state::GameState;
+use data::player_states::player_state::PlayerQueries;
 use rules::queries::legal_actions;
 
 use crate::core::game_view::{GameView, GameViewState, PlayerView};
@@ -54,7 +55,7 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
 }
 
 fn player_view(game: &GameState, player: PlayerName) -> PlayerView {
-    PlayerView { life: game.players.get(player).life, can_act: game.priority == player }
+    PlayerView { life: game.player(player).life, can_act: game.priority == player }
 }
 
 pub fn skip_sending_to_client(card: &CardState) -> bool {

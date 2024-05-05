@@ -25,7 +25,7 @@ use utils::with_error::WithError;
 
 /// Select a game action for the [PlayerName] in the given [GameState].
 pub async fn select(game: &GameState, player: PlayerName) -> Value<GameAction> {
-    time::sleep(Duration::from_secs(1)).await;
+    time::sleep(Duration::from_millis(300)).await;
     legal_actions::compute(game, player)
         .choose(&mut rand::thread_rng())
         .with_error(|| "No legal actions available")

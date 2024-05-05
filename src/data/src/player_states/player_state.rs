@@ -22,11 +22,21 @@ use crate::core::primitives::{
 use crate::player_states::mana_pool::ManaPool;
 use crate::player_states::prompt_stack::PromptStack;
 
+pub trait PlayerQueries {
+    /// Looks up a player by name
+    fn player(&self, name: PlayerName) -> &PlayerState;
+
+    /// Mutable version of [Self::player].
+    fn player_mut(&mut self, name: PlayerName) -> &mut PlayerState;
+}
+
 /// Represents the state of players within a game
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Players {
     player_1: PlayerState,
     player_2: PlayerState,
+    player_3: PlayerState,
+    player_4: PlayerState,
 }
 
 impl Players {
@@ -34,26 +44,28 @@ impl Players {
         Self {
             player_1: PlayerState::new(PlayerName::One, p1, starting_life),
             player_2: PlayerState::new(PlayerName::Two, p2, starting_life),
+            player_3: PlayerState::new(PlayerName::Three, None, starting_life),
+            player_4: PlayerState::new(PlayerName::Three, None, starting_life),
         }
     }
 }
 
-impl Players {
-    /// Looks up a player by name
-    pub fn get(&self, name: PlayerName) -> &PlayerState {
+impl PlayerQueries for Players {
+    fn player(&self, name: PlayerName) -> &PlayerState {
         match name {
             PlayerName::One => &self.player_1,
             PlayerName::Two => &self.player_2,
-            _ => todo!("Not implemented"),
+            PlayerName::Three => &self.player_3,
+            PlayerName::Four => &self.player_4,
         }
     }
 
-    /// Mutable reference to a player by name
-    pub fn get_mut(&mut self, name: PlayerName) -> &mut PlayerState {
+    fn player_mut(&mut self, name: PlayerName) -> &mut PlayerState {
         match name {
             PlayerName::One => &mut self.player_1,
             PlayerName::Two => &mut self.player_2,
-            _ => todo!("Not implemented"),
+            PlayerName::Three => &mut self.player_3,
+            PlayerName::Four => &mut self.player_4,
         }
     }
 }

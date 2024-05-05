@@ -32,7 +32,7 @@ use crate::game_states::combat_state::CombatState;
 use crate::game_states::game_step::GamePhaseStep;
 use crate::game_states::history_data::GameHistory;
 use crate::game_states::undo_state::UndoTracker;
-use crate::player_states::player_state::Players;
+use crate::player_states::player_state::{PlayerQueries, PlayerState, Players};
 use crate::prompts::prompt_manager::PromptManager;
 use crate::state_machines::state_machine_data::StateMachines;
 
@@ -150,7 +150,7 @@ impl GameState {
     /// Returns an error this user is not a player in this game.
     pub fn find_player_name(&self, user_id: UserId) -> Value<PlayerName> {
         for name in enum_iterator::all::<PlayerName>() {
-            if self.players.get(name).user_id == Some(user_id) {
+            if self.player(name).user_id == Some(user_id) {
                 return Ok(name);
             }
         }
@@ -201,6 +201,16 @@ impl ZoneQueries for GameState {
 
     fn outside_the_game_zone(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
         self.zones.outside_the_game_zone(player)
+    }
+}
+
+impl PlayerQueries for GameState {
+    fn player(&self, name: PlayerName) -> &PlayerState {
+        self.players.player(name)
+    }
+
+    fn player_mut(&mut self, name: PlayerName) -> &mut PlayerState {
+        self.players.player_mut(name)
     }
 }
 

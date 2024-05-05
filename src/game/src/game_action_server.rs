@@ -17,6 +17,7 @@ use std::sync::Arc;
 use ai::core::ai_action;
 use data::actions::game_action::GameAction;
 use data::core::primitives::{GameId, PlayerName};
+use data::player_states::player_state::PlayerQueries;
 use data::users::user_state::UserState;
 use database::database::Database;
 use display::commands::display_preferences::DisplayPreferences;
@@ -45,7 +46,7 @@ pub async fn connect(
     let player_name = game.find_player_name(user.id)?;
     let mut opponent_ids = vec![];
     for name in enum_iterator::all::<PlayerName>() {
-        match game.players.get(name).user_id {
+        match game.players.player(name).user_id {
             Some(id) if id != user.id => {
                 opponent_ids.push(id);
             }
@@ -103,7 +104,7 @@ pub async fn handle_game_action(
             .with_error(|| "Error sending response to client")?;
 
         let next_player = legal_actions::next_to_act(&game);
-        if game.players.get(next_player).user_id.is_some() {
+        if game.player(next_player).user_id.is_some() {
             break;
         } else {
             debug!(?next_player, "Searching for AI action");
