@@ -39,6 +39,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "ai"
+version = "0.0.0"
+dependencies = [
+ "color-eyre",
+ "data",
+ "enum-iterator",
+ "enumset",
+ "itertools",
+ "maplit",
+ "once_cell",
+ "rand 0.8.5",
+ "rand_xoshiro",
+ "rules",
+ "tokio",
+ "tracing",
+ "utils",
+ "uuid",
+]
+
+[[package]]
 name = "all_cards"
 version = "0.0.0"
 dependencies = [
@@ -2013,6 +2033,7 @@ dependencies = [
 name = "game"
 version = "0.0.0"
 dependencies = [
+ "ai",
  "color-eyre",
  "data",
  "database",

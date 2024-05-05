@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::fmt::{Display, Formatter};
+
 use color_eyre::Report;
 
 /// Possible reasons why the rules engine should halt
@@ -21,6 +23,16 @@ pub enum StopCondition {
     Prompt,
     GameOver,
     Error(Report),
+}
+
+impl Display for StopCondition {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            StopCondition::Prompt => write!(f, "Prompt"),
+            StopCondition::GameOver => write!(f, "Game Over"),
+            StopCondition::Error(e) => write!(f, "Error: {}", e),
+        }
+    }
 }
 
 /// Represents the result of some game mutation.

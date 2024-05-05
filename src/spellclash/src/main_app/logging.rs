@@ -71,6 +71,7 @@ fn tag_parser(event: &Event) -> Option<Tag> {
         _ if level == Level::WARN => '🚧',
         _ if target.contains("rules") => '🎴',
         _ if target.contains("game") => '💻',
+        _ if target.contains("spellclash") => '🌐',
         _ => match level {
             Level::TRACE => '📍',
             Level::DEBUG => '📝',
@@ -79,9 +80,7 @@ fn tag_parser(event: &Event) -> Option<Tag> {
     };
 
     let mut builder = Tag::builder().level(level).icon(icon);
-    if icon == '📝' || icon == '💡' || icon == '📍' {
-        builder = builder.prefix(target);
-    }
+    builder = builder.prefix(target).suffix("rs");
 
     Some(builder.build())
 }

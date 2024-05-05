@@ -21,7 +21,6 @@ use dioxus::prelude::*;
 use display::core::game_view::GameView;
 use game;
 use game::server_data::ClientData;
-use log::debug;
 use uuid::Uuid;
 
 use crate::client_actions::client_action;
@@ -73,7 +72,7 @@ fn Loading() -> Element {
     let cd_signal = consume_context::<Signal<ClientData>>();
     let view_signal = consume_context::<Signal<Option<GameView>>>();
     let nav = use_navigator();
-    use_future(move || client_action::connect(cd_signal, view_signal, nav));
+    use_future(move || client_action::client_connect(cd_signal, view_signal, nav));
     rsx! { "Loading... " }
 }
 
@@ -82,8 +81,7 @@ async fn new_game(
     view_signal: Signal<Option<GameView>>,
     nav: Navigator,
 ) {
-    debug!("Requesting new game");
-    client_action::apply(
+    client_action::client_execute_action(
         cd_signal,
         view_signal,
         nav,
@@ -99,7 +97,6 @@ async fn new_game(
 
 #[component]
 fn MainMenu() -> Element {
-    debug!("Rendering main menu");
     let cd_signal = consume_context::<Signal<ClientData>>();
     let view_signal = consume_context::<Signal<Option<GameView>>>();
     let nav = use_navigator();

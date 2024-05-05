@@ -23,7 +23,7 @@ use display::core::game_view::GameView;
 use game::server;
 use game::server_data::{ClientData, GameResponse};
 use once_cell::sync::Lazy;
-use tracing::{debug, error, info_span};
+use tracing::{debug, error, instrument};
 
 use crate::game_client::Route;
 use crate::initialize;
@@ -31,12 +31,12 @@ use crate::initialize;
 static DATABASE: Lazy<Arc<SledDatabase>> =
     Lazy::new(|| Arc::new(SledDatabase::new(initialize::get_data_dir())));
 
-pub async fn connect(
+#[instrument(level = "debug", skip_all)]
+pub async fn client_connect(
     cd_signal: Signal<ClientData>,
     view_signal: Signal<Option<GameView>>,
     nav: Navigator,
 ) {
-    let _span = info_span!("client_action::connect");
     let client_data = cd_signal();
     debug!("Connecting");
     let result = server::connect(DATABASE.clone(), client_data.user_id).await;
@@ -51,22 +51,20 @@ pub async fn connect(
     }
 }
 
-pub async fn apply(
+#[instrument(level = "debug", skip_all)]
+pub async fn client_execute_action(
     cd_signal: Signal<ClientData>,
     view_signal: Signal<Option<GameView>>,
     nav: Navigator,
     action: impl Into<UserAction>,
 ) {
     let user_action = action.into();
-    let _span = info_span!("client_action::apply", ?user_action);
     let client_data = cd_signal();
-    debug!("Applying action");
     let mut receiver = server::handle_action(DATABASE.clone(), client_data, user_action).await;
     loop {
         let result = receiver.recv().await;
         match &result {
             Some(Ok(response)) => {
-                debug!("Got action response");
                 handle_commands(response.clone(), nav, view_signal, cd_signal);
             }
             Some(Err(err)) => {
@@ -80,14 +78,18 @@ pub async fn apply(
     }
 }
 
+#[instrument(level = "debug", skip_all)]
 fn handle_commands(
     response: GameResponse,
     navigator: Navigator,
     mut view_signal: Signal<Option<GameView>>,
     mut cd_signal: Signal<ClientData>,
 ) {
+    let count = response.commands.len();
+    debug!(?count, "Handling commands");
     *cd_signal.write() = response.client_data.clone();
     for command in response.commands {
+        debug!(?command, "Handling command");
         match command {
             Command::LoadScene { name, .. } => match name {
                 SceneName::MainMenu => {

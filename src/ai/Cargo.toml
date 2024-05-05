@@ -1,5 +1,5 @@
 [package]
-name = "game"
+name = "ai"
 version = "0.0.0"
 edition = "2021"
 
@@ -9,11 +9,7 @@ doctest = false
 bench = false
 
 [dependencies]
-ai = { path = "../ai", version = "0.0.0" }
 data = { path = "../data", version = "0.0.0" }
-database = { path = "../database", version = "0.0.0" }
-display = { path = "../display", version = "0.0.0" }
-oracle = { path = "../oracle", version = "0.0.0" }
 rules = { path = "../rules", version = "0.0.0" }
 utils = { path = "../utils", version = "0.0.0" }
 

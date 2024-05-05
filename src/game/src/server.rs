@@ -20,7 +20,7 @@ use data::users::user_state::{UserActivity, UserState};
 use database::database::Database;
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::Receiver;
-use tracing::{debug_span, error, info};
+use tracing::{debug_span, error, info, Instrument};
 use utils::outcome::Value;
 
 use crate::server_data::{ClientData, GameResponse};
@@ -32,10 +32,11 @@ use crate::{game_action_server, leave_game_server, main_menu_server, new_game_se
 /// that this will be invoked on application start and on scene change.
 pub async fn connect(database: Arc<dyn Database>, user_id: UserId) -> Value<GameResponse> {
     let user = fetch_or_create_user(database.clone(), user_id).await?;
+    let span = debug_span!("connect", ?user_id);
     let result = match user.activity {
-        UserActivity::Menu => main_menu_server::connect(database, &user).await,
+        UserActivity::Menu => main_menu_server::connect(database, &user).instrument(span).await,
         UserActivity::Playing(game_id) => {
-            game_action_server::connect(database, &user, game_id).await
+            game_action_server::connect(database, &user, game_id).instrument(span).await
         }
     }?;
 
@@ -56,16 +57,20 @@ pub async fn handle_action(
     let (sender, receiver) = mpsc::channel(4);
 
     tokio::spawn(async move {
-        let _span = debug_span!("handle_action", ?data.user_id, ?data.game_id);
+        let span = debug_span!("handle_action", ?data.user_id, ?data.game_id);
         let result = match action {
             UserAction::NewGameAction(action) => {
-                new_game_server::create(sender.clone(), database, data, action).await
+                new_game_server::create(sender.clone(), database, data, action)
+                    .instrument(span)
+                    .await
             }
             UserAction::GameAction(action) => {
-                game_action_server::handle_game_action(sender.clone(), database, data, action).await
+                game_action_server::handle_game_action(sender.clone(), database, data, action)
+                    .instrument(span)
+                    .await
             }
             UserAction::LeaveGameAction => {
-                leave_game_server::leave(sender.clone(), database, data).await
+                leave_game_server::leave(sender.clone(), database, data).instrument(span).await
             }
         };
 

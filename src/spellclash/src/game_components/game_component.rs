@@ -22,7 +22,6 @@ use display::core::card_view::CardView;
 use display::core::game_view::{DisplayPlayer, GameView, PlayerView};
 use display::core::object_position::{BattlefieldPosition, Position};
 use game::server_data::ClientData;
-use tracing::debug;
 
 use crate::client_actions::client_action;
 use crate::game_components::button_component;
@@ -53,8 +52,8 @@ async fn leave_game(
     view_signal: Signal<Option<GameView>>,
     nav: Navigator,
 ) {
-    debug!("Request to leave game");
-    client_action::apply(cd_signal, view_signal, nav, UserAction::LeaveGameAction).await;
+    client_action::client_execute_action(cd_signal, view_signal, nav, UserAction::LeaveGameAction)
+        .await;
 }
 
 #[component]
@@ -92,7 +91,7 @@ fn GameInfo(view: Arc<GameView>) -> Element {
             if view.can_pass_priority {
                 button {
                     class: button_component::CLASS,
-                    onclick: move |_| client_action::apply(
+                    onclick: move |_| client_action::client_execute_action(
                         cd_signal,
                         view_signal,
                         nav,

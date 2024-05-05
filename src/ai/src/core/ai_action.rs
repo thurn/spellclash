@@ -12,29 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::iter;
+use std::time::Duration;
 
 use data::actions::game_action::GameAction;
 use data::core::primitives::PlayerName;
 use data::game_states::game_state::GameState;
+use rand::prelude::IteratorRandom;
+use rules::queries::legal_actions;
+use tokio::time;
+use utils::outcome::Value;
+use utils::with_error::WithError;
 
-/// Iterator over all legal actions the named player can take in the current
-/// game state.
-pub fn compute(game: &GameState, player: PlayerName) -> impl Iterator<Item = GameAction> {
-    let mut pass_priority = None;
-    if next_to_act(game) == player {
-        pass_priority = Some(iter::once(GameAction::PassPriority))
-    }
-    pass_priority.into_iter().flatten()
-}
-
-/// Returns the name of the player who is currently allowed to take an action.
-pub fn next_to_act(game: &GameState) -> PlayerName {
-    game.priority
-}
-
-/// Returns true if the named player can currently take the action to pass
-/// priority.
-pub fn can_pass_priority(game: &GameState, player: PlayerName) -> bool {
-    game.priority == player
+/// Select a game action for the [PlayerName] in the given [GameState].
+pub async fn select(game: &GameState, player: PlayerName) -> Value<GameAction> {
+    time::sleep(Duration::from_secs(1)).await;
+    legal_actions::compute(game, player)
+        .choose(&mut rand::thread_rng())
+        .with_error(|| "No legal actions available")
 }

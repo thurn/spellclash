@@ -10,6 +10,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/rules/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/spellclash/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/utils/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/ai/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/game/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>

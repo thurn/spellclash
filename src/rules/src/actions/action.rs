@@ -15,19 +15,23 @@
 use data::actions::game_action::GameAction;
 use data::core::primitives::PlayerName;
 use data::game_states::game_state::GameState;
+use tracing::{debug, instrument};
 use utils::outcome::Outcome;
 use utils::{outcome, verify};
 
 use crate::queries::legal_actions;
 
-pub fn handle_game_action(game: &mut GameState, player: PlayerName, action: GameAction) -> Outcome {
+#[instrument(err, level = "debug", skip(game))]
+pub fn execute(game: &mut GameState, player: PlayerName, action: GameAction) -> Outcome {
     match action {
         GameAction::PassPriority => handle_pass_priority(game, player),
     }
 }
 
+#[instrument(err, level = "debug", skip(game))]
 fn handle_pass_priority(game: &mut GameState, player: PlayerName) -> Outcome {
-    verify!(legal_actions::can_pass_priority(game, player), "Illegal game action");
+    debug!(?player, "Passing priority");
+    verify!(legal_actions::can_pass_priority(game, player), "Cannot pass priority for {player:?}");
     game.priority = game.priority.next();
     outcome::OK
 }
