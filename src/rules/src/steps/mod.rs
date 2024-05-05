@@ -12,24 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use enum_iterator::Sequence;
-use serde::{Deserialize, Serialize};
-
-#[derive(
-    Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Sequence, Serialize, Deserialize,
-)]
-pub enum GamePhaseStep {
-    Untap,
-    Upkeep,
-    Draw,
-    PreCombatMain,
-    BeginCombat,
-    DeclareAttackers,
-    DeclareBlockers,
-    FirstStrikeDamage,
-    CombatDamage,
-    EndCombat,
-    PostCombatMain,
-    EndStep,
-    Cleanup,
-}
+pub mod step;

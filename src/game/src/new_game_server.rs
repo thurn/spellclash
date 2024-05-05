@@ -26,9 +26,7 @@ use data::decks::deck_name::DeckName;
 use data::delegates::game_delegates::GameDelegates;
 use data::game_states::animation_tracker::AnimationTracker;
 use data::game_states::combat_state::CombatState;
-use data::game_states::game_state::{
-    GameConfiguration, GamePlayerCount, GameState, GameStatus, TurnData,
-};
+use data::game_states::game_state::{GameConfiguration, GameState, GameStatus, TurnData};
 use data::game_states::game_step::GamePhaseStep;
 use data::game_states::history_data::GameHistory;
 use data::game_states::undo_state::UndoTracker;
@@ -46,6 +44,7 @@ use oracle::card_database;
 use rand_xoshiro::rand_core::SeedableRng;
 use rand_xoshiro::Xoshiro256StarStar;
 use rules::mutations::library;
+use rules::steps::step;
 use tokio::sync::mpsc::Sender;
 use tracing::info;
 use utils::fail;
@@ -90,6 +89,7 @@ async fn create_internal(
     library::draw_cards(&mut game, PlayerName::One, Source::Game, 7)?;
     game.shuffle_library(PlayerName::Two)?;
     library::draw_cards(&mut game, PlayerName::Two, Source::Game, 7)?;
+    step::advance(&mut game)?;
 
     user.activity = UserActivity::Playing(game.id);
 
@@ -156,9 +156,10 @@ fn create_game(
         id: game_id,
         status: GameStatus::Setup,
         step: GamePhaseStep::Untap,
-        current_turn: TurnData { turn: PlayerName::One, turn_number: 0 },
+        current_turn: TurnData { active_player: PlayerName::One, turn_number: 0 },
         priority: PlayerName::One,
-        configuration: GameConfiguration::new(GamePlayerCount::Two),
+        passed: EnumSet::empty(),
+        configuration: GameConfiguration::new(PlayerName::One | PlayerName::Two),
         state_machines: StateMachines::default(),
         players: Players::new(p1, p2, LifeValue(20)),
         zones,

@@ -14,6 +14,7 @@
 
 use std::collections::{HashSet, VecDeque};
 
+use enumset::EnumSet;
 use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};
 use utils::fail;
@@ -69,6 +70,11 @@ pub struct GameState {
     /// has ended, this will be the player who held priority at the end of the
     /// game.
     pub priority: PlayerName,
+
+    /// Players whose last game action was to pass priority. When all players
+    /// pass priority, the current item on the stack resolves or the current
+    /// game step ends.
+    pub passed: EnumSet<PlayerName>,
 
     /// Options controlling overall gameplay
     pub configuration: GameConfiguration,
@@ -127,6 +133,11 @@ impl GameState {
 
             self.animations.steps.push(AnimationStep { snapshot: clone, update: update() });
         }
+    }
+
+    /// Clears the set of players who have passed priority.
+    pub fn clear_passed(&mut self) {
+        self.passed = EnumSet::empty();
     }
 
     /// Shuffles the order of cards in a player's library
@@ -223,17 +234,12 @@ pub enum GameStatus {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, Eq, PartialEq, Hash)]
 pub struct TurnData {
     /// Player whose turn it is or was.
-    pub turn: PlayerName,
+    pub active_player: PlayerName,
 
-    /// Turn number for that player
+    /// Turn number for that player.
+    ///
+    /// The first turn of the game is turn 0.
     pub turn_number: TurnNumber,
-}
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-pub enum GamePlayerCount {
-    Two,
-    Three,
-    Four,
 }
 
 /// Options controlling overall gameplay
@@ -251,15 +257,15 @@ pub struct GameConfiguration {
     /// pre-scripted new player experience.
     pub scripted_tutorial: bool,
 
-    /// Number of players in this game. Defaults to two.
+    /// Set of players in this game
     ///
     /// Currently only 2 players are supported, but I see no reason not to allow
     /// future expansion.
-    pub num_players: GamePlayerCount,
+    pub all_players: EnumSet<PlayerName>,
 }
 
 impl GameConfiguration {
-    pub fn new(num_players: GamePlayerCount) -> Self {
-        Self { deterministic: false, simulation: false, scripted_tutorial: false, num_players }
+    pub fn new(all_players: EnumSet<PlayerName>) -> Self {
+        Self { deterministic: false, simulation: false, scripted_tutorial: false, all_players }
     }
 }

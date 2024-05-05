@@ -13,29 +13,30 @@
 // limitations under the License.
 
 use data::core::primitives::PlayerName;
-use data::game_states::game_state::{GamePlayerCount, GameState};
+use data::game_states::game_state::GameState;
 
 /// Returns the next player in turn order after the given [PlayerName].
 ///
 /// This may vary based on game configuration, e.g. in multiplayer games.
 pub fn next_player_after(game: &GameState, player: PlayerName) -> PlayerName {
-    match game.configuration.num_players {
-        GamePlayerCount::Two => match player {
+    match game.configuration.all_players.len() {
+        2 => match player {
             PlayerName::One => PlayerName::Two,
             PlayerName::Two => PlayerName::One,
             _ => panic!("{player:?} is not a player in this game"),
         },
-        GamePlayerCount::Three => match player {
+        3 => match player {
             PlayerName::One => PlayerName::Two,
             PlayerName::Two => PlayerName::Three,
             PlayerName::Three => PlayerName::One,
             _ => panic!("{player:?} is not a player in this game"),
         },
-        GamePlayerCount::Four => match player {
+        4 => match player {
             PlayerName::One => PlayerName::Two,
             PlayerName::Two => PlayerName::Three,
             PlayerName::Three => PlayerName::Four,
             PlayerName::Four => PlayerName::One,
         },
+        _ => panic!("Unsupported player count"),
     }
 }

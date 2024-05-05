@@ -13,4 +13,4 @@
 // limitations under the License.
 
 pub mod legal_actions;
-pub mod turn;
+pub mod players;

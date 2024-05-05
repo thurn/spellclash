@@ -42,7 +42,7 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
         cards,
         status_description: format!(
             "{:?}/Turn {}/Player {:?}",
-            game.step, game.current_turn.turn_number, game.current_turn.turn
+            game.step, game.current_turn.turn_number, game.current_turn.active_player
         ),
         state: if game.combat.currently_active {
             GameViewState::CombatActive
