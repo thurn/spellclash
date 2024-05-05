@@ -19,7 +19,7 @@ use tracing::{debug, instrument};
 use utils::outcome::Outcome;
 use utils::{outcome, verify};
 
-use crate::queries::legal_actions;
+use crate::queries::{legal_actions, turn};
 
 #[instrument(err, level = "debug", skip(game))]
 pub fn execute(game: &mut GameState, player: PlayerName, action: GameAction) -> Outcome {
@@ -32,6 +32,6 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: GameAction) -> 
 fn handle_pass_priority(game: &mut GameState, player: PlayerName) -> Outcome {
     debug!(?player, "Passing priority");
     verify!(legal_actions::can_pass_priority(game, player), "Cannot pass priority for {player:?}");
-    game.priority = game.priority.next();
+    game.priority = turn::next_player_after(game, game.priority);
     outcome::OK
 }

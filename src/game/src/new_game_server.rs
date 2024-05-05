@@ -26,7 +26,9 @@ use data::decks::deck_name::DeckName;
 use data::delegates::game_delegates::GameDelegates;
 use data::game_states::animation_tracker::AnimationTracker;
 use data::game_states::combat_state::CombatState;
-use data::game_states::game_state::{GameConfiguration, GameState, GameStatus, TurnData};
+use data::game_states::game_state::{
+    GameConfiguration, GamePlayerCount, GameState, GameStatus, TurnData,
+};
 use data::game_states::game_step::GamePhaseStep;
 use data::game_states::history_data::GameHistory;
 use data::game_states::undo_state::UndoTracker;
@@ -143,6 +145,7 @@ fn create_game(
     let (p1, p1_deck, p2, p2_deck) = match user_player_name {
         PlayerName::One => (Some(user_id), user_deck, opponent_id, opponent_deck),
         PlayerName::Two => (opponent_id, opponent_deck, Some(user_id), user_deck),
+        _ => todo!("Not implemented"),
     };
 
     let mut zones = Zones::default();
@@ -155,7 +158,7 @@ fn create_game(
         step: GamePhaseStep::Untap,
         current_turn: TurnData { turn: PlayerName::One, turn_number: 0 },
         priority: PlayerName::One,
-        configuration: GameConfiguration::default(),
+        configuration: GameConfiguration::new(GamePlayerCount::Two),
         state_machines: StateMachines::default(),
         players: Players::new(p1, p2, LifeValue(20)),
         zones,

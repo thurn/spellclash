@@ -44,6 +44,7 @@ impl Players {
         match name {
             PlayerName::One => &self.player_1,
             PlayerName::Two => &self.player_2,
+            _ => todo!("Not implemented"),
         }
     }
 
@@ -52,6 +53,7 @@ impl Players {
         match name {
             PlayerName::One => &mut self.player_1,
             PlayerName::Two => &mut self.player_2,
+            _ => todo!("Not implemented"),
         }
     }
 }

@@ -92,6 +92,7 @@ impl GameHistory {
         match player {
             PlayerName::One => self.p1_counters.get(&turn).unwrap_or(&DEFAULT_COUNTERS),
             PlayerName::Two => self.p2_counters.get(&turn).unwrap_or(&DEFAULT_COUNTERS),
+            _ => todo!("Not implemented"),
         }
     }
 
@@ -105,6 +106,7 @@ impl GameHistory {
         match player {
             PlayerName::One => self.p1_counters.entry(turn).or_default(),
             PlayerName::Two => self.p2_counters.entry(turn).or_default(),
+            _ => todo!("Not implemented"),
         }
     }
 

@@ -37,6 +37,7 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
         opponent: player_view(game, match builder.player {
             PlayerName::One => PlayerName::Two,
             PlayerName::Two => PlayerName::One,
+            _ => todo!("Not implemented"),
         }),
         cards,
         status_description: format!(

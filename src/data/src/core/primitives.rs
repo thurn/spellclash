@@ -85,18 +85,15 @@ pub enum CardType {
 pub enum PlayerName {
     /// The player who plays first, who is "on the play"
     One,
+
     /// The player who plays second, who is "on the draw"
     Two,
-}
 
-impl PlayerName {
-    /// Returns the next player in turn order after this player
-    pub fn next(&self) -> Self {
-        match self {
-            PlayerName::One => PlayerName::Two,
-            PlayerName::Two => PlayerName::One,
-        }
-    }
+    /// Player 3. Not currently implemented.
+    Three,
+
+    /// Player 4. Not currently implemented.
+    Four,
 }
 
 /// Identifies a struct that is 1:1 associated with a given [PlayerName].
@@ -181,6 +178,8 @@ impl ObjectId {
 
 pub const PLAYER_ONE_ID: ObjectId = ObjectId(1);
 pub const PLAYER_TWO_ID: ObjectId = ObjectId(2);
+pub const PLAYER_THREE_ID: ObjectId = ObjectId(3);
+pub const PLAYER_FOUR_ID: ObjectId = ObjectId(4);
 
 pub trait HasObjectId {
     fn object_id(&self) -> ObjectId;
@@ -197,6 +196,8 @@ impl HasObjectId for PlayerName {
         match self {
             PlayerName::One => PLAYER_ONE_ID,
             PlayerName::Two => PLAYER_TWO_ID,
+            PlayerName::Three => PLAYER_THREE_ID,
+            PlayerName::Four => PLAYER_FOUR_ID,
         }
     }
 }

@@ -118,7 +118,7 @@ pub trait ZoneQueries {
 }
 
 /// Stores the state & position of all cards and card-like objects
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Zones {
     /// All cards and card-like objects in the current game
     all_cards: SlotMap<CardId, CardState>,
@@ -135,6 +135,24 @@ pub struct Zones {
     stack: Vec<CardId>,
     command_zone: UnorderedZone,
     outside_the_game_zone: UnorderedZone,
+}
+
+impl Default for Zones {
+    fn default() -> Self {
+        Self {
+            all_cards: Default::default(),
+            next_object_id: ObjectId(100),
+            libraries: Default::default(),
+            hands: Default::default(),
+            graveyards: Default::default(),
+            battlefield_controlled: Default::default(),
+            battlefield_owned: Default::default(),
+            exile: Default::default(),
+            stack: Default::default(),
+            command_zone: Default::default(),
+            outside_the_game_zone: Default::default(),
+        }
+    }
 }
 
 impl ZoneQueries for Zones {
@@ -282,10 +300,14 @@ impl Zones {
             Zone::Library => self.libraries.remove(card_id, owner),
             Zone::Battlefield => {
                 self.battlefield_owned.remove(card_id, owner)?;
-                if !self.battlefield_controlled.cards_mut(owner).remove(&card_id)
-                    && !self.battlefield_controlled.cards_mut(owner.next()).remove(&card_id)
-                {
-                    fail!("Card not found {card_id:?} in controller set");
+                if !self.battlefield_controlled.cards_mut(owner).remove(&card_id) {
+                    let mut removed = false;
+                    for player in enum_iterator::all::<PlayerName>() {
+                        removed |= self.battlefield_controlled.cards_mut(player).remove(&card_id);
+                    }
+                    if !removed {
+                        fail!("Card not found {card_id:?} in controller set");
+                    }
                 }
                 outcome::OK
             }
@@ -345,6 +367,7 @@ impl UnorderedZone {
         match player_name {
             PlayerName::One => &self.player1,
             PlayerName::Two => &self.player2,
+            _ => todo!("Not implemented"),
         }
     }
 
@@ -352,6 +375,7 @@ impl UnorderedZone {
         match player_name {
             PlayerName::One => &mut self.player1,
             PlayerName::Two => &mut self.player2,
+            _ => todo!("Not implemented"),
         }
     }
 
@@ -378,6 +402,7 @@ impl OrderedZone {
         match player_name {
             PlayerName::One => &self.player1,
             PlayerName::Two => &self.player2,
+            _ => todo!("Not implemented"),
         }
     }
 
@@ -385,6 +410,7 @@ impl OrderedZone {
         match player_name {
             PlayerName::One => &mut self.player1,
             PlayerName::Two => &mut self.player2,
+            _ => todo!("Not implemented"),
         }
     }
 

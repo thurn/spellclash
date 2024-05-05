@@ -229,8 +229,15 @@ pub struct TurnData {
     pub turn_number: TurnNumber,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub enum GamePlayerCount {
+    Two,
+    Three,
+    Four,
+}
+
 /// Options controlling overall gameplay
-#[derive(Debug, Clone, Default, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct GameConfiguration {
     /// If true, all random choices within this game will be made
     /// deterministically using a seeded random number generator. Useful for
@@ -243,4 +250,16 @@ pub struct GameConfiguration {
     /// Whether to overwrite the normal game behavior with the standard
     /// pre-scripted new player experience.
     pub scripted_tutorial: bool,
+
+    /// Number of players in this game. Defaults to two.
+    ///
+    /// Currently only 2 players are supported, but I see no reason not to allow
+    /// future expansion.
+    pub num_players: GamePlayerCount,
+}
+
+impl GameConfiguration {
+    pub fn new(num_players: GamePlayerCount) -> Self {
+        Self { deterministic: false, simulation: false, scripted_tutorial: false, num_players }
+    }
 }
