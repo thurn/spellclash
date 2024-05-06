@@ -29,7 +29,9 @@ use crate::card_states::card_state::{CardFacing, CardState, TappedState};
 use crate::card_states::counters::Counters;
 use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::core::numerics::Damage;
-use crate::core::primitives::{CardId, HasCardId, HasPlayerName, ObjectId, PlayerName, Zone};
+use crate::core::primitives::{
+    CardId, HasCardId, HasPlayerName, HasSource, ObjectId, PlayerName, Zone,
+};
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::GameState;
 
@@ -256,7 +258,12 @@ impl Zones {
     /// The card is added as the top card of the target zone if it is ordered.
     ///
     /// Returns an error if this card was not found in its previous zone.
-    pub fn move_card(&mut self, id: impl HasCardId, zone: Zone) -> Outcome {
+    pub fn move_card(
+        &mut self,
+        _source: impl HasSource,
+        id: impl HasCardId,
+        zone: Zone,
+    ) -> Outcome {
         let card_id = id.card_id();
         let old_zone = self.card_mut(card_id).zone;
         let owner = self.card_mut(card_id).owner;

@@ -80,7 +80,7 @@ fn draw(game: &mut GameState) -> Outcome {
     // > 504.1. First, the active player draws a card. This turn-based action
     // doesn't use the stack.
     // <https://yawgatog.com/resources/magic-rules/#R5041>
-    library::draw(game, game.turn.active_player, Source::Game)
+    library::draw(game, Source::Game, game.turn.active_player)
 
     // > 504.2. Second, the active player gets priority. (See rule 117, "Timing
     // > and Priority.")

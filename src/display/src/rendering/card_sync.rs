@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use data::card_states::card_state::{CardFacing, TappedState};
-use data::printed_cards::printed_card::PrintedCardFace;
+use data::printed_cards::printed_card::{Face, PrintedCardFace};
 use rules::queries::can_play;
 
 use crate::core::card_view::{CardView, RevealedCardFace, RevealedCardView};
@@ -42,7 +42,7 @@ pub fn card_view(builder: &ResponseBuilder, context: &CardViewContext) -> CardVi
         }),
         revealed_to_opponents: context
             .query_or(false, |_, card| !card.zone.is_public() && card.revealed_to.len() > 1),
-        card_facing: context.query_or(CardFacing::FaceUp, |_, card| card.facing),
+        card_facing: context.query_or(CardFacing::FaceUp(Face::Primary), |_, card| card.facing),
         tapped_state: context.query_or(TappedState::Untapped, |_, card| card.tapped_state),
         damage: Default::default(),
         create_position: if builder.state.animate {

@@ -13,7 +13,6 @@
 // limitations under the License.
 
 use enumset::EnumSet;
-use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::card_definitions::card_name::CardName;
@@ -26,7 +25,7 @@ use crate::core::numerics::Damage;
 use crate::core::primitives::{
     CardId, HasCardId, HasController, HasObjectId, HasPlayerName, ObjectId, PlayerName, Zone,
 };
-use crate::printed_cards::printed_card::PrintedCard;
+use crate::printed_cards::printed_card::{Face, PrintedCard};
 
 /// Represents the state of a card or card-like object.
 ///
@@ -181,16 +180,17 @@ impl CardState {
 ///
 /// I assume within 10 years WoTC will introduce a third tapped state somehow,
 /// so might as well make this an enum.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum TappedState {
     Untapped,
     Tapped,
 }
 
 /// Facing for this card, corresponding to the [PrintedCard] faces.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum CardFacing {
     FaceDown,
-    FaceUp,
-    FaceBUp,
+
+    /// The indicated card face is currently up
+    FaceUp(Face),
 }

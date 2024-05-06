@@ -42,7 +42,7 @@ struct HistoryEntry {
     event: HistoryEvent,
 }
 
-static DEFAULT_COUNTERS: HistoryCounters = HistoryCounters { cards_drawn: 0 };
+static DEFAULT_COUNTERS: HistoryCounters = HistoryCounters { cards_drawn: 0, lands_played: 0 };
 
 /// Counters for events that happen during a given turn. Each player has their
 /// own set of counters for game events.
@@ -56,7 +56,9 @@ pub struct HistoryCounters {
     /// Cards drawn so far this turn by this player. This records the actual
     /// number of cards drawn, e.g. if a player attempts to draw from an empty
     /// deck no draw is recorded.
-    pub cards_drawn: u32,
+    pub cards_drawn: usize,
+    /// Lands played so far this turn by this player.
+    pub lands_played: usize,
 }
 
 /// History of events which have happened during this game.

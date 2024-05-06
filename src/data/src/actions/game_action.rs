@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use crate::actions::user_action::UserAction;
+use crate::core::primitives::CardId;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum GameAction {
@@ -25,6 +26,13 @@ pub enum GameAction {
     ///
     /// <https://yawgatog.com/resources/magic-rules/#R1174>
     PassPriority,
+
+    /// Cast a spell or play a land.
+    ///
+    /// This includes playing cards from exile, discard, the library, etc. It
+    /// is an error to 'play' a token, emblem, copy of a card on the stack, or
+    /// an ability on the stack.
+    PlayCard(CardId),
 }
 
 impl From<GameAction> for UserAction {

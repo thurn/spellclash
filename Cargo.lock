@@ -1527,6 +1527,7 @@ name = "display"
 version = "0.0.0"
 dependencies = [
  "data",
+ "enum-kinds",
  "rules",
  "schemars",
 ]

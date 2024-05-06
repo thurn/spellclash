@@ -22,7 +22,7 @@ use rules::mutations::library;
 
 pub fn brainstorm() -> CardDefinition {
     CardDefinition::new(card_name::BRAINSTORM).ability(SpellAbility::new().effects(|g, s| {
-        library::draw_cards(g, s.controller, s, 3)?;
+        library::draw_cards(g, s, s.controller, 3)?;
         let card_ids = g.prompts.select_cards(
             s.controller,
             Text::ReturnToTopOfDeck(2),
@@ -31,6 +31,6 @@ pub fn brainstorm() -> CardDefinition {
                 can_reorder: true,
             },
         )?;
-        library::move_all_to_top(g, card_ids.iter())
+        library::move_all_to_top(g, s, card_ids.iter())
     }))
 }

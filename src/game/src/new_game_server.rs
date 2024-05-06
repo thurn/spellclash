@@ -86,9 +86,9 @@ async fn create_internal(
     card_database::populate(database.clone(), &mut game).await?;
 
     game.shuffle_library(PlayerName::One)?;
-    library::draw_cards(&mut game, PlayerName::One, Source::Game, 7)?;
+    library::draw_cards(&mut game, Source::Game, PlayerName::One, 7)?;
     game.shuffle_library(PlayerName::Two)?;
-    library::draw_cards(&mut game, PlayerName::Two, Source::Game, 7)?;
+    library::draw_cards(&mut game, Source::Game, PlayerName::Two, 7)?;
     step::advance(&mut game)?;
 
     user.activity = UserActivity::Playing(game.id);

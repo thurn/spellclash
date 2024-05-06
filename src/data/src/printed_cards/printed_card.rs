@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use enumset::EnumSet;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::core::numerics::ManaValue;
@@ -24,7 +25,7 @@ use crate::printed_cards::printed_primitives::{
     AttractionLight, PrintedLoyalty, PrintedPower, PrintedToughness,
 };
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum Face {
     Primary,
     FaceB,

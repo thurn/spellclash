@@ -12,9 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use data::actions::game_action::GameAction;
 use dioxus::prelude::*;
 use display::core::card_view::{CardView, RevealedCardView};
+use display::core::game_view::GameView;
+use game::server_data::ClientData;
 
+use crate::client_actions::client_action;
 use crate::game_components::game_component::CARD_HEIGHT;
 
 #[component]
@@ -36,14 +40,33 @@ pub fn CardComponent(card: CardView) -> Element {
 
 #[component]
 pub fn RevealedCardComponent(card: CardView, revealed: RevealedCardView) -> Element {
+    let cd_signal = consume_context::<Signal<ClientData>>();
+    let view_signal = consume_context::<Signal<Option<GameView>>>();
+    let nav = use_navigator();
     let width = (CARD_HEIGHT as f64) * (5.0 / 7.0);
     rsx! {
-        img {
-            src: revealed.face.image,
-            width: "{width}px",
-            height: "{CARD_HEIGHT}px",
-            class: if  revealed.can_play { "border-2 border-sky-500" }
+        if revealed.can_play {
+            img {
+                src: revealed.face.image,
+                width: "{width}px",
+                height: "{CARD_HEIGHT}px",
+                class: if revealed.can_play { "border-2 border-sky-500" },
+                onclick: move |_|
+                    client_action::client_execute_action(
+                        cd_signal,
+                        view_signal,
+                        nav,
+                        GameAction::PlayCard(card.id)
+                    )
+            }
+        } else {
+            img {
+                src: revealed.face.image,
+                width: "{width}px",
+                height: "{CARD_HEIGHT}px",
+            }
         }
+
     }
 }
 

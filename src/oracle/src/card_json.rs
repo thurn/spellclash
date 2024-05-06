@@ -77,9 +77,9 @@ fn build_face(card: &SetCard, face_identifier: Face) -> Value<PrintedCardFace> {
         variants: vec![PrintedCardFaceVariant {
             scryfall_id: parse_uuid(card.identifiers.scryfall_id.as_ref())?,
         }],
-        supertypes: supertypes(&card.supertypes),
-        card_types: types(&card.card_types),
-        subtypes: subtypes(&card.subtypes),
+        supertypes: supertypes(&card.supertypes)?,
+        card_types: types(&card.card_types)?,
+        subtypes: subtypes(&card.subtypes)?,
         oracle_text: card.text.clone(),
         colors: colors(&card.colors),
         mana_cost: mana_cost(card.mana_cost.as_ref()),
@@ -94,16 +94,30 @@ fn build_face(card: &SetCard, face_identifier: Face) -> Value<PrintedCardFace> {
     })
 }
 
-fn supertypes(_types: &[String]) -> EnumSet<CardSupertype> {
-    EnumSet::empty()
+fn supertypes(types: &[String]) -> Value<EnumSet<CardSupertype>> {
+    types
+        .iter()
+        .map(|s| {
+            let value: Value<CardSupertype> = serde_json::from_str(&format!("\"{s}\""))
+                .with_error(|| format!("Error deserializing supertype {s}"));
+            value
+        })
+        .collect()
 }
 
-fn types(_types: &[String]) -> EnumSet<CardType> {
-    EnumSet::empty()
+fn types(types: &[String]) -> Value<EnumSet<CardType>> {
+    types
+        .iter()
+        .map(|s| {
+            let value: Value<CardType> = serde_json::from_str(&format!("\"{s}\""))
+                .with_error(|| format!("Error deserializing card type {s}"));
+            value
+        })
+        .collect()
 }
 
-fn subtypes(_types: &[String]) -> CardSubtypes {
-    CardSubtypes::default()
+fn subtypes(_types: &[String]) -> Value<CardSubtypes> {
+    Ok(CardSubtypes::default())
 }
 
 fn colors(_colors: &[mtgjson::Color]) -> EnumSet<Color> {

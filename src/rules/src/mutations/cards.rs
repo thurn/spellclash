@@ -12,5 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod cards;
-pub mod library;
+use data::card_states::card_state::CardFacing;
+use data::card_states::zones::ZoneQueries;
+use data::core::primitives::{CardId, Source, ALL_PLAYERS};
+use data::game_states::game_state::GameState;
+use data::printed_cards::printed_card::Face;
+use utils::outcome;
+use utils::outcome::Outcome;
+
+/// Turns the [Face] face of this card up and reveals it to all players.
+pub fn turn_face_up(game: &mut GameState, _source: Source, card: CardId, face: Face) -> Outcome {
+    let card = game.card_mut(card);
+    card.facing = CardFacing::FaceUp(face);
+    card.revealed_to = ALL_PLAYERS;
+    outcome::OK
+}

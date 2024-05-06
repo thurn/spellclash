@@ -22,11 +22,11 @@ use utils::outcome::Outcome;
 ///
 /// Marks the card as revealed to its owner. Returns `outcome::GAME_OVER` if
 /// this causes the game to end due to drawing from an empty library.
-pub fn draw(game: &mut GameState, player: impl HasPlayerName, _source: impl HasSource) -> Outcome {
+pub fn draw(game: &mut GameState, source: impl HasSource, player: impl HasPlayerName) -> Outcome {
     let Some(&id) = game.library(player).back() else { return outcome::GAME_OVER };
     let card = game.card_mut(id);
     card.revealed_to.insert(card.owner);
-    game.zones.move_card(id, Zone::Hand)
+    game.zones.move_card(source, id, Zone::Hand)
 }
 
 /// Draws `count` cards in sequence from the top of the `player`'s library.
@@ -36,28 +36,34 @@ pub fn draw(game: &mut GameState, player: impl HasPlayerName, _source: impl HasS
 /// empty library.
 pub fn draw_cards(
     game: &mut GameState,
-    player: impl HasPlayerName,
     source: impl HasSource,
+    player: impl HasPlayerName,
     count: usize,
 ) -> Outcome {
-    let p = player.player_name();
-    let s = source.source();
+    let player = player.player_name();
+    let source = source.source();
     for _ in 0..count {
-        draw(game, p, s)?;
+        draw(game, source, player)?;
     }
     outcome::OK
 }
 
-pub fn move_to_top(game: &mut GameState, card_id: impl HasCardId) -> Outcome {
-    game.zones.move_card(card_id.card_id(), Zone::Library)
+pub fn move_to_top(
+    game: &mut GameState,
+    source: impl HasSource,
+    card_id: impl HasCardId,
+) -> Outcome {
+    game.zones.move_card(source, card_id.card_id(), Zone::Library)
 }
 
 pub fn move_all_to_top<'a>(
     game: &mut GameState,
+    source: impl HasSource,
     cards: impl Iterator<Item = &'a CardId>,
 ) -> Outcome {
+    let source = source.source();
     for card_id in cards {
-        move_to_top(game, card_id)?;
+        move_to_top(game, source, card_id)?;
     }
     outcome::OK
 }

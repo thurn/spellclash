@@ -17,7 +17,7 @@ use std::str::FromStr;
 use derive_more::Display;
 use enum_iterator::Sequence;
 use enum_map::Enum;
-use enumset::EnumSetType;
+use enumset::{EnumSet, EnumSetType};
 use schemars::gen::SchemaGenerator;
 use schemars::schema::Schema;
 use schemars::{schema_for_value, JsonSchema};
@@ -95,6 +95,8 @@ pub enum PlayerName {
     /// Player 4. Not currently implemented.
     Four,
 }
+
+pub const ALL_PLAYERS: EnumSet<PlayerName> = EnumSet::ALL;
 
 /// Identifies a struct that is 1:1 associated with a given [PlayerName].
 pub trait HasPlayerName {

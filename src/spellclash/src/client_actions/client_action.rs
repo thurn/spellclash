@@ -23,7 +23,7 @@ use display::core::game_view::GameView;
 use game::server;
 use game::server_data::{ClientData, GameResponse};
 use once_cell::sync::Lazy;
-use tracing::{debug, error, instrument};
+use tracing::{debug, debug_span, error, instrument};
 
 use crate::game_client::Route;
 use crate::initialize;
@@ -86,10 +86,11 @@ fn handle_commands(
     mut cd_signal: Signal<ClientData>,
 ) {
     let count = response.commands.len();
-    debug!(?count, "Handling commands");
+    let _span = debug_span!("handle_commands", ?count);
     *cd_signal.write() = response.client_data.clone();
     for command in response.commands {
-        debug!(?command, "Handling command");
+        let kind = command.kind();
+        debug!(?kind, "Handling command");
         match command {
             Command::LoadScene { name, .. } => match name {
                 SceneName::MainMenu => {

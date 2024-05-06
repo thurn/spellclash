@@ -13,19 +13,23 @@
 // limitations under the License.
 
 use data::actions::game_action::GameAction;
-use data::core::primitives::PlayerName;
+use data::core::primitives::{CardId, PlayerName, Source, Zone};
 use data::game_states::game_state::GameState;
+use data::printed_cards::printed_card::Face;
 use tracing::{debug, instrument};
 use utils::outcome::Outcome;
-use utils::{outcome, verify};
+use utils::{fail, outcome, verify};
 
-use crate::queries::{legal_actions, players};
+use crate::mutations::cards;
+use crate::queries::can_play::CanPlayAs;
+use crate::queries::{can_play, legal_actions, players};
 use crate::steps::step;
 
 #[instrument(err, level = "debug", skip(game))]
 pub fn execute(game: &mut GameState, player: PlayerName, action: GameAction) -> Outcome {
     match action {
         GameAction::PassPriority => handle_pass_priority(game, player),
+        GameAction::PlayCard(id) => handle_play_card(game, Source::Game, player, id),
     }
 }
 
@@ -40,4 +44,48 @@ fn handle_pass_priority(game: &mut GameState, player: PlayerName) -> Outcome {
         game.priority = players::next_player_after(game, game.priority);
         outcome::OK
     }
+}
+
+#[instrument(err, level = "debug", skip(game))]
+fn handle_play_card(
+    game: &mut GameState,
+    source: Source,
+    player: PlayerName,
+    card: CardId,
+) -> Outcome {
+    debug!(?player, ?card, "Playing card");
+    let Some(play) = can_play::play_as(game, player, card).next() else {
+        fail!("Cannot legally play card {card:?} as {player:?}");
+    };
+
+    match play {
+        CanPlayAs::Land(face) => handle_play_land(game, source, player, card, face),
+        CanPlayAs::Instant(face) | CanPlayAs::Sorcery(face) => {
+            handle_cast_spell(game, source, player, card, face)
+        }
+    }
+}
+
+#[instrument(err, level = "debug", skip(game))]
+fn handle_play_land(
+    game: &mut GameState,
+    source: Source,
+    player: PlayerName,
+    card: CardId,
+    face: Face,
+) -> Outcome {
+    game.history_counters_mut(player).lands_played += 1;
+    cards::turn_face_up(game, source, card, face)?;
+    game.zones.move_card(source, card, Zone::Battlefield)
+}
+
+#[instrument(err, level = "debug", skip(_game))]
+fn handle_cast_spell(
+    _game: &mut GameState,
+    _source: Source,
+    player: PlayerName,
+    card: CardId,
+    face: Face,
+) -> Outcome {
+    todo!("Handle casting spell {card:?} as {player:?} with face {face:?}");
 }

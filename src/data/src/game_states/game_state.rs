@@ -30,7 +30,7 @@ use crate::game_states::animation_tracker::{
 };
 use crate::game_states::combat_state::CombatState;
 use crate::game_states::game_step::GamePhaseStep;
-use crate::game_states::history_data::GameHistory;
+use crate::game_states::history_data::{GameHistory, HistoryCounters, HistoryEvent};
 use crate::game_states::undo_state::UndoTracker;
 use crate::player_states::player_state::{PlayerQueries, PlayerState, Players};
 use crate::prompts::prompt_manager::PromptManager;
@@ -155,6 +155,22 @@ impl GameState {
             }
         }
         fail!("User {user_id:?} is not a player in game {:?}", self.id);
+    }
+
+    /// Adds a current [HistoryEvent] for the current turn.
+    pub fn add_history_event(&mut self, event: HistoryEvent) {
+        self.history.add_event(self.turn, event)
+    }
+
+    /// Returns a reference to the [HistoryCounters] for the [PlayerName]
+    /// player in the current turn.
+    pub fn history_counters(&self, player: PlayerName) -> &HistoryCounters {
+        self.history.counters_for_turn(self.turn, player)
+    }
+
+    /// Mutable equivalent of [Self::history_counters].
+    pub fn history_counters_mut(&mut self, player: PlayerName) -> &mut HistoryCounters {
+        self.history.counters_for_turn_mut(self.turn, player)
     }
 }
 
