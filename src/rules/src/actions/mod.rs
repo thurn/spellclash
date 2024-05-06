@@ -13,3 +13,4 @@
 // limitations under the License.
 
 pub mod action;
+pub mod cast_spell;

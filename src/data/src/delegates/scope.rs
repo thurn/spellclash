@@ -12,22 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use serde::{Deserialize, Serialize};
+
 use crate::core::primitives::{AbilityNumber, CardId, HasCardId, HasSource, PlayerName, Source};
 
-#[derive(Copy, Clone, Debug)]
-pub struct Scope {
+/// Identifies an ability of a card within a game
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+pub struct AbilityId {
     pub controller: PlayerName,
     pub number: AbilityNumber,
     pub card_id: CardId,
 }
 
-impl HasCardId for Scope {
+impl HasCardId for AbilityId {
     fn card_id(&self) -> CardId {
         self.card_id
     }
 }
 
-impl HasSource for Scope {
+impl HasSource for AbilityId {
     fn source(&self) -> Source {
         Source::Ability {
             controller: self.controller,

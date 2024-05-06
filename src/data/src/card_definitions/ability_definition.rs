@@ -21,14 +21,14 @@ use crate::core::primitives::Zone;
 use crate::costs::cost::Cost;
 #[allow(unused)] // Used in docs
 use crate::delegates::game_delegates::{Delegate, DelegateFn, GameDelegates};
-use crate::delegates::scope::Scope;
+use crate::delegates::scope::AbilityId;
 use crate::game_states::game_state::GameState;
 
 /// A function to produce a list of requested mutations to [GameState].
-pub type EffectFn = fn(&mut GameState, Scope) -> Outcome;
+pub type EffectFn = fn(&mut GameState, AbilityId) -> Outcome;
 
 /// A predicate to apply to a delegate activation.
-pub type RequirementFn = fn(&GameState, Scope) -> bool;
+pub type RequirementFn = fn(&GameState, AbilityId) -> bool;
 
 /// Defines the game rules for an ability.
 ///
