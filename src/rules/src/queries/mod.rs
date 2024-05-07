@@ -13,5 +13,6 @@
 // limitations under the License.
 
 pub mod can_play;
+pub mod card_queries;
 pub mod legal_actions;
 pub mod players;

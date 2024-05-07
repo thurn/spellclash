@@ -12,18 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_states::card_state::CardFacing;
+use data::card_states::card_state::{CardFacing, TappedState};
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, Source, ALL_PLAYERS};
+use data::core::primitives::{CardId, Source, Zone, ALL_PLAYERS};
 use data::game_states::game_state::GameState;
 use data::printed_cards::printed_card::Face;
-use utils::outcome;
 use utils::outcome::Outcome;
+use utils::{outcome, verify};
 
 /// Turns the [Face] face of this card up and reveals it to all players.
 pub fn turn_face_up(game: &mut GameState, _source: Source, card: CardId, face: Face) -> Outcome {
     let card = game.card_mut(card);
     card.facing = CardFacing::FaceUp(face);
     card.revealed_to = ALL_PLAYERS;
+    outcome::OK
+}
+
+/// Taps a card.
+///
+/// Returns an error if this card is already tapped or this card is not on the
+/// battlefield.
+pub fn tap(game: &mut GameState, _source: Source, card_id: CardId) -> Outcome {
+    let card = game.card_mut(card_id);
+    verify!(card.zone == Zone::Battlefield, "Card {card_id:?} is not on the battlefield");
+    verify!(card.tapped_state == TappedState::Untapped, "Card {card_id:?} is already tapped");
+    card.tapped_state = TappedState::Tapped;
     outcome::OK
 }

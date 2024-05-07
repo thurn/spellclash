@@ -12,4 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod action;
+use data::card_definitions::card_definition::CardDefinition;
+use data::card_definitions::card_name;
+
+pub fn island() -> CardDefinition {
+    // Basic land abilities are implicitly granted by the land subtype.
+    CardDefinition::new(card_name::ISLAND)
+}

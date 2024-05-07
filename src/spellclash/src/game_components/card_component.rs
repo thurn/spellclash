@@ -56,7 +56,7 @@ pub fn RevealedCardComponent(card: CardView, revealed: RevealedCardView) -> Elem
                         cd_signal,
                         view_signal,
                         nav,
-                        GameAction::PlayCard(card.id)
+                        GameAction::ProposePlayingCard(card.id)
                     )
             }
         } else {

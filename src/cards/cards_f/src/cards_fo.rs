@@ -16,5 +16,6 @@ use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 
 pub fn forest() -> CardDefinition {
+    // Basic land abilities are implicitly granted by the land subtype.
     CardDefinition::new(card_name::FOREST)
 }

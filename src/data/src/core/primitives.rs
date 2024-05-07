@@ -26,7 +26,7 @@ use slotmap::{new_key_type, DefaultKey};
 use uuid::Uuid;
 
 /// The five canonical colors of magic.
-#[derive(Debug, Hash, Serialize, Deserialize, EnumSetType, Sequence)]
+#[derive(Debug, Hash, Ord, PartialOrd, Serialize, Deserialize, EnumSetType, Sequence)]
 pub enum Color {
     White,
     Blue,
@@ -36,7 +36,7 @@ pub enum Color {
 }
 
 /// Possible colors of mana
-#[derive(Debug, Hash, Serialize, Deserialize, EnumSetType, Enum, Sequence)]
+#[derive(Debug, Hash, Ord, PartialOrd, Serialize, Deserialize, EnumSetType, Enum, Sequence)]
 pub enum ManaColor {
     Colorless,
     White,

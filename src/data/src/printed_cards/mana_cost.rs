@@ -14,28 +14,30 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::core::numerics::ManaValue;
-use crate::core::primitives::Color;
+use crate::core::primitives::ManaColor;
 
 /// Represents the printed mana cost of a card or ability
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ManaCost {
     /// List of symbols making up this mana cost
-    pub costs: Vec<ManaCostItem>,
+    pub items: Vec<ManaCostItem>,
 }
 
-/// A single symbol within a mana cost
+/// A single symbol within a mana cost.
+///
+/// Ordered by approximately how difficult this cost is to pay in a typical game
+/// state.
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R1074> for a list of possible symbols.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Serialize, Deserialize)]
 pub enum ManaCostItem {
-    Generic(ManaValue),
-    Colorless,
-    Colored(Color),
-    Hybrid(Color, Color),
-    MonoHybrid(Color),
+    Snow(ManaColor),
+    Colored(ManaColor),
+    Hybrid(ManaColor, ManaColor),
+    MonoHybrid(ManaColor),
+    Phyrexian(ManaColor),
+    PhyrexianHybrid(ManaColor, ManaColor),
     VariableX,
-    Snow(Color),
-    Phyrexian(Color),
-    PhyrexianHybrid(Color, Color),
+    /// One generic mana
+    Generic,
 }

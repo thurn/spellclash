@@ -14,6 +14,8 @@
 
 use enumset::EnumSet;
 use serde::{Deserialize, Serialize};
+use utils::outcome::Value;
+use utils::with_error::WithError;
 use uuid::Uuid;
 
 use crate::core::numerics::ManaValue;
@@ -65,11 +67,12 @@ pub struct PrintedCard {
 }
 
 impl PrintedCard {
-    /// Returns the named face of this card
-    pub fn face(&self, face: Face) -> Option<&PrintedCardFace> {
+    /// Returns the named face of this card, or an error if there is no such
+    /// face.
+    pub fn face(&self, face: Face) -> Value<&PrintedCardFace> {
         match face {
-            Face::Primary => Some(&self.face),
-            Face::FaceB => self.face_b.as_ref(),
+            Face::Primary => Ok(&self.face),
+            Face::FaceB => Ok(self.face_b.as_ref().with_error(|| "Card face not found")?),
         }
     }
 }

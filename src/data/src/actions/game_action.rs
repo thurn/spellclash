@@ -29,10 +29,13 @@ pub enum GameAction {
 
     /// Cast a spell or play a land.
     ///
-    /// This includes playing cards from exile, discard, the library, etc. It
-    /// is an error to 'play' a token, emblem, copy of a card on the stack, or
-    /// an ability on the stack.
-    PlayCard(CardId),
+    /// This includes playing cards from exile, the graveyard, the library, etc.
+    /// The player will be prompted to make choices (which face to play, which
+    /// targets to select, etc) before placing this item on the stack.
+    ///
+    /// It is an error to attempt to play a token, emblem, copy of a card on
+    /// the stack, or an ability on the stack.
+    ProposePlayingCard(CardId),
 }
 
 impl From<GameAction> for UserAction {

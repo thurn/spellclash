@@ -23,13 +23,14 @@ use utils::{fail, outcome, verify};
 use crate::mutations::cards;
 use crate::queries::can_play::CanPlayAs;
 use crate::queries::{can_play, legal_actions, players};
+use crate::spell_casting::cast_spell;
 use crate::steps::step;
 
 #[instrument(err, level = "debug", skip(game))]
 pub fn execute(game: &mut GameState, player: PlayerName, action: GameAction) -> Outcome {
     match action {
         GameAction::PassPriority => handle_pass_priority(game, player),
-        GameAction::PlayCard(id) => handle_play_card(game, Source::Game, player, id),
+        GameAction::ProposePlayingCard(id) => handle_play_card(game, Source::Game, player, id),
     }
 }
 
@@ -61,7 +62,7 @@ fn handle_play_card(
     match play {
         CanPlayAs::Land(face) => handle_play_land(game, source, player, card, face),
         CanPlayAs::Instant(face) | CanPlayAs::Sorcery(face) => {
-            handle_cast_spell(game, source, player, card, face)
+            cast_spell::run(game, source, card, face)
         }
     }
 }
@@ -77,15 +78,4 @@ fn handle_play_land(
     game.history_counters_mut(player).lands_played += 1;
     cards::turn_face_up(game, source, card, face)?;
     game.zones.move_card(source, card, Zone::Battlefield)
-}
-
-#[instrument(err, level = "debug", skip(_game))]
-fn handle_cast_spell(
-    _game: &mut GameState,
-    _source: Source,
-    player: PlayerName,
-    card: CardId,
-    face: Face,
-) -> Outcome {
-    todo!("Handle casting spell {card:?} as {player:?} with face {face:?}");
 }

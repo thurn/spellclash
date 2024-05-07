@@ -25,7 +25,7 @@ use crate::core::numerics::Damage;
 use crate::core::primitives::{
     CardId, HasCardId, HasController, HasObjectId, HasPlayerName, ObjectId, PlayerName, Zone,
 };
-use crate::printed_cards::printed_card::{Face, PrintedCard};
+use crate::printed_cards::printed_card::{Face, PrintedCard, PrintedCardFace};
 
 /// Represents the state of a card or card-like object.
 ///
@@ -173,6 +173,17 @@ impl CardState {
     /// *produced* this ability.
     pub fn printed(&self) -> &'static PrintedCard {
         self.printed_card_reference.unwrap()
+    }
+
+    /// Returns the [PrintedCardFace] for this card if it is currently face up.
+    ///
+    /// For abilities on the stack, this returns the [PrintedCardFace] which
+    /// *produced* this ability.
+    pub fn printed_face(&self) -> Option<&'static PrintedCardFace> {
+        match self.facing {
+            CardFacing::FaceDown => None,
+            CardFacing::FaceUp(face) => self.printed().face(face).ok(),
+        }
     }
 }
 
