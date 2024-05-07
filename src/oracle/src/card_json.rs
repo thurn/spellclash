@@ -13,13 +13,14 @@
 // limitations under the License.
 
 use std::collections::HashMap;
+use std::iter;
 
 use data::card_definitions::card_name::CardName;
 use data::core::numerics::ManaValue;
-use data::core::primitives::{CardSupertype, CardType, Color};
+use data::core::primitives::{CardSupertype, CardType, Color, ManaColor};
 use data::printed_cards::card_subtypes::CardSubtypes;
 use data::printed_cards::layout::{CardLayout, FaceLayout};
-use data::printed_cards::mana_cost::ManaCost;
+use data::printed_cards::mana_cost::{ManaCost, ManaCostItem};
 use data::printed_cards::printed_card::{
     Face, PrintedCard, PrintedCardFace, PrintedCardFaceVariant,
 };
@@ -28,7 +29,9 @@ use data::printed_cards::printed_primitives::{
 };
 use enumset::EnumSet;
 use once_cell::sync::Lazy;
+use regex::Regex;
 use serde_json::de;
+use utils::fail;
 use utils::outcome::Value;
 use utils::with_error::WithError;
 use uuid::Uuid;
@@ -82,7 +85,7 @@ fn build_face(card: &SetCard, face_identifier: Face) -> Value<PrintedCardFace> {
         subtypes: subtypes(&card.subtypes)?,
         oracle_text: card.text.clone(),
         colors: colors(&card.colors),
-        mana_cost: mana_cost(card.mana_cost.as_ref()),
+        mana_cost: mana_cost(card.mana_cost.as_ref())?,
         mana_value: ManaValue(card.mana_value.round() as u64),
         power: power(card.power.as_ref()),
         toughness: toughness(card.toughness.as_ref()),
@@ -124,8 +127,36 @@ fn colors(_colors: &[mtgjson::Color]) -> EnumSet<Color> {
     EnumSet::empty()
 }
 
-fn mana_cost(_cost: Option<&String>) -> ManaCost {
-    ManaCost::default()
+fn mana_cost(cost: Option<&String>) -> Value<ManaCost> {
+    let Some(cost) = cost else {
+        return Ok(ManaCost::default());
+    };
+    let re = Regex::new(r"\{(.*?)}").with_error(|| "Invalid regex")?;
+    let mut result = ManaCost::default();
+    for capture in re.captures_iter(cost) {
+        result
+            .items
+            .extend(to_mana_item(capture.get(1).with_error(|| "Expected mana symbol")?.as_str())?);
+    }
+
+    println!("Mana Cost: {:?}", result);
+    Ok(result)
+}
+
+fn to_mana_item(symbol: &str) -> Value<Vec<ManaCostItem>> {
+    Ok(vec![match symbol {
+        "W" => ManaCostItem::Colored(ManaColor::White),
+        "U" => ManaCostItem::Colored(ManaColor::Blue),
+        "B" => ManaCostItem::Colored(ManaColor::Black),
+        "R" => ManaCostItem::Colored(ManaColor::Red),
+        "G" => ManaCostItem::Colored(ManaColor::Green),
+        _ => match symbol.parse::<usize>() {
+            Ok(value) => return Ok(iter::repeat(ManaCostItem::Generic).take(value).collect()),
+            Err(_) => {
+                fail!("Unrecognized mana symbol {:?}", symbol);
+            }
+        },
+    }])
 }
 
 fn power(_power: Option<&String>) -> Option<PrintedPower> {
