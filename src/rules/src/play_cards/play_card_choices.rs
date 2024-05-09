@@ -20,6 +20,7 @@ use data::printed_cards::printed_card::Face;
 use enumset::EnumSet;
 
 use crate::planner::spell_planner;
+use crate::play_cards::pick_face_to_play;
 use crate::play_cards::play_card::PlayCardStep;
 
 /// A choice a player can make while playing a card
@@ -86,21 +87,23 @@ pub enum PlayCardChoicePrompt {
 /// card.
 #[derive(Debug, Clone)]
 pub enum PlayCardChoice {
-    /// No further choices are required in this step of the 'play card' process.
-    /// Continue to the next step.
-    None,
-
-    /// A choice *is* required in this step of the 'play card' process, but no
-    /// legal option is available to the player which would allow them to play
-    /// this card.
+    /// No legal option is available to the player which would allow them to
+    /// play this card given the current [PlayCardPlan].
     Invalid,
+
+    /// No further choices are required in this step of the 'play card' process,
+    /// or the remaining choices only have one valid option. Advance to the next
+    /// step of the process using a returned [PlayCardPlan], which will
+    /// incorporate the results of those non-choices.
+    Continue { updated_plan: PlayCardPlan },
 
     /// A choice is required in this step of the 'play card' process and the
     /// user can select one of the valid options in [PlayCardChoicePrompt].
     Prompt {
-        /// True if the player can select 'continue' instead of picking a prompt
-        /// option, for example if there are a variable number of modes or
-        /// targets that can be selected.
+        /// True if the player can jump to the next step of the 'play card'
+        /// process instead of picking a prompt option.
+        ///
+        /// This is used for example with "Pick up to three targets" cards.
         optional: bool,
 
         /// Prompt for a choice
@@ -122,16 +125,27 @@ pub fn choice_for_step(
     plan: &PlayCardPlan,
     step: PlayCardStep,
 ) -> PlayCardChoice {
-    if let PlayCardStep::PayMana = step {
-        let plan = spell_planner::mana_payment(game, source, card_id, &plan.spell_choices);
-        match plan {
-            Ok(mana_payment_plan) => PlayCardChoice::Prompt {
-                optional: false,
-                prompt: PlayCardChoicePrompt::PayMana { mana_payment_plan },
+    match step {
+        PlayCardStep::ChooseFace => pick_face_to_play::run(game, source, card_id, plan),
+        PlayCardStep::PayMana => pay_mana(game, source, card_id, &plan),
+        _ => PlayCardChoice::Continue { updated_plan: plan.clone() },
+    }
+}
+
+fn pay_mana(
+    game: &GameState,
+    source: Source,
+    card_id: CardId,
+    plan: &&PlayCardPlan,
+) -> PlayCardChoice {
+    let mana_payment_plan = spell_planner::mana_payment(game, source, card_id, &plan.spell_choices);
+    match mana_payment_plan {
+        Some(mana_payment_plan) => PlayCardChoice::Continue {
+            updated_plan: PlayCardPlan {
+                mana_payment: mana_payment_plan,
+                spell_choices: plan.spell_choices.clone(),
             },
-            Err(_) => PlayCardChoice::Invalid,
-        }
-    } else {
-        PlayCardChoice::None
+        },
+        None => PlayCardChoice::Invalid,
     }
 }

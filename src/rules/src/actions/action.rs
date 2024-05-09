@@ -20,10 +20,10 @@ use tracing::{debug, instrument};
 use utils::outcome::Outcome;
 use utils::{fail, outcome, verify};
 
-use crate::legality::can_play_face::CanPlayAs;
-use crate::legality::{can_play_face, legal_actions};
+use crate::legality::legal_actions;
 use crate::mutations::cards;
-use crate::planner::cast_spell;
+use crate::play_cards::pick_face_to_play::CanPlayAs;
+use crate::play_cards::{pick_face_to_play, play_card};
 use crate::queries::players;
 use crate::steps::step;
 
@@ -53,19 +53,10 @@ fn handle_play_card(
     game: &mut GameState,
     source: Source,
     player: PlayerName,
-    card: CardId,
+    card_id: CardId,
 ) -> Outcome {
-    debug!(?player, ?card, "Playing card");
-    let Some(play) = can_play_face::play_as(game, player, card).next() else {
-        fail!("Cannot legally play card {card:?} as {player:?}");
-    };
-
-    match play {
-        CanPlayAs::Land(face) => handle_play_land(game, source, player, card, face),
-        CanPlayAs::Instant(face) | CanPlayAs::Sorcery(face) => {
-            cast_spell::run(game, source, card, face)
-        }
-    }
+    debug!(?player, ?card_id, "Playing card");
+    play_card::execute(game, player, Source::Game, card_id)
 }
 
 #[instrument(err, level = "debug", skip(game))]

@@ -51,8 +51,8 @@ pub fn execute(
 pub fn can_play_card(
     game: &GameState,
     player: PlayerName,
-    card_id: CardId,
     source: Source,
+    card_id: CardId,
 ) -> bool {
     let card = game.card(card_id);
     if card.controller != player || card.zone != Zone::Hand {
@@ -66,12 +66,6 @@ pub fn can_play_card(
 pub enum PlayCardStep {
     /// Pick a face of the card to play, e.g. for adventures, split cards, mdfcs
     ChooseFace,
-
-    /// Check whether timing restrictions & land play rules allow this card to
-    /// be played.
-    ///
-    /// Selecting a face that is a land will end the 'play card' process here.
-    CheckLegalityForTypes,
 
     /// Choose an optional alternate cost to pay
     SelectAlternateCost,
@@ -115,7 +109,8 @@ fn prompt_for_play_card_plan(
         loop {
             let choice = play_card_choices::choice_for_step(game, source, card_id, &plan, step);
             match choice {
-                PlayCardChoice::None => {
+                PlayCardChoice::Continue { updated_plan } => {
+                    plan = updated_plan;
                     break;
                 }
                 PlayCardChoice::Invalid => {
@@ -143,10 +138,6 @@ fn show_prompt_and_add_to_plan(
     prompt: PlayCardChoicePrompt,
     plan: &mut PlayCardPlan,
 ) -> Outcome {
-    if let PlayCardChoicePrompt::PayMana { mana_payment_plan } = prompt {
-        // Automatically pick mana payment plan for now
-        plan.mana_payment = mana_payment_plan;
-    }
     outcome::OK
 }
 
@@ -164,11 +155,11 @@ fn can_play_card_in_step(
     let choice = play_card_choices::choice_for_step(game, source, card_id, plan, step);
 
     match choice {
-        PlayCardChoice::None => {
+        PlayCardChoice::Continue { updated_plan } => {
             // Advance to next step or return true if we are at the end
-            return step
-                .next()
-                .map_or(true, |next| can_play_card_in_step(game, source, card_id, plan, next));
+            return step.next().map_or(true, |next| {
+                can_play_card_in_step(game, source, card_id, &updated_plan, next)
+            });
         }
         PlayCardChoice::Invalid => {
             // A choice is required in this step, but no legal option is available.

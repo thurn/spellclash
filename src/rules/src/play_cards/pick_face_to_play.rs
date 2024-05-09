@@ -14,13 +14,52 @@
 
 use data::card_states::card_kind::CardKind;
 use data::card_states::card_state::CardState;
+use data::card_states::play_card_plan::{CastSpellChoices, ManaPaymentPlan, PlayCardPlan};
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, CardType, PlayerName};
+use data::core::primitives::{CardId, CardType, PlayerName, Source};
 use data::game_states::game_state::GameState;
 use data::printed_cards::layout::CardLayout;
 use data::printed_cards::printed_card::{Face, PrintedCardFace};
 
+use crate::play_cards::play_card::PlayCardStep;
+use crate::play_cards::play_card_choices::{PlayCardChoice, PlayCardChoicePrompt};
 use crate::queries::players;
+
+pub fn run(
+    game: &GameState,
+    source: Source,
+    card_id: CardId,
+    plan: &PlayCardPlan,
+) -> PlayCardChoice {
+    let mut valid_faces = vec![];
+    let card = game.card(card_id);
+    if can_play_as(game, card, &card.printed().face).is_some() {
+        valid_faces.push(Face::Primary);
+    }
+
+    if let (CardLayout::Split, Some(face_b))
+    | (CardLayout::ModalDfc, Some(face_b))
+    | (CardLayout::Adventure, Some(face_b)) = (card.printed().layout, &card.printed().face_b)
+    {
+        if can_play_as(game, card, face_b).is_some() {
+            valid_faces.push(Face::FaceB);
+        }
+    };
+
+    match valid_faces[..] {
+        [] => PlayCardChoice::Invalid,
+        [face] => PlayCardChoice::Continue {
+            updated_plan: PlayCardPlan {
+                spell_choices: CastSpellChoices { face, ..plan.spell_choices.clone() },
+                mana_payment: ManaPaymentPlan::default(),
+            },
+        },
+        _ => PlayCardChoice::Prompt {
+            optional: false,
+            prompt: PlayCardChoicePrompt::SelectFace { valid_faces },
+        },
+    }
+}
 
 /// Describes how a face of card can be played.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -30,63 +69,10 @@ pub enum CanPlayAs {
     Sorcery(Face),
 }
 
-/// Returns true if the [PlayerName] player can currently legally play any face
-/// of the indicated [CardId].
-pub fn any_face(game: &GameState, player: PlayerName, card: CardId) -> bool {
-    play_as(game, player, card).next().is_some()
-}
-
-/// Returns an iterator over currently-legal options for playing a face of the
-/// card with the indicated [CardId].
-///
-/// Tokens, emblems, abilities, and copies of cards on the stack cannot be
-/// played.
-pub fn play_as(
-    game: &GameState,
-    player: PlayerName,
-    card: CardId,
-) -> impl Iterator<Item = CanPlayAs> {
-    let card = game.card(card);
-
-    let face_a = if card.kind == CardKind::Normal {
-        can_play_as(game, player, card, &card.printed().face)
-    } else {
-        None
-    };
-
-    let face_b = match (card.printed().layout, &card.printed().face_b) {
-        // > 709.3. A player chooses which half of a split card they are casting before putting it
-        // > onto the stack.
-        // <https://yawgatog.com/resources/magic-rules/#R7093>
-        //
-        // > 712.11b. A player casting a modal double-faced card or a copy of a modal double-faced
-        // > card as a spell chooses which face they are casting before putting it onto the stack.
-        // https://yawgatog.com/resources/magic-rules/#R71211b
-        //
-        // > 715.3. As a player casts an adventurer card, the player chooses whether they cast the
-        // > card normally or as an Adventure.
-        // https://yawgatog.com/resources/magic-rules/#R7153
-        (CardLayout::Split, Some(face_b))
-        | (CardLayout::ModalDfc, Some(face_b))
-        | (CardLayout::Adventure, Some(face_b)) => can_play_as(game, player, card, face_b),
-        _ => None,
-    };
-
-    face_a.into_iter().chain(face_b)
-}
-
 /// Returns a [CanPlayAs] indicating whether a [PlayerName] can play a given
 /// [PrintedCardFace] of a [CardState] in the current [GameState].
-fn can_play_as(
-    game: &GameState,
-    player: PlayerName,
-    card: &CardState,
-    face: &PrintedCardFace,
-) -> Option<CanPlayAs> {
-    if player != card.controller {
-        return None;
-    }
-
+fn can_play_as(game: &GameState, card: &CardState, face: &PrintedCardFace) -> Option<CanPlayAs> {
+    let player = card.controller;
     let result = can_play_as_for_types(face);
     match result {
         CanPlayAs::Land(_) => {

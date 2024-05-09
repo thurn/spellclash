@@ -20,9 +20,9 @@ use data::core::primitives::{CardId, PlayerName, Source};
 use data::game_states::game_state::GameState;
 use data::printed_cards::printed_card::Face;
 
-use crate::legality::can_play_face::CanPlayAs;
-use crate::legality::{can_pay_mana_cost, can_play_face};
-use crate::planner::legal_cast_choices;
+use crate::legality::can_pay_mana_cost;
+use crate::play_cards::pick_face_to_play::CanPlayAs;
+use crate::play_cards::{pick_face_to_play, play_card};
 
 /// Iterator over all legal actions the named player can take in the current
 /// game state.
@@ -34,22 +34,12 @@ pub fn compute(game: &GameState, player: PlayerName) -> impl Iterator<Item = Gam
 
     let mut play_card = None;
     for &card_id in game.hand(player) {
-        if can_play_face::play_as(game, player, card_id).any(|can_play| match can_play {
-            CanPlayAs::Land(_) => true,
-            CanPlayAs::Instant(face) | CanPlayAs::Sorcery(face) => {
-                can_cast_face(game, Source::Game, card_id, face)
-            }
-        }) {
+        if play_card::can_play_card(game, player, Source::Game, card_id) {
             play_card = Some(iter::once(GameAction::ProposePlayingCard(card_id)));
         }
     }
 
     pass_priority.into_iter().flatten().chain(play_card.into_iter().flatten())
-}
-
-fn can_cast_face(game: &GameState, source: Source, card_id: CardId, face: Face) -> bool {
-    legal_cast_choices::compute(game, source, card_id, face)
-        .any(|choices| can_pay_mana_cost::to_cast(game, source, card_id, choices))
 }
 
 /// Returns true if the [PlayerName] player can currently legally take the

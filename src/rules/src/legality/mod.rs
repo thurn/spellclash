@@ -13,5 +13,4 @@
 // limitations under the License.
 
 pub mod can_pay_mana_cost;
-pub mod can_play_face;
 pub mod legal_actions;

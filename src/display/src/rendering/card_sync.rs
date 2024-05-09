@@ -13,8 +13,9 @@
 // limitations under the License.
 
 use data::card_states::card_state::{CardFacing, TappedState};
+use data::core::primitives::Source;
 use data::printed_cards::printed_card::{Face, PrintedCardFace};
-use rules::legality::can_play_face;
+use rules::play_cards::play_card;
 
 use crate::core::card_view::{CardView, RevealedCardFace, RevealedCardView};
 use crate::core::object_position::ObjectPosition;
@@ -35,7 +36,7 @@ pub fn card_view(builder: &ResponseBuilder, context: &CardViewContext) -> CardVi
         revealed: revealed.then(|| RevealedCardView {
             face: card_face(&context.printed().face),
             can_play: context.query_or(false, |game, card| {
-                can_play_face::any_face(game, builder.player, card.id)
+                play_card::can_play_card(game, builder.player, Source::Game, card.id)
             }),
             face_b: context.printed().face_b.as_ref().map(card_face),
             layout: context.printed().layout,

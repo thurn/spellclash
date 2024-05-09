@@ -13,10 +13,12 @@
 // limitations under the License.
 
 use data::card_states::play_card_plan::PlayCardPlan;
-use data::core::primitives::{CardId, PlayerName, Source};
+use data::core::primitives::{CardId, PlayerName, Source, Zone};
 use data::game_states::game_state::GameState;
 use utils::outcome;
 use utils::outcome::Outcome;
+
+use crate::mutations::cards;
 
 /// Plays a card, based on the set of choices in a completed [PlayCardPlan].
 pub fn execute_plan(
@@ -26,5 +28,9 @@ pub fn execute_plan(
     source: Source,
     plan: PlayCardPlan,
 ) -> Outcome {
-    outcome::OK
+    for land in &plan.mana_payment.basic_land_abilities_to_activate {
+        cards::tap(game, source, *land)?;
+    }
+
+    game.zones.move_card(source, card_id, Zone::Stack)
 }

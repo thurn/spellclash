@@ -36,14 +36,14 @@ type LandAbilityMap = HashMap<ManaColor, Vec<(CardId, usize)>>;
 /// paid. A [CastSpellChoices] is provided to describe choices the user made
 /// while putting this spell on the stack.
 ///
-/// An error is returned if the planner failed to find a legal combination of
+/// None is returned if the planner failed to find a legal combination of
 /// choices which would result in this card's mana cost being paid.
 pub fn mana_payment(
     game: &GameState,
     _source: Source,
     card_id: CardId,
     choices: &CastSpellChoices,
-) -> Value<ManaPaymentPlan> {
+) -> Option<ManaPaymentPlan> {
     let controller = game.card(card_id).controller;
 
     let mut lands: LandAbilityMap = HashMap::new();
@@ -56,13 +56,13 @@ pub fn mana_payment(
     }
     lands.values_mut().for_each(|v| v.sort_by_key(|(_, subtypes)| *subtypes));
 
-    let cost = card_queries::mana_cost_for_casting_card(game, card_id, choices)?;
+    let cost = card_queries::mana_cost_for_casting_card(game, card_id, choices).ok()?;
     let mut result = ManaPaymentPlan::default();
     for item in cost.items {
         add_land_for_item(&mut result, &mut lands, item)?;
     }
 
-    Ok(result)
+    Some(result)
 }
 
 fn add_land_to_map(
@@ -82,16 +82,16 @@ fn add_land_for_item(
     result: &mut ManaPaymentPlan,
     lands: &mut LandAbilityMap,
     item: ManaCostItem,
-) -> Outcome {
+) -> Option<()> {
     match item {
         ManaCostItem::Colored(color) => {
             // We prioritize tapping lands with fewer subtypes first.
-            if let Some((land, _)) = lands.get_mut(&color).and_then(|v| v.pop()) {
+            return if let Some((land, _)) = lands.get_mut(&color).and_then(|v| v.pop()) {
                 result.basic_land_abilities_to_activate.push(land);
-                outcome::OK
+                Some(())
             } else {
-                fail!("No land available to produce {color:?}");
-            }
+                None
+            };
         }
         ManaCostItem::Generic => {
             let mut counts =
@@ -102,13 +102,11 @@ fn add_land_for_item(
             for (_, color) in counts {
                 if let Some((land, _)) = lands.get_mut(&color).and_then(|v| v.pop()) {
                     result.basic_land_abilities_to_activate.push(land);
-                    return outcome::OK;
+                    return Some(());
                 }
             }
-            fail!("No land available to produce generic mana");
+            None
         }
-        _ => {
-            fail!("Not implemented");
-        }
+        _ => None,
     }
 }
