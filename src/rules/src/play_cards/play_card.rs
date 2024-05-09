@@ -34,10 +34,10 @@ use crate::play_cards::{play_card_choices, play_card_executor};
 pub fn execute(
     game: &mut GameState,
     player: PlayerName,
-    card_id: CardId,
     source: Source,
+    card_id: CardId,
 ) -> Outcome {
-    let plan = prompt_for_play_card_plan(game, card_id, source)?;
+    let plan = prompt_for_play_card_plan(game, source, card_id)?;
     play_card_executor::execute_plan(game, player, card_id, source, plan)
 }
 
@@ -59,7 +59,7 @@ pub fn can_play_card(
         return false;
     }
 
-    can_play_card_in_step(game, card_id, source, &PlayCardPlan::default(), PlayCardStep::ChooseFace)
+    can_play_card_in_step(game, source, card_id, &PlayCardPlan::default(), PlayCardStep::ChooseFace)
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Sequence)]
@@ -107,13 +107,13 @@ pub enum PlayCardStep {
 /// play this card.
 fn prompt_for_play_card_plan(
     game: &GameState,
-    card_id: CardId,
     source: Source,
+    card_id: CardId,
 ) -> Value<PlayCardPlan> {
     let mut plan = PlayCardPlan::default();
     for step in enum_iterator::all::<PlayCardStep>() {
         loop {
-            let choice = play_card_choices::choice_for_step(game, card_id, &plan, step);
+            let choice = play_card_choices::choice_for_step(game, source, card_id, &plan, step);
             match choice {
                 PlayCardChoice::None => {
                     break;
@@ -136,13 +136,17 @@ fn prompt_for_play_card_plan(
 /// Show the player a [PlayCardChoicePrompt] and record the choice made in the
 /// provided [PlayCardPlan].
 fn show_prompt_and_add_to_plan(
-    game: &GameState,
-    card_id: CardId,
-    source: Source,
-    optional: bool,
+    _game: &GameState,
+    _card_id: CardId,
+    _source: Source,
+    _optional: bool,
     prompt: PlayCardChoicePrompt,
     plan: &mut PlayCardPlan,
 ) -> Outcome {
+    if let PlayCardChoicePrompt::PayMana { mana_payment_plan } = prompt {
+        // Automatically pick mana payment plan for now
+        plan.mana_payment = mana_payment_plan;
+    }
     outcome::OK
 }
 
@@ -152,19 +156,19 @@ fn show_prompt_and_add_to_plan(
 /// be played.
 fn can_play_card_in_step(
     game: &GameState,
-    card_id: CardId,
     source: Source,
+    card_id: CardId,
     plan: &PlayCardPlan,
     step: PlayCardStep,
 ) -> bool {
-    let choice = play_card_choices::choice_for_step(game, card_id, plan, step);
+    let choice = play_card_choices::choice_for_step(game, source, card_id, plan, step);
 
     match choice {
         PlayCardChoice::None => {
             // Advance to next step or return true if we are at the end
             return step
                 .next()
-                .map_or(true, |next| can_play_card_in_step(game, card_id, source, plan, next));
+                .map_or(true, |next| can_play_card_in_step(game, source, card_id, plan, next));
         }
         PlayCardChoice::Invalid => {
             // A choice is required in this step, but no legal option is available.
@@ -172,18 +176,17 @@ fn can_play_card_in_step(
         }
         PlayCardChoice::Prompt { optional, prompt } => {
             if optional {
-                // If the choice is optional and we can play this card without making a choice,
-                // try skipping it.
+                // If the choice is optional, try skipping it.
                 let advance = step
                     .next()
-                    .map_or(true, |next| can_play_card_in_step(game, card_id, source, plan, next));
+                    .map_or(true, |next| can_play_card_in_step(game, source, card_id, plan, next));
                 if advance {
                     return true;
                 }
             }
 
             for plan in legal_plans_for_prompt(game, card_id, source, plan, prompt) {
-                if can_play_card_in_step(game, card_id, source, &plan, step) {
+                if can_play_card_in_step(game, source, card_id, &plan, step) {
                     return true;
                 }
             }
@@ -199,11 +202,15 @@ fn can_play_card_in_step(
 ///
 /// This will return one [PlayCardPlan] per option available in the prompt.
 fn legal_plans_for_prompt(
-    game: &GameState,
-    card_id: CardId,
-    source: Source,
+    _game: &GameState,
+    _card_id: CardId,
+    _source: Source,
     current: &PlayCardPlan,
     prompt: PlayCardChoicePrompt,
-) -> impl Iterator<Item = PlayCardPlan> {
-    iter::empty()
+) -> Box<dyn Iterator<Item = PlayCardPlan>> {
+    if let PlayCardChoicePrompt::PayMana { mana_payment_plan } = prompt {
+        Box::new(iter::once(PlayCardPlan { mana_payment: mana_payment_plan, ..current.clone() }))
+    } else {
+        Box::new(iter::empty())
+    }
 }

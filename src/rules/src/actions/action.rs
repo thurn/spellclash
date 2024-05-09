@@ -23,8 +23,8 @@ use utils::{fail, outcome, verify};
 use crate::legality::can_play_face::CanPlayAs;
 use crate::legality::{can_play_face, legal_actions};
 use crate::mutations::cards;
+use crate::planner::cast_spell;
 use crate::queries::players;
-use crate::spell_casting::cast_spell;
 use crate::steps::step;
 
 #[instrument(err, level = "debug", skip(game))]

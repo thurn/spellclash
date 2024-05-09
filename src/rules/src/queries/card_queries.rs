@@ -37,7 +37,7 @@ pub fn land_subtypes_for_face(game: &GameState, card_id: CardId) -> EnumSet<Land
 pub fn mana_cost_for_casting_card(
     game: &GameState,
     card_id: CardId,
-    choices: CastSpellChoices,
+    choices: &CastSpellChoices,
 ) -> Value<ManaCost> {
     let mut cost = game.card(card_id).printed().face(choices.face)?.mana_cost.clone();
     cost.items.sort();

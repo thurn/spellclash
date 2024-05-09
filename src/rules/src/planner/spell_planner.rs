@@ -42,7 +42,7 @@ pub fn mana_payment(
     game: &GameState,
     _source: Source,
     card_id: CardId,
-    choices: CastSpellChoices,
+    choices: &CastSpellChoices,
 ) -> Value<ManaPaymentPlan> {
     let controller = game.card(card_id).controller;
 

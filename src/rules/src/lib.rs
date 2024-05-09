@@ -18,7 +18,7 @@ pub mod actions;
 pub mod core;
 pub mod legality;
 pub mod mutations;
+pub mod planner;
 pub mod play_cards;
 pub mod queries;
-pub mod spell_casting;
 pub mod steps;

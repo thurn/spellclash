@@ -13,12 +13,13 @@
 // limitations under the License.
 
 use data::card_states::play_card_plan::{ManaPaymentPlan, ModalChoice, PlayCardPlan};
-use data::core::primitives::{CardId, ObjectId};
+use data::core::primitives::{CardId, ObjectId, Source};
 use data::delegates::scope::AbilityId;
 use data::game_states::game_state::GameState;
 use data::printed_cards::printed_card::Face;
 use enumset::EnumSet;
 
+use crate::planner::spell_planner;
 use crate::play_cards::play_card::PlayCardStep;
 
 /// A choice a player can make while playing a card
@@ -69,7 +70,9 @@ pub enum PlayCardChoicePrompt {
     /// [ManaPaymentPlan] which will allow the card to be played, and can be
     /// viewed as a boolean 'yes/no' choice about whether to use the proposed
     /// plan.
-    PayMana { plan: ManaPaymentPlan },
+    ///
+    /// If no payment plan can be found, casting the card is illegal.
+    PayMana { mana_payment_plan: ManaPaymentPlan },
 
     /// Pay an additional cost for this spell which requires a choice, produced
     /// by the given ability. If multiple additional costs choices are
@@ -114,9 +117,21 @@ pub enum PlayCardChoice {
 /// choices as the results of previous choices are added to the [PlayCardPlan].
 pub fn choice_for_step(
     game: &GameState,
+    source: Source,
     card_id: CardId,
     plan: &PlayCardPlan,
     step: PlayCardStep,
 ) -> PlayCardChoice {
-    PlayCardChoice::None
+    if let PlayCardStep::PayMana = step {
+        let plan = spell_planner::mana_payment(game, source, card_id, &plan.spell_choices);
+        match plan {
+            Ok(mana_payment_plan) => PlayCardChoice::Prompt {
+                optional: false,
+                prompt: PlayCardChoicePrompt::PayMana { mana_payment_plan },
+            },
+            Err(_) => PlayCardChoice::Invalid,
+        }
+    } else {
+        PlayCardChoice::None
+    }
 }

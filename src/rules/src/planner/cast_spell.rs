@@ -20,11 +20,11 @@ use tracing::instrument;
 use utils::outcome::Outcome;
 
 use crate::mutations::cards;
-use crate::spell_casting::spell_planner;
+use crate::planner::spell_planner;
 
 #[instrument(err, level = "debug", skip(game))]
 pub fn run(game: &mut GameState, source: Source, card_id: CardId, face: Face) -> Outcome {
-    let payment = spell_planner::mana_payment(game, source, card_id, CastSpellChoices {
+    let payment = spell_planner::mana_payment(game, source, card_id, &CastSpellChoices {
         face,
         ..CastSpellChoices::default()
     })?;
