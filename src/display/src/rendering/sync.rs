@@ -16,7 +16,7 @@ use data::card_states::card_state::CardState;
 use data::core::primitives::{PlayerName, Zone};
 use data::game_states::game_state::GameState;
 use data::player_states::player_state::PlayerQueries;
-use rules::queries::legal_actions;
+use rules::legality::legal_actions;
 
 use crate::core::game_view::{GameView, GameViewState, PlayerView};
 use crate::core::response_builder::ResponseBuilder;

@@ -13,25 +13,17 @@
 // limitations under the License.
 
 use data::card_states::play_card_plan::CastSpellChoices;
-use data::core::primitives::{CardId, Source, Zone};
+use data::core::primitives::{CardId, Source};
 use data::game_states::game_state::GameState;
-use data::printed_cards::printed_card::Face;
-use tracing::instrument;
-use utils::outcome::Outcome;
 
-use crate::mutations::cards;
-use crate::spell_casting::spell_planner;
-
-#[instrument(err, level = "debug", skip(game))]
-pub fn run(game: &mut GameState, source: Source, card_id: CardId, face: Face) -> Outcome {
-    let payment = spell_planner::mana_payment(game, source, card_id, CastSpellChoices {
-        face,
-        ..CastSpellChoices::default()
-    })?;
-
-    for land in &payment.basic_land_abilities_to_activate {
-        cards::tap(game, source, *land)?;
-    }
-
-    game.zones.move_card(source, card_id, Zone::Stack)
+/// Returns true if there is any set of choices the [CardId]'s controller could
+/// make to successfully cast this card, given the set of choices selected in
+/// [CastSpellChoices].
+pub fn to_cast(
+    game: &GameState,
+    _source: Source,
+    card_id: CardId,
+    choices: CastSpellChoices,
+) -> bool {
+    true
 }

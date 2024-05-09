@@ -12,26 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::iter;
+
 use data::card_states::play_card_plan::CastSpellChoices;
-use data::core::primitives::{CardId, Source, Zone};
+use data::core::primitives::{CardId, Source};
 use data::game_states::game_state::GameState;
 use data::printed_cards::printed_card::Face;
-use tracing::instrument;
-use utils::outcome::Outcome;
 
-use crate::mutations::cards;
-use crate::spell_casting::spell_planner;
-
-#[instrument(err, level = "debug", skip(game))]
-pub fn run(game: &mut GameState, source: Source, card_id: CardId, face: Face) -> Outcome {
-    let payment = spell_planner::mana_payment(game, source, card_id, CastSpellChoices {
-        face,
-        ..CastSpellChoices::default()
-    })?;
-
-    for land in &payment.basic_land_abilities_to_activate {
-        cards::tap(game, source, *land)?;
-    }
-
-    game.zones.move_card(source, card_id, Zone::Stack)
+/// Returns an iterator over possible legal ways of casting the provided [Face]
+/// of the given card. The returned [CastSpellChoices] will include the provided
+/// face.
+///
+/// Panics if this card does not have the indicated face.
+pub fn compute(
+    _game: &GameState,
+    _source: Source,
+    _card_id: CardId,
+    face: Face,
+) -> impl Iterator<Item = CastSpellChoices> {
+    iter::once(CastSpellChoices { face, ..CastSpellChoices::default() })
 }

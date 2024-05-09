@@ -13,4 +13,5 @@
 // limitations under the License.
 
 pub mod cast_spell;
+pub mod legal_cast_choices;
 pub mod spell_planner;

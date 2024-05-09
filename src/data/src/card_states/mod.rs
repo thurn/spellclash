@@ -14,7 +14,7 @@
 
 pub mod card_kind;
 pub mod card_state;
-pub mod cast_spell_plan;
 pub mod counters;
 pub mod custom_card_state;
+pub mod play_card_plan;
 pub mod zones;

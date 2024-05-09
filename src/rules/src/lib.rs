@@ -12,9 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![allow(unused)]
+
 pub mod actions;
 pub mod core;
+pub mod legality;
 pub mod mutations;
+pub mod play_cards;
 pub mod queries;
 pub mod spell_casting;
 pub mod steps;

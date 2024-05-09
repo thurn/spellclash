@@ -14,7 +14,7 @@
 
 use std::collections::HashMap;
 
-use data::card_states::cast_spell_plan::{CastSpellChoices, ManaPaymentPlan};
+use data::card_states::play_card_plan::{CastSpellChoices, ManaPaymentPlan};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, ManaColor, Source};
 use data::game_states::game_state::GameState;
@@ -87,7 +87,7 @@ fn add_land_for_item(
         ManaCostItem::Colored(color) => {
             // We prioritize tapping lands with fewer subtypes first.
             if let Some((land, _)) = lands.get_mut(&color).and_then(|v| v.pop()) {
-                result.basic_land_abilities.push(land);
+                result.basic_land_abilities_to_activate.push(land);
                 outcome::OK
             } else {
                 fail!("No land available to produce {color:?}");
@@ -101,7 +101,7 @@ fn add_land_for_item(
             counts.sort_by(|a, b| b.cmp(a));
             for (_, color) in counts {
                 if let Some((land, _)) = lands.get_mut(&color).and_then(|v| v.pop()) {
-                    result.basic_land_abilities.push(land);
+                    result.basic_land_abilities_to_activate.push(land);
                     return outcome::OK;
                 }
             }

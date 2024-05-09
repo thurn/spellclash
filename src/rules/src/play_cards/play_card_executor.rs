@@ -12,5 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod card_queries;
-pub mod players;
+use data::card_states::play_card_plan::PlayCardPlan;
+use data::core::primitives::{CardId, PlayerName, Source};
+use data::game_states::game_state::GameState;
+use utils::outcome;
+use utils::outcome::Outcome;
+
+/// Plays a card, based on the set of choices in a completed [PlayCardPlan].
+pub fn execute_plan(
+    game: &mut GameState,
+    player: PlayerName,
+    card_id: CardId,
+    source: Source,
+    plan: PlayCardPlan,
+) -> Outcome {
+    outcome::OK
+}

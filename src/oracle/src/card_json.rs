@@ -139,7 +139,6 @@ fn mana_cost(cost: Option<&String>) -> Value<ManaCost> {
             .extend(to_mana_item(capture.get(1).with_error(|| "Expected mana symbol")?.as_str())?);
     }
 
-    println!("Mana Cost: {:?}", result);
     Ok(result)
 }
 

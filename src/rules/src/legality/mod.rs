@@ -12,5 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod card_queries;
-pub mod players;
+pub mod can_pay_mana_cost;
+pub mod can_play_face;
+pub mod legal_actions;

@@ -24,7 +24,7 @@ use display::commands::display_preferences::DisplayPreferences;
 use display::commands::scene_name::SceneName;
 use display::rendering::render;
 use rules::actions::action;
-use rules::queries::legal_actions;
+use rules::legality::legal_actions;
 use tokio::sync::mpsc::Sender;
 use tracing::{debug, info, instrument};
 use utils::outcome;

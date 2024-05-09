@@ -18,7 +18,7 @@ use data::actions::game_action::GameAction;
 use data::core::primitives::PlayerName;
 use data::game_states::game_state::GameState;
 use rand::prelude::IteratorRandom;
-use rules::queries::legal_actions;
+use rules::legality::legal_actions;
 use tokio::time;
 use utils::outcome::Value;
 use utils::with_error::WithError;

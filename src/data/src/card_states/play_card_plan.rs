@@ -22,26 +22,27 @@ use crate::printed_cards::printed_card::Face;
 
 /// Describes a proposed series of a choices for a user to play a card as part
 /// of the "play card" game action.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CastSpellPlan {
-    /// How the user will pay mana costs for this spell
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct PlayCardPlan {
+    /// Choices the user has selected to play this card if it is a spell
+    pub spell_choices: CastSpellChoices,
+    /// How the user will pay mana costs for this card if it is a spell
     pub mana_payment: ManaPaymentPlan,
-    /// Choices the user has selected for this spell
-    pub choices: CastSpellChoices,
 }
 
 /// Describes a user's proposed plan for paying mana costs for a spell.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ManaPaymentPlan {
-    /// Identifies cards the player has chosen to active as basic lands in order
-    /// to pay costs for this spell. Lands with basic land subtypes are listed
-    /// here because they do not have an explicit activated ability:
+    /// Identifies cards the player has chosen to active via their basic land
+    /// abilities in order to pay costs for this spell. Lands with basic
+    /// land subtypes are listed here instead of in [Self::mana_abilities]
+    /// because they do not have an explicit activated ability.
     ///
     /// > 305.6. An object with the land card type and a basic land type has the
     /// > intrinsic ability "{T}: Add [mana symbol]," even if the text box
     /// > doesn't actually contain that text or the object has no text box.
     /// <https://yawgatog.com/resources/magic-rules/#R3056>
-    pub basic_land_abilities: Vec<CardId>,
+    pub basic_land_abilities_to_activate: Vec<CardId>,
     /// Identifies mana abilities the player has chosen to activate in order to
     /// pay costs to cast this spell.
     pub mana_abilities: Vec<AbilityId>,

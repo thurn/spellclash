@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_states::cast_spell_plan::CastSpellChoices;
+use data::card_states::play_card_plan::CastSpellChoices;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::CardId;
 use data::game_states::game_state::GameState;
