@@ -28,5 +28,5 @@ pub async fn select(game: &GameState, player: PlayerName) -> Value<GameAction> {
     time::sleep(Duration::from_millis(300)).await;
     legal_actions::compute(game, player)
         .choose(&mut rand::thread_rng())
-        .with_error(|| "No legal actions available")
+        .with_error(|| "No legal action_handlers available")
 }

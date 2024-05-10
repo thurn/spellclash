@@ -48,7 +48,7 @@ pub async fn connect(database: Arc<dyn Database>, user_id: UserId) -> Value<Game
 /// The most recently-returned [ClientData] (from a call to this function or
 /// [connect]) must be provided to this call. Returns a [Receiver] which will be
 /// sent the results of incremental updates to the game (e.g. results of AI
-/// actions) along with any errors which occur.
+/// action_handlers) along with any errors which occur.
 pub async fn handle_action(
     database: Arc<dyn Database>,
     data: ClientData,

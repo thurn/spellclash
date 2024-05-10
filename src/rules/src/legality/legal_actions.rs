@@ -23,8 +23,8 @@ use data::printed_cards::printed_card::Face;
 use crate::legality::can_pay_mana_cost;
 use crate::play_cards::{pick_face_to_play, play_card};
 
-/// Iterator over all legal actions the named player can take in the current
-/// game state.
+/// Iterator over all legal action_handlers the named player can take in the
+/// current game state.
 pub fn compute(game: &GameState, player: PlayerName) -> impl Iterator<Item = GameAction> {
     let mut pass_priority = None;
     if next_to_act(game) == player {

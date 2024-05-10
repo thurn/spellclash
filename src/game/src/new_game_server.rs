@@ -29,7 +29,7 @@ use data::game_states::combat_state::CombatState;
 use data::game_states::game_state::{GameConfiguration, GameState, GameStatus, TurnData};
 use data::game_states::game_step::GamePhaseStep;
 use data::game_states::history_data::GameHistory;
-use data::game_states::undo_state::UndoTracker;
+use data::game_states::undo_tracker::UndoTracker;
 use data::player_states::player_state::Players;
 use data::prompts::prompt_manager::PromptManager;
 use data::state_machines::state_machine_data::StateMachines;
@@ -40,7 +40,6 @@ use display::commands::scene_name::SceneName;
 use display::rendering::render;
 use enumset::EnumSet;
 use maplit::hashmap;
-use oracle::card_database;
 use rand_xoshiro::rand_core::SeedableRng;
 use rand_xoshiro::Xoshiro256StarStar;
 use rules::mutations::library;
@@ -83,7 +82,7 @@ async fn create_internal(
 
     info!(?game_id, "Creating new game");
     let mut game = create_game(game_id, user.id, user_deck, action.opponent_id, opponent_deck);
-    card_database::populate(database.clone(), &mut game).await?;
+    requests::initialize_game(database.clone(), &mut game)?;
 
     game.shuffle_library(PlayerName::One)?;
     library::draw_cards(&mut game, Source::Game, PlayerName::One, 7)?;
@@ -168,7 +167,7 @@ fn create_game(
         animations: AnimationTracker::default(),
         history: GameHistory::default(),
         rng: Xoshiro256StarStar::seed_from_u64(314159265358979323),
-        undo_tracker: UndoTracker::default(),
+        undo_tracker: UndoTracker { enabled: true, undo: None },
         delegates: GameDelegates::default(),
     }
 }

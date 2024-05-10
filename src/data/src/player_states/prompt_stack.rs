@@ -17,8 +17,8 @@ use serde::{Deserialize, Serialize};
 /// A stack of active prompts for a player.
 ///
 /// Prompts represent choices a player must make within a game. No other game
-/// actions are allowed while a prompt is active. Because this is a stack,
-/// choices that cause further prompts to be shown will appear before earlier
-/// prompts.
+/// action_handlers are allowed while a prompt is active. Because this is a
+/// stack, choices that cause further prompts to be shown will appear before
+/// earlier prompts.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct PromptStack {}

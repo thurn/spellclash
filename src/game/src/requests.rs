@@ -22,7 +22,7 @@ use database::database::Database;
 use display::commands::command::Command;
 use display::commands::scene_name::SceneName;
 use oracle::card_database;
-use utils::outcome::Value;
+use utils::outcome::{Outcome, Value};
 use utils::with_error::WithError;
 
 /// Command to load a named scene if it is not currently active
@@ -44,11 +44,22 @@ pub async fn fetch_user(database: Arc<dyn Database>, user_id: UserId) -> Value<U
 pub async fn fetch_game(database: Arc<dyn Database>, game_id: GameId) -> Value<GameState> {
     let mut game =
         database.fetch_game(game_id).await?.with_error(|| format!("Game not found {game_id:?}"))?;
+    initialize_game(database, &mut game)?;
+    Ok(game)
+}
+
+pub fn initialize_game(database: Arc<dyn Database>, game: &mut GameState) -> Outcome {
+    if let Some(mut previous) = game.undo_tracker.undo.take() {
+        // Recursively apply game initialization to all copies stored in the undo
+        // tracker.
+        initialize_game(database.clone(), previous.as_mut())?;
+        game.undo_tracker.undo = Some(previous);
+    }
+
     game.animations = AnimationTracker::new(if game.configuration.simulation {
         AnimationState::Ignore
     } else {
         AnimationState::Track
     });
-    card_database::populate(database, &mut game).await?;
-    Ok(game)
+    card_database::populate(database, game)
 }

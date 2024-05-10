@@ -12,4 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod action;
+use crate::actions::game_action::GameAction;
+use crate::actions::user_action::UserAction;
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub enum DebugGameAction {
+    Undo,
+}
+
+impl From<DebugGameAction> for UserAction {
+    fn from(value: DebugGameAction) -> Self {
+        UserAction::GameAction(GameAction::DebugAction(value))
+    }
+}

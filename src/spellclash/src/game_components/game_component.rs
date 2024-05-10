@@ -15,6 +15,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use data::actions::debug_action::DebugGameAction;
 use data::actions::game_action::GameAction;
 use data::actions::user_action::UserAction;
 use dioxus::prelude::*;
@@ -69,6 +70,18 @@ fn GameInfo(view: Arc<GameView>) -> Element {
                 class: button_component::CLASS,
                 onclick: move |_| leave_game(cd_signal, view_signal, nav),
                 "Leave Game",
+            }
+            if view.can_undo {
+                button {
+                    class: button_component::CLASS,
+                    onclick: move |_| client_action::client_execute_action(
+                            cd_signal,
+                            view_signal,
+                            nav,
+                            DebugGameAction::Undo
+                        ),
+                    "Undo",
+                }
             }
             PlayerComponent {
                 player: view.opponent.clone(),

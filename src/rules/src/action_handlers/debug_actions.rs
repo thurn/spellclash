@@ -12,31 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::sync::Arc;
-
+use data::actions::debug_action::DebugGameAction;
+use data::actions::game_action::GameAction;
+use data::core::primitives::PlayerName;
 use data::game_states::game_state::GameState;
-use database::database::Database;
+use tracing::{debug, instrument};
 use utils::outcome::Outcome;
-use utils::with_error::WithError;
 use utils::{fail, outcome};
 
-use crate::card_json;
-
-pub fn populate(_: Arc<dyn Database>, game: &mut GameState) -> Outcome {
-    let cards = match card_json::CARDS.as_ref() {
-        Ok(c) => c,
-        Err(e) => {
-            fail!("Error parsing card json data: {:?}", e);
+#[instrument(err, level = "debug", skip(game))]
+pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction) -> Outcome {
+    match action {
+        DebugGameAction::Undo => {
+            debug!(?player, "Undoing last action");
+            let Some(previous) = game.undo_tracker.undo.take() else {
+                fail!("No undo state available");
+            };
+            *game = *previous;
         }
-    };
-
-    for card in game.zones.all_cards_mut() {
-        card.printed_card_reference = Some(
-            cards
-                .get(&card.card_name)
-                .with_error(|| format!("Unknown card: {:?}", card.card_name))?,
-        );
     }
-
     outcome::OK
 }

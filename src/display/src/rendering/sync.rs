@@ -51,6 +51,7 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
             GameViewState::None
         },
         can_pass_priority: legal_actions::can_pass_priority(game, builder.player),
+        can_undo: game.undo_tracker.enabled && game.undo_tracker.undo.is_some(),
     });
 }
 

@@ -15,7 +15,7 @@
 use crate::text_strings::Text;
 
 /// A blocking choice for a player to pick one of a list of options before
-/// any other game actions can occur.
+/// any other game action_handlers can occur.
 #[derive(Clone, Debug)]
 pub struct ChoicePrompt<T> {
     /// If true, display a "continue" option to skip this prompt without taking

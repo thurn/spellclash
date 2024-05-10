@@ -25,10 +25,10 @@ use crate::queries::{card_queries, players};
 
 /// Advances the game state to the indicated `step`.
 ///
-/// Primary entry point for the game state machine. Performs all actions for
-/// exiting the previous [GamePhaseStep] and then performs actions which occur
-/// at the start of this step. Increments the turn number and active player when
-/// transitioning to the Untap step.
+/// Primary entry point for the game state machine. Performs all action_handlers
+/// for exiting the previous [GamePhaseStep] and then performs action_handlers
+/// which occur at the start of this step. Increments the turn number and active
+/// player when transitioning to the Untap step.
 pub fn advance(game: &mut GameState) -> Outcome {
     advance_internal(game, &StepConfig::default())
 }
@@ -199,7 +199,8 @@ fn cleanup(game: &mut GameState, config: &StepConfig) -> Outcome {
     // > their hand size to that number. This turn-based action doesn't use the
     // > stack.
 
-    // > 514.2. Second, the following actions happen simultaneously: all damage
+    // > 514.2. Second, the following action_handlers happen simultaneously: all
+    // > damage
     // > marked on permanents (including phased-out permanents) is removed and all
     // > "until end of turn" and "this turn" effects end. This turn-based action
     // > doesn't use the stack.
@@ -207,10 +208,12 @@ fn cleanup(game: &mut GameState, config: &StepConfig) -> Outcome {
     // > 514.3. Normally, no player receives priority during the cleanup step, so no
     // > spells can be cast and no abilities can be activated. However, this rule is
     // > subject to the following exception:
-    // > 514.3a. At this point, the game checks to see if any state-based actions
+    // > 514.3a. At this point, the game checks to see if any state-based
+    // > action_handlers
     // > would be performed and/or any triggered abilities are waiting to be put
     // > onto the stack (including those that trigger "at the beginning of the next
-    // > cleanup step"). If so, those state-based actions are performed, then those
+    // > cleanup step"). If so, those state-based action_handlers are performed,
+    // > then those
     // > triggered abilities are put on the stack, then the active player gets
     // > priority.
     // https://yawgatog.com/resources/magic-rules/#R5143

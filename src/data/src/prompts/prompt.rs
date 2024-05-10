@@ -35,7 +35,7 @@ pub struct Prompt {
 #[derive(Clone, Debug)]
 pub enum PromptType {
     /// A blocking choice for a player to pick one of a list of objects before
-    /// any other game actions can occur.
+    /// any other game action_handlers can occur.
     ObjectChoice(ChoicePrompt<ObjectId>),
 
     /// A prompt for a player to select one or more cards from a set of cards to

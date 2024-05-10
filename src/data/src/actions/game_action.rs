@@ -12,15 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::actions::debug_action::DebugGameAction;
 use crate::actions::user_action::UserAction;
 use crate::core::primitives::CardId;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum GameAction {
+    /// Debugging action.
+    DebugAction(DebugGameAction),
+
     /// Pass priority on the current stack item or game step.
     ///
     /// > If all players pass in succession (that is, if all players pass
-    /// > without taking any actions in between passing), the spell or ability
+    /// > without taking any action_handlers in between passing), the spell or
+    /// > ability
     /// > on top of the stack resolves or, if the stack is empty, the phase or
     /// > step ends.
     ///

@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![allow(unused)]
+use serde::{Deserialize, Serialize};
 
-pub mod action_handlers;
-pub mod core;
-pub mod legality;
-pub mod mutations;
-pub mod planner;
-pub mod play_cards;
-pub mod queries;
-pub mod resolve_cards;
-pub mod steps;
+use crate::game_states::game_state::GameState;
+
+/// State for the undo system.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UndoTracker {
+    /// Whether we are tracking Undo operations for this game
+    pub enabled: bool,
+    /// Previous state to jump to as a result of an 'undo' operation, if any.
+    pub undo: Option<Box<GameState>>,
+}

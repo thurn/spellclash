@@ -31,7 +31,7 @@ use crate::game_states::animation_tracker::{
 use crate::game_states::combat_state::CombatState;
 use crate::game_states::game_step::GamePhaseStep;
 use crate::game_states::history_data::{GameHistory, HistoryCounters, HistoryEvent};
-use crate::game_states::undo_state::UndoTracker;
+use crate::game_states::undo_tracker::UndoTracker;
 use crate::player_states::player_state::{PlayerQueries, PlayerState, Players};
 use crate::prompts::prompt_manager::PromptManager;
 use crate::state_machines::state_machine_data::StateMachines;
@@ -90,7 +90,7 @@ pub struct GameState {
     /// game zone they are in.
     pub zones: Zones,
 
-    /// Handles sending prompts for user actions to players in this game
+    /// Handles sending prompts for user action_handlers to players in this game
     #[serde(skip)]
     pub prompts: PromptManager,
 
@@ -124,10 +124,10 @@ impl GameState {
     pub fn add_animation(&mut self, update: impl FnOnce() -> GameAnimation) {
         if self.animations.state == AnimationState::Track {
             // Snapshot current game state, omit things that aren't important for
-            // terminal_ui logic.
+            // animation logic.
             let clone = Self {
                 animations: AnimationTracker::new(AnimationState::Ignore),
-                undo_tracker: Default::default(),
+                undo_tracker: UndoTracker { enabled: false, undo: None },
                 ..self.clone()
             };
 
@@ -244,7 +244,7 @@ pub enum GameStatus {
     /// See <https://yawgatog.com/resources/magic-rules/#R1035>
     ResolveMulligans,
 
-    /// Players take actions with cards in their opening hands
+    /// Players take action_handlers with cards in their opening hands
     ///
     /// See <https://yawgatog.com/resources/magic-rules/#R1036>
     PreGameActions,

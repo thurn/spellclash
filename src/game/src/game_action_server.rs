@@ -23,7 +23,8 @@ use database::database::Database;
 use display::commands::display_preferences::DisplayPreferences;
 use display::commands::scene_name::SceneName;
 use display::rendering::render;
-use rules::actions::action;
+use rules::action_handlers::actions;
+use rules::action_handlers::actions::PlayerType;
 use rules::legality::legal_actions;
 use tokio::sync::mpsc::Sender;
 use tracing::{debug, info, instrument};
@@ -84,7 +85,12 @@ pub async fn handle_game_action(
     let mut current_action = action;
 
     loop {
-        action::execute(&mut game, current_player, current_action)?;
+        actions::execute(
+            &mut game,
+            current_player,
+            current_action,
+            if current_player == user_player_name { PlayerType::User } else { PlayerType::Agent },
+        )?;
         let user_result = render::render_updates(&game, user_player_name, data.display_preferences);
 
         let mut opponent_responses = vec![];

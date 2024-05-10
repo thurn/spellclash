@@ -36,6 +36,9 @@ pub struct GameView {
 
     /// Whether the viewer can currently take the 'pass priority' action.
     pub can_pass_priority: bool,
+
+    /// Whether the viewer can currently take the 'undo' action.
+    pub can_undo: bool,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Copy)]
