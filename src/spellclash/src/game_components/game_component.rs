@@ -34,13 +34,13 @@ pub fn GameComponent(view: GameView) -> Element {
     let view = Arc::new(view);
     rsx! {
         div {
-            class: "flex flex-row",
+            class: "flex flex-row w-full",
             div {
-                class: "flex-col",
+                class: "flex-col w-5/6",
                 Zones { view: view.clone() }
             }
             div {
-                class: "flex flex-col justify-between",
+                class: "flex flex-col justify-between w-1/6",
                 GameInfo { view: view.clone() }
             }
         }

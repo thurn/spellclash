@@ -18,7 +18,10 @@ use std::iter;
 use data::card_definitions::card_name::CardName;
 use data::core::numerics::ManaValue;
 use data::core::primitives::{CardSupertype, CardType, Color, ManaColor};
-use data::printed_cards::card_subtypes::CardSubtypes;
+use data::printed_cards::card_subtypes::{
+    ArtifactSubtype, BattleSubtype, CardSubtypes, CreatureSubtype, DungeonSubtype,
+    EnchantmentSubtype, InstantOrSorcerySubtype, LandSubtype, PlaneSubtype, PlaneswalkerSubtype,
+};
 use data::printed_cards::layout::{CardLayout, FaceLayout};
 use data::printed_cards::mana_cost::{ManaCost, ManaCostItem};
 use data::printed_cards::printed_card::{
@@ -119,8 +122,38 @@ fn types(types: &[String]) -> Value<EnumSet<CardType>> {
         .collect()
 }
 
-fn subtypes(_types: &[String]) -> Value<CardSubtypes> {
-    Ok(CardSubtypes::default())
+fn subtypes(types: &[String]) -> Value<CardSubtypes> {
+    let mut result = CardSubtypes::default();
+    for subtype in types {
+        if let Ok(s) = subtype.parse::<ArtifactSubtype>() {
+            result.artifact.insert(s);
+        }
+        if let Ok(s) = subtype.parse::<EnchantmentSubtype>() {
+            result.enchantment.insert(s);
+        }
+        if let Ok(s) = subtype.parse::<LandSubtype>() {
+            result.land.insert(s);
+        }
+        if let Ok(s) = subtype.parse::<PlaneswalkerSubtype>() {
+            result.planeswalker.insert(s);
+        }
+        if let Ok(s) = subtype.parse::<InstantOrSorcerySubtype>() {
+            result.instant_or_sorcery_subtype.insert(s);
+        }
+        if let Ok(s) = subtype.parse::<CreatureSubtype>() {
+            result.creature.insert(s);
+        }
+        if let Ok(s) = subtype.parse::<PlaneSubtype>() {
+            result.plane.insert(s);
+        }
+        if let Ok(s) = subtype.parse::<DungeonSubtype>() {
+            result.dungeon.insert(s);
+        }
+        if let Ok(s) = subtype.parse::<BattleSubtype>() {
+            result.battle.insert(s);
+        }
+    }
+    Ok(result)
 }
 
 fn colors(_colors: &[mtgjson::Color]) -> EnumSet<Color> {
