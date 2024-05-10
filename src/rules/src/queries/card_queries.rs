@@ -93,7 +93,7 @@ pub fn characteristic_faces(game: &GameState, card_id: CardId) -> Vec<&'static P
     let card = game.card(card_id);
     match card.zone {
         Zone::Battlefield => card.face_up_printed_face().map_or_else(Vec::new, |face| vec![face]),
-        Zone::Stack => card.cast_as_faces.iter().map(|face| card.printed().face(face)).collect(),
+        Zone::Stack => card.cast_as.iter().map(|face| card.printed().face(face)).collect(),
         _ => match card.printed().layout {
             CardLayout::Split | CardLayout::Aftermath => card.printed().all_faces().collect(),
             _ => vec![&card.printed().face],
@@ -127,7 +127,7 @@ pub fn mana_cost_for_casting_card(
     choices: &CastSpellChoices,
 ) -> Value<ManaCost> {
     let mut cost =
-        game.card(card_id).printed().face(choices.play_face_as.single_face()?).mana_cost.clone();
+        game.card(card_id).printed().face(choices.play_as.single_face()?).mana_cost.clone();
     cost.items.sort();
     Ok(cost)
 }

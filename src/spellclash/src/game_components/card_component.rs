@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use data::actions::game_action::GameAction;
+use data::card_states::card_state::TappedState;
 use dioxus::prelude::*;
 use display::core::card_view::{CardView, RevealedCardView};
 use display::core::game_view::GameView;
@@ -24,16 +25,19 @@ use crate::game_components::game_component::CARD_HEIGHT;
 #[component]
 pub fn CardComponent(card: CardView) -> Element {
     let c = card.clone();
+    let tapped = card.tapped_state == TappedState::Tapped;
     match card.revealed {
         Some(revealed) => rsx! {
             div {
                 class: "m-1",
+                class: if tapped { "rotate-90" },
                 RevealedCardComponent { card: c, revealed },
             }
         },
         None => rsx! {
             div {
                 class: "m-1",
+                class: if tapped { "rotate-90" },
                 HiddenCardComponent { card },
             }
         },

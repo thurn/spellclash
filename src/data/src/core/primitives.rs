@@ -80,6 +80,20 @@ pub enum CardType {
     Vanguard,
 }
 
+impl CardType {
+    pub fn is_permanent(&self) -> bool {
+        matches!(
+            self,
+            CardType::Artifact
+                | CardType::Battle
+                | CardType::Creature
+                | CardType::Enchantment
+                | CardType::Land
+                | CardType::Planeswalker
+        )
+    }
+}
+
 /// Identifies one of the players in a game
 #[derive(Debug, Hash, Serialize, Deserialize, EnumSetType, Ord, PartialOrd, Sequence)]
 pub enum PlayerName {

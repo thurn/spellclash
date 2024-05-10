@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use data::actions::game_action::GameAction;
+use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, PlayerName, Source, Zone};
 use data::game_states::game_state::GameState;
 use data::printed_cards::printed_card::Face;
@@ -24,6 +25,7 @@ use crate::legality::legal_actions;
 use crate::mutations::cards;
 use crate::play_cards::{pick_face_to_play, play_card};
 use crate::queries::players;
+use crate::resolve_cards::resolve;
 use crate::steps::step;
 
 #[instrument(err, level = "debug", skip(game))]
@@ -40,7 +42,12 @@ fn handle_pass_priority(game: &mut GameState, player: PlayerName) -> Outcome {
     verify!(legal_actions::can_pass_priority(game, player), "Cannot pass priority for {player:?}");
     game.passed.insert(player);
     if game.passed.len() == game.configuration.all_players.len() {
-        step::advance(game)
+        game.clear_passed();
+        if game.stack().is_empty() {
+            step::advance(game)
+        } else {
+            resolve::resolve_top_of_stack(game)
+        }
     } else {
         game.priority = players::next_player_after(game, game.priority);
         outcome::OK

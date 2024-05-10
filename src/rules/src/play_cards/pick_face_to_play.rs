@@ -15,7 +15,7 @@
 use data::card_states::card_kind::CardKind;
 use data::card_states::card_state::CardState;
 use data::card_states::play_card_plan::{
-    CastSpellChoices, ManaPaymentPlan, PlayAs, PlayCardPlan, PlayFaceAs,
+    CastSpellChoices, ManaPaymentPlan, PlayAs, PlayCardPlan, PlayCardTiming,
 };
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, CardType, PlayerName, Source};
@@ -53,7 +53,10 @@ pub fn run(
         [] => PlayCardChoice::Invalid,
         [play_face_as] => PlayCardChoice::Continue {
             updated_plan: PlayCardPlan {
-                spell_choices: CastSpellChoices { play_face_as, ..plan.spell_choices.clone() },
+                spell_choices: CastSpellChoices {
+                    play_as: play_face_as,
+                    ..plan.spell_choices.clone()
+                },
                 mana_payment: ManaPaymentPlan::default(),
             },
         },
@@ -68,23 +71,23 @@ pub fn run(
 
 /// Returns a [CanPlayAs] indicating whether a [PlayerName] can play a given
 /// [PrintedCardFace] of a [CardState] in the current [GameState].
-fn can_play_as(game: &GameState, card: &CardState, face: &PrintedCardFace) -> Option<PlayFaceAs> {
+fn can_play_as(game: &GameState, card: &CardState, face: &PrintedCardFace) -> Option<PlayAs> {
     let player = card.controller;
     let result = can_play_as_for_types(face);
     match result.play_as {
-        PlayAs::Land => {
+        PlayCardTiming::Land => {
             if in_main_phase_with_stack_empty(game, player)
                 && players::land_plays_remaining(game, player) > 0
             {
                 return Some(result);
             }
         }
-        PlayAs::Instant => {
+        PlayCardTiming::Instant => {
             if game.priority == player {
                 return Some(result);
             }
         }
-        PlayAs::Sorcery => {
+        PlayCardTiming::Sorcery => {
             if in_main_phase_with_stack_empty(game, player) {
                 return Some(result);
             }
@@ -104,12 +107,12 @@ fn in_main_phase_with_stack_empty(game: &GameState, player: PlayerName) -> bool 
 }
 
 /// Returns a [CanPlayAs] for a card solely based on its card types.
-fn can_play_as_for_types(face: &PrintedCardFace) -> PlayFaceAs {
+fn can_play_as_for_types(face: &PrintedCardFace) -> PlayAs {
     if face.card_types.contains(CardType::Instant) {
-        PlayFaceAs { faces: EnumSet::only(face.face_identifier), play_as: PlayAs::Instant }
+        PlayAs { faces: EnumSet::only(face.face_identifier), play_as: PlayCardTiming::Instant }
     } else if face.card_types.contains(CardType::Land) {
-        PlayFaceAs { faces: EnumSet::only(face.face_identifier), play_as: PlayAs::Land }
+        PlayAs { faces: EnumSet::only(face.face_identifier), play_as: PlayCardTiming::Land }
     } else {
-        PlayFaceAs { faces: EnumSet::only(face.face_identifier), play_as: PlayAs::Sorcery }
+        PlayAs { faces: EnumSet::only(face.face_identifier), play_as: PlayCardTiming::Sorcery }
     }
 }

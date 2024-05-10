@@ -25,7 +25,6 @@ use utils::outcome::Outcome;
 pub fn draw(game: &mut GameState, source: impl HasSource, player: impl HasPlayerName) -> Outcome {
     let Some(&id) = game.library(player).back() else { return outcome::GAME_OVER };
     let card = game.card_mut(id);
-    card.revealed_to.insert(card.owner);
     game.zones.move_card(source, id, Zone::Hand)
 }
 

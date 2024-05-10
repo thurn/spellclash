@@ -30,7 +30,7 @@ use crate::card_states::counters::Counters;
 use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
-    CardId, HasCardId, HasPlayerName, HasSource, ObjectId, PlayerName, Zone,
+    CardId, HasCardId, HasPlayerName, HasSource, ObjectId, PlayerName, Zone, ALL_PLAYERS,
 };
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::GameState;
@@ -235,7 +235,7 @@ impl Zones {
             controller: owner,
             zone: Zone::Library,
             facing: CardFacing::FaceDown,
-            cast_as_faces: EnumSet::empty(),
+            cast_as: EnumSet::empty(),
             tapped_state: TappedState::Untapped,
             revealed_to: EnumSet::empty(),
             counters: Counters::default(),
@@ -302,6 +302,7 @@ impl Zones {
     }
 
     fn remove_from_zone(&mut self, owner: PlayerName, card_id: CardId, zone: Zone) -> Outcome {
+        self.on_leave_zone(card_id, zone);
         match zone {
             Zone::Hand => self.hands.remove(card_id, owner),
             Zone::Graveyard => self.graveyards.remove(card_id, owner),
@@ -333,7 +334,44 @@ impl Zones {
         }
     }
 
+    fn on_leave_zone(&mut self, card_id: CardId, zone: Zone) {
+        match zone {
+            Zone::Stack => {
+                let card = self.card_mut(card_id);
+                card.cast_as.clear();
+                card.targets.clear();
+            }
+            Zone::Battlefield => {
+                let card = self.card_mut(card_id);
+                card.tapped_state = TappedState::Untapped;
+                card.damage = Damage(0);
+                card.attached_to = None;
+            }
+            _ => {}
+        }
+    }
+
+    fn on_enter_zone(&mut self, card_id: CardId, zone: Zone) {
+        match zone {
+            Zone::Stack | Zone::Battlefield | Zone::Graveyard => {
+                self.card_mut(card_id).revealed_to = ALL_PLAYERS;
+            }
+            Zone::Hand => {
+                let controller = self.card(card_id).controller;
+                let card = self.card_mut(card_id);
+                card.revealed_to.insert(controller);
+                card.facing = CardFacing::FaceDown;
+            }
+            Zone::Library => {
+                let card = self.card_mut(card_id);
+                card.facing = CardFacing::FaceDown;
+            }
+            _ => {}
+        }
+    }
+
     fn add_to_zone(&mut self, owner: PlayerName, card_id: CardId, zone: Zone) {
+        self.on_enter_zone(card_id, zone);
         match zone {
             Zone::Library => self.libraries.cards_mut(owner).push_back(card_id),
             Zone::Hand => {

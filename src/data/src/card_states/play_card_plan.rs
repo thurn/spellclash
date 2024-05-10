@@ -52,7 +52,7 @@ pub struct ManaPaymentPlan {
 
 /// Describes how a face of card can be played.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
-pub enum PlayAs {
+pub enum PlayCardTiming {
     Sorcery,
     Instant,
     Land,
@@ -60,15 +60,15 @@ pub enum PlayAs {
 
 /// Describes how a face of card can be played.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
-pub struct PlayFaceAs {
+pub struct PlayAs {
     /// Set of faces being played
     pub faces: EnumSet<Face>,
 
     /// Timing restriction on playing this card
-    pub play_as: PlayAs,
+    pub play_as: PlayCardTiming,
 }
 
-impl PlayFaceAs {
+impl PlayAs {
     pub fn single_face(&self) -> Value<Face> {
         if self.faces.len() == 1 {
             Ok(self.faces.iter().next().unwrap())
@@ -81,12 +81,12 @@ impl PlayFaceAs {
 /// Choices a player may make while placing a spell on the stack
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CastSpellChoices {
-    /// The face or faces of this card which the player is casting and how they
-    /// are being played.
+    /// The face or faces of this card which the player is casting and the
+    /// timing restriction used for playing this card.
     ///
     /// This will be a single face for most cards, but split cards with the
     /// "Fuse" ability can be cast using multiple faces at once.
-    pub play_face_as: PlayFaceAs,
+    pub play_as: PlayAs,
     /// Targets the player has chosen for this spell
     ///
     /// > 601.2c. The player announces their choice of an appropriate object or
@@ -130,7 +130,7 @@ pub struct CastSpellChoices {
 impl Default for CastSpellChoices {
     fn default() -> Self {
         Self {
-            play_face_as: PlayFaceAs { faces: EnumSet::empty(), play_as: PlayAs::Sorcery },
+            play_as: PlayAs { faces: EnumSet::empty(), play_as: PlayCardTiming::Sorcery },
             targets: Vec::new(),
             modes: EnumSet::empty(),
             alternative_cost: None,

@@ -98,7 +98,7 @@ pub struct CardState {
     ///
     /// This is a single face except in the face of a split card cast with the
     /// "Fuse" ability.
-    pub cast_as_faces: EnumSet<Face>,
+    pub cast_as: EnumSet<Face>,
 
     /// Whether this card is current tapped.
     ///
@@ -201,6 +201,12 @@ impl CardState {
 pub enum TappedState {
     Untapped,
     Tapped,
+}
+
+impl TappedState {
+    pub fn is_tapped(self) -> bool {
+        self == TappedState::Tapped
+    }
 }
 
 /// Facing for this card, corresponding to the [PrintedCard] faces.

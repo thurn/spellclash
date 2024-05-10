@@ -80,7 +80,6 @@ impl Default for StepConfig {
 }
 
 fn begin_step(game: &mut GameState, step: GamePhaseStep) -> Outcome {
-    game.clear_passed();
     game.step = step;
     game.priority = game.turn.active_player;
     outcome::OK
