@@ -20,7 +20,7 @@ use enumset::EnumSet;
 use utils::outcome;
 use utils::outcome::Outcome;
 
-use crate::mutations::library;
+use crate::mutations::{cards, library};
 use crate::queries::{card_queries, players};
 
 /// Advances the game state to the indicated `step`.
@@ -100,6 +100,16 @@ fn untap(game: &mut GameState, config: &StepConfig) -> Outcome {
         game.turn.turn_number += 1;
     }
     game.turn.active_player = next;
+
+    // > 502.3. Third, the active player determines which permanents they control
+    // > will untap. Then they untap them all simultaneously. This turn-based action
+    // > doesn't use the stack. Normally, all of a player's permanents untap, but
+    // > effects can keep one or more of a player's permanents from untapping.
+    // <https://yawgatog.com/resources/magic-rules/#R5023>
+    let to_untap = game.battlefield(next).clone();
+    for &card_id in &to_untap {
+        cards::untap(game, Source::Game, card_id)?;
+    }
 
     // > 502.4. No player receives priority during the untap step, so no spells can
     // > be cast or resolve and no abilities can be activated or resolve. Any

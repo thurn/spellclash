@@ -39,3 +39,13 @@ pub fn tap(game: &mut GameState, _source: Source, card_id: CardId) -> Outcome {
     card.tapped_state = TappedState::Tapped;
     outcome::OK
 }
+
+/// Untaps a card
+///
+/// Returns an error if this card is not on the battlefield.
+pub fn untap(game: &mut GameState, _source: Source, card_id: CardId) -> Outcome {
+    let card = game.card_mut(card_id);
+    verify!(card.zone == Zone::Battlefield, "Card {card_id:?} is not on the battlefield");
+    card.tapped_state = TappedState::Untapped;
+    outcome::OK
+}

@@ -52,63 +52,25 @@ pub trait ZoneQueries {
     /// their hand
     fn hand(&self, player: impl HasPlayerName) -> &HashSet<CardId>;
 
-    /// Equivalent function to [Self::hand] which returns an iterator over
-    /// [CardState]s in an undefined order.
-    fn hand_cards(&self, player: impl HasPlayerName) -> impl Iterator<Item = &CardState> {
-        self.hand(player).iter().map(move |id| self.card(*id))
-    }
-
     /// Returns the IDs of cards and card-like objects owned by a player in
     /// their graveyard, in order (`.back()` element in result is top card).
     fn graveyard(&self, player: impl HasPlayerName) -> &VecDeque<CardId>;
-
-    /// Equivalent function to [Self::graveyard] which returns an iterator over
-    /// [CardState]s in order.
-    fn graveyard_cards(&self, player: impl HasPlayerName) -> impl Iterator<Item = &CardState> {
-        self.graveyard(player).iter().map(move |id| self.card(*id))
-    }
 
     /// Returns the IDs of cards and card-like objects ***controlled*** by a
     /// player on the battlefield
     fn battlefield(&self, player: impl HasPlayerName) -> &HashSet<CardId>;
 
-    /// Equivalent function to [Self::battlefield] which returns an
-    /// iterator over [CardState]s in an undefined order.
-    fn battlefield_cards(&self, player: impl HasPlayerName) -> impl Iterator<Item = &CardState> {
-        self.battlefield(player).iter().map(move |id| self.card(*id))
-    }
-
     /// Returns the IDs of cards and card-like objects owned by a player on the
     /// battlefield
     fn battlefield_owned(&self, player: impl HasPlayerName) -> &HashSet<CardId>;
-
-    /// Equivalent function to [Self::battlefield_owned] which returns an
-    /// iterator over [CardState]s in an undefined order.
-    fn battlefield_owned_cards(
-        &self,
-        player: impl HasPlayerName,
-    ) -> impl Iterator<Item = &CardState> {
-        self.battlefield_owned(player).iter().map(move |id| self.card(*id))
-    }
 
     /// Returns the IDs of cards and card-like objects owned by a player in
     /// exile
     fn exile(&self, player: impl HasPlayerName) -> &HashSet<CardId>;
 
-    /// Equivalent function to [Self::exile] which returns an iterator over
-    /// [CardState]s in an undefined order.
-    fn exile_cards(&self, player: impl HasPlayerName) -> impl Iterator<Item = &CardState> {
-        self.exile(player).iter().map(move |id| self.card(*id))
-    }
     /// Returns the IDs of all cards and card-like objects currently on the
     /// stack (last element in result is top of stack).
     fn stack(&self) -> &[CardId];
-
-    /// Equivalent function to [Self::stack] which returns an iterator over
-    /// [CardState]s in order.
-    fn stack_cards(&self) -> impl Iterator<Item = &CardState> {
-        self.stack().iter().map(move |id| self.card(*id))
-    }
 
     /// Returns the IDs of cards and card-like objects owned by a player in the
     /// command zone
