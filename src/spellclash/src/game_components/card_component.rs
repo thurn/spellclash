@@ -27,11 +27,13 @@ pub fn CardComponent(card: CardView) -> Element {
     match card.revealed {
         Some(revealed) => rsx! {
             div {
+                class: "m-1",
                 RevealedCardComponent { card: c, revealed },
             }
         },
         None => rsx! {
             div {
+                class: "m-1",
                 HiddenCardComponent { card },
             }
         },
@@ -50,7 +52,7 @@ pub fn RevealedCardComponent(card: CardView, revealed: RevealedCardView) -> Elem
                 src: revealed.face.image,
                 width: "{width}px",
                 height: "{CARD_HEIGHT}px",
-                class: if revealed.can_play { "border-2 border-sky-500" },
+                class: if revealed.can_play { "border-4 border-amber-300" },
                 onclick: move |_|
                     client_action::client_execute_action(
                         cd_signal,

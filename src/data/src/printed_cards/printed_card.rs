@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use enumset::EnumSet;
+use std::iter;
+
+use enumset::{EnumSet, EnumSetType};
 use serde::{Deserialize, Serialize};
-use utils::outcome::Value;
-use utils::with_error::WithError;
 use uuid::Uuid;
 
 use crate::core::numerics::ManaValue;
@@ -27,7 +27,7 @@ use crate::printed_cards::printed_primitives::{
     AttractionLight, PrintedLoyalty, PrintedPower, PrintedToughness,
 };
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, EnumSetType, Serialize, Deserialize)]
 pub enum Face {
     Primary,
     FaceB,
@@ -67,13 +67,21 @@ pub struct PrintedCard {
 }
 
 impl PrintedCard {
-    /// Returns the named face of this card, or an error if there is no such
-    /// face.
-    pub fn face(&self, face: Face) -> Value<&PrintedCardFace> {
+    /// Returns the named face of this card.
+    ///
+    /// Panics if there is no such face.
+    pub fn face(&self, face: Face) -> &PrintedCardFace {
         match face {
-            Face::Primary => Ok(&self.face),
-            Face::FaceB => Ok(self.face_b.as_ref().with_error(|| "Card face not found")?),
+            Face::Primary => &self.face,
+            Face::FaceB => {
+                self.face_b.as_ref().unwrap_or_else(|| panic!("Face not found: {face:?}"))
+            }
         }
+    }
+
+    /// Returns all faces of this card, in an unspecified order.
+    pub fn all_faces(&self) -> impl Iterator<Item = &PrintedCardFace> {
+        self.face_b.iter().chain(iter::once(&self.face))
     }
 }
 

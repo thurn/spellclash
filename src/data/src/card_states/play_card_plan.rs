@@ -14,6 +14,8 @@
 
 use enumset::{EnumSet, EnumSetType};
 use serde::{Deserialize, Serialize};
+use utils::fail;
+use utils::outcome::Value;
 
 use crate::core::numerics::ManaValue;
 use crate::core::primitives::{CardId, ObjectId};
@@ -48,11 +50,43 @@ pub struct ManaPaymentPlan {
     pub mana_abilities: Vec<AbilityId>,
 }
 
+/// Describes how a face of card can be played.
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
+pub enum PlayAs {
+    Sorcery,
+    Instant,
+    Land,
+}
+
+/// Describes how a face of card can be played.
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
+pub struct PlayFaceAs {
+    /// Set of faces being played
+    pub faces: EnumSet<Face>,
+
+    /// Timing restriction on playing this card
+    pub play_as: PlayAs,
+}
+
+impl PlayFaceAs {
+    pub fn single_face(&self) -> Value<Face> {
+        if self.faces.len() == 1 {
+            Ok(self.faces.iter().next().unwrap())
+        } else {
+            fail!("Expected only a single face!");
+        }
+    }
+}
+
 /// Choices a player may make while placing a spell on the stack
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CastSpellChoices {
-    /// The face of this card which the player is casting
-    pub face: Face,
+    /// The face or faces of this card which the player is casting and how they
+    /// are being played.
+    ///
+    /// This will be a single face for most cards, but split cards with the
+    /// "Fuse" ability can be cast using multiple faces at once.
+    pub play_face_as: PlayFaceAs,
     /// Targets the player has chosen for this spell
     ///
     /// > 601.2c. The player announces their choice of an appropriate object or
@@ -96,7 +130,7 @@ pub struct CastSpellChoices {
 impl Default for CastSpellChoices {
     fn default() -> Self {
         Self {
-            face: Face::Primary,
+            play_face_as: PlayFaceAs { faces: EnumSet::empty(), play_as: PlayAs::Sorcery },
             targets: Vec::new(),
             modes: EnumSet::empty(),
             alternative_cost: None,

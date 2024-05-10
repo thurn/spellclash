@@ -21,7 +21,6 @@ use data::game_states::game_state::GameState;
 use data::printed_cards::printed_card::Face;
 
 use crate::legality::can_pay_mana_cost;
-use crate::play_cards::pick_face_to_play::CanPlayAs;
 use crate::play_cards::{pick_face_to_play, play_card};
 
 /// Iterator over all legal actions the named player can take in the current

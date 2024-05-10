@@ -72,7 +72,7 @@ fn add_land_to_map(
     color: ManaColor,
     subtype: LandSubtype,
 ) {
-    let subtypes = card_queries::land_subtypes_for_face(game, card_id);
+    let subtypes = card_queries::land_subtypes(game, card_id);
     if subtypes.contains(subtype) {
         lands.entry(color).or_default().push((card_id, subtypes.len()));
     }

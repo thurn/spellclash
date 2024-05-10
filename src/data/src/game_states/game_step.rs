@@ -13,11 +13,10 @@
 // limitations under the License.
 
 use enum_iterator::Sequence;
+use enumset::EnumSetType;
 use serde::{Deserialize, Serialize};
 
-#[derive(
-    Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Sequence, Serialize, Deserialize,
-)]
+#[derive(Debug, Ord, PartialOrd, Hash, EnumSetType, Sequence, Serialize, Deserialize)]
 pub enum GamePhaseStep {
     Untap,
     Upkeep,

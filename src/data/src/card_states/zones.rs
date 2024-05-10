@@ -235,6 +235,7 @@ impl Zones {
             controller: owner,
             zone: Zone::Library,
             facing: CardFacing::FaceDown,
+            cast_as_faces: EnumSet::empty(),
             tapped_state: TappedState::Untapped,
             revealed_to: EnumSet::empty(),
             counters: Counters::default(),

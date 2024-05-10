@@ -94,6 +94,12 @@ pub struct CardState {
     ///   it there
     pub facing: CardFacing,
 
+    /// The set of faces used to cast this card while it is on the stack.
+    ///
+    /// This is a single face except in the face of a split card cast with the
+    /// "Fuse" ability.
+    pub cast_as_faces: EnumSet<Face>,
+
     /// Whether this card is current tapped.
     ///
     /// A card that is not on the battlefield is always untapped.
@@ -179,10 +185,10 @@ impl CardState {
     ///
     /// For abilities on the stack, this returns the [PrintedCardFace] which
     /// *produced* this ability.
-    pub fn printed_face(&self) -> Option<&'static PrintedCardFace> {
+    pub fn face_up_printed_face(&self) -> Option<&'static PrintedCardFace> {
         match self.facing {
             CardFacing::FaceDown => None,
-            CardFacing::FaceUp(face) => self.printed().face(face).ok(),
+            CardFacing::FaceUp(face) => Some(self.printed().face(face)),
         }
     }
 }

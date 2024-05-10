@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_states::play_card_plan::PlayCardPlan;
+use data::card_states::play_card_plan::{PlayAs, PlayCardPlan};
+use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, PlayerName, Source, Zone};
 use data::game_states::game_state::GameState;
-use utils::outcome;
 use utils::outcome::Outcome;
+use utils::{fail, outcome};
 
 use crate::mutations::cards;
 
@@ -32,5 +33,13 @@ pub fn execute_plan(
         cards::tap(game, source, *land)?;
     }
 
-    game.zones.move_card(source, card_id, Zone::Stack)
+    if plan.spell_choices.play_face_as.play_as == PlayAs::Land {
+        game.history_counters_mut(player).lands_played += 1;
+        let face = plan.spell_choices.play_face_as.single_face()?;
+        cards::turn_face_up(game, source, card_id, face)?;
+        game.zones.move_card(source, card_id, Zone::Battlefield)
+    } else {
+        game.card_mut(card_id).cast_as_faces = plan.spell_choices.play_face_as.faces;
+        game.zones.move_card(source, card_id, Zone::Stack)
+    }
 }

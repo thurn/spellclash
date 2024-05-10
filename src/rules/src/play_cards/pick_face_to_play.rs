@@ -14,12 +14,15 @@
 
 use data::card_states::card_kind::CardKind;
 use data::card_states::card_state::CardState;
-use data::card_states::play_card_plan::{CastSpellChoices, ManaPaymentPlan, PlayCardPlan};
+use data::card_states::play_card_plan::{
+    CastSpellChoices, ManaPaymentPlan, PlayAs, PlayCardPlan, PlayFaceAs,
+};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, CardType, PlayerName, Source};
 use data::game_states::game_state::GameState;
 use data::printed_cards::layout::CardLayout;
 use data::printed_cards::printed_card::{Face, PrintedCardFace};
+use enumset::EnumSet;
 
 use crate::play_cards::play_card::PlayCardStep;
 use crate::play_cards::play_card_choices::{PlayCardChoice, PlayCardChoicePrompt};
@@ -33,61 +36,55 @@ pub fn run(
 ) -> PlayCardChoice {
     let mut valid_faces = vec![];
     let card = game.card(card_id);
-    if can_play_as(game, card, &card.printed().face).is_some() {
-        valid_faces.push(Face::Primary);
+    if let Some(play) = can_play_as(game, card, &card.printed().face) {
+        valid_faces.push(play);
     }
 
     if let (CardLayout::Split, Some(face_b))
     | (CardLayout::ModalDfc, Some(face_b))
     | (CardLayout::Adventure, Some(face_b)) = (card.printed().layout, &card.printed().face_b)
     {
-        if can_play_as(game, card, face_b).is_some() {
-            valid_faces.push(Face::FaceB);
+        if let Some(play) = can_play_as(game, card, face_b) {
+            valid_faces.push(play);
         }
     };
 
     match valid_faces[..] {
         [] => PlayCardChoice::Invalid,
-        [face] => PlayCardChoice::Continue {
+        [play_face_as] => PlayCardChoice::Continue {
             updated_plan: PlayCardPlan {
-                spell_choices: CastSpellChoices { face, ..plan.spell_choices.clone() },
+                spell_choices: CastSpellChoices { play_face_as, ..plan.spell_choices.clone() },
                 mana_payment: ManaPaymentPlan::default(),
             },
         },
         _ => PlayCardChoice::Prompt {
             optional: false,
-            prompt: PlayCardChoicePrompt::SelectFace { valid_faces },
+            prompt: PlayCardChoicePrompt::SelectFace {
+                valid_faces: valid_faces.iter().flat_map(|can_play| can_play.faces).collect(),
+            },
         },
     }
 }
 
-/// Describes how a face of card can be played.
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub enum CanPlayAs {
-    Land(Face),
-    Instant(Face),
-    Sorcery(Face),
-}
-
 /// Returns a [CanPlayAs] indicating whether a [PlayerName] can play a given
 /// [PrintedCardFace] of a [CardState] in the current [GameState].
-fn can_play_as(game: &GameState, card: &CardState, face: &PrintedCardFace) -> Option<CanPlayAs> {
+fn can_play_as(game: &GameState, card: &CardState, face: &PrintedCardFace) -> Option<PlayFaceAs> {
     let player = card.controller;
     let result = can_play_as_for_types(face);
-    match result {
-        CanPlayAs::Land(_) => {
+    match result.play_as {
+        PlayAs::Land => {
             if in_main_phase_with_stack_empty(game, player)
                 && players::land_plays_remaining(game, player) > 0
             {
                 return Some(result);
             }
         }
-        CanPlayAs::Instant(_) => {
+        PlayAs::Instant => {
             if game.priority == player {
                 return Some(result);
             }
         }
-        CanPlayAs::Sorcery(_) => {
+        PlayAs::Sorcery => {
             if in_main_phase_with_stack_empty(game, player) {
                 return Some(result);
             }
@@ -107,12 +104,12 @@ fn in_main_phase_with_stack_empty(game: &GameState, player: PlayerName) -> bool 
 }
 
 /// Returns a [CanPlayAs] for a card solely based on its card types.
-fn can_play_as_for_types(face: &PrintedCardFace) -> CanPlayAs {
+fn can_play_as_for_types(face: &PrintedCardFace) -> PlayFaceAs {
     if face.card_types.contains(CardType::Instant) {
-        CanPlayAs::Instant(face.face_identifier)
+        PlayFaceAs { faces: EnumSet::only(face.face_identifier), play_as: PlayAs::Instant }
     } else if face.card_types.contains(CardType::Land) {
-        CanPlayAs::Land(face.face_identifier)
+        PlayFaceAs { faces: EnumSet::only(face.face_identifier), play_as: PlayAs::Land }
     } else {
-        CanPlayAs::Sorcery(face.face_identifier)
+        PlayFaceAs { faces: EnumSet::only(face.face_identifier), play_as: PlayAs::Sorcery }
     }
 }

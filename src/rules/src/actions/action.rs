@@ -22,7 +22,6 @@ use utils::{fail, outcome, verify};
 
 use crate::legality::legal_actions;
 use crate::mutations::cards;
-use crate::play_cards::pick_face_to_play::CanPlayAs;
 use crate::play_cards::{pick_face_to_play, play_card};
 use crate::queries::players;
 use crate::steps::step;
@@ -57,17 +56,4 @@ fn handle_play_card(
 ) -> Outcome {
     debug!(?player, ?card_id, "Playing card");
     play_card::execute(game, player, Source::Game, card_id)
-}
-
-#[instrument(err, level = "debug", skip(game))]
-fn handle_play_land(
-    game: &mut GameState,
-    source: Source,
-    player: PlayerName,
-    card: CardId,
-    face: Face,
-) -> Outcome {
-    game.history_counters_mut(player).lands_played += 1;
-    cards::turn_face_up(game, source, card, face)?;
-    game.zones.move_card(source, card, Zone::Battlefield)
 }

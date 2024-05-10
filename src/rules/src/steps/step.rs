@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::{PlayerName, Source};
+use data::card_states::zones::ZoneQueries;
+use data::core::primitives::{CardType, PlayerName, Source};
 use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
+use enumset::EnumSet;
 use utils::outcome;
 use utils::outcome::Outcome;
 
 use crate::mutations::library;
-use crate::queries::players;
+use crate::queries::{card_queries, players};
 
 /// Advances the game state to the indicated `step`.
 ///
@@ -28,21 +30,52 @@ use crate::queries::players;
 /// at the start of this step. Increments the turn number and active player when
 /// transitioning to the Untap step.
 pub fn advance(game: &mut GameState) -> Outcome {
+    advance_internal(game, &StepConfig::default())
+}
+
+fn advance_internal(game: &mut GameState, config: &StepConfig) -> Outcome {
     let step = enum_iterator::next(&game.step).unwrap_or(GamePhaseStep::Untap);
     match step {
-        GamePhaseStep::Untap => untap(game),
-        GamePhaseStep::Upkeep => upkeep(game),
-        GamePhaseStep::Draw => draw(game),
-        GamePhaseStep::PreCombatMain => pre_combat_main(game),
-        GamePhaseStep::BeginCombat => begin_combat(game),
-        GamePhaseStep::DeclareAttackers => declare_attackers(game),
-        GamePhaseStep::DeclareBlockers => declare_blockers(game),
-        GamePhaseStep::FirstStrikeDamage => first_strike_damage(game),
-        GamePhaseStep::CombatDamage => combat_damage(game),
-        GamePhaseStep::EndCombat => end_combat(game),
-        GamePhaseStep::PostCombatMain => post_combat_main(game),
-        GamePhaseStep::EndStep => end_step(game),
-        GamePhaseStep::Cleanup => cleanup(game),
+        GamePhaseStep::Untap => untap(game, config),
+        GamePhaseStep::Upkeep => upkeep(game, config),
+        GamePhaseStep::Draw => draw(game, config),
+        GamePhaseStep::PreCombatMain => pre_combat_main(game, config),
+        GamePhaseStep::BeginCombat => begin_combat(game, config),
+        GamePhaseStep::DeclareAttackers => declare_attackers(game, config),
+        GamePhaseStep::DeclareBlockers => declare_blockers(game, config),
+        GamePhaseStep::FirstStrikeDamage => first_strike_damage(game, config),
+        GamePhaseStep::CombatDamage => combat_damage(game, config),
+        GamePhaseStep::EndCombat => end_combat(game, config),
+        GamePhaseStep::PostCombatMain => post_combat_main(game, config),
+        GamePhaseStep::EndStep => end_step(game, config),
+        GamePhaseStep::Cleanup => cleanup(game, config),
+    }
+}
+
+#[derive(Debug, Clone)]
+struct StepConfig {
+    /// Steps to always skip
+    skip_steps: EnumSet<GamePhaseStep>,
+    /// Steps to skip until the end of this turn
+    skip_this_turn: EnumSet<GamePhaseStep>,
+}
+
+impl StepConfig {
+    pub fn with_skip_this_turn(&self, set: EnumSet<GamePhaseStep>) -> Self {
+        let mut result = self.clone();
+        result.skip_this_turn = set;
+        result
+    }
+}
+
+impl Default for StepConfig {
+    fn default() -> Self {
+        Self {
+            skip_steps: GamePhaseStep::Draw
+                | GamePhaseStep::EndCombat
+                | GamePhaseStep::FirstStrikeDamage,
+            skip_this_turn: EnumSet::empty(),
+        }
     }
 }
 
@@ -53,7 +86,15 @@ fn begin_step(game: &mut GameState, step: GamePhaseStep) -> Outcome {
     outcome::OK
 }
 
-fn untap(game: &mut GameState) -> Outcome {
+fn advance_if_skipped(game: &mut GameState, config: &StepConfig, step: GamePhaseStep) -> Outcome {
+    if config.skip_steps.contains(step) || config.skip_this_turn.contains(step) {
+        advance_internal(game, config)
+    } else {
+        outcome::OK
+    }
+}
+
+fn untap(game: &mut GameState, config: &StepConfig) -> Outcome {
     begin_step(game, GamePhaseStep::Untap)?;
     let next = players::next_player_after(game, game.turn.active_player);
     if next == PlayerName::One {
@@ -67,62 +108,112 @@ fn untap(game: &mut GameState) -> Outcome {
     // > player would receive priority, which is usually during the upkeep step.
     // > (See rule 503, "Upkeep Step.")
     // <https://yawgatog.com/resources/magic-rules/#R5024>
-    advance(game)
+    advance_internal(game, config)
 }
 
-fn upkeep(game: &mut GameState) -> Outcome {
-    begin_step(game, GamePhaseStep::Upkeep)
+fn upkeep(game: &mut GameState, config: &StepConfig) -> Outcome {
+    begin_step(game, GamePhaseStep::Upkeep)?;
+    advance_if_skipped(game, config, GamePhaseStep::Upkeep)
 }
 
-fn draw(game: &mut GameState) -> Outcome {
+fn draw(game: &mut GameState, config: &StepConfig) -> Outcome {
     begin_step(game, GamePhaseStep::Draw)?;
 
     // > 504.1. First, the active player draws a card. This turn-based action
     // doesn't use the stack.
     // <https://yawgatog.com/resources/magic-rules/#R5041>
-    library::draw(game, Source::Game, game.turn.active_player)
+    library::draw(game, Source::Game, game.turn.active_player)?;
 
     // > 504.2. Second, the active player gets priority. (See rule 117, "Timing
     // > and Priority.")
     // <https://yawgatog.com/resources/magic-rules/#R5042>
+
+    advance_if_skipped(game, config, GamePhaseStep::Draw)
 }
 
-fn pre_combat_main(game: &mut GameState) -> Outcome {
-    begin_step(game, GamePhaseStep::PreCombatMain)
+fn pre_combat_main(game: &mut GameState, config: &StepConfig) -> Outcome {
+    begin_step(game, GamePhaseStep::PreCombatMain)?;
+    advance_if_skipped(game, config, GamePhaseStep::PreCombatMain)
 }
 
-fn begin_combat(game: &mut GameState) -> Outcome {
-    begin_step(game, GamePhaseStep::BeginCombat)
+fn begin_combat(game: &mut GameState, config: &StepConfig) -> Outcome {
+    begin_step(game, GamePhaseStep::BeginCombat)?;
+    let config = if !game
+        .battlefield(game.turn.active_player)
+        .iter()
+        .any(|&card_id| card_queries::card_types(game, card_id).contains(CardType::Creature))
+    {
+        config.with_skip_this_turn(
+            GamePhaseStep::BeginCombat
+                | GamePhaseStep::DeclareAttackers
+                | GamePhaseStep::DeclareBlockers
+                | GamePhaseStep::FirstStrikeDamage
+                | GamePhaseStep::CombatDamage
+                | GamePhaseStep::EndCombat,
+        )
+    } else {
+        config.clone()
+    };
+    advance_if_skipped(game, &config, GamePhaseStep::BeginCombat)
 }
 
-fn declare_attackers(game: &mut GameState) -> Outcome {
-    begin_step(game, GamePhaseStep::DeclareAttackers)
+fn declare_attackers(game: &mut GameState, config: &StepConfig) -> Outcome {
+    begin_step(game, GamePhaseStep::DeclareAttackers)?;
+    advance_if_skipped(game, config, GamePhaseStep::DeclareAttackers)
 }
 
-fn declare_blockers(game: &mut GameState) -> Outcome {
-    begin_step(game, GamePhaseStep::DeclareBlockers)
+fn declare_blockers(game: &mut GameState, config: &StepConfig) -> Outcome {
+    begin_step(game, GamePhaseStep::DeclareBlockers)?;
+    advance_if_skipped(game, config, GamePhaseStep::DeclareBlockers)
 }
 
-fn first_strike_damage(game: &mut GameState) -> Outcome {
-    begin_step(game, GamePhaseStep::FirstStrikeDamage)
+fn first_strike_damage(game: &mut GameState, config: &StepConfig) -> Outcome {
+    begin_step(game, GamePhaseStep::FirstStrikeDamage)?;
+    advance_if_skipped(game, config, GamePhaseStep::FirstStrikeDamage)
 }
 
-fn combat_damage(game: &mut GameState) -> Outcome {
-    begin_step(game, GamePhaseStep::CombatDamage)
+fn combat_damage(game: &mut GameState, config: &StepConfig) -> Outcome {
+    begin_step(game, GamePhaseStep::CombatDamage)?;
+    advance_if_skipped(game, config, GamePhaseStep::CombatDamage)
 }
 
-fn end_combat(game: &mut GameState) -> Outcome {
-    begin_step(game, GamePhaseStep::EndCombat)
+fn end_combat(game: &mut GameState, config: &StepConfig) -> Outcome {
+    begin_step(game, GamePhaseStep::EndCombat)?;
+    advance_if_skipped(game, config, GamePhaseStep::EndCombat)
 }
 
-fn post_combat_main(game: &mut GameState) -> Outcome {
-    begin_step(game, GamePhaseStep::PostCombatMain)
+fn post_combat_main(game: &mut GameState, config: &StepConfig) -> Outcome {
+    begin_step(game, GamePhaseStep::PostCombatMain)?;
+    advance_if_skipped(game, config, GamePhaseStep::PostCombatMain)
 }
 
-fn end_step(game: &mut GameState) -> Outcome {
-    begin_step(game, GamePhaseStep::EndStep)
+fn end_step(game: &mut GameState, config: &StepConfig) -> Outcome {
+    begin_step(game, GamePhaseStep::EndStep)?;
+    advance_if_skipped(game, config, GamePhaseStep::EndStep)
 }
 
-fn cleanup(game: &mut GameState) -> Outcome {
-    begin_step(game, GamePhaseStep::Cleanup)
+fn cleanup(game: &mut GameState, config: &StepConfig) -> Outcome {
+    begin_step(game, GamePhaseStep::Cleanup);
+
+    // > 514.1. First, if the active player's hand contains more cards than their
+    // > maximum hand size (normally seven), they discard enough cards to reduce
+    // > their hand size to that number. This turn-based action doesn't use the
+    // > stack.
+
+    // > 514.2. Second, the following actions happen simultaneously: all damage
+    // > marked on permanents (including phased-out permanents) is removed and all
+    // > "until end of turn" and "this turn" effects end. This turn-based action
+    // > doesn't use the stack.
+
+    // > 514.3. Normally, no player receives priority during the cleanup step, so no
+    // > spells can be cast and no abilities can be activated. However, this rule is
+    // > subject to the following exception:
+    // > 514.3a. At this point, the game checks to see if any state-based actions
+    // > would be performed and/or any triggered abilities are waiting to be put
+    // > onto the stack (including those that trigger "at the beginning of the next
+    // > cleanup step"). If so, those state-based actions are performed, then those
+    // > triggered abilities are put on the stack, then the active player gets
+    // > priority.
+    // https://yawgatog.com/resources/magic-rules/#R5143
+    advance_internal(game, &config.with_skip_this_turn(EnumSet::empty()))
 }
