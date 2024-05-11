@@ -18,11 +18,8 @@ use derive_more::Display;
 use enum_iterator::Sequence;
 use enum_map::Enum;
 use enumset::{EnumSet, EnumSetType};
-use schemars::gen::SchemaGenerator;
-use schemars::schema::Schema;
-use schemars::{schema_for_value, JsonSchema};
 use serde::{Deserialize, Serialize};
-use slotmap::{new_key_type, DefaultKey};
+use slotmap::new_key_type;
 use uuid::Uuid;
 
 /// The five canonical colors of magic.
@@ -133,7 +130,6 @@ new_key_type! {
     ///
     /// - A normal card
     /// - A copy of a card on the stack
-    /// - An ability on the stack
     /// - A token
     /// - An emblem
     pub struct CardId;
@@ -158,24 +154,18 @@ impl<T: HasCardId> HasCardId for &T {
     }
 }
 
-impl JsonSchema for CardId {
-    fn schema_name() -> String {
-        "CardId".to_string()
-    }
-
-    fn json_schema(_: &mut SchemaGenerator) -> Schema {
-        // new_key_type! is documented as having the same structure as
-        // DefaultKey
-        let root = schema_for_value!(DefaultKey::default());
-        Schema::Object(root.schema)
-    }
+new_key_type! {
+    /// Identifies a triggered or activated ability on the stack.
+    pub struct StackAbilityId;
 }
 
-/// An identifier for anything which can be a target, either a player or card.
+/// An identifier for anything which can be a target: a player, card, or ability
+/// on the stack.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
 pub enum EntityId {
     Player(PlayerName),
     Card(CardId, ObjectId),
+    StackAbility(StackAbilityId),
 }
 
 /// An identifier for a card or ability while it is in a given zone. A new
@@ -232,6 +222,22 @@ impl HasEntityId for PlayerName {
 /// displayed text_strings for that ability.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct AbilityNumber(pub usize);
+
+/// Identifies a card or an activated or triggered ability on the stack.
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
+pub enum StackItemId {
+    Card(CardId),
+    StackAbility(StackAbilityId),
+}
+
+impl StackItemId {
+    pub fn card_id(&self) -> Option<CardId> {
+        match self {
+            StackItemId::Card(card_id) => Some(*card_id),
+            StackItemId::StackAbility(_) => None,
+        }
+    }
+}
 
 /// A zone is a place where objects can be during the game.
 ///

@@ -28,9 +28,11 @@ use crate::card_states::card_kind::CardKind;
 use crate::card_states::card_state::{CardFacing, CardState, TappedState};
 use crate::card_states::counters::Counters;
 use crate::card_states::custom_card_state::CustomCardStateList;
+use crate::card_states::stack_ability_state::StackAbilityState;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
-    CardId, EntityId, HasCardId, HasPlayerName, HasSource, ObjectId, PlayerName, Zone, ALL_PLAYERS,
+    CardId, EntityId, HasCardId, HasPlayerName, HasSource, ObjectId, PlayerName, StackAbilityId,
+    StackItemId, Zone, ALL_PLAYERS,
 };
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::GameState;
@@ -43,6 +45,14 @@ pub trait ZoneQueries {
 
     /// Mutable equivalent of [Self::card]
     fn card_mut(&mut self, id: impl HasCardId) -> &mut CardState;
+
+    /// Looks up the state for an ability on the stack.
+    ///
+    /// Panics if this stack ability does not exist.
+    fn stack_ability(&self, id: StackAbilityId) -> &StackAbilityState;
+
+    /// Mutable equivalent of [Self::stack_ability].
+    fn stack_ability_mut(&mut self, id: StackAbilityId) -> &mut StackAbilityState;
 
     /// Returns the IDs of cards and card-like objects owned by a player in
     /// their library, in order (`.back()` element in result is top card).
@@ -68,9 +78,9 @@ pub trait ZoneQueries {
     /// exile
     fn exile(&self, player: impl HasPlayerName) -> &HashSet<CardId>;
 
-    /// Returns the IDs of all cards and card-like objects currently on the
+    /// Returns the IDs of all cards and activated or triggered abilities on the
     /// stack (last element in result is top of stack).
-    fn stack(&self) -> &[CardId];
+    fn stack(&self) -> &[StackItemId];
 
     /// Returns the IDs of cards and card-like objects owned by a player in the
     /// command zone
@@ -86,6 +96,8 @@ pub trait ZoneQueries {
 pub struct Zones {
     /// All cards and card-like objects in the current game
     all_cards: SlotMap<CardId, CardState>,
+    /// Triggered or activated abilities which are currently on the stack.
+    stack_abilities: SlotMap<StackAbilityId, StackAbilityState>,
 
     /// Next object id to use for zone moves.
     next_object_id: ObjectId,
@@ -96,7 +108,7 @@ pub struct Zones {
     battlefield_controlled: UnorderedZone,
     battlefield_owned: UnorderedZone,
     exile: UnorderedZone,
-    stack: Vec<CardId>,
+    stack: Vec<StackItemId>,
     command_zone: UnorderedZone,
     outside_the_game_zone: UnorderedZone,
 }
@@ -105,6 +117,7 @@ impl Default for Zones {
     fn default() -> Self {
         Self {
             all_cards: Default::default(),
+            stack_abilities: Default::default(),
             next_object_id: ObjectId(100),
             libraries: Default::default(),
             hands: Default::default(),
@@ -126,6 +139,14 @@ impl ZoneQueries for Zones {
 
     fn card_mut(&mut self, id: impl HasCardId) -> &mut CardState {
         &mut self.all_cards[id.card_id()]
+    }
+
+    fn stack_ability(&self, id: StackAbilityId) -> &StackAbilityState {
+        &self.stack_abilities[id]
+    }
+
+    fn stack_ability_mut(&mut self, id: StackAbilityId) -> &mut StackAbilityState {
+        &mut self.stack_abilities[id]
     }
 
     fn library(&self, player: impl HasPlayerName) -> &VecDeque<CardId> {
@@ -152,7 +173,7 @@ impl ZoneQueries for Zones {
         self.exile.cards(player.player_name())
     }
 
-    fn stack(&self) -> &[CardId] {
+    fn stack(&self) -> &[StackItemId] {
         &self.stack
     }
 
@@ -284,7 +305,9 @@ impl Zones {
                 outcome::OK
             }
             Zone::Stack => {
-                if let Some(p) = self.stack.iter().rev().position(|&id| id == card_id) {
+                if let Some(p) =
+                    self.stack.iter().rev().position(|&id| id.card_id() == Some(card_id))
+                {
                     self.stack.remove(p);
                     outcome::OK
                 } else {
@@ -348,7 +371,7 @@ impl Zones {
             Zone::Exiled => {
                 self.exile.cards_mut(owner).insert(card_id);
             }
-            Zone::Stack => self.stack.push(card_id),
+            Zone::Stack => self.stack.push(StackItemId::Card(card_id)),
             Zone::Command => {
                 self.command_zone.cards_mut(owner).insert(card_id);
             }

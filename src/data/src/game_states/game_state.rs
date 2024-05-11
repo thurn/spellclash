@@ -21,9 +21,12 @@ use utils::fail;
 use utils::outcome::{Outcome, Value};
 
 use crate::card_states::card_state::CardState;
+use crate::card_states::stack_ability_state::StackAbilityState;
 use crate::card_states::zones::{ZoneQueries, Zones};
 use crate::core::numerics::TurnNumber;
-use crate::core::primitives::{CardId, GameId, HasCardId, HasPlayerName, PlayerName, UserId};
+use crate::core::primitives::{
+    CardId, GameId, HasCardId, HasPlayerName, PlayerName, StackAbilityId, StackItemId, UserId,
+};
 use crate::delegates::game_delegates::GameDelegates;
 use crate::game_states::animation_tracker::{
     AnimationState, AnimationStep, AnimationTracker, GameAnimation,
@@ -183,6 +186,14 @@ impl ZoneQueries for GameState {
         self.zones.card_mut(id)
     }
 
+    fn stack_ability(&self, id: StackAbilityId) -> &StackAbilityState {
+        self.zones.stack_ability(id)
+    }
+
+    fn stack_ability_mut(&mut self, id: StackAbilityId) -> &mut StackAbilityState {
+        self.zones.stack_ability_mut(id)
+    }
+
     fn library(&self, player: impl HasPlayerName) -> &VecDeque<CardId> {
         self.zones.library(player)
     }
@@ -207,7 +218,7 @@ impl ZoneQueries for GameState {
         self.zones.exile(player)
     }
 
-    fn stack(&self) -> &[CardId] {
+    fn stack(&self) -> &[StackItemId] {
         self.zones.stack()
     }
 

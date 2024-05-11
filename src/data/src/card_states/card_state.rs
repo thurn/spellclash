@@ -29,11 +29,10 @@ use crate::printed_cards::printed_card::{Face, PrintedCard, PrintedCardFace};
 
 /// Represents the state of a card or card-like object.
 ///
-/// The term "card" is used very broadly here to include:
+/// The term "card" is used broadly here to include:
 ///
 /// - A normal card
 /// - A copy of a card on the stack
-/// - An ability on the stack
 /// - A token
 /// - An emblem
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -174,17 +173,11 @@ impl HasController for CardState {
 
 impl CardState {
     /// Returns the [PrintedCard] for this card.
-    ///
-    /// For abilities on the stack, this returns the [PrintedCard] which
-    /// *produced* this ability.
     pub fn printed(&self) -> &'static PrintedCard {
         self.printed_card_reference.unwrap()
     }
 
     /// Returns the [PrintedCardFace] for this card if it is currently face up.
-    ///
-    /// For abilities on the stack, this returns the [PrintedCardFace] which
-    /// *produced* this ability.
     pub fn face_up_printed_face(&self) -> Option<&'static PrintedCardFace> {
         match self.facing {
             CardFacing::FaceDown => None,

@@ -45,8 +45,9 @@ pub fn calculate(builder: &ResponseBuilder, _game: &GameState, card: &CardState)
 
 pub fn for_card(card: &CardState, position: Position) -> ObjectPosition {
     let sorting_key = match card.entity_id {
-        EntityId::Player(_) => 0,
+        EntityId::Player(..) => 0,
         EntityId::Card(_, object_id) => object_id.as_u64(),
+        EntityId::StackAbility(..) => 0,
     };
     ObjectPosition { position, sorting_key, sorting_sub_key: 0 }
 }

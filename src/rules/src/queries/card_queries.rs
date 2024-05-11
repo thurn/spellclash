@@ -29,8 +29,7 @@ use utils::fail;
 use utils::outcome::Value;
 
 /// Returns the list of [PrintedCardFace]s for a card which currently define its
-/// characteristics. For an ability on the stack, this will reference the face
-/// which *produced* that ability.
+/// characteristics.
 ///
 /// - If this card is on the battlefield, this is the face-up face of the card.
 ///

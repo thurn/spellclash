@@ -14,7 +14,7 @@
 
 use data::card_states::card_kind::CardKind;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{Source, Zone};
+use data::core::primitives::{Source, StackItemId, Zone};
 use data::game_states::game_state::GameState;
 use enumset::EnumSet;
 use utils::outcome::Outcome;
@@ -31,7 +31,7 @@ use crate::queries::card_queries;
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R608>
 pub fn resolve_top_of_stack(game: &mut GameState) -> Outcome {
-    let Some(&card_id) = game.stack().last() else {
+    let Some(StackItemId::Card(card_id)) = game.stack().last().copied() else {
         return outcome::OK;
     };
 

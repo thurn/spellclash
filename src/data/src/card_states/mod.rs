@@ -17,4 +17,5 @@ pub mod card_state;
 pub mod counters;
 pub mod custom_card_state;
 pub mod play_card_plan;
+pub mod stack_ability_state;
 pub mod zones;

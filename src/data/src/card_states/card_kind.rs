@@ -29,6 +29,4 @@ pub enum CardKind {
     Emblem,
     /// Copy of another card on the stack
     CardCopyOnStack,
-    /// Ability on the stack
-    AbilityOnStack,
 }
