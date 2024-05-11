@@ -19,7 +19,7 @@ use data::game_states::game_state::GameState;
 use utils::outcome::Outcome;
 use utils::{fail, outcome};
 
-use crate::mutations::cards;
+use crate::mutations::{cards, priority};
 
 /// Plays a card, based on the set of choices in a completed [PlayCardPlan].
 pub fn execute_plan(
@@ -40,6 +40,10 @@ pub fn execute_plan(
         game.zones.move_card(source, card_id, Zone::Battlefield)
     } else {
         game.card_mut(card_id).cast_as = plan.spell_choices.play_as.faces;
-        game.zones.move_card(source, card_id, Zone::Stack)
+        game.zones.move_card(source, card_id, Zone::Stack)?;
+
+        // Automatically pass priority after putting something on the stack.
+        // TODO: Implement holding priority.
+        priority::pass(game, player)
     }
 }

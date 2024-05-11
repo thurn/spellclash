@@ -14,3 +14,4 @@
 
 pub mod cards;
 pub mod library;
+pub mod priority;

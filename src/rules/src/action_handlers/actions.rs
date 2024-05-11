@@ -24,7 +24,7 @@ use utils::{fail, outcome, verify};
 
 use crate::action_handlers::debug_actions;
 use crate::legality::legal_actions;
-use crate::mutations::cards;
+use crate::mutations::{cards, priority};
 use crate::play_cards::{pick_face_to_play, play_card};
 use crate::queries::players;
 use crate::resolve_cards::resolve;
@@ -60,20 +60,7 @@ pub fn execute(
 
 #[instrument(err, level = "debug", skip(game))]
 fn handle_pass_priority(game: &mut GameState, player: PlayerName) -> Outcome {
-    debug!(?player, "Passing priority");
-    verify!(legal_actions::can_pass_priority(game, player), "Cannot pass priority for {player:?}");
-    game.passed.insert(player);
-    if game.passed.len() == game.configuration.all_players.len() {
-        game.clear_passed();
-        if game.stack().is_empty() {
-            step::advance(game)
-        } else {
-            resolve::resolve_top_of_stack(game)
-        }
-    } else {
-        game.priority = players::next_player_after(game, game.priority);
-        outcome::OK
-    }
+    priority::pass(game, player)
 }
 
 #[instrument(err, level = "debug", skip(game))]

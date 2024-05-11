@@ -71,9 +71,12 @@ impl StepConfig {
 impl Default for StepConfig {
     fn default() -> Self {
         Self {
-            skip_steps: GamePhaseStep::Draw
-                | GamePhaseStep::EndCombat
-                | GamePhaseStep::FirstStrikeDamage,
+            skip_steps: GamePhaseStep::Upkeep
+                | GamePhaseStep::Draw
+                | GamePhaseStep::BeginCombat
+                | GamePhaseStep::FirstStrikeDamage
+                | GamePhaseStep::CombatDamage
+                | GamePhaseStep::EndCombat,
             skip_this_turn: EnumSet::empty(),
         }
     }
