@@ -41,6 +41,41 @@ pub enum GameAction {
     /// It is an error to attempt to play a token, emblem, copy of a card on
     /// the stack, or an ability on the stack.
     ProposePlayingCard(CardId),
+
+    /// Select a creature to attack during the declare attackers step.
+    ///
+    /// This puts the creature in the 'proposed attackers' set. Once the set of
+    /// proposed attackers is finalized, assuming the choice is legal, they can
+    /// be confirmed via [Self::ConfirmAttackers].
+    ProposeAttacker(CardId),
+
+    /// Remove a creature from the 'proposed attackers' set.
+    RemoveAttacker(CardId),
+
+    /// Lock in the set of proposed attackers for the declare attackers step.
+    ConfirmAttackers,
+
+    /// Select a creature as the 'active blocker'.
+    ///
+    /// When an active blocker is selected, the defender can select which
+    /// attacker is being blocked via [Self::BlockWithActiveBlocker],
+    SetActiveBlocker(CardId),
+
+    /// Removes a creature from the 'proposed blockers' set.
+    ///
+    /// If this creature is currently the active blocker it is also removed from
+    /// that status.
+    RemoveBlocker(CardId),
+
+    /// Adds the active blocker (selected via [Self::SetActiveBlocker]) to
+    /// the 'proposed blockers' set, blocking the indicated creature.
+    ///
+    /// Once the set of proposed blockers is finalized, assuming the choice is
+    /// legal, they can be confirmed via [Self::ConfirmBlockers].
+    BlockWithActiveBlocker(CardId),
+
+    /// Lock in the blocking decisions for the declare blockers step.
+    ConfirmBlockers,
 }
 
 impl From<GameAction> for UserAction {

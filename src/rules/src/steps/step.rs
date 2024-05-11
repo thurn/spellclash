@@ -171,6 +171,16 @@ fn begin_combat(game: &mut GameState, config: &StepConfig) -> Outcome {
 
 fn declare_attackers(game: &mut GameState, config: &StepConfig) -> Outcome {
     begin_step(game, GamePhaseStep::DeclareAttackers)?;
+
+    // > 508.1. First, the active player declares attackers. This turn-based action
+    // > doesn't use the stack.
+    //
+    // > 508.1a. The active player chooses which creatures that they control, if
+    // > any, will attack. The chosen creatures must be untapped, they can't also be
+    // > battles, and each one must either have haste or have been controlled by the
+    // > active player continuously since the turn began.
+    // <https://yawgatog.com/resources/magic-rules/#R5081>
+
     advance_if_skipped(game, config, GamePhaseStep::DeclareAttackers)
 }
 

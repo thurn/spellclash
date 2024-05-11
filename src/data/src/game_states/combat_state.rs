@@ -12,7 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
+
+use crate::core::primitives::CardId;
+
+pub type AttackerId = CardId;
+pub type BlockerId = CardId;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProposedBlocker {
+    pub attacker: CardId,
+    pub blocker: CardId,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum CombatAttackers {
+    ProposingAttackers(Vec<CardId>),
+    ConfirmedAttackers(Vec<CardId>),
+    ProposingBlockers { active_blocker: Option<CardId>, proposed_blockers: Vec<ProposedBlocker> },
+    ConfirmedBlockers(Vec<ProposedBlocker>),
+    OrderedBlockers(HashMap<CardId, Vec<CardId>>),
+}
 
 /// State of an ongoing combat step within a game
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -21,4 +43,6 @@ pub struct CombatState {
     /// False if this is the empty combat state or represents a combat state
     /// which has been completed.
     pub currently_active: bool,
+
+    pub attackers: Vec<CardId>,
 }

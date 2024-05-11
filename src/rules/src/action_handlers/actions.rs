@@ -55,6 +55,7 @@ pub fn execute(
         GameAction::DebugAction(a) => debug_actions::execute(game, player, a),
         GameAction::PassPriority => handle_pass_priority(game, player),
         GameAction::ProposePlayingCard(id) => handle_play_card(game, Source::Game, player, id),
+        _ => outcome::OK,
     }
 }
 
