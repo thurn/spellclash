@@ -171,14 +171,19 @@ impl JsonSchema for CardId {
     }
 }
 
-/// An identifier for an object within a game.
+/// An identifier for anything which can be a target, either a player or card.
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
+pub enum EntityId {
+    Player(PlayerName),
+    Card(CardId, ObjectId),
+}
+
+/// An identifier for a card or ability while it is in a given zone. A new
+/// object ID is assigned each time a card changes zones, meaning that it can be
+/// used for targeting effects that end when the card changes zones.
 ///
-/// An object is an ability on the stack, a card, a copy of a card, a token, a
-/// spell, a permanent, emblem, or player. Cards receive a new object ID when
-/// they change zones.
-///
-/// Note that 'players' are not considered objects for the purposes of the CR
-/// but are treated as such here.
+/// > 109.1. An object is an ability on the stack, a card, a copy of a card, a
+/// > token, a spell, a permanent, or an emblem.
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R1091>
 #[derive(
@@ -192,23 +197,23 @@ impl ObjectId {
     }
 }
 
-pub const PLAYER_ONE_ID: ObjectId = ObjectId(1);
-pub const PLAYER_TWO_ID: ObjectId = ObjectId(2);
-pub const PLAYER_THREE_ID: ObjectId = ObjectId(3);
-pub const PLAYER_FOUR_ID: ObjectId = ObjectId(4);
+pub const PLAYER_ONE_ID: EntityId = EntityId::Player(PlayerName::One);
+pub const PLAYER_TWO_ID: EntityId = EntityId::Player(PlayerName::Two);
+pub const PLAYER_THREE_ID: EntityId = EntityId::Player(PlayerName::Three);
+pub const PLAYER_FOUR_ID: EntityId = EntityId::Player(PlayerName::Four);
 
-pub trait HasObjectId {
-    fn object_id(&self) -> ObjectId;
+pub trait HasEntityId {
+    fn entity_id(&self) -> EntityId;
 }
 
-impl HasObjectId for ObjectId {
-    fn object_id(&self) -> ObjectId {
+impl HasEntityId for EntityId {
+    fn entity_id(&self) -> EntityId {
         *self
     }
 }
 
-impl HasObjectId for PlayerName {
-    fn object_id(&self) -> ObjectId {
+impl HasEntityId for PlayerName {
+    fn entity_id(&self) -> EntityId {
         match self {
             PlayerName::One => PLAYER_ONE_ID,
             PlayerName::Two => PLAYER_TWO_ID,

@@ -81,11 +81,11 @@ pub struct WithEffects(pub EffectFn);
 
 /// Builder for spell abilities.
 ///
-/// Spell abilities are abilities that are followed as instructions while an
-/// instant or sorcery spell is resolving. Any text_strings on an instant or
-/// sorcery spell is a spell ability unless it's an activated ability, a
-/// triggered ability, or a static ability that fits the criteria described in
-/// rule 113.6.
+/// > 113.3a. Spell abilities are abilities that are followed as instructions
+/// > while an instant or sorcery spell is resolving. Any text on an instant or
+/// > sorcery spell is a spell ability unless it's an activated ability, a
+/// > triggered ability, or a static ability that fits the criteria described in
+/// > rule 113.6.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R1133a>
 pub struct SpellAbility<TEffects> {
@@ -131,11 +131,11 @@ pub struct WithCosts(pub Vec<Cost>);
 
 /// Builder for activated abilities.
 ///
-/// Activated abilities have a cost and an effect. They are written as
-/// "`[Cost]: [Effect.] [Activation instructions (if any).]`" A player may
-/// activate such an ability whenever they have priority. Doing so puts it
-/// on the stack, where it remains until it's countered, it resolves, or it
-/// otherwise leaves the stack.
+/// > 113.3b. Activated abilities have a cost and an effect. They are written as
+/// > `"[Cost]: [Effect.] [Activation instructions (if any).]"` A player may
+/// > activate such an ability whenever they have priority. Doing so puts it on
+/// > the stack, where it remains until it's countered, it resolves, or it
+/// > otherwise leaves the stack.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R1133b>
 pub struct ActivatedAbility<TCosts, TEffects> {
@@ -197,12 +197,12 @@ pub struct WithCondition(pub Delegate);
 
 /// Builder for triggered abilities.
 ///
-/// Triggered abilities have a trigger condition and an effect. They are
-/// written as "`[Trigger condition], [effect],`" and include (and usually
-/// begin with) the word "when," "whenever," or "at." Whenever the trigger
-/// event occurs, the ability is put on the stack the next time a player
-/// would receive priority and stays there until it's countered, it
-/// resolves, or it otherwise leaves the stack.
+/// > 113.3c. Triggered abilities have a trigger condition and an effect. They
+/// > are written as `"[Trigger condition], [effect],"` and include (and usually
+/// > begin with) the word "when," "whenever," or "at." Whenever the trigger
+/// > event occurs, the ability is put on the stack the next time a player would
+/// > receive priority and stays there until it's countered, it resolves, or it
+/// > otherwise leaves the stack.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R1133c>
 pub struct TriggeredAbility<TCondition, TEffects> {
@@ -282,10 +282,10 @@ impl AbilityBuilder for TriggeredAbility<WithCondition, WithEffects> {
 
 /// Builder for static abilities.
 ///
-/// Static abilities are written as statements. They're simply true. Static
-/// abilities create continuous effects which are active while the permanent
-/// with the ability is on the battlefield and has the ability, or while the
-/// object with the ability is in the appropriate zone.
+/// > 113.3d. Static abilities are written as statements. They're simply true.
+/// > Static abilities create continuous effects which are active while the
+/// > permanent with the ability is on the battlefield and has the ability, or
+/// > while the object with the ability is in the appropriate zone.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R1133d>
 pub struct StaticAbility {

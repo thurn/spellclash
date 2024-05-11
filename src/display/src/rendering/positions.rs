@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use data::card_states::card_state::CardState;
-use data::core::primitives::{CardType, PlayerName, Zone};
+use data::core::primitives::{CardType, EntityId, PlayerName, Zone};
 use data::game_states::game_state::GameState;
 
 use crate::core::object_position::{BattlefieldPosition, ObjectPosition, Position};
@@ -44,7 +44,11 @@ pub fn calculate(builder: &ResponseBuilder, _game: &GameState, card: &CardState)
 }
 
 pub fn for_card(card: &CardState, position: Position) -> ObjectPosition {
-    ObjectPosition { position, sorting_key: card.object_id.as_u64(), sorting_sub_key: 0 }
+    let sorting_key = match card.entity_id {
+        EntityId::Player(_) => 0,
+        EntityId::Card(_, object_id) => object_id.as_u64(),
+    };
+    ObjectPosition { position, sorting_key, sorting_sub_key: 0 }
 }
 
 pub fn deck(builder: &ResponseBuilder, player: PlayerName) -> Position {

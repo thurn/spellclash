@@ -15,7 +15,7 @@
 use utils::fail;
 use utils::outcome::{StopCondition, Value};
 
-use crate::core::primitives::{CardId, ObjectId, PlayerName};
+use crate::core::primitives::{CardId, EntityId, PlayerName};
 use crate::prompts::card_selection_prompt::CardSelectionPrompt;
 use crate::prompts::choice_prompt::{Choice, ChoicePrompt};
 use crate::prompts::prompt::{Prompt, PromptResponse, PromptType};
@@ -28,16 +28,16 @@ pub struct PromptManager {
 }
 
 impl PromptManager {
-    pub fn choose_object(
+    pub fn choose_entity(
         &mut self,
         player: PlayerName,
         description: Text,
-        choices: Vec<Choice<ObjectId>>,
-    ) -> Value<ObjectId> {
-        let PromptResponse::ObjectChoice(id) = self.send(Prompt {
+        choices: Vec<Choice<EntityId>>,
+    ) -> Value<EntityId> {
+        let PromptResponse::EntityChoice(id) = self.send(Prompt {
             player,
             label: Some(description),
-            prompt_type: PromptType::ObjectChoice(ChoicePrompt { optional: false, choices }),
+            prompt_type: PromptType::EntityChoice(ChoicePrompt { optional: false, choices }),
         })?
         else {
             fail!("Unexpected prompt response type!");

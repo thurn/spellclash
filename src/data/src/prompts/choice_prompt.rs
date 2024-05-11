@@ -31,10 +31,10 @@ pub struct Choice<T> {
     /// A label to display for the choice
     pub label: Text,
 
-    /// The game object associated with this choice.
+    /// The game entity associated with this choice.
     ///
     /// The UI will display a choice button attached to this object. If this
-    /// object ID no longer exists when the prompt is shown, the choice will
+    /// entity ID no longer exists when the prompt is shown, the choice will
     /// be omitted. If all choices are skipped, no prompt is shown at all.
-    pub object_id: T,
+    pub entity_id: T,
 }

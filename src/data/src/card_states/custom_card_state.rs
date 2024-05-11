@@ -14,14 +14,14 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::core::primitives::ObjectId;
+use crate::core::primitives::EntityId;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum CustomCardState {
     /// Affect some game object while it exists. The effect is assumed to end
     /// once this ObjectId expires (e.g. by the target moving to a different
     /// zone).
-    TargetObject { object_id: ObjectId },
+    TargetEntity { object_id: EntityId },
 }
 
 /// Records custom state entries for a given card.

@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 use crate::card_states::counters::Counters;
 use crate::core::numerics::LifeValue;
 use crate::core::primitives::{
-    CardId, HasController, HasObjectId, HasPlayerName, ObjectId, PlayerName, UserId,
+    CardId, EntityId, HasController, HasEntityId, HasPlayerName, PlayerName, UserId,
 };
 use crate::player_states::mana_pool::ManaPool;
 use crate::player_states::prompt_stack::PromptStack;
@@ -79,8 +79,8 @@ pub struct PlayerState {
     /// Optionally, the ID of a user who is this player
     pub user_id: Option<UserId>,
 
-    /// Object ID for this player
-    pub object_id: ObjectId,
+    /// Entity ID for this player
+    pub entity_id: EntityId,
 
     /// Current amount of life for this player
     pub life: LifeValue,
@@ -111,7 +111,7 @@ impl PlayerState {
         Self {
             name,
             user_id,
-            object_id: name.object_id(),
+            entity_id: name.entity_id(),
             life,
             controller: name,
             counters: Counters::default(),
@@ -122,9 +122,9 @@ impl PlayerState {
     }
 }
 
-impl HasObjectId for PlayerState {
-    fn object_id(&self) -> ObjectId {
-        self.object_id
+impl HasEntityId for PlayerState {
+    fn entity_id(&self) -> EntityId {
+        self.entity_id
     }
 }
 

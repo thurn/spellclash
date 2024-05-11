@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use data::card_states::play_card_plan::{ManaPaymentPlan, ModalChoice, PlayCardPlan};
-use data::core::primitives::{CardId, ObjectId, Source};
+use data::core::primitives::{CardId, EntityId, Source};
 use data::delegates::scope::AbilityId;
 use data::game_states::game_state::GameState;
 use data::printed_cards::printed_card::Face;
@@ -51,7 +51,7 @@ pub enum PlayCardChoicePrompt {
     /// Pick a card in hand to splice with this card as it is being played
     Splice { cards: Vec<CardId> },
 
-    /// Pick one target object for a card from a set of legal targets.
+    /// Pick one target entity for a card from a set of legal targets.
     ///
     /// Target legality is determined by game rules, but specifically not by the
     /// ability of the player to pay costs or make other choices in future steps
@@ -59,7 +59,7 @@ pub enum PlayCardChoicePrompt {
     ///
     /// Cards which require multiple targets will display this prompt more than
     /// once.
-    Target { valid_targets: Vec<ObjectId> },
+    Target { valid_targets: Vec<EntityId> },
 
     /// Pick the value for an 'X' variable for a card between a minimum and
     /// maximum value (inclusive).

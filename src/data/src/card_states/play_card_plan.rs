@@ -18,7 +18,7 @@ use utils::fail;
 use utils::outcome::Value;
 
 use crate::core::numerics::ManaValue;
-use crate::core::primitives::{CardId, ObjectId};
+use crate::core::primitives::{CardId, EntityId};
 use crate::delegates::scope::AbilityId;
 use crate::printed_cards::printed_card::Face;
 
@@ -94,7 +94,7 @@ pub struct CastSpellChoices {
     /// > chosen multiple times for any one instance of the word "target" on the
     /// > spell.
     /// <https://yawgatog.com/resources/magic-rules/#R6012c>
-    pub targets: Vec<ObjectId>,
+    pub targets: Vec<EntityId>,
     /// Modal choices for this spell
     ///
     /// > 601.2b. If the spell is modal, the player announces the mode choice

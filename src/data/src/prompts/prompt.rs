@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::core::primitives::{CardId, ObjectId, PlayerName};
+use crate::core::primitives::{CardId, EntityId, PlayerName};
 use crate::prompts::card_selection_prompt::CardSelectionPrompt;
 use crate::prompts::choice_prompt::ChoicePrompt;
 use crate::prompts::play_cards_prompt::PlayCardsPrompt;
@@ -34,9 +34,9 @@ pub struct Prompt {
 /// Possible types of prompts
 #[derive(Clone, Debug)]
 pub enum PromptType {
-    /// A blocking choice for a player to pick one of a list of objects before
+    /// A blocking choice for a player to pick one of a list of entities before
     /// any other game action_handlers can occur.
-    ObjectChoice(ChoicePrompt<ObjectId>),
+    EntityChoice(ChoicePrompt<EntityId>),
 
     /// A prompt for a player to select one or more cards from a set of cards to
     /// apply some effect to.
@@ -48,7 +48,7 @@ pub enum PromptType {
 
 #[derive(Clone, Debug)]
 pub enum PromptResponse {
-    ObjectChoice(ObjectId),
+    EntityChoice(EntityId),
     SelectCards(Vec<CardId>),
     PlayCards(Vec<CardId>),
 }

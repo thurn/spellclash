@@ -30,7 +30,7 @@ use crate::card_states::counters::Counters;
 use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
-    CardId, HasCardId, HasPlayerName, HasSource, ObjectId, PlayerName, Zone, ALL_PLAYERS,
+    CardId, EntityId, HasCardId, HasPlayerName, HasSource, ObjectId, PlayerName, Zone, ALL_PLAYERS,
 };
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::GameState;
@@ -180,17 +180,16 @@ impl Zones {
     /// the player's library.
     ///
     /// The card is created in a face-down state and is not visible to any
-    /// player. The card is assigned a [CardId] and [ObjectId] on creation.
+    /// player. The card is assigned a [CardId] and [EntityId] on creation.
     pub fn create_card_in_library(
         &mut self,
         name: CardName,
         kind: CardKind,
         owner: PlayerName,
     ) -> &CardState {
-        let object_id = self.new_object_id();
         let id = self.all_cards.insert(CardState {
             id: CardId::default(),
-            object_id,
+            entity_id: EntityId::Card(CardId::default(), ObjectId(0)),
             card_name: name,
             kind,
             owner,
@@ -209,14 +208,16 @@ impl Zones {
         });
 
         self.add_to_zone(owner, id, Zone::Library);
+        let entity_id = self.new_entity_id(id);
 
         let card = &mut self.all_cards[id];
         card.id = id;
+        card.entity_id = entity_id;
         card
     }
 
     /// Moves a card to a new zone, updates indices, and assigns a new
-    /// [ObjectId] to it.
+    /// [EntityId] to it.
     ///
     /// The card is added as the top card of the target zone if it is ordered.
     ///
@@ -233,7 +234,7 @@ impl Zones {
         self.remove_from_zone(owner, card_id, old_zone)?;
         self.add_to_zone(owner, card_id, zone);
         self.card_mut(card_id).zone = zone;
-        self.card_mut(card_id).object_id = self.new_object_id();
+        self.card_mut(card_id).entity_id = self.new_entity_id(card_id);
         outcome::OK
     }
 
@@ -357,10 +358,10 @@ impl Zones {
         }
     }
 
-    fn new_object_id(&mut self) -> ObjectId {
+    fn new_entity_id(&mut self, card_id: CardId) -> EntityId {
         let result = self.next_object_id;
         self.next_object_id = ObjectId(result.0 + 1);
-        result
+        EntityId::Card(card_id, result)
     }
 }
 

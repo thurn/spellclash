@@ -23,7 +23,7 @@ use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::card_states::zones::Zones;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
-    CardId, HasCardId, HasController, HasObjectId, HasPlayerName, ObjectId, PlayerName, Zone,
+    CardId, EntityId, HasCardId, HasController, HasEntityId, HasPlayerName, PlayerName, Zone,
 };
 use crate::printed_cards::printed_card::{Face, PrintedCard, PrintedCardFace};
 
@@ -41,17 +41,17 @@ pub struct CardState {
     /// Unique identifier for this card in the [Zones] struct.
     pub id: CardId,
 
-    /// Object ID for this card. Cards receive an Object ID when they are
+    /// Entity ID for this card. Cards receive an Entity ID when they are
     /// created and then get a new one every time they change zones.
     ///
     /// In most typical game situations the rules only 'remember' effects that
     /// happen to a specific object, e.g. if you exile a card and return it to
-    /// the battlefield it gets a new object ID and effects targeting it will
+    /// the battlefield it gets a new entity ID and effects targeting it will
     /// end.
     ///
     /// Do not mutate this field directly, use the methods on the [Zones] struct
     /// instead.
-    pub object_id: ObjectId,
+    pub entity_id: EntityId,
 
     /// Name of the printed card for this card, used to populate the result of
     /// the [Self::printed] method after deserialization.
@@ -123,14 +123,14 @@ pub struct CardState {
     /// Targets for this card, selected when it is placed on the stack.
     ///
     /// Cards which are not on the stack cannot have targets.
-    pub targets: Vec<ObjectId>,
+    pub targets: Vec<EntityId>,
 
-    /// The object this card is attached to.
+    /// The entity this card is attached to.
     ///
     /// Cards such as Equipment, Auras, and Fortifications can be attached to a
     /// permanent or player. Cards that are not on the battlefield cannot be
     /// attached to each other.
-    pub attached_to: Option<ObjectId>,
+    pub attached_to: Option<EntityId>,
 
     /// Stores custom state entries for this card.
     ///
@@ -154,9 +154,9 @@ impl HasCardId for CardState {
     }
 }
 
-impl HasObjectId for CardState {
-    fn object_id(&self) -> ObjectId {
-        self.object_id
+impl HasEntityId for CardState {
+    fn entity_id(&self) -> EntityId {
+        self.entity_id
     }
 }
 

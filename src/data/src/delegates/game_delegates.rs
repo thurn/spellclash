@@ -22,7 +22,7 @@ pub struct Delegate {
     /// [Zone]s in which this delegate should be active.
     ///
     /// The [Self::run] function will be invoked to populate this delegate's
-    /// callbacks when its object enters one of these zones, and the callbacks
+    /// callbacks when its entity enters one of these zones, and the callbacks
     /// will be cleared when it exits one of these zones.
     pub zones: EnumSet<Zone>,
 
