@@ -17,26 +17,28 @@ use data::actions::game_action::CombatAction;
 #[allow(unused)] // Used in docs
 use data::actions::game_action::GameAction;
 use data::core::primitives::{CardId, PlayerName, Source};
-use data::game_states::combat_state::{AttackTarget, AttackerId, BlockerId};
+use data::game_states::combat_state::{AttackTarget, AttackerId, BlockerId, CombatState};
 use data::game_states::game_state::GameState;
 use tracing::instrument;
-use utils::outcome;
 use utils::outcome::Outcome;
+use utils::with_error::WithError;
+use utils::{fail, outcome, verify};
 
 #[instrument(err, level = "debug", skip(game))]
 pub fn execute(game: &mut GameState, player: PlayerName, action: CombatAction) -> Outcome {
+    verify!(game.priority == player, "Player {player:?} does not have priority");
     match action {
-        CombatAction::SetActiveAttacker(card_id) => {
-            set_active_attacker(game, Source::Game, card_id)
+        CombatAction::AddActiveAttacker(card_id) => {
+            add_active_attacker(game, Source::Game, card_id)
         }
-        CombatAction::AttackWithActiveAttacker(target) => {
-            attack_with_active_attacker(game, Source::Game, target)
+        CombatAction::SetActiveAttackersTarget(target) => {
+            set_active_attackers_target(game, Source::Game, target)
         }
         CombatAction::RemoveAttacker(card_id) => remove_attacker(game, Source::Game, card_id),
         CombatAction::ConfirmAttackers => confirm_attackers(game, Source::Game),
-        CombatAction::SetActiveBlocker(card_id) => set_active_blocker(game, Source::Game, card_id),
-        CombatAction::BlockWithActiveBlocker(attacker) => {
-            block_with_active_blocker(game, Source::Game, attacker)
+        CombatAction::AddActiveBlocker(card_id) => add_active_blocker(game, Source::Game, card_id),
+        CombatAction::SetActiveBlockersTarget(attacker) => {
+            set_active_blockers_target(game, Source::Game, attacker)
         }
         CombatAction::RemoveBlocker(card_id) => remove_blocker(game, Source::Game, card_id),
         CombatAction::ConfirmBlockers => confirm_blockers(game, Source::Game),
@@ -49,79 +51,129 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: CombatAction) -
 
 /// Sets a creature as the current attacker.
 ///
-/// See [GameAction::SetActiveAttacker].
+/// See [CombatAction::SetActiveAttacker].
 #[instrument(err, level = "debug", skip(game))]
-fn set_active_attacker(game: &mut GameState, source: Source, card_id: BlockerId) -> Outcome {
+fn add_active_attacker(game: &mut GameState, source: Source, card_id: AttackerId) -> Outcome {
+    let Some(CombatState::ProposingAttackers { active_attackers, .. }) = &mut game.combat else {
+        fail!("Not in the 'ProposingAttackers' state");
+    };
+    active_attackers.insert(card_id);
     outcome::OK
 }
 
 /// Sets an attack target for the active attacker.
 ///
-/// See [GameAction::AttackWithActiveAttacker].
+/// See [CombatAction::SetActiveAttackersTarget].
 #[instrument(err, level = "debug", skip(game))]
-fn attack_with_active_attacker(
+fn set_active_attackers_target(
     game: &mut GameState,
     source: Source,
     target: AttackTarget,
 ) -> Outcome {
+    let Some(CombatState::ProposingAttackers { active_attackers, proposed_attacks }) =
+        &mut game.combat
+    else {
+        fail!("Not in the 'ProposingAttackers' state");
+    };
+
+    for id in active_attackers.iter() {
+        proposed_attacks.insert(*id, target);
+    }
     outcome::OK
 }
 
 /// Removes an attacker proposal.
 ///
-/// See [GameAction::RemoveAttacker].
+/// See [CombatAction::RemoveAttacker].
 #[instrument(err, level = "debug", skip(game))]
 fn remove_attacker(game: &mut GameState, source: Source, card_id: AttackerId) -> Outcome {
+    let Some(CombatState::ProposingAttackers { active_attackers, proposed_attacks }) =
+        &mut game.combat
+    else {
+        fail!("Not in the 'ProposingAttackers' state");
+    };
+    active_attackers.remove(&card_id);
+    proposed_attacks.remove(&card_id);
     outcome::OK
 }
 
 /// Submits the attacker list.
 ///
-/// See [GameAction::ConfirmAttackers].
+/// See [CombatAction::ConfirmAttackers].
 #[instrument(err, level = "debug", skip(game))]
 fn confirm_attackers(game: &mut GameState, source: Source) -> Outcome {
+    let Some(CombatState::ProposingAttackers { proposed_attacks, .. }) = game.combat.take() else {
+        fail!("Not in the 'ProposingAttackers' state");
+    };
+    game.combat = Some(CombatState::ConfirmedAttackers { attackers: proposed_attacks.clone() });
     outcome::OK
 }
 
 /// Sets a creature as the current blocker.
 ///
-/// See [GameAction::SetActiveBlocker].
+/// See [CombatAction::SetActiveBlocker].
 #[instrument(err, level = "debug", skip(game))]
-fn set_active_blocker(game: &mut GameState, source: Source, card_id: BlockerId) -> Outcome {
+fn add_active_blocker(game: &mut GameState, source: Source, card_id: BlockerId) -> Outcome {
+    let Some(CombatState::ProposingBlockers { active_blockers, .. }) = &mut game.combat else {
+        fail!("Not in the 'ProposingBlockers' state");
+    };
+    active_blockers.insert(card_id);
     outcome::OK
 }
 
 /// Sets a block target for the active blocker.
 ///
-/// See [GameAction::BlockWithActiveBlocker].
+/// See [CombatAction::SetActiveBlockersTarget].
 #[instrument(err, level = "debug", skip(game))]
-fn block_with_active_blocker(
+fn set_active_blockers_target(
     game: &mut GameState,
     source: Source,
     attacker: AttackerId,
 ) -> Outcome {
+    let Some(CombatState::ProposingBlockers { active_blockers, proposed_blocks, .. }) =
+        &mut game.combat
+    else {
+        fail!("Not in the 'ProposingBlockers' state");
+    };
+
+    for id in active_blockers.iter() {
+        proposed_blocks.insert(*id, attacker);
+    }
     outcome::OK
 }
 
 /// Removes a blocker proposal.
 ///
-/// See [GameAction::RemoveBlocker].
+/// See [CombatAction::RemoveBlocker].
 #[instrument(err, level = "debug", skip(game))]
 fn remove_blocker(game: &mut GameState, source: Source, card_id: BlockerId) -> Outcome {
+    let Some(CombatState::ProposingBlockers { active_blockers, proposed_blocks, .. }) =
+        &mut game.combat
+    else {
+        fail!("Not in the 'ProposingBlockers' state");
+    };
+    active_blockers.remove(&card_id);
+    proposed_blocks.remove(&card_id);
     outcome::OK
 }
 
 /// Submits the blocker list.
 ///
-/// See [GameAction::ConfirmBlockers].
+/// See [CombatAction::ConfirmBlockers].
 #[instrument(err, level = "debug", skip(game))]
 fn confirm_blockers(game: &mut GameState, source: Source) -> Outcome {
+    let Some(CombatState::ProposingBlockers { attackers, proposed_blocks, .. }) =
+        game.combat.take()
+    else {
+        fail!("Not in the 'ProposingBlockers' state");
+    };
+    game.combat = Some(CombatState::ConfirmedBlockers { attackers, blocks: proposed_blocks });
     outcome::OK
 }
 
 /// Sets the order of a blocker for a creature.
 ///
-/// See [GameAction::OrderBlocker].
+/// See [CombatAction::OrderBlocker].
 #[instrument(err, level = "debug", skip(game))]
 fn order_blocker(
     game: &mut GameState,
@@ -130,13 +182,24 @@ fn order_blocker(
     blocker_id: BlockerId,
     position: usize,
 ) -> Outcome {
+    let Some(CombatState::OrderingBlockers { blockers }) = &mut game.combat else {
+        fail!("Not in the 'OrderingBlockers' state");
+    };
+    let entry =
+        blockers.get_mut(&attacker_id).with_error(|| "Attacker not found {attacker_id:?}")?;
+    entry.blockers.retain(|id| id != &blocker_id);
+    entry.blockers.insert(position, blocker_id);
     outcome::OK
 }
 
 /// Submits the blocker order.
 ///
-/// See [GameAction::ConfirmBlockerOrder].
+/// See [CombatAction::ConfirmBlockerOrder].
 #[instrument(err, level = "debug", skip(game))]
 fn confirm_blocker_order(game: &mut GameState, source: Source) -> Outcome {
+    let Some(CombatState::OrderingBlockers { blockers }) = game.combat.take() else {
+        fail!("Not in the 'OrderingBlockers' state");
+    };
+    game.combat = Some(CombatState::ConfirmedBlockerOrder { blockers });
     outcome::OK
 }

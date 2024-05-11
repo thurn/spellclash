@@ -45,7 +45,7 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
             "{:?}/Turn {}/Player {:?}",
             game.step, game.turn.turn_number, game.turn.active_player
         ),
-        state: if game.combat.currently_active {
+        state: if game.combat.is_some() {
             GameViewState::CombatActive
         } else {
             GameViewState::None

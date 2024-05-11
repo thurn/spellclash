@@ -97,11 +97,9 @@ pub struct GameState {
     #[serde(skip)]
     pub prompts: PromptManager,
 
-    /// State of the currently active or most recently completed combat phase.
-    ///
-    /// If no combat phases have occurred this turn, this will contain
-    /// CombatState::default().
-    pub combat: CombatState,
+    /// State of creatures participating in the currently active combat phase,
+    /// if any.
+    pub combat: Option<CombatState>,
 
     /// Used to track changes to game state in order to update the client. See
     /// [AnimationTracker] for more information.

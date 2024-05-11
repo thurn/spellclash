@@ -20,48 +20,54 @@ use crate::game_states::combat_state::{AttackTarget, AttackerId, BlockerId};
 /// Actions within a combat phase
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum CombatAction {
-    /// Select a creature as the 'active attacker'
+    /// Adds a creature as an 'active attacker'
     ///
-    /// When an active attacker is selected, the attacker can select a target to
-    /// attack via [Self::AttackWithActiveAttacker].
+    /// When active attackers are selected, the attacking player can select a
+    /// target for them to attack via [Self::SetActiveAttackersTarget].
     ///
     /// If there is only one legal attack target, this creature will
-    /// automatically be added to the 'proposed attacks' set and calling
-    /// [Self::AttackWithActiveAttacker] is not needed.
-    SetActiveAttacker(AttackerId),
+    /// instead automatically be added to the 'proposed attacks' set and calling
+    /// [Self::SetActiveAttackersTarget] is not needed.
+    AddActiveAttacker(AttackerId),
 
-    /// Adds the active attacker (selected via [Self::SetActiveAttacker]) as an
-    /// attacker of this [AttackTarget]. Once the set of proposed attackers is
+    /// Sets all active attackers (selected via [Self::AddActiveAttacker]) as
+    /// attacking this [AttackTarget]. Once the set of proposed attackers is
     /// finalized, assuming the choice is legal, they can be confirmed via
     /// [Self::ConfirmAttackers].
-    AttackWithActiveAttacker(AttackTarget),
-
-    /// Remove a creature from the 'proposed attackers' set.
     ///
-    /// If this creature is currently the active attacker it is also removed
-    /// from that status.
+    /// This action is only required when more than one legal [AttackTarget]
+    /// exists.
+    SetActiveAttackersTarget(AttackTarget),
+
+    /// Remove a creature from both the 'proposed attacks' set and the 'active
+    /// attackers' set.
     RemoveAttacker(AttackerId),
 
-    /// Lock in the set of proposed attackers for the declare attackers step.
+    /// Lock in the current set of proposed attacks for the declare attackers
+    /// step.
     ConfirmAttackers,
 
-    /// Select a creature as the 'active blocker'.
+    /// Adds a creature as an 'active blocker'.
     ///
-    /// When an active blocker is selected, the defender can select which
-    /// attacker is being blocked via [Self::BlockWithActiveBlocker].
-    SetActiveBlocker(BlockerId),
+    /// When active blockers are selected, the blocking player can select a
+    /// target for them to block via [Self::SetActiveBlockersTarget].
+    ///
+    /// If there is only one legal block, this creature will instead
+    /// automatically be added to the 'proposed blocks' set and calling
+    /// [Self::SetActiveBlockersTarget] is not needed.
+    AddActiveBlocker(BlockerId),
 
-    /// Adds the active blocker (selected via [Self::SetActiveBlocker]) to
-    /// the 'proposed blockers' set, blocking the indicated creature.
+    /// Sets all active blockers (selected via [Self::AddActiveBlocker]) as
+    /// blocking this [AttackerId]. Once the set of proposed blockers is
+    /// finalized, assuming the choice is legal, they can be confirmed via
+    /// [Self::ConfirmBlockers].
     ///
-    /// Once the set of proposed blockers is finalized, assuming the choice is
-    /// legal, they can be confirmed via [Self::ConfirmBlockers].
-    BlockWithActiveBlocker(AttackerId),
+    /// This action is only required when more than one legal [AttackerId]
+    /// exists.
+    SetActiveBlockersTarget(AttackerId),
 
-    /// Removes a creature from the 'proposed blockers' set.
-    ///
-    /// If this creature is currently the active blocker it is also removed from
-    /// that status.
+    /// Remove a creature from both the 'proposed blocks' set and the 'active
+    /// blockers' set.
     RemoveBlocker(BlockerId),
 
     /// Lock in the blocking decisions for the declare blockers step.
