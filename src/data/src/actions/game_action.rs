@@ -15,6 +15,65 @@
 use crate::actions::debug_action::DebugGameAction;
 use crate::actions::user_action::UserAction;
 use crate::core::primitives::CardId;
+use crate::game_states::combat_state::{AttackTarget, AttackerId, BlockerId};
+
+/// Actions within a combat phase
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub enum CombatAction {
+    /// Select a creature as the 'active attacker'
+    ///
+    /// When an active attacker is selected, the attacker can select a target to
+    /// attack via [Self::AttackWithActiveAttacker].
+    ///
+    /// If there is only one legal attack target, this creature will
+    /// automatically be added to the 'proposed attacks' set and calling
+    /// [Self::AttackWithActiveAttacker] is not needed.
+    SetActiveAttacker(AttackerId),
+
+    /// Adds the active attacker (selected via [Self::SetActiveAttacker]) as an
+    /// attacker of this [AttackTarget]. Once the set of proposed attackers is
+    /// finalized, assuming the choice is legal, they can be confirmed via
+    /// [Self::ConfirmAttackers].
+    AttackWithActiveAttacker(AttackTarget),
+
+    /// Remove a creature from the 'proposed attackers' set.
+    ///
+    /// If this creature is currently the active attacker it is also removed
+    /// from that status.
+    RemoveAttacker(AttackerId),
+
+    /// Lock in the set of proposed attackers for the declare attackers step.
+    ConfirmAttackers,
+
+    /// Select a creature as the 'active blocker'.
+    ///
+    /// When an active blocker is selected, the defender can select which
+    /// attacker is being blocked via [Self::BlockWithActiveBlocker].
+    SetActiveBlocker(BlockerId),
+
+    /// Adds the active blocker (selected via [Self::SetActiveBlocker]) to
+    /// the 'proposed blockers' set, blocking the indicated creature.
+    ///
+    /// Once the set of proposed blockers is finalized, assuming the choice is
+    /// legal, they can be confirmed via [Self::ConfirmBlockers].
+    BlockWithActiveBlocker(AttackerId),
+
+    /// Removes a creature from the 'proposed blockers' set.
+    ///
+    /// If this creature is currently the active blocker it is also removed from
+    /// that status.
+    RemoveBlocker(BlockerId),
+
+    /// Lock in the blocking decisions for the declare blockers step.
+    ConfirmBlockers,
+
+    /// Move the indicated blocker the the provided index `position` within the
+    /// blockers list.
+    OrderBlocker { attacker_id: AttackerId, blocker_id: BlockerId, position: usize },
+
+    /// Lock in block ordering decisions for the declare blockers step.
+    ConfirmBlockerOrder,
+}
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum GameAction {
@@ -42,40 +101,8 @@ pub enum GameAction {
     /// the stack, or an ability on the stack.
     ProposePlayingCard(CardId),
 
-    /// Select a creature to attack during the declare attackers step.
-    ///
-    /// This puts the creature in the 'proposed attackers' set. Once the set of
-    /// proposed attackers is finalized, assuming the choice is legal, they can
-    /// be confirmed via [Self::ConfirmAttackers].
-    ProposeAttacker(CardId),
-
-    /// Remove a creature from the 'proposed attackers' set.
-    RemoveAttacker(CardId),
-
-    /// Lock in the set of proposed attackers for the declare attackers step.
-    ConfirmAttackers,
-
-    /// Select a creature as the 'active blocker'.
-    ///
-    /// When an active blocker is selected, the defender can select which
-    /// attacker is being blocked via [Self::BlockWithActiveBlocker],
-    SetActiveBlocker(CardId),
-
-    /// Removes a creature from the 'proposed blockers' set.
-    ///
-    /// If this creature is currently the active blocker it is also removed from
-    /// that status.
-    RemoveBlocker(CardId),
-
-    /// Adds the active blocker (selected via [Self::SetActiveBlocker]) to
-    /// the 'proposed blockers' set, blocking the indicated creature.
-    ///
-    /// Once the set of proposed blockers is finalized, assuming the choice is
-    /// legal, they can be confirmed via [Self::ConfirmBlockers].
-    BlockWithActiveBlocker(CardId),
-
-    /// Lock in the blocking decisions for the declare blockers step.
-    ConfirmBlockers,
+    /// Take an action within a combat phase
+    CombatAction(CombatAction),
 }
 
 impl From<GameAction> for UserAction {

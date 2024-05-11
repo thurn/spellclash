@@ -25,7 +25,7 @@ use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
 use data::delegates::game_delegates::GameDelegates;
 use data::game_states::animation_tracker::AnimationTracker;
-use data::game_states::combat_state::CombatState;
+use data::game_states::combat_state::{CombatCreatures, CombatState};
 use data::game_states::game_state::{GameConfiguration, GameState, GameStatus, TurnData};
 use data::game_states::game_step::GamePhaseStep;
 use data::game_states::history_data::GameHistory;
@@ -163,7 +163,10 @@ fn create_game(
         players: Players::new(p1, p2, LifeValue(20)),
         zones,
         prompts: PromptManager::default(),
-        combat: CombatState::default(),
+        combat: CombatState {
+            currently_active: false,
+            creatures: CombatCreatures::BeginningOfCombat,
+        },
         animations: AnimationTracker::default(),
         history: GameHistory::default(),
         rng: Xoshiro256StarStar::seed_from_u64(314159265358979323),

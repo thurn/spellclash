@@ -13,4 +13,5 @@
 // limitations under the License.
 
 pub mod actions;
+pub mod combat_actions;
 pub mod debug_actions;

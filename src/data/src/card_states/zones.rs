@@ -96,6 +96,7 @@ pub trait ZoneQueries {
 pub struct Zones {
     /// All cards and card-like objects in the current game
     all_cards: SlotMap<CardId, CardState>,
+
     /// Triggered or activated abilities which are currently on the stack.
     stack_abilities: SlotMap<StackAbilityId, StackAbilityState>,
 

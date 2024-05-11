@@ -22,7 +22,7 @@ use tracing::{debug, info, instrument};
 use utils::outcome::Outcome;
 use utils::{fail, outcome, verify};
 
-use crate::action_handlers::debug_actions;
+use crate::action_handlers::{combat_actions, debug_actions};
 use crate::legality::legal_actions;
 use crate::mutations::{cards, priority};
 use crate::play_cards::{pick_face_to_play, play_card};
@@ -55,7 +55,7 @@ pub fn execute(
         GameAction::DebugAction(a) => debug_actions::execute(game, player, a),
         GameAction::PassPriority => handle_pass_priority(game, player),
         GameAction::ProposePlayingCard(id) => handle_play_card(game, Source::Game, player, id),
-        _ => outcome::OK,
+        GameAction::CombatAction(action) => combat_actions::execute(game, player, action),
     }
 }
 
