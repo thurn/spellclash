@@ -25,7 +25,7 @@ use utils::outcome::Outcome;
 pub fn draw(game: &mut GameState, source: impl HasSource, player: impl HasPlayerName) -> Outcome {
     let Some(&id) = game.library(player).back() else { return outcome::GAME_OVER };
     let card = game.card_mut(id);
-    game.zones.move_card(source, id, Zone::Hand)
+    game.move_card(source, id, Zone::Hand)
 }
 
 /// Draws `count` cards in sequence from the top of the `player`'s library.
@@ -52,7 +52,7 @@ pub fn move_to_top(
     source: impl HasSource,
     card_id: impl HasCardId,
 ) -> Outcome {
-    game.zones.move_card(source, card_id.card_id(), Zone::Library)
+    game.move_card(source, card_id.card_id(), Zone::Library)
 }
 
 pub fn move_all_to_top<'a>(

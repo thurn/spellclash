@@ -25,6 +25,8 @@ use crate::core::numerics::Damage;
 use crate::core::primitives::{
     CardId, EntityId, HasCardId, HasController, HasEntityId, HasPlayerName, PlayerName, Zone,
 };
+#[allow(unused)] // Used in docs
+use crate::game_states::game_state::{GameState, TurnData};
 use crate::printed_cards::printed_card::{Face, PrintedCard, PrintedCardFace};
 
 /// Represents the state of a card or card-like object.
@@ -48,8 +50,8 @@ pub struct CardState {
     /// the battlefield it gets a new entity ID and effects targeting it will
     /// end.
     ///
-    /// Do not mutate this field directly, use the methods on the [Zones] struct
-    /// instead.
+    /// Do not mutate this field directly, use [GameState::move_card] or a
+    /// higher-level function instead.
     pub entity_id: EntityId,
 
     /// Name of the printed card for this card, used to populate the result of
@@ -72,16 +74,16 @@ pub struct CardState {
     /// For cards which are not currently on the battlefield or on the stack,
     /// this will be the card's owner.
     ///
-    /// Do not mutate this field directly, use the methods on the [Zones] struct
-    /// instead.
+    /// Do not mutate this field directly, use [GameState::change_controller] or
+    /// a higher-level function instead.
     ///
     /// See <https://yawgatog.com/resources/magic-rules/#R1084>
     pub controller: PlayerName,
 
     /// Current game zone location for this card.
     ///
-    /// Do not mutate this field directly, use the methods on the [Zones] struct
-    /// instead.
+    /// Do not mutate this field directly, use [GameState::move_card] or a
+    /// higher-level function instead.
     pub zone: Zone,
 
     /// Whether this card is currently face down or has one of its faces up.
@@ -135,6 +137,17 @@ pub struct CardState {
     ///
     /// See [CustomCardStateList].
     pub custom_state: CustomCardStateList,
+
+    /// Turn on which this card last entered its current zone.
+    ///
+    /// Do not mutate this field directly, use [GameState::move_card] instead.
+    pub entered_current_zone: TurnData,
+
+    /// Turn on which this card gained its current controller.
+    ///
+    /// Used to e.g. determine whether creatures can attack in combat. Do not
+    /// mutate this field directly, use [GameState::change_controller] instead.
+    pub last_changed_control: TurnData,
 
     /// Printed Card associated with this card. Use the [Self::printed] method
     /// instead of accessing this directly.

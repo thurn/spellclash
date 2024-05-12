@@ -147,14 +147,15 @@ fn create_game(
     };
 
     let mut zones = Zones::default();
-    create_cards_in_deck(&mut zones, p1_deck, PlayerName::One);
-    create_cards_in_deck(&mut zones, p2_deck, PlayerName::Two);
+    let turn = TurnData { active_player: PlayerName::One, turn_number: 0 };
+    create_cards_in_deck(&mut zones, p1_deck, PlayerName::One, turn);
+    create_cards_in_deck(&mut zones, p2_deck, PlayerName::Two, turn);
 
     GameState {
         id: game_id,
         status: GameStatus::Setup,
         step: GamePhaseStep::Untap,
-        turn: TurnData { active_player: PlayerName::One, turn_number: 0 },
+        turn,
         priority: PlayerName::One,
         passed: EnumSet::empty(),
         configuration: GameConfiguration::new(PlayerName::One | PlayerName::Two),
@@ -171,10 +172,10 @@ fn create_game(
     }
 }
 
-fn create_cards_in_deck(zones: &mut Zones, deck: Deck, owner: PlayerName) {
+fn create_cards_in_deck(zones: &mut Zones, deck: Deck, owner: PlayerName, turn: TurnData) {
     for (&name, &quantity) in &deck.cards {
         for _ in 0..quantity {
-            zones.create_card_in_library(name, CardKind::Normal, owner);
+            zones.create_card_in_library(name, CardKind::Normal, owner, turn);
         }
     }
 }

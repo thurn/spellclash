@@ -36,6 +36,7 @@ use crate::core::primitives::{
 };
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::GameState;
+use crate::game_states::game_state::TurnData;
 
 pub trait ZoneQueries {
     /// Looks up the state for a card.
@@ -208,6 +209,7 @@ impl Zones {
         name: CardName,
         kind: CardKind,
         owner: PlayerName,
+        current_turn: TurnData,
     ) -> &CardState {
         let id = self.all_cards.insert(CardState {
             id: CardId::default(),
@@ -226,6 +228,8 @@ impl Zones {
             targets: vec![],
             attached_to: None,
             custom_state: CustomCardStateList::default(),
+            entered_current_zone: current_turn,
+            last_changed_control: current_turn,
             printed_card_reference: None,
         });
 
@@ -249,14 +253,18 @@ impl Zones {
         _source: impl HasSource,
         id: impl HasCardId,
         zone: Zone,
+        current_turn: TurnData,
     ) -> Outcome {
         let card_id = id.card_id();
         let old_zone = self.card_mut(card_id).zone;
         let owner = self.card_mut(card_id).owner;
         self.remove_from_zone(owner, card_id, old_zone)?;
         self.add_to_zone(owner, card_id, zone);
-        self.card_mut(card_id).zone = zone;
-        self.card_mut(card_id).entity_id = self.new_entity_id(card_id);
+        let entity_id = self.new_entity_id(card_id);
+        let card = self.card_mut(card_id);
+        card.zone = zone;
+        card.entity_id = entity_id;
+        card.entered_current_zone = current_turn;
         outcome::OK
     }
 
@@ -264,9 +272,16 @@ impl Zones {
     ///
     /// Returns an error if this card was not found in the
     /// 'battlefield_controlled' set.
-    pub fn change_control(&mut self, id: impl HasCardId, controller: PlayerName) -> Outcome {
+    pub fn change_controller(
+        &mut self,
+        _source: impl HasSource,
+        id: impl HasCardId,
+        controller: PlayerName,
+        current_turn: TurnData,
+    ) -> Outcome {
         let card_id = id.card_id();
         let card = self.card_mut(card_id);
+        card.last_changed_control = current_turn;
         let old_controller = card.controller;
         card.controller = controller;
         if card.zone == Zone::Battlefield && old_controller != controller {

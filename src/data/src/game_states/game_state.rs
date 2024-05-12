@@ -24,8 +24,10 @@ use crate::card_states::card_state::CardState;
 use crate::card_states::stack_ability_state::StackAbilityState;
 use crate::card_states::zones::{ZoneQueries, Zones};
 use crate::core::numerics::TurnNumber;
+#[allow(unused_imports)] // Used in docs
 use crate::core::primitives::{
-    CardId, GameId, HasCardId, HasPlayerName, PlayerName, StackAbilityId, StackItemId, UserId,
+    CardId, EntityId, GameId, HasCardId, HasPlayerName, HasSource, PlayerName, StackAbilityId,
+    StackItemId, UserId, Zone,
 };
 use crate::delegates::game_delegates::GameDelegates;
 use crate::game_states::animation_tracker::{
@@ -122,6 +124,28 @@ pub struct GameState {
 }
 
 impl GameState {
+    /// Moves a card to a new zone, updates indices, and assigns a new
+    /// [EntityId] to it.
+    ///
+    /// The card is added as the top card of the target zone if it is ordered.
+    ///
+    /// Returns an error if this card was not found in its previous zone.
+    pub fn move_card(&mut self, source: impl HasSource, id: impl HasCardId, zone: Zone) -> Outcome {
+        self.zones.move_card(source, id, zone, self.turn)
+    }
+
+    /// Changes the controller for a card.
+    ///
+    /// Returns an error if this card was not found on the battlefield.
+    pub fn change_controller(
+        &mut self,
+        source: impl HasSource,
+        id: impl HasCardId,
+        controller: PlayerName,
+    ) -> Outcome {
+        self.zones.change_controller(source, id, controller, self.turn)
+    }
+
     pub fn add_animation(&mut self, update: impl FnOnce() -> GameAnimation) {
         if self.animations.state == AnimationState::Track {
             // Snapshot current game state, omit things that aren't important for

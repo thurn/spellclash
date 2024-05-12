@@ -53,7 +53,7 @@ pub fn resolve_top_of_stack(game: &mut GameState) -> Outcome {
                 fail!("Expected only a single face!");
             };
             cards::turn_face_up(game, Source::Game, card_id, face)?;
-            game.zones.move_card(Source::Game, card_id, Zone::Battlefield)?;
+            game.move_card(Source::Game, card_id, Zone::Battlefield)?;
         } else {
             todo!("Implement targeting for permanents");
         }

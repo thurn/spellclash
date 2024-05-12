@@ -12,13 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::collections::{HashMap, HashSet};
+
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardType, PlayerName, Source};
+use data::game_states::combat_state::CombatState;
 use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
 use enumset::EnumSet;
-use utils::outcome;
 use utils::outcome::Outcome;
+use utils::{fail, outcome};
 
 use crate::mutations::{cards, library};
 use crate::queries::{card_queries, players};
@@ -88,8 +91,12 @@ fn begin_step(game: &mut GameState, step: GamePhaseStep) -> Outcome {
     outcome::OK
 }
 
+fn is_skipped(config: &StepConfig, step: GamePhaseStep) -> bool {
+    config.skip_steps.contains(step) || config.skip_this_turn.contains(step)
+}
+
 fn advance_if_skipped(game: &mut GameState, config: &StepConfig, step: GamePhaseStep) -> Outcome {
-    if config.skip_steps.contains(step) || config.skip_this_turn.contains(step) {
+    if is_skipped(config, step) {
         advance_internal(game, config)
     } else {
         outcome::OK
@@ -171,22 +178,49 @@ fn begin_combat(game: &mut GameState, config: &StepConfig) -> Outcome {
 
 fn declare_attackers(game: &mut GameState, config: &StepConfig) -> Outcome {
     begin_step(game, GamePhaseStep::DeclareAttackers)?;
+    if is_skipped(config, GamePhaseStep::DeclareAttackers) {
+        advance_internal(game, config)
+    } else {
+        // > 508.1. First, the active player declares attackers. This turn-based action
+        // > doesn't use the stack.
+        //
+        // > 508.1a. The active player chooses which creatures that they control, if
+        // > any, will attack. The chosen creatures must be untapped, they can't also be
+        // > battles, and each one must either have haste or have been controlled by the
+        // > active player continuously since the turn began.
+        // <https://yawgatog.com/resources/magic-rules/#R5081>
 
-    // > 508.1. First, the active player declares attackers. This turn-based action
-    // > doesn't use the stack.
-    //
-    // > 508.1a. The active player chooses which creatures that they control, if
-    // > any, will attack. The chosen creatures must be untapped, they can't also be
-    // > battles, and each one must either have haste or have been controlled by the
-    // > active player continuously since the turn began.
-    // <https://yawgatog.com/resources/magic-rules/#R5081>
-
-    advance_if_skipped(game, config, GamePhaseStep::DeclareAttackers)
+        game.combat = Some(CombatState::ProposingAttackers {
+            proposed_attacks: HashMap::new(),
+            active_attackers: HashSet::new(),
+        });
+        outcome::OK
+    }
 }
 
 fn declare_blockers(game: &mut GameState, config: &StepConfig) -> Outcome {
     begin_step(game, GamePhaseStep::DeclareBlockers)?;
-    advance_if_skipped(game, config, GamePhaseStep::DeclareBlockers)
+    if is_skipped(config, GamePhaseStep::DeclareBlockers) {
+        advance_internal(game, config)
+    } else {
+        // > 509.1. First, the defending player declares blockers. This turn-based
+        // > action doesn't use the stack.
+        //
+        // > 509.1a. The defending player chooses which creatures they control, if any, will block.
+        // > The chosen creatures must be untapped and they can't also be battles. For each of the
+        // > chosen creatures, the defending player chooses one creature for it to block that's
+        // > attacking that player, a planeswalker they control, or a battle they protect.
+        // <https://yawgatog.com/resources/magic-rules/#R5091>
+        let Some(CombatState::ConfirmedAttackers { attackers }) = game.combat.take() else {
+            fail!("Not in the 'ConfirmedAttackers' state");
+        };
+        game.combat = Some(CombatState::ProposingBlockers {
+            attackers,
+            active_blockers: HashSet::new(),
+            proposed_blocks: HashMap::new(),
+        });
+        outcome::OK
+    }
 }
 
 fn first_strike_damage(game: &mut GameState, config: &StepConfig) -> Outcome {

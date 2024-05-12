@@ -37,10 +37,10 @@ pub fn execute_plan(
         game.history_counters_mut(player).lands_played += 1;
         let face = plan.spell_choices.play_as.single_face()?;
         cards::turn_face_up(game, source, card_id, face)?;
-        game.zones.move_card(source, card_id, Zone::Battlefield)
+        game.move_card(source, card_id, Zone::Battlefield)
     } else {
         game.card_mut(card_id).cast_as = plan.spell_choices.play_as.faces;
-        game.zones.move_card(source, card_id, Zone::Stack)?;
+        game.move_card(source, card_id, Zone::Stack)?;
 
         // Automatically pass priority after putting something on the stack.
         // TODO: Implement holding priority.
