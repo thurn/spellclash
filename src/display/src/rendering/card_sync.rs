@@ -12,12 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_states::card_state::{CardFacing, TappedState};
-use data::core::primitives::Source;
+use data::actions::game_action::{CombatAction, GameAction};
+use data::actions::user_action::UserAction;
+use data::card_states::card_state::{CardFacing, CardState, TappedState};
+use data::core::primitives::{PlayerName, Source};
+use data::game_states::combat_state::CombatState;
+use data::game_states::game_state::GameState;
+use data::game_states::game_step::GamePhaseStep;
 use data::printed_cards::printed_card::{Face, PrintedCardFace};
 use rules::play_cards::play_card;
 
-use crate::core::card_view::{CardView, RevealedCardFace, RevealedCardView};
+use crate::core::card_view::{CardView, RevealedCardFace, RevealedCardStatus, RevealedCardView};
 use crate::core::object_position::ObjectPosition;
 use crate::core::response_builder::ResponseBuilder;
 use crate::rendering::card_view_context::CardViewContext;
@@ -35,8 +40,11 @@ pub fn card_view(builder: &ResponseBuilder, context: &CardViewContext) -> CardVi
         card_back: "https://static.wikia.nocookie.net/mtgsalvation_gamepedia/images/f/f8/Magic_card_back.jpg/revision/latest?cb=20140813141013".to_string(),
         revealed: revealed.then(|| RevealedCardView {
             face: card_face(&context.printed().face),
-            can_play: context.query_or(false, |game, card| {
-                play_card::can_play_card(game, builder.player, Source::Game, card.id)
+            status: context.query_or(None, |game, card| {
+                card_status(builder.player, game, card)
+            }),
+            click_action: context.query_or(None, |game, card| {
+                card_action(builder.player, game, card)
             }),
             face_b: context.printed().face_b.as_ref().map(card_face),
             layout: context.printed().layout,
@@ -65,6 +73,46 @@ fn card_face(printed: &PrintedCardFace) -> RevealedCardFace {
         image: card_image(printed),
         layout: printed.layout,
         rules_text: printed.oracle_text.clone(),
+    }
+}
+
+fn card_status(
+    player: PlayerName,
+    game: &GameState,
+    card: &CardState,
+) -> Option<RevealedCardStatus> {
+    if play_card::can_play_card(game, player, Source::Game, card.id) {
+        Some(RevealedCardStatus::CanPlay)
+    } else {
+        None
+    }
+}
+
+fn card_action(player: PlayerName, game: &GameState, card: &CardState) -> Option<UserAction> {
+    if play_card::can_play_card(game, player, Source::Game, card.id) {
+        Some(GameAction::ProposePlayingCard(card.id).into())
+    } else if game.step == GamePhaseStep::DeclareAttackers && game.turn.active_player == player {
+        if let Some(CombatState::ProposingAttackers { active_attackers, .. }) = &game.combat {
+            if active_attackers.contains(&card.entity_id) {
+                Some(CombatAction::RemoveAttacker(card.entity_id).into())
+            } else {
+                Some(CombatAction::AddActiveAttacker(card.entity_id).into())
+            }
+        } else {
+            None
+        }
+    } else if game.step == GamePhaseStep::DeclareBlockers && game.turn.active_player != player {
+        if let Some(CombatState::ProposingBlockers { active_blockers, .. }) = &game.combat {
+            if active_blockers.contains(&card.entity_id) {
+                Some(CombatAction::RemoveBlocker(card.entity_id).into())
+            } else {
+                Some(CombatAction::AddActiveBlocker(card.entity_id).into())
+            }
+        } else {
+            None
+        }
+    } else {
+        None
     }
 }
 

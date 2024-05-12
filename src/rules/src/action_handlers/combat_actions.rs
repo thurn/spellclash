@@ -20,7 +20,7 @@ use data::actions::game_action::CombatAction;
 use data::actions::game_action::GameAction;
 use data::core::primitives::{CardId, PlayerName, Source};
 use data::game_states::combat_state::{
-    AttackTarget, AttackerId, BlockerId, CombatAttack, CombatState,
+    AttackTarget, AttackerId, BlockerId, BlockerMap, CombatState,
 };
 use data::game_states::game_state::GameState;
 use tracing::instrument;
@@ -171,18 +171,18 @@ fn confirm_blockers(game: &mut GameState, source: Source) -> Outcome {
     else {
         fail!("Not in the 'ProposingBlockers' state");
     };
-    let mut result = HashMap::new();
-    for (attacker_id, target) in attackers {
-        result.insert(attacker_id, CombatAttack { target, blockers: vec![] });
+    let mut attackers_to_blockers = HashMap::new();
+    for (&blocker_id, &attacker_id) in &proposed_blocks {
+        // TODO: Figure out some kind of default ordering for blockers
+        attackers_to_blockers.entry(attacker_id).or_insert_with(Vec::new).push(blocker_id);
     }
-    for (blocker_id, attacker_id) in proposed_blocks {
-        result
-            .get_mut(&attacker_id)
-            .with_error(|| "Attacker not found: {attacker_id:?}")?
-            .blockers
-            .push(blocker_id);
-    }
-    game.combat = Some(CombatState::OrderingBlockers { blockers: result });
+    game.combat = Some(CombatState::OrderingBlockers {
+        blockers: BlockerMap {
+            all_attackers: attackers,
+            blocked_attackers: attackers_to_blockers,
+            reverse_lookup: proposed_blocks,
+        },
+    });
     outcome::OK
 }
 
@@ -200,10 +200,12 @@ fn order_blocker(
     let Some(CombatState::OrderingBlockers { blockers }) = &mut game.combat else {
         fail!("Not in the 'OrderingBlockers' state");
     };
-    let entry =
-        blockers.get_mut(&attacker_id).with_error(|| "Attacker not found {attacker_id:?}")?;
-    entry.blockers.retain(|id| id != &blocker_id);
-    entry.blockers.insert(position, blocker_id);
+    let entry = blockers
+        .blocked_attackers
+        .get_mut(&attacker_id)
+        .with_error(|| "Attacker not found {attacker_id:?}")?;
+    entry.retain(|id| id != &blocker_id);
+    entry.insert(position, blocker_id);
     outcome::OK
 }
 

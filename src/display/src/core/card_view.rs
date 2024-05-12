@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use data::actions::user_action::UserAction;
 use data::card_states::card_state::{CardFacing, TappedState};
 use data::core::numerics::Damage;
 use data::core::primitives::CardId;
@@ -66,14 +67,24 @@ pub struct RevealedCardView {
     /// Primary face of this card
     pub face: RevealedCardFace,
 
-    /// True if any face of this card can currently be played
-    pub can_play: bool,
+    /// Visual status of this card
+    pub status: Option<RevealedCardStatus>,
+
+    /// Action to take when this card is clicked, if any.
+    pub click_action: Option<UserAction>,
 
     /// Secondary or additional face of this card, if any
     pub face_b: Option<RevealedCardFace>,
 
     /// Visual style of this card, how the faces are displayed
     pub layout: CardLayout,
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum RevealedCardStatus {
+    CanPlay,
+    Attacker,
+    Blocker,
 }
 
 /// Visual state of a revealed card face

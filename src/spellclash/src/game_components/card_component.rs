@@ -15,7 +15,7 @@
 use data::actions::game_action::GameAction;
 use data::card_states::card_state::TappedState;
 use dioxus::prelude::*;
-use display::core::card_view::{CardView, RevealedCardView};
+use display::core::card_view::{CardView, RevealedCardStatus, RevealedCardView};
 use display::core::game_view::GameView;
 use game::server_data::ClientData;
 
@@ -51,12 +51,12 @@ pub fn RevealedCardComponent(card: CardView, revealed: RevealedCardView) -> Elem
     let nav = use_navigator();
     let width = (CARD_HEIGHT as f64) * (5.0 / 7.0);
     rsx! {
-        if revealed.can_play {
+        if revealed.status == Some(RevealedCardStatus::Attacker) {
             img {
                 src: revealed.face.image,
                 width: "{width}px",
                 height: "{CARD_HEIGHT}px",
-                class: if revealed.can_play { "border-4 border-amber-300" },
+                class: if revealed.status == Some(RevealedCardStatus::Attacker) { "border-4 border-amber-300" },
                 onclick: move |_|
                     client_action::client_execute_action(
                         cd_signal,

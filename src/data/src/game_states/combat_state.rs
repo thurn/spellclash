@@ -24,19 +24,6 @@ pub type AttackerId = EntityId;
 /// Entity which has been declared as a blocker
 pub type BlockerId = EntityId;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CombatAttack {
-    /// Entity being attacked
-    pub target: AttackTarget,
-
-    /// Blockers for this creature, in blocker order (the first creature in the
-    /// vector will receive damage first).
-    pub blockers: Vec<BlockerId>,
-}
-
-/// Map from each attacker to the attacker state
-pub type BlockerMap = HashMap<AttackerId, CombatAttack>;
-
 /// Possible entities a creature may attack
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum AttackTarget {
@@ -85,3 +72,18 @@ pub enum CombatState {
     /// combat damage.
     ConfirmedBlockers { blockers: BlockerMap },
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BlockerMap {
+    /// All declared attackers along with their attack targets
+    pub all_attackers: HashMap<AttackerId, AttackTarget>,
+
+    /// Attackers which have been blocked and will not deal combat damage to
+    /// their target
+    pub blocked_attackers: HashMap<AttackerId, Vec<BlockerId>>,
+
+    /// Map from Blocker ID to the attacker that creature is blocking
+    pub reverse_lookup: HashMap<BlockerId, AttackerId>,
+}
+
+impl BlockerMap {}
