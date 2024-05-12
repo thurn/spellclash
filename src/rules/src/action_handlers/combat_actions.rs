@@ -12,12 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::collections::HashMap;
+
 use data::actions::debug_action::DebugGameAction;
 use data::actions::game_action::CombatAction;
 #[allow(unused)] // Used in docs
 use data::actions::game_action::GameAction;
 use data::core::primitives::{CardId, PlayerName, Source};
-use data::game_states::combat_state::{AttackTarget, AttackerId, BlockerId, CombatState};
+use data::game_states::combat_state::{
+    AttackTarget, AttackerId, BlockerId, CombatAttack, CombatState,
+};
 use data::game_states::game_state::GameState;
 use tracing::instrument;
 use utils::outcome::Outcome;
@@ -76,8 +80,8 @@ fn set_active_attackers_target(
         fail!("Not in the 'ProposingAttackers' state");
     };
 
-    for id in active_attackers.iter() {
-        proposed_attacks.insert(*id, target);
+    for attacker_id in active_attackers.iter() {
+        proposed_attacks.insert(*attacker_id, target);
     }
     outcome::OK
 }
@@ -136,8 +140,8 @@ fn set_active_blockers_target(
         fail!("Not in the 'ProposingBlockers' state");
     };
 
-    for id in active_blockers.iter() {
-        proposed_blocks.insert(*id, attacker);
+    for blocker_id in active_blockers.iter() {
+        proposed_blocks.insert(*blocker_id, attacker);
     }
     outcome::OK
 }
@@ -167,7 +171,18 @@ fn confirm_blockers(game: &mut GameState, source: Source) -> Outcome {
     else {
         fail!("Not in the 'ProposingBlockers' state");
     };
-    game.combat = Some(CombatState::ConfirmedBlockers { attackers, blocks: proposed_blocks });
+    let mut result = HashMap::new();
+    for (attacker_id, target) in attackers {
+        result.insert(attacker_id, CombatAttack { target, blockers: vec![] });
+    }
+    for (blocker_id, attacker_id) in proposed_blocks {
+        result
+            .get_mut(&attacker_id)
+            .with_error(|| "Attacker not found: {attacker_id:?}")?
+            .blockers
+            .push(blocker_id);
+    }
+    game.combat = Some(CombatState::OrderingBlockers { blockers: result });
     outcome::OK
 }
 
@@ -200,6 +215,6 @@ fn confirm_blocker_order(game: &mut GameState, source: Source) -> Outcome {
     let Some(CombatState::OrderingBlockers { blockers }) = game.combat.take() else {
         fail!("Not in the 'OrderingBlockers' state");
     };
-    game.combat = Some(CombatState::ConfirmedBlockerOrder { blockers });
+    game.combat = Some(CombatState::ConfirmedBlockers { blockers });
     outcome::OK
 }

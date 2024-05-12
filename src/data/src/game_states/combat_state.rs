@@ -76,21 +76,12 @@ pub enum CombatState {
     },
 
     /// The defending player has confirmed this set of blockers, and it has
-    /// been validated as a legal set of blocks.
-    ConfirmedBlockers {
-        /// Attacking creatures
-        attackers: HashMap<AttackerId, AttackTarget>,
-
-        /// Blocks
-        blocks: HashMap<BlockerId, AttackerId>,
-    },
-
-    /// The attacking player is ordering blockers.
+    /// been validated as legal. The attacking player is ordering blockers.
     ///
     /// The [BlockerMap] contains the currently-proposed blocker ordering.
     OrderingBlockers { blockers: BlockerMap },
 
     /// The attacking player has ordered blockers and is ready to proceed to
     /// combat damage.
-    ConfirmedBlockerOrder { blockers: BlockerMap },
+    ConfirmedBlockers { blockers: BlockerMap },
 }
