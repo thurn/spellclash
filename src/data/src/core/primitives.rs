@@ -107,7 +107,7 @@ pub enum PlayerName {
     Four,
 }
 
-pub const ALL_PLAYERS: EnumSet<PlayerName> = EnumSet::ALL;
+pub const ALL_POSSIBLE_PLAYERS: EnumSet<PlayerName> = EnumSet::ALL;
 
 /// Identifies a struct that is 1:1 associated with a given [PlayerName].
 pub trait HasPlayerName {
@@ -159,8 +159,10 @@ new_key_type! {
     pub struct StackAbilityId;
 }
 
-/// An identifier for anything which can be a target: a player, card, or ability
-/// on the stack.
+/// An identifier for any game entity.
+///
+/// This is generally anything which can be a target: a player, card while it
+/// exists in a specific zone, or ability on the stack.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
 pub enum EntityId {
     Player(PlayerName),

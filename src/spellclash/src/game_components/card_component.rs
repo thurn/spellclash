@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::actions::game_action::GameAction;
 use data::card_states::card_state::TappedState;
 use dioxus::prelude::*;
 use display::core::card_view::{CardView, RevealedCardStatus, RevealedCardView};
@@ -50,29 +49,40 @@ pub fn RevealedCardComponent(card: CardView, revealed: RevealedCardView) -> Elem
     let view_signal = consume_context::<Signal<Option<GameView>>>();
     let nav = use_navigator();
     let width = (CARD_HEIGHT as f64) * (5.0 / 7.0);
+    let (class, label) = match revealed.status {
+        None => ("", String::new()),
+        Some(RevealedCardStatus::CanPlay) => ("border-4 border-amber-300", String::new()),
+        Some(RevealedCardStatus::Attacking(label)) => ("border-4 border-teal-300", label),
+        Some(RevealedCardStatus::Blocking(label)) => ("border-4 border-purple-300", label),
+    };
+
     rsx! {
-        if revealed.status == Some(RevealedCardStatus::Attacker) {
-            img {
-                src: revealed.face.image,
-                width: "{width}px",
-                height: "{CARD_HEIGHT}px",
-                class: if revealed.status == Some(RevealedCardStatus::Attacker) { "border-4 border-amber-300" },
-                onclick: move |_|
-                    client_action::client_execute_action(
-                        cd_signal,
-                        view_signal,
-                        nav,
-                        GameAction::ProposePlayingCard(card.id)
-                    )
+        if let Some(action) = revealed.click_action {
+            div {
+                img {
+                    src: revealed.face.image,
+                    width: "{width}px",
+                    height: "{CARD_HEIGHT}px",
+                    class: class,
+                    onclick: move |_|
+                        client_action::client_execute_action(
+                            cd_signal,
+                            view_signal,
+                            nav,
+                            action
+                        )
+                }
+                span {
+                    "{label}"
+                }
             }
         } else {
             img {
                 src: revealed.face.image,
                 width: "{width}px",
-                height: "{CARD_HEIGHT}px",
+                height: "{CARD_HEIGHT}px"
             }
         }
-
     }
 }
 

@@ -80,11 +80,11 @@ pub struct RevealedCardView {
     pub layout: CardLayout,
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RevealedCardStatus {
     CanPlay,
-    Attacker,
-    Blocker,
+    Attacking(String),
+    Blocking(String),
 }
 
 /// Visual state of a revealed card face

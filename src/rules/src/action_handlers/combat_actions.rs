@@ -18,7 +18,8 @@ use data::actions::debug_action::DebugGameAction;
 use data::actions::game_action::CombatAction;
 #[allow(unused)] // Used in docs
 use data::actions::game_action::GameAction;
-use data::core::primitives::{CardId, PlayerName, Source};
+use data::card_states::zones::ZoneQueries;
+use data::core::primitives::{CardId, CardType, PlayerName, Source};
 use data::game_states::combat_state::{
     AttackTarget, AttackerId, BlockerId, BlockerMap, CombatState,
 };
@@ -27,6 +28,8 @@ use tracing::instrument;
 use utils::outcome::Outcome;
 use utils::with_error::WithError;
 use utils::{fail, outcome, verify};
+
+use crate::queries::{card_queries, players};
 
 #[instrument(err, level = "debug", skip(game))]
 pub fn execute(game: &mut GameState, player: PlayerName, action: CombatAction) -> Outcome {
@@ -58,10 +61,26 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: CombatAction) -
 /// See [CombatAction::SetActiveAttacker].
 #[instrument(err, level = "debug", skip(game))]
 fn add_active_attacker(game: &mut GameState, source: Source, card_id: AttackerId) -> Outcome {
-    let Some(CombatState::ProposingAttackers { active_attackers, .. }) = &mut game.combat else {
+    let next = players::next_player(game);
+    let requires_target = game.configuration.all_players.len() > 2
+        || game.battlefield(next).iter().any(|&card_id| {
+            !card_queries::card_types(game, card_id)
+                .is_disjoint(CardType::Planeswalker | CardType::Battle)
+        });
+
+    let Some(CombatState::ProposingAttackers { active_attackers, proposed_attacks }) =
+        &mut game.combat
+    else {
         fail!("Not in the 'ProposingAttackers' state");
     };
-    active_attackers.insert(card_id);
+    if requires_target {
+        // A planeswalker or battle is in play (or there are more than 2 players), must
+        // select attack targets.
+        active_attackers.insert(card_id);
+    } else {
+        // Only one attack target, automatically assign it
+        proposed_attacks.insert(card_id, AttackTarget::Player(next));
+    }
     outcome::OK
 }
 
@@ -118,10 +137,17 @@ fn confirm_attackers(game: &mut GameState, source: Source) -> Outcome {
 /// See [CombatAction::SetActiveBlocker].
 #[instrument(err, level = "debug", skip(game))]
 fn add_active_blocker(game: &mut GameState, source: Source, card_id: BlockerId) -> Outcome {
-    let Some(CombatState::ProposingBlockers { active_blockers, .. }) = &mut game.combat else {
+    let Some(CombatState::ProposingBlockers { attackers, active_blockers, proposed_blocks }) =
+        &mut game.combat
+    else {
         fail!("Not in the 'ProposingBlockers' state");
     };
-    active_blockers.insert(card_id);
+    if attackers.len() == 1 {
+        // Only one attacker, automatically block it.
+        proposed_blocks.insert(card_id, *attackers.keys().next().unwrap());
+    } else {
+        active_blockers.insert(card_id);
+    }
     outcome::OK
 }
 

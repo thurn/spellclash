@@ -13,5 +13,5 @@
 // limitations under the License.
 
 pub mod card_queries;
-mod combat_queries;
+pub mod combat_queries;
 pub mod players;

@@ -32,7 +32,7 @@ use crate::card_states::stack_ability_state::StackAbilityState;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
     CardId, EntityId, HasCardId, HasPlayerName, HasSource, ObjectId, PlayerName, StackAbilityId,
-    StackItemId, Zone, ALL_PLAYERS,
+    StackItemId, Zone, ALL_POSSIBLE_PLAYERS,
 };
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::GameState;
@@ -46,6 +46,16 @@ pub trait ZoneQueries {
 
     /// Mutable equivalent of [Self::card]
     fn card_mut(&mut self, id: impl HasCardId) -> &mut CardState;
+
+    /// Returns the [CardState] for an [EntityId].
+    ///
+    /// If this [EntityId] is not the entity id of a card, or if the associated
+    /// card no longer has a matching [EntityId] (i.e. because it has changed
+    /// zones), None is returned instead.
+    fn card_entity(&self, id: EntityId) -> Option<&CardState>;
+
+    /// Mutable equivalent of [Self::card_entity].
+    fn card_entity_mut(&mut self, id: EntityId) -> Option<&mut CardState>;
 
     /// Looks up the state for an ability on the stack.
     ///
@@ -141,6 +151,34 @@ impl ZoneQueries for Zones {
 
     fn card_mut(&mut self, id: impl HasCardId) -> &mut CardState {
         &mut self.all_cards[id.card_id()]
+    }
+
+    fn card_entity(&self, id: EntityId) -> Option<&CardState> {
+        match id {
+            EntityId::Card(card_id, _) => {
+                let card = self.card(card_id);
+                if card.entity_id == id {
+                    Some(card)
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    }
+
+    fn card_entity_mut(&mut self, id: EntityId) -> Option<&mut CardState> {
+        match id {
+            EntityId::Card(card_id, _) => {
+                let card = self.card_mut(card_id);
+                if card.entity_id == id {
+                    Some(card)
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
     }
 
     fn stack_ability(&self, id: StackAbilityId) -> &StackAbilityState {
@@ -356,7 +394,7 @@ impl Zones {
     fn on_enter_zone(&mut self, card_id: CardId, zone: Zone) {
         match zone {
             Zone::Stack | Zone::Battlefield | Zone::Graveyard => {
-                self.card_mut(card_id).revealed_to = ALL_PLAYERS;
+                self.card_mut(card_id).revealed_to = ALL_POSSIBLE_PLAYERS;
             }
             Zone::Hand => {
                 let controller = self.card(card_id).controller;

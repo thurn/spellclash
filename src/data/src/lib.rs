@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![allow(unused)]
+
 pub mod actions;
 pub mod card_definitions;
 pub mod card_states;

@@ -14,7 +14,7 @@
 
 use data::card_states::card_state::{CardFacing, TappedState};
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, Source, Zone, ALL_PLAYERS};
+use data::core::primitives::{CardId, Source, Zone, ALL_POSSIBLE_PLAYERS};
 use data::game_states::game_state::GameState;
 use data::printed_cards::printed_card::Face;
 use utils::outcome::Outcome;
@@ -24,7 +24,7 @@ use utils::{outcome, verify};
 pub fn turn_face_up(game: &mut GameState, _source: Source, card: CardId, face: Face) -> Outcome {
     let card = game.card_mut(card);
     card.facing = CardFacing::FaceUp(face);
-    card.revealed_to = ALL_PLAYERS;
+    card.revealed_to = ALL_POSSIBLE_PLAYERS;
     outcome::OK
 }
 

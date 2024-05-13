@@ -208,6 +208,14 @@ impl ZoneQueries for GameState {
         self.zones.card_mut(id)
     }
 
+    fn card_entity(&self, id: EntityId) -> Option<&CardState> {
+        self.zones.card_entity(id)
+    }
+
+    fn card_entity_mut(&mut self, id: EntityId) -> Option<&mut CardState> {
+        self.zones.card_entity_mut(id)
+    }
+
     fn stack_ability(&self, id: StackAbilityId) -> &StackAbilityState {
         self.zones.stack_ability(id)
     }

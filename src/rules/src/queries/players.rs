@@ -14,6 +14,7 @@
 
 use data::core::primitives::PlayerName;
 use data::game_states::game_state::GameState;
+use enumset::{enum_set, EnumSet};
 
 /// Returns the next player in turn order after the given [PlayerName].
 ///
@@ -39,6 +40,32 @@ pub fn next_player_after(game: &GameState, player: PlayerName) -> PlayerName {
         },
         _ => panic!("Unsupported player count"),
     }
+}
+
+/// Returns the [next_player_after] the active player in this game.
+pub fn next_player(game: &GameState) -> PlayerName {
+    next_player_after(game, game.turn.active_player)
+}
+
+const TWO_PLAYERS: EnumSet<PlayerName> = enum_set!(PlayerName::One | PlayerName::Two);
+const THREE_PLAYERS: EnumSet<PlayerName> =
+    enum_set!(PlayerName::One | PlayerName::Two | PlayerName::Three);
+const FOUR_PLAYERS: EnumSet<PlayerName> =
+    enum_set!(PlayerName::One | PlayerName::Two | PlayerName::Three | PlayerName::Four);
+
+/// Returns the names of all players in the provided game
+pub fn all_players(game: &GameState) -> EnumSet<PlayerName> {
+    match game.configuration.all_players.len() {
+        2 => TWO_PLAYERS,
+        3 => THREE_PLAYERS,
+        4 => FOUR_PLAYERS,
+        _ => panic!("Unsupported player count"),
+    }
+}
+
+/// Returns the set of players who are not currently taking their turn.
+pub fn inactive_players(game: &GameState) -> EnumSet<PlayerName> {
+    all_players(game).difference(EnumSet::only(game.turn.active_player))
 }
 
 /// Returns the number of lands the indicated `player` can still play this turn.

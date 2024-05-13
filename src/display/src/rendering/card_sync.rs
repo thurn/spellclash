@@ -15,12 +15,15 @@
 use data::actions::game_action::{CombatAction, GameAction};
 use data::actions::user_action::UserAction;
 use data::card_states::card_state::{CardFacing, CardState, TappedState};
+use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{PlayerName, Source};
 use data::game_states::combat_state::CombatState;
 use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
 use data::printed_cards::printed_card::{Face, PrintedCardFace};
 use rules::play_cards::play_card;
+use rules::queries::combat_queries;
+use rules::queries::combat_queries::CombatRole;
 
 use crate::core::card_view::{CardView, RevealedCardFace, RevealedCardStatus, RevealedCardView};
 use crate::core::object_position::ObjectPosition;
@@ -84,7 +87,27 @@ fn card_status(
     if play_card::can_play_card(game, player, Source::Game, card.id) {
         Some(RevealedCardStatus::CanPlay)
     } else {
-        None
+        match combat_queries::role(game, card.entity_id) {
+            None => None,
+            Some(CombatRole::ActiveAttacker) => {
+                Some(RevealedCardStatus::Attacking("Active Attacker".to_string()))
+            }
+            Some(CombatRole::ProposedAttacker(target)) => {
+                Some(RevealedCardStatus::Attacking(format!("Attacking {:?}", target)))
+            }
+            Some(CombatRole::Attacker(target)) => {
+                Some(RevealedCardStatus::Attacking(format!("Attacking {:?}", target)))
+            }
+            Some(CombatRole::ActiveBlocker) => {
+                Some(RevealedCardStatus::Attacking("Active Blocker".to_string()))
+            }
+            Some(CombatRole::ProposedBlocker(attacker)) => Some(RevealedCardStatus::Blocking(
+                format!("Blocking {:?}", game.card_entity(attacker)?.printed().face.name),
+            )),
+            Some(CombatRole::Blocking { attacker, order }) => Some(RevealedCardStatus::Blocking(
+                format!("Blocking {:?}@{}", game.card_entity(attacker)?.printed().face.name, order),
+            )),
+        }
     }
 }
 
