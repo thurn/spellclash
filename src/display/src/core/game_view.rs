@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use data::actions::user_action::UserAction;
 use data::core::numerics::LifeValue;
 
 use crate::core::card_view::CardView;
@@ -34,11 +35,23 @@ pub struct GameView {
     /// High level visual game state
     pub state: GameViewState,
 
-    /// Whether the viewer can currently take the 'pass priority' action.
-    pub can_pass_priority: bool,
+    /// Top user interaction options
+    pub top_buttons: Vec<GameButton>,
 
-    /// Whether the viewer can currently take the 'undo' action.
-    pub can_undo: bool,
+    /// Bottom user interaction options
+    pub bottom_buttons: Vec<GameButton>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct GameButton {
+    pub label: String,
+    pub action: UserAction,
+}
+
+impl GameButton {
+    pub fn new(label: impl Into<String>, action: impl Into<UserAction>) -> Self {
+        Self { label: label.into(), action: action.into() }
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Copy)]

@@ -62,11 +62,14 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: CombatAction) -
 #[instrument(err, level = "debug", skip(game))]
 fn add_active_attacker(game: &mut GameState, source: Source, card_id: AttackerId) -> Outcome {
     let next = players::next_player(game);
-    let requires_target = game.configuration.all_players.len() > 2
+    let requires_target = players::player_count(game) > 2
         || game.battlefield(next).iter().any(|&card_id| {
-            !card_queries::card_types(game, card_id)
-                .is_disjoint(CardType::Planeswalker | CardType::Battle)
-        });
+            card_queries::card_types(game, card_id).contains(CardType::Planeswalker)
+        })
+        || game
+            .battlefield(game.turn.active_player)
+            .iter()
+            .any(|&card_id| card_queries::card_types(game, card_id).contains(CardType::Battle));
 
     let Some(CombatState::ProposingAttackers { active_attackers, proposed_attacks }) =
         &mut game.combat

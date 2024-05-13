@@ -23,28 +23,32 @@ use data::printed_cards::printed_card::Face;
 use crate::legality::can_pay_mana_cost;
 use crate::play_cards::{pick_face_to_play, play_card};
 
-/// Iterator over all legal action_handlers the named player can take in the
+/// List of all legal actions the named player can take in the
 /// current game state.
-pub fn compute(game: &GameState, player: PlayerName) -> impl Iterator<Item = GameAction> {
-    let mut pass_priority = None;
+pub fn compute(game: &GameState, player: PlayerName) -> Vec<GameAction> {
+    let mut result = vec![];
     if next_to_act(game) == player {
-        pass_priority = Some(iter::once(GameAction::PassPriority))
+        result.push(GameAction::PassPriority);
     }
 
-    let mut play_card = None;
     for &card_id in game.hand(player) {
         if play_card::can_play_card(game, player, Source::Game, card_id) {
-            play_card = Some(iter::once(GameAction::ProposePlayingCard(card_id)));
+            result.push(GameAction::ProposePlayingCard(card_id));
         }
     }
 
-    pass_priority.into_iter().flatten().chain(play_card.into_iter().flatten())
+    result
 }
 
 /// Returns true if the [PlayerName] player can currently legally take the
 /// provided [GameAction].
-pub fn can_take_action(game: &GameState, player: PlayerName, game_action: GameAction) -> bool {
-    compute(game, player).any(|action| action == game_action)
+pub fn can_take_action(
+    game: &GameState,
+    player: PlayerName,
+    game_action: impl Into<GameAction>,
+) -> bool {
+    let game_action = game_action.into();
+    compute(game, player).iter().any(|&action| action == game_action)
 }
 
 /// Returns the name of the player who is currently allowed to take an action.

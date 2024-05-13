@@ -42,6 +42,12 @@ pub fn next_player_after(game: &GameState, player: PlayerName) -> PlayerName {
     }
 }
 
+/// Returns the number of players currently participating in the provided game
+/// (i.e. who have not lost).
+pub fn player_count(game: &GameState) -> usize {
+    game.configuration.all_players.len()
+}
+
 /// Returns the [next_player_after] the active player in this game.
 pub fn next_player(game: &GameState) -> PlayerName {
     next_player_after(game, game.turn.active_player)

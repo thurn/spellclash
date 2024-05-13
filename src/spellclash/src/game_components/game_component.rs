@@ -15,17 +15,13 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use data::actions::debug_action::DebugGameAction;
-use data::actions::game_action::GameAction;
-use data::actions::user_action::UserAction;
 use dioxus::prelude::*;
 use display::core::card_view::CardView;
-use display::core::game_view::{DisplayPlayer, GameView, PlayerView};
+use display::core::game_view::{DisplayPlayer, GameButton, GameView, PlayerView};
 use display::core::object_position::{BattlefieldPosition, Position};
 use game::server_data::ClientData;
 
 use crate::client_actions::client_action;
-use crate::game_components::button_component;
 use crate::game_components::card_component::CardComponent;
 
 pub const CARD_HEIGHT: u64 = 120;
@@ -48,41 +44,15 @@ pub fn GameComponent(view: GameView) -> Element {
     }
 }
 
-async fn leave_game(
-    cd_signal: Signal<ClientData>,
-    view_signal: Signal<Option<GameView>>,
-    nav: Navigator,
-) {
-    client_action::client_execute_action(cd_signal, view_signal, nav, UserAction::LeaveGameAction)
-        .await;
-}
-
 #[component]
 fn GameInfo(view: Arc<GameView>) -> Element {
-    let cd_signal = consume_context::<Signal<ClientData>>();
-    let view_signal = consume_context::<Signal<Option<GameView>>>();
-    let nav = use_navigator();
+    let top = view.top_buttons.clone();
+    let bottom = view.bottom_buttons.clone();
 
     rsx! {
+        GameButtons { buttons: top }
         div {
             class: "flex flex-col items-center",
-            button {
-                class: button_component::CLASS,
-                onclick: move |_| leave_game(cd_signal, view_signal, nav),
-                "Leave Game",
-            }
-            if view.can_undo {
-                button {
-                    class: button_component::CLASS,
-                    onclick: move |_| client_action::client_execute_action(
-                            cd_signal,
-                            view_signal,
-                            nav,
-                            DebugGameAction::Undo
-                        ),
-                    "Undo",
-                }
-            }
             PlayerComponent {
                 player: view.opponent.clone(),
                 name: "Opponent",
@@ -101,24 +71,38 @@ fn GameInfo(view: Arc<GameView>) -> Element {
                 player: view.viewer.clone(),
                 name: "Viewer",
             }
-            if view.can_pass_priority {
-                button {
-                    class: button_component::CLASS,
-                    onclick: move |_| client_action::client_execute_action(
-                        cd_signal,
-                        view_signal,
-                        nav,
-                        GameAction::PassPriority
-                    ),
-                    "Continue",
-                }
-            } else {
-                button {
-                    class: button_component::DISABLED,
-                    disabled: true,
-                    "Continue",
+        }
+        GameButtons { buttons: bottom }
+    }
+}
+
+#[component]
+fn GameButtons(buttons: Vec<GameButton>) -> Element {
+    rsx! {
+        div {
+            class: "flex flex-row",
+            for button in buttons {
+                GameButton {
+                    model: button
                 }
             }
+        }
+    }
+}
+
+#[component]
+fn GameButton(model: GameButton) -> Element {
+    let cd_signal = consume_context::<Signal<ClientData>>();
+    let view_signal = consume_context::<Signal<Option<GameView>>>();
+    let nav = use_navigator();
+
+    rsx! {
+        button {
+            class: "m-2",
+            onclick: move |_| {
+                client_action::client_execute_action(cd_signal, view_signal, nav, model.action)
+            },
+            "{model.label}"
         }
     }
 }

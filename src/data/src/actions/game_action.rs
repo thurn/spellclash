@@ -81,6 +81,12 @@ pub enum CombatAction {
     ConfirmBlockerOrder,
 }
 
+impl From<CombatAction> for GameAction {
+    fn from(value: CombatAction) -> Self {
+        GameAction::CombatAction(value)
+    }
+}
+
 impl From<CombatAction> for UserAction {
     fn from(value: CombatAction) -> Self {
         UserAction::GameAction(GameAction::CombatAction(value))

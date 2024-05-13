@@ -12,13 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use data::actions::debug_action::DebugGameAction;
+use data::actions::game_action::{CombatAction, GameAction};
+use data::actions::user_action::UserAction;
 use data::card_states::card_state::CardState;
 use data::core::primitives::{PlayerName, Zone};
 use data::game_states::game_state::GameState;
 use data::player_states::player_state::PlayerQueries;
 use rules::legality::legal_actions;
 
-use crate::core::game_view::{GameView, GameViewState, PlayerView};
+use crate::core::game_view::{GameButton, GameView, GameViewState, PlayerView};
 use crate::core::response_builder::ResponseBuilder;
 use crate::rendering::card_sync;
 use crate::rendering::card_view_context::CardViewContext;
@@ -50,8 +53,8 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
         } else {
             GameViewState::None
         },
-        can_pass_priority: legal_actions::can_pass_priority(game, builder.player),
-        can_undo: game.undo_tracker.enabled && game.undo_tracker.undo.is_some(),
+        top_buttons: top_game_buttons(game, builder.player),
+        bottom_buttons: bottom_game_buttons(game, builder.player),
     });
 }
 
@@ -59,6 +62,32 @@ fn player_view(game: &GameState, player: PlayerName) -> PlayerView {
     PlayerView { life: game.player(player).life, can_act: game.priority == player }
 }
 
-pub fn skip_sending_to_client(card: &CardState) -> bool {
+fn skip_sending_to_client(card: &CardState) -> bool {
     card.revealed_to.is_empty() && card.zone == Zone::Library
+}
+
+fn top_game_buttons(game: &GameState, _player: PlayerName) -> Vec<GameButton> {
+    let mut result = vec![GameButton::new("Leave Game", UserAction::LeaveGameAction)];
+    if game.undo_tracker.enabled && game.undo_tracker.undo.is_some() {
+        result.push(GameButton::new("Undo", DebugGameAction::Undo));
+    }
+    result
+}
+
+fn bottom_game_buttons(game: &GameState, player: PlayerName) -> Vec<GameButton> {
+    let mut result = vec![];
+    if legal_actions::can_take_action(game, player, GameAction::PassPriority) {
+        result.push(GameButton::new("Continue", GameAction::PassPriority));
+    }
+    if legal_actions::can_take_action(game, player, CombatAction::ConfirmAttackers) {
+        result.push(GameButton::new("Confirm Attacks", GameAction::PassPriority));
+    }
+    if legal_actions::can_take_action(game, player, CombatAction::ConfirmBlockers) {
+        result.push(GameButton::new("Confirm Blocks", GameAction::PassPriority));
+    }
+    if legal_actions::can_take_action(game, player, CombatAction::ConfirmBlockerOrder) {
+        result.push(GameButton::new("Confirm Block Order", GameAction::PassPriority));
+    }
+
+    result
 }
