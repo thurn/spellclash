@@ -90,22 +90,22 @@ fn card_status(
         match combat_queries::role(game, card.entity_id) {
             None => None,
             Some(CombatRole::ActiveAttacker) => {
-                Some(RevealedCardStatus::Attacking("Active Attacker".to_string()))
+                Some(RevealedCardStatus::Attacking("AA".to_string()))
             }
             Some(CombatRole::ProposedAttacker(target)) => {
-                Some(RevealedCardStatus::Attacking(format!("Attacking {:?}", target)))
+                Some(RevealedCardStatus::Attacking(format!("PA@{:?}", target)))
             }
             Some(CombatRole::Attacker(target)) => {
-                Some(RevealedCardStatus::Attacking(format!("Attacking {:?}", target)))
+                Some(RevealedCardStatus::Attacking(format!("A@{:?}", target)))
             }
             Some(CombatRole::ActiveBlocker) => {
-                Some(RevealedCardStatus::Attacking("Active Blocker".to_string()))
+                Some(RevealedCardStatus::Attacking("AB".to_string()))
             }
             Some(CombatRole::ProposedBlocker(attacker)) => Some(RevealedCardStatus::Blocking(
-                format!("Blocking {:?}", game.card_entity(attacker)?.printed().face.name),
+                format!("B@{:?}", game.card_entity(attacker)?.printed().face.name),
             )),
             Some(CombatRole::Blocking { attacker, order }) => Some(RevealedCardStatus::Blocking(
-                format!("Blocking {:?}@{}", game.card_entity(attacker)?.printed().face.name, order),
+                format!("B@{:?}@{}", game.card_entity(attacker)?.printed().face.name, order),
             )),
         }
     }

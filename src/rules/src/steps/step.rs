@@ -244,6 +244,7 @@ fn end_combat(game: &mut GameState, config: &StepConfig) -> Outcome {
 
 fn post_combat_main(game: &mut GameState, config: &StepConfig) -> Outcome {
     begin_step(game, GamePhaseStep::PostCombatMain)?;
+    game.combat = None;
     advance_if_skipped(game, config, GamePhaseStep::PostCombatMain)
 }
 

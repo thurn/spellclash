@@ -60,21 +60,53 @@ pub fn RevealedCardComponent(card: CardView, revealed: RevealedCardView) -> Elem
     let name = revealed.face.name;
 
     rsx! {
-        if let Some(action) = revealed.click_action {
-            div {
+        div {
+            span {
+                style: "font-size: 1vmin; position: absolute; background-color: black; color: white; width: {width}vmin;",
+                "{label}"
+            }
+            if let Some(action) = revealed.click_action {
+                div {
+                    if text_only {
+                        div {
+                            width: "{width}vmin",
+                            height: "{CARD_HEIGHT}vmin",
+                            class: class,
+                            onclick: { move |_|
+                                client_action::client_execute_action(
+                                    cd_signal,
+                                    view_signal,
+                                    nav,
+                                    action
+                                )
+                            },
+                            span {
+                                style: "font-size: 2vmin",
+                                "{name}"
+                            }
+                        }
+                    } else {
+                        img {
+                            src: revealed.face.image,
+                            width: "{width}vmin",
+                            height: "{CARD_HEIGHT}vmin",
+                            class: class,
+                            onclick: move |_|
+                                client_action::client_execute_action(
+                                    cd_signal,
+                                    view_signal,
+                                    nav,
+                                    action
+                                )
+                        }
+                    }
+                }
+            } else {
                 if text_only {
                     div {
+                        class: "border-2 border-black",
                         width: "{width}vmin",
                         height: "{CARD_HEIGHT}vmin",
-                        class: class,
-                        onclick: { move |_|
-                            client_action::client_execute_action(
-                                cd_signal,
-                                view_signal,
-                                nav,
-                                action
-                            )
-                        },
                         span {
                             style: "font-size: 2vmin",
                             "{name}"
@@ -84,43 +116,9 @@ pub fn RevealedCardComponent(card: CardView, revealed: RevealedCardView) -> Elem
                     img {
                         src: revealed.face.image,
                         width: "{width}vmin",
-                        height: "{CARD_HEIGHT}vmin",
-                        class: class,
-                        onclick: move |_|
-                            client_action::client_execute_action(
-                                cd_signal,
-                                view_signal,
-                                nav,
-                                action
-                            )
+                        height: "{CARD_HEIGHT}vmin"
                     }
                 }
-                span {
-                    style: "font-size: 2vmin",
-                    "{label}"
-                }
-            }
-        } else {
-            if text_only {
-                div {
-                    class: "border-2 border-black",
-                    width: "{width}vmin",
-                    height: "{CARD_HEIGHT}vmin",
-                    span {
-                        style: "font-size: 2vmin",
-                        "{name}"
-                    }
-                }
-            } else {
-                img {
-                    src: revealed.face.image,
-                    width: "{width}vmin",
-                    height: "{CARD_HEIGHT}vmin"
-                }
-            }
-            span {
-                style: "font-size: 2vmin",
-                "{label}"
             }
         }
     }

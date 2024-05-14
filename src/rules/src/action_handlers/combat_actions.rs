@@ -29,6 +29,7 @@ use utils::outcome::Outcome;
 use utils::with_error::WithError;
 use utils::{fail, outcome, verify};
 
+use crate::mutations::permanents;
 use crate::queries::{card_queries, combat_queries, players};
 
 #[instrument(err, level = "debug", skip(game))]
@@ -118,6 +119,9 @@ fn confirm_attackers(game: &mut GameState, source: Source) -> Outcome {
     let Some(CombatState::ProposingAttackers(attackers)) = game.combat.take() else {
         fail!("Not in the 'ProposingAttackers' state");
     };
+    for attacker in attackers.proposed_attacks.all() {
+        permanents::tap(game, Source::Game, attacker.as_card_id()?)?;
+    }
     game.combat = Some(CombatState::ConfirmedAttackers(attackers.proposed_attacks));
     outcome::OK
 }

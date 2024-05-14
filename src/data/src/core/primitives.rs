@@ -20,6 +20,8 @@ use enum_map::Enum;
 use enumset::{EnumSet, EnumSetType};
 use serde::{Deserialize, Serialize};
 use slotmap::new_key_type;
+use utils::fail;
+use utils::outcome::Value;
 use uuid::Uuid;
 
 /// The five canonical colors of magic.
@@ -168,6 +170,18 @@ pub enum EntityId {
     Player(PlayerName),
     Card(CardId, ObjectId),
     StackAbility(StackAbilityId),
+}
+
+impl EntityId {
+    /// Returns the [CardId] for this entity, or an error if it is not a card.
+    pub fn as_card_id(&self) -> Value<CardId> {
+        match self {
+            Self::Card(card_id, _) => Ok(*card_id),
+            _ => {
+                fail!("Expected entity to be a card");
+            }
+        }
+    }
 }
 
 /// An identifier for a card or ability while it is in a given zone. A new

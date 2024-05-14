@@ -103,6 +103,7 @@ fn GameButton(model: GameButton) -> Element {
             style: "font-size: 2vmin",
             class: button_component::CLASS,
             onclick: move |_| {
+                eprintln!("Clicked {:?}", model.label);
                 client_action::client_execute_action(cd_signal, view_signal, nav, model.action)
             },
             "{model.label}"
