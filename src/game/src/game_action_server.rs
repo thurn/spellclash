@@ -26,10 +26,8 @@ use display::rendering::render;
 use rules::action_handlers::actions;
 use rules::action_handlers::actions::PlayerType;
 use rules::legality::legal_actions;
-use tokio::sync::mpsc::Sender;
 use tracing::{debug, info, instrument};
-use utils::outcome;
-use utils::outcome::{Outcome, Value};
+use utils::outcome::Value;
 use utils::with_error::WithError;
 
 use crate::requests;
@@ -67,13 +65,12 @@ pub async fn connect(
     Ok(GameResponse::new(client_data).commands(commands))
 }
 
-#[instrument(level = "debug", skip(sender, database))]
+#[instrument(level = "debug", skip(database))]
 pub async fn handle_game_action(
-    sender: Sender<Value<GameResponse>>,
     database: Arc<dyn Database>,
     data: ClientData,
     action: GameAction,
-) -> Outcome {
+) -> Value<GameResponse> {
     let mut game = requests::fetch_game(
         database.clone(),
         data.game_id.with_error(|| "Expected current game ID")?,
@@ -83,6 +80,7 @@ pub async fn handle_game_action(
     let user_player_name = game.find_player_name(data.user_id)?;
     let mut current_player = user_player_name;
     let mut current_action = action;
+    let mut result = GameResponse::new(data.clone());
 
     loop {
         actions::execute(
@@ -101,17 +99,13 @@ pub async fn handle_game_action(
                 render::render_updates(&game, opponent_name, DisplayPreferences::default()),
             ))
         }
-
-        sender
-            .send(Ok(GameResponse::new(data.clone())
-                .commands(user_result)
-                .opponent_responses(opponent_responses)))
-            .await
-            .with_error(|| "Error sending response to client")?;
+        result = result.commands(user_result);
+        result = result.opponent_responses(opponent_responses);
 
         let next_player = legal_actions::next_to_act(&game);
         if game.player(next_player).user_id.is_some() {
-            break;
+            database.write_game(&game).await?;
+            return Ok(result);
         } else {
             debug!(?next_player, "Searching for AI action");
             current_player = next_player;
@@ -119,7 +113,4 @@ pub async fn handle_game_action(
             debug!(?next_player, ?current_action, "AI action selected");
         }
     }
-
-    database.write_game(&game).await?;
-    outcome::OK
 }

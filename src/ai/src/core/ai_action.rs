@@ -12,22 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::time::Duration;
-
 use data::actions::game_action::GameAction;
 use data::core::primitives::PlayerName;
 use data::game_states::game_state::GameState;
 use rand::prelude::IteratorRandom;
 use rules::legality::legal_actions;
-use tokio::time;
 use utils::outcome::Value;
 use utils::with_error::WithError;
 
 /// Select a game action for the [PlayerName] in the given [GameState].
 pub async fn select(game: &GameState, player: PlayerName) -> Value<GameAction> {
-    time::sleep(Duration::from_millis(300)).await;
     legal_actions::compute(game, player)
         .into_iter()
         .choose(&mut rand::thread_rng())
-        .with_error(|| "No legal action_handlers available")
+        .with_error(|| "No legal actions available")
 }

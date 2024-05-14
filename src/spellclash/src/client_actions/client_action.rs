@@ -60,20 +60,13 @@ pub async fn client_execute_action(
 ) {
     let user_action = action.into();
     let client_data = cd_signal();
-    let mut receiver = server::handle_action(DATABASE.clone(), client_data, user_action).await;
-    loop {
-        let result = receiver.recv().await;
-        match &result {
-            Some(Ok(response)) => {
-                handle_commands(response.clone(), nav, view_signal, cd_signal);
-            }
-            Some(Err(err)) => {
-                error!("Error on action: {:?}, {:?}", err, user_action);
-            }
-            None => {
-                debug!("Done receiving messages");
-                break;
-            }
+    let response = server::handle_action(DATABASE.clone(), client_data, user_action).await;
+    match response {
+        Ok(response) => {
+            handle_commands(response.clone(), nav, view_signal, cd_signal);
+        }
+        Err(err) => {
+            error!("Error on action: {:?}\n{:?}", user_action, err);
         }
     }
 }

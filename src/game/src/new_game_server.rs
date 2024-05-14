@@ -43,27 +43,15 @@ use rand_xoshiro::rand_core::SeedableRng;
 use rand_xoshiro::Xoshiro256StarStar;
 use rules::mutations::library;
 use rules::steps::step;
-use tokio::sync::mpsc::Sender;
 use tracing::info;
 use utils::fail;
-use utils::outcome::{Outcome, Value};
-use utils::with_error::WithError;
+use utils::outcome::Value;
 use uuid::Uuid;
 
 use crate::requests;
 use crate::server_data::{ClientData, GameResponse};
 
 pub async fn create(
-    sender: Sender<Value<GameResponse>>,
-    database: Arc<dyn Database>,
-    data: ClientData,
-    action: NewGameAction,
-) -> Outcome {
-    let result = create_internal(database, data, action).await;
-    sender.send(result).await.with_error(|| "Error sending create_game response")
-}
-
-async fn create_internal(
     database: Arc<dyn Database>,
     data: ClientData,
     action: NewGameAction,
@@ -136,9 +124,6 @@ fn create_game(
     opponent_id: Option<UserId>,
     opponent_deck: Deck,
 ) -> GameState {
-    // let mut rng = Xoshiro256StarStar::seed_from_u64(314159265358979323);
-    // let user_player_name = [PlayerName::One, PlayerName::Two].choose(&mut
-    // rng).unwrap();
     let user_player_name = PlayerName::One;
     let (p1, p1_deck, p2, p2_deck) = match user_player_name {
         PlayerName::One => (Some(user_id), user_deck, opponent_id, opponent_deck),
