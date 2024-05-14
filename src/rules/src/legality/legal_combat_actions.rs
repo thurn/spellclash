@@ -15,7 +15,7 @@
 use data::actions::game_action::{CombatAction, GameAction};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::PlayerName;
-use data::game_states::combat_state::CombatState;
+use data::game_states::combat_state::{CombatState, ProposedAttackers};
 use data::game_states::game_state::GameState;
 
 #[allow(unused)] // Used in docs
@@ -32,7 +32,10 @@ use crate::queries::combat_queries;
 pub fn append(game: &GameState, player: PlayerName, actions: &mut Vec<GameAction>) {
     match &game.combat {
         None => {}
-        Some(CombatState::ProposingAttackers { proposed_attacks, active_attackers }) => {
+        Some(CombatState::ProposingAttackers(ProposedAttackers {
+            proposed_attacks,
+            active_attackers,
+        })) => {
             extend_actions(
                 actions,
                 game.battlefield(player)
@@ -55,13 +58,8 @@ pub fn append(game: &GameState, player: PlayerName, actions: &mut Vec<GameAction
             );
             actions.push(CombatAction::ConfirmAttackers.into());
         }
-        Some(CombatState::ConfirmedAttackers { attackers }) => {}
-        Some(CombatState::ProposingBlockers {
-            attackers,
-            active_blockers,
-            proposed_blocks,
-            ..
-        }) => {
+        Some(CombatState::ConfirmedAttackers(attackers)) => {}
+        Some(CombatState::ProposingBlockers(blockers)) => {
             extend_actions(
                 actions,
                 game.battlefield(player)
@@ -69,25 +67,26 @@ pub fn append(game: &GameState, player: PlayerName, actions: &mut Vec<GameAction
                     .filter(|&&card_id| combat_queries::can_block(game, card_id))
                     .map(|&card_id| CombatAction::AddActiveBlocker(game.card(card_id).entity_id)),
             );
-            if !active_blockers.is_empty() {
+            if !blockers.active_blockers.is_empty() {
                 extend_actions(
                     actions,
-                    attackers
-                        .keys()
-                        .map(|&attacker_id| CombatAction::SetActiveBlockersTarget(attacker_id)),
+                    blockers.attackers.all().map(CombatAction::SetActiveBlockersTarget),
                 );
             }
             extend_actions(
                 actions,
-                active_blockers.iter().map(|&blocker_id| CombatAction::RemoveBlocker(blocker_id)),
+                blockers
+                    .active_blockers
+                    .iter()
+                    .map(|&blocker_id| CombatAction::RemoveBlocker(blocker_id)),
             );
             actions.push(CombatAction::ConfirmBlockers.into());
         }
-        Some(CombatState::OrderingBlockers { blockers }) => {
+        Some(CombatState::OrderingBlockers(blockers)) => {
             // TODO: Add ordering actions
             actions.push(CombatAction::ConfirmBlockerOrder.into());
         }
-        Some(CombatState::ConfirmedBlockers { blockers }) => {}
+        Some(CombatState::ConfirmedBlockers(blockers)) => {}
     }
 }
 

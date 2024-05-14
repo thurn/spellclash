@@ -43,6 +43,13 @@ pub fn execute(
     action: GameAction,
     player_type: PlayerType,
 ) -> Outcome {
+    verify!(
+        legal_actions::can_take_action(game, player, action) || action.is_debug_action(),
+        "Illegal game action {:?} for player {:?}",
+        action,
+        player
+    );
+
     if player_type == PlayerType::User
         && game.undo_tracker.enabled
         && action != GameAction::DebugAction(DebugGameAction::Undo)

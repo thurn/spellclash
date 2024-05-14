@@ -123,6 +123,12 @@ pub enum GameAction {
     CombatAction(CombatAction),
 }
 
+impl GameAction {
+    pub fn is_debug_action(&self) -> bool {
+        matches!(self, GameAction::DebugAction(..))
+    }
+}
+
 impl From<GameAction> for UserAction {
     fn from(value: GameAction) -> Self {
         UserAction::GameAction(value)

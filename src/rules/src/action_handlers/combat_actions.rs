@@ -21,7 +21,7 @@ use data::actions::game_action::GameAction;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, CardType, PlayerName, Source};
 use data::game_states::combat_state::{
-    AttackTarget, AttackerId, BlockerId, BlockerMap, CombatState,
+    AttackTarget, AttackerId, BlockerId, BlockerMap, CombatState, ProposedAttackers,
 };
 use data::game_states::game_state::GameState;
 use tracing::instrument;
@@ -33,7 +33,6 @@ use crate::queries::{card_queries, combat_queries, players};
 
 #[instrument(err, level = "debug", skip(game))]
 pub fn execute(game: &mut GameState, player: PlayerName, action: CombatAction) -> Outcome {
-    verify!(game.priority == player, "Player {player:?} does not have priority");
     match action {
         CombatAction::AddActiveAttacker(card_id) => {
             add_active_attacker(game, Source::Game, card_id)
@@ -67,16 +66,14 @@ fn add_active_attacker(game: &mut GameState, source: Source, card_id: AttackerId
     // targets.
     let requires_target = combat_queries::attack_targets(game).nth(1).is_some();
 
-    let Some(CombatState::ProposingAttackers { active_attackers, proposed_attacks }) =
-        &mut game.combat
-    else {
+    let Some(CombatState::ProposingAttackers(attackers)) = &mut game.combat else {
         fail!("Not in the 'ProposingAttackers' state");
     };
     if requires_target {
-        active_attackers.insert(card_id);
+        attackers.active_attackers.insert(card_id);
     } else {
         // Only one attack target, automatically assign it
-        proposed_attacks.insert(card_id, AttackTarget::Player(next));
+        attackers.proposed_attacks.insert(card_id, AttackTarget::Player(next));
     }
     outcome::OK
 }
@@ -90,14 +87,12 @@ fn set_active_attackers_target(
     source: Source,
     target: AttackTarget,
 ) -> Outcome {
-    let Some(CombatState::ProposingAttackers { active_attackers, proposed_attacks }) =
-        &mut game.combat
-    else {
+    let Some(CombatState::ProposingAttackers(attackers)) = &mut game.combat else {
         fail!("Not in the 'ProposingAttackers' state");
     };
 
-    for attacker_id in active_attackers.iter() {
-        proposed_attacks.insert(*attacker_id, target);
+    for attacker_id in attackers.active_attackers.iter() {
+        attackers.proposed_attacks.insert(*attacker_id, target);
     }
     outcome::OK
 }
@@ -107,13 +102,11 @@ fn set_active_attackers_target(
 /// See [CombatAction::RemoveAttacker].
 #[instrument(err, level = "debug", skip(game))]
 fn remove_attacker(game: &mut GameState, source: Source, card_id: AttackerId) -> Outcome {
-    let Some(CombatState::ProposingAttackers { active_attackers, proposed_attacks }) =
-        &mut game.combat
-    else {
+    let Some(CombatState::ProposingAttackers(attackers)) = &mut game.combat else {
         fail!("Not in the 'ProposingAttackers' state");
     };
-    active_attackers.remove(&card_id);
-    proposed_attacks.remove(&card_id);
+    attackers.active_attackers.remove(&card_id);
+    attackers.proposed_attacks.remove(card_id);
     outcome::OK
 }
 
@@ -122,10 +115,10 @@ fn remove_attacker(game: &mut GameState, source: Source, card_id: AttackerId) ->
 /// See [CombatAction::ConfirmAttackers].
 #[instrument(err, level = "debug", skip(game))]
 fn confirm_attackers(game: &mut GameState, source: Source) -> Outcome {
-    let Some(CombatState::ProposingAttackers { proposed_attacks, .. }) = game.combat.take() else {
+    let Some(CombatState::ProposingAttackers(attackers)) = game.combat.take() else {
         fail!("Not in the 'ProposingAttackers' state");
     };
-    game.combat = Some(CombatState::ConfirmedAttackers { attackers: proposed_attacks.clone() });
+    game.combat = Some(CombatState::ConfirmedAttackers(attackers.proposed_attacks));
     outcome::OK
 }
 
@@ -134,17 +127,14 @@ fn confirm_attackers(game: &mut GameState, source: Source) -> Outcome {
 /// See [CombatAction::SetActiveBlocker].
 #[instrument(err, level = "debug", skip(game))]
 fn add_active_blocker(game: &mut GameState, source: Source, card_id: BlockerId) -> Outcome {
-    let Some(CombatState::ProposingBlockers {
-        attackers, active_blockers, proposed_blocks, ..
-    }) = &mut game.combat
-    else {
+    let Some(CombatState::ProposingBlockers(blockers)) = &mut game.combat else {
         fail!("Not in the 'ProposingBlockers' state");
     };
-    if attackers.len() == 1 {
+    if let Some(id) = blockers.attackers.exactly_one() {
         // Only one attacker, automatically block it.
-        proposed_blocks.insert(card_id, *attackers.keys().next().unwrap());
+        blockers.proposed_blocks.insert(card_id, id);
     } else {
-        active_blockers.insert(card_id);
+        blockers.active_blockers.insert(card_id);
     }
     outcome::OK
 }
@@ -158,14 +148,12 @@ fn set_active_blockers_target(
     source: Source,
     attacker: AttackerId,
 ) -> Outcome {
-    let Some(CombatState::ProposingBlockers { active_blockers, proposed_blocks, .. }) =
-        &mut game.combat
-    else {
+    let Some(CombatState::ProposingBlockers(blockers)) = &mut game.combat else {
         fail!("Not in the 'ProposingBlockers' state");
     };
 
-    for blocker_id in active_blockers.iter() {
-        proposed_blocks.insert(*blocker_id, attacker);
+    for blocker_id in blockers.active_blockers.iter() {
+        blockers.proposed_blocks.insert(*blocker_id, attacker);
     }
     outcome::OK
 }
@@ -175,13 +163,11 @@ fn set_active_blockers_target(
 /// See [CombatAction::RemoveBlocker].
 #[instrument(err, level = "debug", skip(game))]
 fn remove_blocker(game: &mut GameState, source: Source, card_id: BlockerId) -> Outcome {
-    let Some(CombatState::ProposingBlockers { active_blockers, proposed_blocks, .. }) =
-        &mut game.combat
-    else {
+    let Some(CombatState::ProposingBlockers(blockers)) = &mut game.combat else {
         fail!("Not in the 'ProposingBlockers' state");
     };
-    active_blockers.remove(&card_id);
-    proposed_blocks.remove(&card_id);
+    blockers.active_blockers.remove(&card_id);
+    blockers.proposed_blocks.remove(&card_id);
     outcome::OK
 }
 
@@ -190,23 +176,19 @@ fn remove_blocker(game: &mut GameState, source: Source, card_id: BlockerId) -> O
 /// See [CombatAction::ConfirmBlockers].
 #[instrument(err, level = "debug", skip(game))]
 fn confirm_blockers(game: &mut GameState, source: Source) -> Outcome {
-    let Some(CombatState::ProposingBlockers { attackers, proposed_blocks, .. }) =
-        game.combat.take()
-    else {
+    let Some(CombatState::ProposingBlockers(blockers)) = game.combat.take() else {
         fail!("Not in the 'ProposingBlockers' state");
     };
     let mut attackers_to_blockers = HashMap::new();
-    for (&blocker_id, &attacker_id) in &proposed_blocks {
+    for (&blocker_id, &attacker_id) in &blockers.proposed_blocks {
         // TODO: Figure out some kind of default ordering for blockers
         attackers_to_blockers.entry(attacker_id).or_insert_with(Vec::new).push(blocker_id);
     }
-    game.combat = Some(CombatState::OrderingBlockers {
-        blockers: BlockerMap {
-            all_attackers: attackers,
-            blocked_attackers: attackers_to_blockers,
-            reverse_lookup: proposed_blocks,
-        },
-    });
+    game.combat = Some(CombatState::OrderingBlockers(BlockerMap {
+        all_attackers: blockers.attackers,
+        blocked_attackers: attackers_to_blockers,
+        reverse_lookup: blockers.proposed_blocks,
+    }));
     outcome::OK
 }
 
@@ -221,7 +203,7 @@ fn order_blocker(
     blocker_id: BlockerId,
     position: usize,
 ) -> Outcome {
-    let Some(CombatState::OrderingBlockers { blockers }) = &mut game.combat else {
+    let Some(CombatState::OrderingBlockers(blockers)) = &mut game.combat else {
         fail!("Not in the 'OrderingBlockers' state");
     };
     let entry = blockers
@@ -238,9 +220,9 @@ fn order_blocker(
 /// See [CombatAction::ConfirmBlockerOrder].
 #[instrument(err, level = "debug", skip(game))]
 fn confirm_blocker_order(game: &mut GameState, source: Source) -> Outcome {
-    let Some(CombatState::OrderingBlockers { blockers }) = game.combat.take() else {
+    let Some(CombatState::OrderingBlockers(blockers)) = game.combat.take() else {
         fail!("Not in the 'OrderingBlockers' state");
     };
-    game.combat = Some(CombatState::ConfirmedBlockers { blockers });
+    game.combat = Some(CombatState::ConfirmedBlockers(blockers));
     outcome::OK
 }

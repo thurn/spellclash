@@ -82,7 +82,7 @@ fn GameInfo(view: Arc<GameView>) -> Element {
 fn GameButtons(buttons: Vec<GameButton>) -> Element {
     rsx! {
         div {
-            class: "flex flex-row",
+            class: "flex flex-col",
             for button in buttons {
                 GameButton {
                     model: button

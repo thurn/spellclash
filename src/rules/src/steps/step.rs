@@ -16,7 +16,9 @@ use std::collections::{HashMap, HashSet};
 
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardType, PlayerName, Source};
-use data::game_states::combat_state::CombatState;
+use data::game_states::combat_state::{
+    AttackerMap, CombatState, ProposedAttackers, ProposedBlockers,
+};
 use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
 use enumset::EnumSet;
@@ -190,10 +192,10 @@ fn declare_attackers(game: &mut GameState, config: &StepConfig) -> Outcome {
         // > active player continuously since the turn began.
         // <https://yawgatog.com/resources/magic-rules/#R5081>
 
-        game.combat = Some(CombatState::ProposingAttackers {
-            proposed_attacks: HashMap::new(),
+        game.combat = Some(CombatState::ProposingAttackers(ProposedAttackers {
+            proposed_attacks: AttackerMap::default(),
             active_attackers: HashSet::new(),
-        });
+        }));
         outcome::OK
     }
 }
@@ -212,15 +214,15 @@ fn declare_blockers(game: &mut GameState, config: &StepConfig) -> Outcome {
         // > attacking that player, a planeswalker they control, or a battle they protect.
         // <https://yawgatog.com/resources/magic-rules/#R5091>
         let next = players::next_player(game);
-        let Some(CombatState::ConfirmedAttackers { attackers }) = game.combat.take() else {
+        let Some(CombatState::ConfirmedAttackers(attackers)) = game.combat.take() else {
             fail!("Not in the 'ConfirmedAttackers' state");
         };
-        game.combat = Some(CombatState::ProposingBlockers {
+        game.combat = Some(CombatState::ProposingBlockers(ProposedBlockers {
             defender: next,
             attackers,
             active_blockers: HashSet::new(),
             proposed_blocks: HashMap::new(),
-        });
+        }));
         outcome::OK
     }
 }

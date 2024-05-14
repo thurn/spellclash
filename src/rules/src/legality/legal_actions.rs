@@ -21,7 +21,7 @@ use data::game_states::combat_state::{CombatState, CombatStateKind};
 use data::game_states::game_state::GameState;
 use data::printed_cards::printed_card::Face;
 
-use crate::legality::can_pay_mana_cost;
+use crate::legality::{can_pay_mana_cost, legal_combat_actions};
 use crate::play_cards::{pick_face_to_play, play_card};
 
 /// List of all legal actions the named player can take in the
@@ -42,6 +42,7 @@ pub fn compute(game: &GameState, player: PlayerName) -> Vec<GameAction> {
         }
     }
 
+    legal_combat_actions::append(game, player, &mut result);
     result
 }
 
@@ -59,11 +60,11 @@ pub fn can_take_action(
 /// Returns the name of the player who is currently allowed to take an action.
 pub fn next_to_act(game: &GameState) -> PlayerName {
     match game.combat.as_ref() {
-        Some(CombatState::ProposingAttackers { .. }) => game.turn.active_player,
-        Some(CombatState::ConfirmedAttackers { .. }) => game.priority,
-        Some(CombatState::ProposingBlockers { defender, .. }) => *defender,
-        Some(CombatState::OrderingBlockers { .. }) => game.turn.active_player,
-        Some(CombatState::ConfirmedBlockers { .. }) => game.priority,
+        Some(CombatState::ProposingAttackers(_)) => game.turn.active_player,
+        Some(CombatState::ConfirmedAttackers(_)) => game.priority,
+        Some(CombatState::ProposingBlockers(blockers)) => blockers.defender,
+        Some(CombatState::OrderingBlockers(_)) => game.turn.active_player,
+        Some(CombatState::ConfirmedBlockers(_)) => game.priority,
         None => game.priority,
     }
 }

@@ -17,7 +17,7 @@ use std::iter;
 use data::card_states::card_state::TappedState;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, CardType, EntityId};
-use data::game_states::combat_state::{AttackTarget, BlockerMap, CombatState};
+use data::game_states::combat_state::{AttackTarget, BlockerMap, CombatState, ProposedAttackers};
 use data::game_states::game_state::GameState;
 
 use crate::queries::{card_queries, players};
@@ -98,46 +98,41 @@ pub enum CombatRole {
 pub fn role(game: &GameState, entity: EntityId) -> Option<CombatRole> {
     match &game.combat {
         None => None,
-        Some(CombatState::ProposingAttackers { proposed_attacks, active_attackers }) => {
-            if proposed_attacks.contains_key(&entity) {
-                Some(CombatRole::ProposedAttacker(proposed_attacks[&entity]))
-            } else if active_attackers.contains(&entity) {
+        Some(CombatState::ProposingAttackers(attackers)) => {
+            if attackers.proposed_attacks.contains(entity) {
+                Some(CombatRole::ProposedAttacker(attackers.proposed_attacks.get_target(entity)?))
+            } else if attackers.active_attackers.contains(&entity) {
                 Some(CombatRole::ActiveAttacker)
             } else {
                 None
             }
         }
-        Some(CombatState::ConfirmedAttackers { attackers }) => {
-            if attackers.contains_key(&entity) {
-                Some(CombatRole::Attacker(attackers[&entity]))
+        Some(CombatState::ConfirmedAttackers(attackers)) => {
+            if attackers.contains(entity) {
+                Some(CombatRole::Attacker(attackers.get_target(entity)?))
             } else {
                 None
             }
         }
-        Some(CombatState::ProposingBlockers {
-            attackers,
-            active_blockers,
-            proposed_blocks,
-            ..
-        }) => {
-            if proposed_blocks.contains_key(&entity) {
-                Some(CombatRole::ProposedBlocker(proposed_blocks[&entity]))
-            } else if active_blockers.contains(&entity) {
+        Some(CombatState::ProposingBlockers(blockers)) => {
+            if blockers.proposed_blocks.contains_key(&entity) {
+                Some(CombatRole::ProposedBlocker(blockers.proposed_blocks[&entity]))
+            } else if blockers.active_blockers.contains(&entity) {
                 Some(CombatRole::ActiveBlocker)
-            } else if attackers.contains_key(&entity) {
-                Some(CombatRole::Attacker(attackers[&entity]))
+            } else if blockers.attackers.contains(entity) {
+                Some(CombatRole::Attacker(blockers.attackers.get_target(entity)?))
             } else {
                 None
             }
         }
-        Some(CombatState::OrderingBlockers { blockers }) => role_in_blocker_map(entity, blockers),
-        Some(CombatState::ConfirmedBlockers { blockers }) => role_in_blocker_map(entity, blockers),
+        Some(CombatState::OrderingBlockers(blockers)) => role_in_blocker_map(entity, blockers),
+        Some(CombatState::ConfirmedBlockers(blockers)) => role_in_blocker_map(entity, blockers),
     }
 }
 
 fn role_in_blocker_map(entity: EntityId, blockers: &BlockerMap) -> Option<CombatRole> {
-    if blockers.all_attackers.contains_key(&entity) {
-        Some(CombatRole::Attacker(blockers.all_attackers[&entity]))
+    if blockers.all_attackers.contains(entity) {
+        Some(CombatRole::Attacker(blockers.all_attackers.get_target(entity)?))
     } else if blockers.reverse_lookup.contains_key(&entity) {
         let attacker_id = blockers.reverse_lookup[&entity];
         Some(CombatRole::Blocking {

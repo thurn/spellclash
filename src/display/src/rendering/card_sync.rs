@@ -17,7 +17,7 @@ use data::actions::user_action::UserAction;
 use data::card_states::card_state::{CardFacing, CardState, TappedState};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{PlayerName, Source};
-use data::game_states::combat_state::CombatState;
+use data::game_states::combat_state::{CombatState, ProposedAttackers};
 use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
 use data::printed_cards::printed_card::{Face, PrintedCardFace};
@@ -115,7 +115,10 @@ fn card_action(player: PlayerName, game: &GameState, card: &CardState) -> Option
     if play_card::can_play_card(game, player, Source::Game, card.id) {
         Some(GameAction::ProposePlayingCard(card.id).into())
     } else if game.step == GamePhaseStep::DeclareAttackers && game.turn.active_player == player {
-        if let Some(CombatState::ProposingAttackers { active_attackers, .. }) = &game.combat {
+        if let Some(CombatState::ProposingAttackers(ProposedAttackers {
+            active_attackers, ..
+        })) = &game.combat
+        {
             if active_attackers.contains(&card.entity_id) {
                 Some(CombatAction::RemoveAttacker(card.entity_id).into())
             } else {
@@ -125,8 +128,8 @@ fn card_action(player: PlayerName, game: &GameState, card: &CardState) -> Option
             None
         }
     } else if game.step == GamePhaseStep::DeclareBlockers && game.turn.active_player != player {
-        if let Some(CombatState::ProposingBlockers { active_blockers, .. }) = &game.combat {
-            if active_blockers.contains(&card.entity_id) {
+        if let Some(CombatState::ProposingBlockers(blockers)) = &game.combat {
+            if blockers.active_blockers.contains(&card.entity_id) {
                 Some(CombatAction::RemoveBlocker(card.entity_id).into())
             } else {
                 Some(CombatAction::AddActiveBlocker(card.entity_id).into())

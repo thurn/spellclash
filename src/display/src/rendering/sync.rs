@@ -80,13 +80,13 @@ fn bottom_game_buttons(game: &GameState, player: PlayerName) -> Vec<GameButton> 
         result.push(GameButton::new("Continue", GameAction::PassPriority));
     }
     if legal_actions::can_take_action(game, player, CombatAction::ConfirmAttackers) {
-        result.push(GameButton::new("Confirm Attacks", GameAction::PassPriority));
+        result.push(GameButton::new("Confirm Attacks", CombatAction::ConfirmAttackers));
     }
     if legal_actions::can_take_action(game, player, CombatAction::ConfirmBlockers) {
-        result.push(GameButton::new("Confirm Blocks", GameAction::PassPriority));
+        result.push(GameButton::new("Confirm Blocks", CombatAction::ConfirmBlockers));
     }
     if legal_actions::can_take_action(game, player, CombatAction::ConfirmBlockerOrder) {
-        result.push(GameButton::new("Confirm Block Order", GameAction::PassPriority));
+        result.push(GameButton::new("Confirm Block Order", CombatAction::ConfirmBlockerOrder));
     }
 
     result
