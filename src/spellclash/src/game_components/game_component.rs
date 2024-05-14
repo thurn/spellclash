@@ -22,9 +22,10 @@ use display::core::object_position::{BattlefieldPosition, Position};
 use game::server_data::ClientData;
 
 use crate::client_actions::client_action;
+use crate::game_components::button_component;
 use crate::game_components::card_component::CardComponent;
 
-pub const CARD_HEIGHT: u64 = 120;
+pub const CARD_HEIGHT: f64 = 10.0;
 
 #[component]
 pub fn GameComponent(view: GameView) -> Element {
@@ -61,7 +62,8 @@ fn GameInfo(view: Arc<GameView>) -> Element {
         div {
             class: "flex flex-col items-center",
             div {
-                class: "mr-2 text-m",
+                style: "font-size: 1.5vmin",
+                class: "mr-2",
                 "{view.status_description}"
             }
         }
@@ -98,7 +100,8 @@ fn GameButton(model: GameButton) -> Element {
 
     rsx! {
         button {
-            class: "m-2",
+            style: "font-size: 2vmin",
+            class: button_component::CLASS,
             onclick: move |_| {
                 client_action::client_execute_action(cd_signal, view_signal, nav, model.action)
             },
@@ -170,15 +173,18 @@ fn PlayerComponent(name: &'static str, player: PlayerView) -> Element {
             style: "width: 100px",
             class: "m-2 text-center",
             div {
-                class: "mr-2 text-xl",
+                style: "font-size: 1.5vmin",
+                class: "mr-2",
                 "{name}"
             }
             div {
-                class: "mr-2 text-m",
+                style: "font-size: 2vmin",
+                class: "mr-2",
                 "Life: {player.life}"
             }
             div {
-                class: "mr-2 text-m",
+                style: "font-size: 1.5vmin",
+                class: "mr-2",
                 "Can Act: {player.can_act}"
             }
         }
@@ -190,13 +196,14 @@ fn ZoneComponent(name: &'static str, cards: Vec<CardView>) -> Element {
     rsx! {
         div {
             class: "bg-slate-300 m-2 rounded",
-            style: "height: {CARD_HEIGHT}px",
+            style: "height: {CARD_HEIGHT}vmin",
             div {
                 class: "flex flex-row",
                 for card in cards {
                     CardComponent { card }
                 }
                 div {
+                    style: "font-size: 2vmin",
                     class: "ml-2",
                     "{name}"
                 }

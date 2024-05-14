@@ -49,7 +49,7 @@ pub fn RevealedCardComponent(card: CardView, revealed: RevealedCardView) -> Elem
     let cd_signal = consume_context::<Signal<ClientData>>();
     let view_signal = consume_context::<Signal<Option<GameView>>>();
     let nav = use_navigator();
-    let width = (CARD_HEIGHT as f64) * (5.0 / 7.0);
+    let width = CARD_HEIGHT * (5.0 / 7.0);
     let (class, label) = match revealed.status {
         None => ("border-2 border-black", String::new()),
         Some(RevealedCardStatus::CanPlay) => ("border-4 border-amber-300", String::new()),
@@ -64,8 +64,8 @@ pub fn RevealedCardComponent(card: CardView, revealed: RevealedCardView) -> Elem
             div {
                 if text_only {
                     div {
-                        width: "{width}px",
-                        height: "{CARD_HEIGHT}px",
+                        width: "{width}vmin",
+                        height: "{CARD_HEIGHT}vmin",
                         class: class,
                         onclick: { move |_|
                             client_action::client_execute_action(
@@ -75,13 +75,16 @@ pub fn RevealedCardComponent(card: CardView, revealed: RevealedCardView) -> Elem
                                 action
                             )
                         },
-                        "{name}"
+                        span {
+                            style: "font-size: 2vmin",
+                            "{name}"
+                        }
                     }
                 } else {
                     img {
                         src: revealed.face.image,
-                        width: "{width}px",
-                        height: "{CARD_HEIGHT}px",
+                        width: "{width}vmin",
+                        height: "{CARD_HEIGHT}vmin",
                         class: class,
                         onclick: move |_|
                             client_action::client_execute_action(
@@ -93,6 +96,7 @@ pub fn RevealedCardComponent(card: CardView, revealed: RevealedCardView) -> Elem
                     }
                 }
                 span {
+                    style: "font-size: 2vmin",
                     "{label}"
                 }
             }
@@ -100,16 +104,23 @@ pub fn RevealedCardComponent(card: CardView, revealed: RevealedCardView) -> Elem
             if text_only {
                 div {
                     class: "border-2 border-black",
-                    width: "{width}px",
-                    height: "{CARD_HEIGHT}px",
-                    "{name}"
+                    width: "{width}vmin",
+                    height: "{CARD_HEIGHT}vmin",
+                    span {
+                        style: "font-size: 2vmin",
+                        "{name}"
+                    }
                 }
             } else {
                 img {
                     src: revealed.face.image,
-                    width: "{width}px",
-                    height: "{CARD_HEIGHT}px"
+                    width: "{width}vmin",
+                    height: "{CARD_HEIGHT}vmin"
                 }
+            }
+            span {
+                style: "font-size: 2vmin",
+                "{label}"
             }
         }
     }
@@ -117,13 +128,21 @@ pub fn RevealedCardComponent(card: CardView, revealed: RevealedCardView) -> Elem
 
 #[component]
 pub fn HiddenCardComponent(card: CardView) -> Element {
-    let width = (CARD_HEIGHT as f64) * (5.0 / 7.0);
-    let image = if ARGS.get().expect("CLI Args").text_only { None } else { Some(card.card_back) };
+    let width = CARD_HEIGHT * (5.0 / 7.0);
+    let text_only = ARGS.get().map_or(false, |args| args.text_only);
     rsx! {
-        img {
-            src: image,
-            width: "{width}px",
-            height: "{CARD_HEIGHT}px",
+        if text_only {
+            div {
+                class: "border-2 border-black",
+                width: "{width}vmin",
+                height: "{CARD_HEIGHT}vmin",
+            }
+        } else {
+            img {
+                src: card.card_back,
+                width: "{width}vmin",
+                height: "{CARD_HEIGHT}vmin",
+            }
         }
     }
 }
