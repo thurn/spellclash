@@ -24,7 +24,7 @@ use utils::{fail, outcome, verify};
 
 use crate::action_handlers::{combat_actions, debug_actions};
 use crate::legality::legal_actions;
-use crate::mutations::{cards, priority};
+use crate::mutations::{permanents, priority};
 use crate::play_cards::{pick_face_to_play, play_card};
 use crate::queries::players;
 use crate::resolve_cards::resolve;

@@ -20,7 +20,7 @@ use enumset::EnumSet;
 use utils::outcome::Outcome;
 use utils::{fail, outcome};
 
-use crate::mutations::cards;
+use crate::mutations::permanents;
 use crate::queries::card_queries;
 
 /// Resolve the top item on the stack and apply its effects. Has no effect if
@@ -52,7 +52,7 @@ pub fn resolve_top_of_stack(game: &mut GameState) -> Outcome {
             } else {
                 fail!("Expected only a single face!");
             };
-            cards::turn_face_up(game, Source::Game, card_id, face)?;
+            permanents::turn_face_up(game, Source::Game, card_id, face)?;
             game.move_card(Source::Game, card_id, Zone::Battlefield)?;
         } else {
             todo!("Implement targeting for permanents");

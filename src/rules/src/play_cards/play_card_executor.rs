@@ -19,7 +19,7 @@ use data::game_states::game_state::GameState;
 use utils::outcome::Outcome;
 use utils::{fail, outcome};
 
-use crate::mutations::{cards, priority};
+use crate::mutations::{permanents, priority};
 
 /// Plays a card, based on the set of choices in a completed [PlayCardPlan].
 pub fn execute_plan(
@@ -30,13 +30,13 @@ pub fn execute_plan(
     plan: PlayCardPlan,
 ) -> Outcome {
     for land in &plan.mana_payment.basic_land_abilities_to_activate {
-        cards::tap(game, source, *land)?;
+        permanents::tap(game, source, *land)?;
     }
 
     if plan.spell_choices.play_as.play_as == PlayCardTiming::Land {
         game.history_counters_mut(player).lands_played += 1;
         let face = plan.spell_choices.play_as.single_face()?;
-        cards::turn_face_up(game, source, card_id, face)?;
+        permanents::turn_face_up(game, source, card_id, face)?;
         game.move_card(source, card_id, Zone::Battlefield)
     } else {
         game.card_mut(card_id).cast_as = plan.spell_choices.play_as.faces;

@@ -25,7 +25,7 @@ use enumset::EnumSet;
 use utils::outcome::Outcome;
 use utils::{fail, outcome};
 
-use crate::mutations::{cards, library};
+use crate::mutations::{library, permanents};
 use crate::queries::{card_queries, players};
 
 /// Advances the game state to the indicated `step`.
@@ -120,7 +120,7 @@ fn untap(game: &mut GameState, config: &StepConfig) -> Outcome {
     // <https://yawgatog.com/resources/magic-rules/#R5023>
     let to_untap = game.battlefield(next).clone();
     for &card_id in &to_untap {
-        cards::untap(game, Source::Game, card_id)?;
+        permanents::untap(game, Source::Game, card_id)?;
     }
 
     // > 502.4. No player receives priority during the untap step, so no spells can
