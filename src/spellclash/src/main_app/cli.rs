@@ -13,9 +13,15 @@
 // limitations under the License.
 
 use clap::Parser;
+use once_cell::sync::OnceCell;
 
 use crate::initialize::version;
 
+pub static ARGS: OnceCell<Cli> = OnceCell::new();
+
 #[derive(Parser, Debug)]
 #[command(version = version(), about)]
-pub struct Cli {}
+pub struct Cli {
+    #[clap(long, action, help = "Prevent the client from fetching images")]
+    pub text_only: bool,
+}

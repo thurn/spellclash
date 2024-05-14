@@ -23,7 +23,8 @@ use tracing::info;
 use utils::outcome;
 use utils::outcome::Outcome;
 
-use crate::main_app::{game_client, initialize, logging};
+use crate::main_app::cli::ARGS;
+use crate::main_app::{cli, game_client, initialize, logging};
 
 mod client_actions;
 mod game_components;
@@ -34,7 +35,8 @@ fn main() -> Outcome {
     if env::var("DISABLE_PANIC_HANDLER").is_err() {
         initialize::initialize_panic_handler()?;
     }
-    Cli::parse();
+    let args = Cli::parse();
+    ARGS.set(args).expect("Args should not be set multiple times");
     card_list::initialize();
 
     let commit = env!("VERGEN_GIT_SHA");

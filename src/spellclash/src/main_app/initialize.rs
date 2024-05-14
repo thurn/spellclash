@@ -110,7 +110,6 @@ pub fn version() -> String {
     format!(
         "\
 {version}
-
 Built: {build_date}
 Commit: {sha}
 Log file: {log_file_string}
