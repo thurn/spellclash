@@ -17,6 +17,7 @@ use std::iter;
 use data::actions::game_action::GameAction;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, PlayerName, Source};
+use data::game_states::combat_state::{CombatState, CombatStateKind};
 use data::game_states::game_state::GameState;
 use data::printed_cards::printed_card::Face;
 
@@ -27,7 +28,11 @@ use crate::play_cards::{pick_face_to_play, play_card};
 /// current game state.
 pub fn compute(game: &GameState, player: PlayerName) -> Vec<GameAction> {
     let mut result = vec![];
-    if next_to_act(game) == player {
+    if next_to_act(game) != player {
+        return result;
+    }
+
+    if can_pass_priority(game, player) {
         result.push(GameAction::PassPriority);
     }
 
@@ -53,11 +58,24 @@ pub fn can_take_action(
 
 /// Returns the name of the player who is currently allowed to take an action.
 pub fn next_to_act(game: &GameState) -> PlayerName {
-    game.priority
+    match game.combat.as_ref() {
+        Some(CombatState::ProposingAttackers { .. }) => game.turn.active_player,
+        Some(CombatState::ConfirmedAttackers { .. }) => game.priority,
+        Some(CombatState::ProposingBlockers { defender, .. }) => *defender,
+        Some(CombatState::OrderingBlockers { .. }) => game.turn.active_player,
+        Some(CombatState::ConfirmedBlockers { .. }) => game.priority,
+        None => game.priority,
+    }
 }
 
 /// Returns true if the named player can currently take the action to pass
 /// priority.
-pub fn can_pass_priority(game: &GameState, player: PlayerName) -> bool {
+fn can_pass_priority(game: &GameState, player: PlayerName) -> bool {
+    match game.combat.as_ref().map(|c| c.kind()) {
+        Some(CombatStateKind::ProposingAttackers)
+        | Some(CombatStateKind::ProposingBlockers)
+        | Some(CombatStateKind::OrderingBlockers) => return false,
+        _ => {}
+    }
     game.priority == player
 }

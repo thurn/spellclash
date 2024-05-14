@@ -14,6 +14,7 @@
 
 use std::collections::{HashMap, HashSet};
 
+use enum_kinds::EnumKind;
 use serde::{Deserialize, Serialize};
 
 use crate::core::primitives::{CardId, EntityId, PlayerName};
@@ -28,12 +29,13 @@ pub type BlockerId = EntityId;
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum AttackTarget {
     Player(PlayerName),
-    Planeswalker(CardId),
-    Battle(CardId),
+    Planeswalker(EntityId),
+    Battle(EntityId),
 }
 
 /// Tracks the state of creatures participating in a combat phase
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, EnumKind)]
+#[enum_kind(CombatStateKind)]
 pub enum CombatState {
     /// The active player is selecting attackers and has currently picked this
     /// set of creatures to attack the indicated [AttackTarget]s.
@@ -52,6 +54,9 @@ pub enum CombatState {
     /// The defending player is selecting blockers and has currently picked this
     /// set of blockers.
     ProposingBlockers {
+        /// The player who is proposing blockers
+        defender: PlayerName,
+
         /// Attacking creatures
         attackers: HashMap<AttackerId, AttackTarget>,
 
@@ -71,6 +76,12 @@ pub enum CombatState {
     /// The attacking player has ordered blockers and is ready to proceed to
     /// combat damage.
     ConfirmedBlockers { blockers: BlockerMap },
+}
+
+impl CombatState {
+    pub fn kind(&self) -> CombatStateKind {
+        self.into()
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

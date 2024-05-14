@@ -211,10 +211,12 @@ fn declare_blockers(game: &mut GameState, config: &StepConfig) -> Outcome {
         // > chosen creatures, the defending player chooses one creature for it to block that's
         // > attacking that player, a planeswalker they control, or a battle they protect.
         // <https://yawgatog.com/resources/magic-rules/#R5091>
+        let next = players::next_player(game);
         let Some(CombatState::ConfirmedAttackers { attackers }) = game.combat.take() else {
             fail!("Not in the 'ConfirmedAttackers' state");
         };
         game.combat = Some(CombatState::ProposingBlockers {
+            defender: next,
             attackers,
             active_blockers: HashSet::new(),
             proposed_blocks: HashMap::new(),

@@ -182,6 +182,12 @@ impl GameState {
         fail!("User {user_id:?} is not a player in game {:?}", self.id);
     }
 
+    /// Returns true if this player is currently the active player (the player
+    /// whose turn it is).
+    pub fn is_active_player(&self, player: PlayerName) -> bool {
+        self.turn.active_player == player
+    }
+
     /// Adds a current [HistoryEvent] for the current turn.
     pub fn add_history_event(&mut self, event: HistoryEvent) {
         self.history.add_event(self.turn, event)
