@@ -3,7 +3,6 @@ name = "spellclash"
 version = "0.0.0"
 edition = "2021"
 build = "build.rs"
-default-run = "spellclash"
 
 [[bin]]
 name = "spellclash"
