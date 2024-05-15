@@ -1,0 +1,2 @@
+# Prevents infinite reload loop from build.rs changes
+src/card_list.rs

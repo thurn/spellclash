@@ -12,12 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-fn main() {
-    vergen::EmitBuilder::builder()
-        .all_build()
-        .all_git()
-        .fail_on_error()
-        .emit()
-        .expect("Error running vergen");
-    tauri_build::build()
+use clap::Parser;
+use once_cell::sync::OnceCell;
+
+use crate::initialize::version;
+
+pub static ARGS: OnceCell<Cli> = OnceCell::new();
+
+#[derive(Parser, Debug)]
+#[command(version = version(), about)]
+pub struct Cli {
+    #[clap(long, action, help = "Prevent the client from fetching images")]
+    pub text_only: bool,
 }
