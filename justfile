@@ -66,7 +66,8 @@ remove-unused-deps: machete
 
 @dropbox:
     find . -name '*conflicted*' -delete
-    xattr -w com.dropbox.ignored 1 target/
+    xattr -w com.dropbox.ignored 1 src-tauri/target
+    xattr -w com.dropbox.ignored 1 node_modules
 
 internal_clean:
   rm -rf target/debug

@@ -4,7 +4,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { Button } from "@nextui-org/button";
 import {Input} from "@nextui-org/input";
 
-function App() {
+function Demo() {
   const [greetMsg, setGreetMsg] = useState("");
   const [name, setName] = useState("");
 
@@ -54,4 +54,4 @@ function App() {
   );
 }
 
-export default App;
+export default Demo;
