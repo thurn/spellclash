@@ -3,4 +3,4 @@ target
 **/*.rs.bk
 *.pdb
 *.DS_Store
-src-tauri/spellclash/dist
+src-tauri/src/spellclash/dist/
