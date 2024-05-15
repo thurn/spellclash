@@ -16,7 +16,7 @@ use std::collections::HashMap;
 
 use data::core::primitives::{CardId, PlayerName};
 
-use crate::commands::command::Command;
+use crate::commands::command::{Command, UpdateGameViewCommand};
 use crate::commands::display_preferences::DisplayPreferences;
 use crate::core::game_view::{DisplayPlayer, GameView};
 use crate::core::object_position::ObjectPosition;
@@ -72,7 +72,10 @@ impl ResponseBuilder {
             self.last_snapshot_positions.insert(card.id, card.position.clone());
         }
 
-        self.commands.push(Command::UpdateGameView { view: game, animate: self.state.animate });
+        self.commands.push(Command::UpdateGameView(UpdateGameViewCommand {
+            view: game,
+            animate: self.state.animate,
+        }));
     }
 
     /// Converts a [PlayerName] into a [DisplayPlayer].

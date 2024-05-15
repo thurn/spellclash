@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use serde::{Deserialize, Serialize};
+
 use crate::actions::game_action::GameAction;
 use crate::actions::new_game_action::NewGameAction;
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub enum UserAction {
     NewGameAction(NewGameAction),
     GameAction(GameAction),

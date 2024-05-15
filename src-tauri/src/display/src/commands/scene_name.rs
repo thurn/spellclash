@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::GameId;
+use serde::{Deserialize, Serialize};
 
 /// Top-level states the user interface can be in
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum SceneName {
     MainMenu,
-    Game(GameId),
+    Game,
 }

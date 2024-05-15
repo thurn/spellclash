@@ -13,12 +13,26 @@
 // limitations under the License.
 
 import { Button, ButtonProps } from "@nextui-org/react";
+import { invoke } from "@tauri-apps/api/core";
+import { GameResponse } from "./display_types";
+
+async function connect() {
+  console.log("Connecting...")
+  const result: GameResponse = await invoke("client_connect", {});
+  console.log("Connected!");
+  console.dir(result);
+  console.log("commands " + result.commands);
+  console.log("first command " + result.commands[0]);
+  console.dir(result.commands[0].UpdateGameView);
+  console.log("animate? " + result.commands[0].UpdateGameView?.animate);
+  console.log("state: " + result.commands[0].UpdateGameView?.view.state);
+}
 
 function MainMenu() {
   const imageHeight = 125;
   const imageAspectRatio = 1.4;
   return (
-    <div className="w-screen h-screen overflow-clip">
+    <div className="w-screen h-screen">
       <img
         style={{
           transformOrigin: "center",
@@ -30,7 +44,6 @@ function MainMenu() {
           marginRight: "auto",
           width: `${imageHeight}vh`,
           height: `${imageHeight * imageAspectRatio}vh`,
-          overflow: "clip",
           zIndex: -10,
         }}
         src="https://cards.scryfall.io/png/front/2/3/23c4e8fb-0bc2-4449-a8df-a455b1ea9be4.png"
@@ -45,7 +58,7 @@ function MenuItems() {
   return (
     <div className="flex flex-col w-1/5 items-stretch text-center absolute left-2 bottom-2">
       <h1 className="text-3xl font-bold text-white font-title">Spellclash</h1>
-      <MainMenuButton color="primary">Play</MainMenuButton>
+      <MainMenuButton color="primary" onPress={connect}>Play</MainMenuButton>
       <MainMenuButton color="default">Codex</MainMenuButton>
       <MainMenuButton color="default">Community</MainMenuButton>
       <MainMenuButton color="default">Settings</MainMenuButton>
@@ -57,12 +70,14 @@ function MenuItems() {
 function MainMenuButton({
   color,
   children,
+  onPress,
 }: {
-  color: ButtonProps["color"];
-  children: ButtonProps["children"];
+  color: ButtonProps["color"],
+  children: ButtonProps["children"],
+  onPress?: ButtonProps["onPress"]
 }) {
   return (
-    <Button className="m-1" color={color}>
+    <Button className="m-1" color={color} onPress={onPress}>
       {children}
     </Button>
   );

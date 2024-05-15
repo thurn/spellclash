@@ -27,5 +27,5 @@ pub async fn leave(database: Arc<dyn Database>, mut data: ClientData) -> Value<G
     user.activity = UserActivity::Menu;
     database.write_user(&user).await?;
     data.game_id = None;
-    Ok(GameResponse::new(data).command(requests::load_scene(SceneName::MainMenu)))
+    Ok(GameResponse::new(SceneName::MainMenu, data))
 }

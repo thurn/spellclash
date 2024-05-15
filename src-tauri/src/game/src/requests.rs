@@ -19,21 +19,9 @@ use data::game_states::animation_tracker::{AnimationState, AnimationTracker};
 use data::game_states::game_state::GameState;
 use data::users::user_state::UserState;
 use database::database::Database;
-use display::commands::command::Command;
-use display::commands::scene_name::SceneName;
 use oracle::card_database;
 use utils::outcome::{Outcome, Value};
 use utils::with_error::WithError;
-
-/// Command to load a named scene if it is not currently active
-pub fn load_scene(name: SceneName) -> Command {
-    Command::LoadScene { name, additive: false, load_if_current: false }
-}
-
-/// Command to load a named scene, even if it is currently active
-pub fn force_load_scene(name: SceneName) -> Command {
-    Command::LoadScene { name, additive: false, load_if_current: true }
-}
 
 /// Looks up a user by ID in the database.
 pub async fn fetch_user(database: Arc<dyn Database>, user_id: UserId) -> Value<UserState> {

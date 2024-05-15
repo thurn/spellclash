@@ -13,11 +13,12 @@
 // limitations under the License.
 
 use data::core::primitives::CardId;
+use serde::{Deserialize, Serialize};
 
 use crate::core::game_view::DisplayPlayer;
 
 /// Represents the position of some object in the UI
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct ObjectPosition {
     /// Position category
     pub position: Position,
@@ -34,14 +35,14 @@ impl Default for ObjectPosition {
 }
 
 /// Sub-positions for objects within the battlefield.
-#[derive(Clone, Debug, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum BattlefieldPosition {
     Mana,
     Permanents,
 }
 
 /// Possible types of display positions
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum Position {
     /// Object position used in interface elements like the deck viewer which
     /// don't rely on game positioning.

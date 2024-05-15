@@ -20,13 +20,11 @@ use display::commands::scene_name::SceneName;
 use tracing::info;
 use utils::outcome::Value;
 
-use crate::requests;
 use crate::server_data::{ClientData, GameResponse};
 
 /// Connect to the main menu scene
 pub async fn connect(_: Arc<dyn Database>, user: &UserState) -> Value<GameResponse> {
     info!(?user.id, "Connected");
-    let commands = vec![requests::load_scene(SceneName::MainMenu)];
     let client_data = ClientData::for_user(user.id);
-    Ok(GameResponse::new(client_data).commands(commands))
+    Ok(GameResponse::new(SceneName::MainMenu, client_data))
 }

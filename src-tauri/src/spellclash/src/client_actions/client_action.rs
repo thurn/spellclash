@@ -17,7 +17,7 @@ use std::sync::Arc;
 use data::actions::user_action::UserAction;
 use database::sled_database::SledDatabase;
 use dioxus::prelude::{Navigator, Signal, Writable};
-use display::commands::command::Command;
+use display::commands::command::{Command, UpdateGameViewCommand};
 use display::commands::scene_name::SceneName;
 use display::core::game_view::GameView;
 use game::server;
@@ -85,15 +85,7 @@ fn handle_commands(
         let kind = command.kind();
         debug!(?kind, "Handling command");
         match command {
-            Command::LoadScene { name, .. } => match name {
-                SceneName::MainMenu => {
-                    navigator.replace(Route::MainMenu {});
-                }
-                SceneName::Game(id) => {
-                    navigator.replace(Route::Game { id });
-                }
-            },
-            Command::UpdateGameView { view, .. } => {
+            Command::UpdateGameView(UpdateGameViewCommand { view, .. }) => {
                 *view_signal.write() = Some(view);
             }
         }

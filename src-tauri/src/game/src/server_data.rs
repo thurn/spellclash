@@ -15,18 +15,21 @@
 use data::core::primitives::{GameId, UserId};
 use display::commands::command::Command;
 use display::commands::display_preferences::DisplayPreferences;
+use display::commands::scene_name::SceneName;
+use serde::{Deserialize, Serialize};
 
 /// A response to a user request.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GameResponse {
+    pub scene: SceneName,
     pub client_data: ClientData,
     pub commands: Vec<Command>,
     pub opponent_responses: Vec<(UserId, Vec<Command>)>,
 }
 
 impl GameResponse {
-    pub fn new(client_data: ClientData) -> Self {
-        Self { client_data, commands: vec![], opponent_responses: vec![] }
+    pub fn new(scene: SceneName, client_data: ClientData) -> Self {
+        Self { scene, client_data, commands: vec![], opponent_responses: vec![] }
     }
 
     pub fn command(mut self, command: impl Into<Command>) -> Self {
@@ -54,7 +57,7 @@ impl GameResponse {
 }
 
 /// Standard parameters for a client request & response
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ClientData {
     pub user_id: UserId,
     pub game_id: Option<GameId>,

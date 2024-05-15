@@ -14,11 +14,13 @@
 
 use data::actions::user_action::UserAction;
 use data::core::numerics::LifeValue;
+use serde::Deserialize;
+use serde_with::serde_derive::Serialize;
 
 use crate::core::card_view::CardView;
 
 /// Represents the visual state of an ongoing game
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct GameView {
     /// Player who is operating the client
     pub viewer: PlayerView,
@@ -42,7 +44,7 @@ pub struct GameView {
     pub bottom_buttons: Vec<GameButton>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct GameButton {
     pub label: String,
     pub action: UserAction,
@@ -54,7 +56,7 @@ impl GameButton {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Copy)]
+#[derive(Clone, Debug, Eq, PartialEq, Copy, Serialize, Deserialize)]
 pub enum GameViewState {
     None,
 
@@ -63,7 +65,7 @@ pub enum GameViewState {
 }
 
 /// Identifies a player in the context of the user interface.
-#[derive(Clone, Debug, Eq, PartialEq, Copy, Hash)]
+#[derive(Clone, Debug, Eq, PartialEq, Copy, Hash, Serialize, Deserialize)]
 pub enum DisplayPlayer {
     /// Player who is currently operating the client
     Viewer,
@@ -73,7 +75,7 @@ pub enum DisplayPlayer {
 }
 
 /// Represents the visual state of a player in a game
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct PlayerView {
     /// Current life total
     pub life: LifeValue,

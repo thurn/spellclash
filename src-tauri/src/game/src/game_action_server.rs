@@ -55,15 +55,14 @@ pub async fn connect(
     }
 
     info!(?user.id, ?game.id, "Connected to game");
-    let mut commands = vec![requests::load_scene(SceneName::Game(game_id))];
-    commands.append(&mut render::connect(&game, player_name, DisplayPreferences::default()));
+    let commands = render::connect(&game, player_name, DisplayPreferences::default());
     let client_data = ClientData {
         user_id: user.id,
         game_id: Some(game.id),
         display_preferences: DisplayPreferences::default(),
         opponent_ids,
     };
-    Ok(GameResponse::new(client_data).commands(commands))
+    Ok(GameResponse::new(SceneName::Game, client_data).commands(commands))
 }
 
 #[instrument(level = "debug", skip(database))]
@@ -93,7 +92,7 @@ async fn handle_game_action_internal(
     let user_player_name = game.find_player_name(data.user_id)?;
     let mut current_player = user_player_name;
     let mut current_action = action;
-    let mut result = GameResponse::new(data.clone());
+    let mut result = GameResponse::new(SceneName::Game, data.clone());
 
     loop {
         actions::execute(

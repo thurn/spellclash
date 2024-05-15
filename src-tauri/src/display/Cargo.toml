@@ -13,4 +13,5 @@ data = { path = "../data", version = "0.0.0" }
 rules = { path = "../rules", version = "0.0.0" }
 
 enum-kinds = "0.5.1"
-schemars = "0.8.17"
+serde = { version = "1.0.198", features = ["derive"] }
+serde_with = "3.8.1"

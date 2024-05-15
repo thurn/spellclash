@@ -13,33 +13,24 @@
 // limitations under the License.
 
 use enum_kinds::EnumKind;
+use serde::{Deserialize, Serialize};
 
-use crate::commands::scene_name::SceneName;
 use crate::core::game_view::GameView;
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct UpdateGameViewCommand {
+    /// New visual game state
+    pub view: GameView,
+
+    /// Whether to animate updates to this state
+    pub animate: bool,
+}
+
 /// Represents an instruction to the client to perform some visual update.
-#[derive(Clone, Debug, EnumKind)]
+#[derive(Clone, Debug, EnumKind, Serialize, Deserialize)]
 #[enum_kind(CommandKind)]
 pub enum Command {
-    /// Requests to load a new top-level game scene
-    LoadScene {
-        /// Name of scene to load
-        name: SceneName,
-
-        /// Add this scene to the set of available scenes
-        additive: bool,
-
-        /// Loading this scene even if it is currently being displayed
-        load_if_current: bool,
-    },
-
-    UpdateGameView {
-        /// New visual game state
-        view: GameView,
-
-        /// Whether to animate updates to this state
-        animate: bool,
-    },
+    UpdateGameView(UpdateGameViewCommand),
 }
 
 impl Command {

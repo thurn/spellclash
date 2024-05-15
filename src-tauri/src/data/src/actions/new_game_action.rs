@@ -12,19 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use serde::{Deserialize, Serialize};
+
 use crate::actions::user_action::UserAction;
 use crate::core::primitives::{GameId, UserId};
 use crate::decks::deck_name::DeckName;
 
 /// Debug options for a new game
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Serialize, Deserialize)]
 pub struct NewGameDebugOptions {
     /// Set the created game to have this ID
     pub override_game_id: Option<GameId>,
 }
 
 /// Action to create a new game
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub struct NewGameAction {
     /// Deck to use for this game
     pub deck: DeckName,

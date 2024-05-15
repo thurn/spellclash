@@ -83,7 +83,7 @@ pub async fn create(
     let opponent_responses = opponent_ids
         .iter()
         .map(|&id| {
-            let mut commands = vec![requests::force_load_scene(SceneName::Game(game_id))];
+            let mut commands = vec![];
             commands.append(&mut render::connect(
                 &game,
                 game.find_player_name(id)?,
@@ -92,13 +92,12 @@ pub async fn create(
             Ok((id, commands))
         })
         .collect::<Result<Vec<_>, _>>()?;
-    let result = GameResponse::new(ClientData {
+    let result = GameResponse::new(SceneName::Game, ClientData {
         user_id: user.id,
         game_id: Some(game.id),
         display_preferences: DisplayPreferences::default(),
         opponent_ids,
     })
-    .command(requests::force_load_scene(SceneName::Game(game_id)))
     .commands(render::connect(
         &game,
         game.find_player_name(user.id)?,

@@ -16,13 +16,21 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::env;
+use std::sync::Arc;
 
 use all_cards::card_list;
 use clap::Parser;
+use data::actions::user_action::UserAction;
+use data::core::primitives::UserId;
+use database::sled_database::SledDatabase;
+use game::server;
+use game::server_data::{ClientData, GameResponse};
+use once_cell::sync::Lazy;
 use tracing::info;
 use utils::outcome;
 use utils::outcome::Outcome;
 use utils::with_error::WithError;
+use uuid::Uuid;
 
 use crate::cli::{Cli, ARGS};
 
@@ -30,10 +38,37 @@ mod cli;
 mod initialize;
 mod logging;
 
+static DATABASE: Lazy<Arc<SledDatabase>> =
+    Lazy::new(|| Arc::new(SledDatabase::new(initialize::get_data_dir())));
+
 #[tauri::command]
 fn greet(name: String) -> String {
     info!(?name, "Got greet request");
     format!("Hello, {}! You've been greeted from Rust!", name)
+}
+
+#[tauri::command]
+async fn client_connect() -> GameResponse {
+    info!("Got connect request");
+    let result = server::connect(DATABASE.clone(), UserId(Uuid::default())).await;
+    match result {
+        Ok(response) => response,
+        Err(err) => {
+            panic!("Error on connect: {:?}", err);
+        }
+    }
+}
+
+#[tauri::command]
+async fn client_handle_action(client_data: ClientData, action: UserAction) -> GameResponse {
+    info!(?action, ?client_data, "Got handle_action request");
+    let result = server::handle_action(DATABASE.clone(), client_data, action).await;
+    match result {
+        Ok(response) => response,
+        Err(err) => {
+            panic!("Error on handle_action: {:?}", err);
+        }
+    }
 }
 
 fn main() -> Outcome {
@@ -50,7 +85,7 @@ fn main() -> Outcome {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![greet, client_connect, client_handle_action])
         .run(tauri::generate_context!())
         .with_error(|| "Failed to start tauri")?;
 

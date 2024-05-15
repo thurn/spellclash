@@ -70,8 +70,8 @@ remove-unused-deps: machete
     xattr -w com.dropbox.ignored 1 node_modules
 
 internal_clean:
-  rm -rf target/debug
-  rm -rf target/release
-  rm -rf target/tmp
+  rm -rf src-tauri/target/debug
+  rm -rf src-tauri/target/release
+  rm -rf src-tauri/target/tmp
 
 clean: internal_clean dropbox

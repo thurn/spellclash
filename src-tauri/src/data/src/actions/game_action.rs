@@ -12,13 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use serde::Deserialize;
+use slotmap::__impl::Serialize;
+
 use crate::actions::debug_action::DebugGameAction;
 use crate::actions::user_action::UserAction;
 use crate::core::primitives::CardId;
 use crate::game_states::combat_state::{AttackTarget, AttackerId, BlockerId};
 
 /// Actions within a combat phase
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub enum CombatAction {
     /// Adds a creature as an 'active attacker'
     ///
@@ -93,7 +96,7 @@ impl From<CombatAction> for UserAction {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub enum GameAction {
     /// Debugging action.
     DebugAction(DebugGameAction),
