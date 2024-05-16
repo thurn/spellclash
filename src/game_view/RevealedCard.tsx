@@ -13,7 +13,34 @@
 // limitations under the License.
 
 import { ReactNode } from "react";
+import { RevealedCardView } from "../display_types";
 
-export function RevealedCard(): ReactNode {
-  return <div />;
+export function RevealedCard({
+  revealed,
+}: {
+  revealed: RevealedCardView;
+}): ReactNode {
+  let borderClass = "border-2 border-black";
+  let label = "";
+  if (revealed.status?.CanPlay != null) {
+    borderClass = "border-4 border-amber-300";
+  } else if (revealed.status?.Attacking != null) {
+    borderClass = "border-4 border-teal-300";
+    label = revealed.status.Attacking;
+  } else if (revealed.status?.Blocking != null) {
+    borderClass = "border-4 border-purple-300";
+    label = revealed.status.Blocking;
+  }
+
+  return (
+    <div className={borderClass}>
+      <img
+        src={revealed.face.image}
+        style={{
+          width: "100%",
+          height: "100%",
+        }}
+      />
+    </div>
+  );
 }

@@ -14,6 +14,7 @@
 
 import { ReactNode } from "react";
 import { CardView } from "../display_types";
+import { Card } from "./Card";
 
 export function Zone({
   name,
@@ -22,5 +23,16 @@ export function Zone({
   name: string;
   cards: CardView[];
 }): ReactNode {
-  return <div className="text-xl">{name} with {cards.length} cards</div>;
+  const cardViews = cards.map((card) => <Card card={card} />);
+  return (
+    <div
+      className="bg-slate-300 m-1 rounded flex flex-row items-center"
+      style={{
+        height: "13.5vh",
+      }}
+    >
+      {cardViews}
+      <div className="w-32 text-center text-sm">{name}</div>
+    </div>
+  );
 }

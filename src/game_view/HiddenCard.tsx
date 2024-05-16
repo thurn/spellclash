@@ -13,7 +13,12 @@
 // limitations under the License.
 
 import { ReactNode } from "react";
+import { CardView } from "../display_types";
 
-export function HiddenCard(): ReactNode {
-  return <div />;
+export function HiddenCard({ card }: { card: CardView }): ReactNode {
+  return (
+    <div>
+      <img src={card.card_back} style={{ width: "100%", height: "100%" }} />
+    </div>
+  );
 }

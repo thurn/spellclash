@@ -13,7 +13,28 @@
 // limitations under the License.
 
 import { ReactNode } from "react";
+import { CardView, TappedState } from "../display_types";
+import { HiddenCard } from "./HiddenCard";
+import { RevealedCard } from "./RevealedCard";
 
-export function Card(): ReactNode {
-  return <div />;
+export function Card({ card }: { card: CardView }): ReactNode {
+  const height = 13.5;
+  let body;
+  if (card.revealed != null) {
+    body = <RevealedCard revealed={card.revealed} />;
+  } else {
+    body = <HiddenCard card={card} />;
+  }
+  return (
+    <div
+      style={{
+        height: `${height}vh`,
+        width: `${height * (5 / 7)}vh`,
+        margin: "0.1vh",
+        transform: card.tapped_state === TappedState.Tapped ? `rotate($90deg)` : undefined,
+      }}
+    >
+      {body}
+    </div>
+  );
 }

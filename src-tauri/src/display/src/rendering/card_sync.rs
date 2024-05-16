@@ -40,15 +40,12 @@ pub fn card_view(builder: &ResponseBuilder, context: &CardViewContext) -> CardVi
         position: context.query_or(ObjectPosition::default(), |game, card| {
             positions::calculate(builder, game, card)
         }),
-        card_back: "https://static.wikia.nocookie.net/mtgsalvation_gamepedia/images/f/f8/Magic_card_back.jpg/revision/latest?cb=20140813141013".to_string(),
+        card_back: "https://i.imgur.com/gCqKv0M.png".to_string(),
         revealed: revealed.then(|| RevealedCardView {
             face: card_face(&context.printed().face),
-            status: context.query_or(None, |game, card| {
-                card_status(builder.player, game, card)
-            }),
-            click_action: context.query_or(None, |game, card| {
-                card_action(builder.player, game, card)
-            }),
+            status: context.query_or(None, |game, card| card_status(builder.player, game, card)),
+            click_action: context
+                .query_or(None, |game, card| card_action(builder.player, game, card)),
             face_b: context.printed().face_b.as_ref().map(card_face),
             layout: context.printed().layout,
         }),

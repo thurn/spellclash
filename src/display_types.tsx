@@ -105,10 +105,11 @@ export interface RevealedCardView {
   readonly layout: CardLayout;
 }
 
-export type RevealedCardStatus =
-  | "CanPlay"
-  | { Attacking: string }
-  | { Blocking: string };
+export interface RevealedCardStatus {
+  readonly CanPlay?: {};
+  readonly Attacking?: string;
+  readonly Blocking?: string;
+}
 
 export type CardLayout = string;
 
