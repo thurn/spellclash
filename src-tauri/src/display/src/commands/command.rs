@@ -16,6 +16,7 @@ use enum_kinds::EnumKind;
 use serde::{Deserialize, Serialize};
 
 use crate::core::game_view::GameView;
+use crate::core::main_menu_view::MainMenuView;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct UpdateGameViewCommand {
@@ -31,6 +32,8 @@ pub struct UpdateGameViewCommand {
 #[enum_kind(CommandKind)]
 pub enum Command {
     UpdateGameView(UpdateGameViewCommand),
+
+    UpdateMainMenuView(MainMenuView),
 }
 
 impl Command {

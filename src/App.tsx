@@ -12,19 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Dispatch, ReactNode, SetStateAction, createContext, useState } from "react";
+import {
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+  createContext,
+  useEffect,
+  useState,
+} from "react";
 import { GameResponse, SceneName } from "./display_types";
 import MainMenu from "./MainMenu";
 import { Game } from "./game_view/Game";
-
-export interface GlobalContextType {
-  readonly response?: GameResponse;
-  readonly setState?: Dispatch<SetStateAction<GameResponse>>;
-}
+import { connect } from "./server";
 
 function defaultGameResponse(): GameResponse {
   return {
-    scene: SceneName.MainMenu,
+    scene: SceneName.Loading,
     commands: [],
     client_data: {},
   };
@@ -34,21 +37,34 @@ function defaultGlobalContext(): GlobalContextType {
   return {} as GlobalContextType;
 }
 
+
+export interface GlobalContextType {
+  readonly response: GameResponse;
+  readonly setState: Dispatch<SetStateAction<GameResponse>>;
+}
+
 export const GlobalContext: React.Context<GlobalContextType> = createContext(
   defaultGlobalContext()
 );
 
 export function App(): ReactNode {
   const [globalState, setGlobalState] = useState(defaultGameResponse());
+  useEffect(() => {
+    connect(setGlobalState);
+  }, []);
   console.log("Global state scene is " + globalState.scene);
   let scene;
   switch (globalState.scene) {
     case SceneName.MainMenu: {
-      scene = <MainMenu />;
+      scene = <MainMenu view={globalState.commands[0].UpdateMainMenuView!}  />;
       break;
     }
     case SceneName.Game: {
       scene = <Game view={globalState.commands[0].UpdateGameView!.view} />;
+      break;
+    }
+    case SceneName.Loading: {
+      scene = <h1>Loading...</h1>;
       break;
     }
   }

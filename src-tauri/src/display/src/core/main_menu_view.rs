@@ -12,8 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ReactNode } from "react";
+use serde::{Deserialize, Serialize};
 
-export function GameButton(): ReactNode {
-  return <div />;
+use crate::core::game_view::GameButtonView;
+
+/// Represents the visual state of the main menu
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct MainMenuView {
+    /// Primary buttons to show
+    pub buttons: Vec<GameButtonView>,
 }

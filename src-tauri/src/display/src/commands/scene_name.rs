@@ -17,6 +17,7 @@ use serde::{Deserialize, Serialize};
 /// Top-level states the user interface can be in
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum SceneName {
+    Loading,
     MainMenu,
     Game,
 }

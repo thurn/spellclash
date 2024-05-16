@@ -13,7 +13,13 @@
 // limitations under the License.
 
 import { ReactNode } from "react";
-import { CardView, DisplayPlayer, GameView, Position } from "../display_types";
+import {
+  BattlefieldPosition,
+  CardView,
+  DisplayPlayer,
+  GameView,
+  Position,
+} from "../display_types";
 import { Zone } from "./Zone";
 
 export function PlayArea({ view }: { view: GameView }): ReactNode {
@@ -32,10 +38,7 @@ export function PlayArea({ view }: { view: GameView }): ReactNode {
         name="Opponent Permanents"
         cards={getPosition(map, PositionKey.OpponentBattlefield)}
       />
-      <Zone
-        name="Stack"
-        cards={getPosition(map, PositionKey.Stack)}
-      />
+      <Zone name="Stack" cards={getPosition(map, PositionKey.Stack)} />
       <Zone
         name="Viewer Permanents"
         cards={getPosition(map, PositionKey.ViewerBattlefield)}
@@ -123,9 +126,28 @@ function keyForPosition(position: Position): PositionKey {
   }
 
   if (position.Battlefield != null) {
-    return position.Battlefield === DisplayPlayer.Viewer
-      ? PositionKey.ViewerBattlefield
-      : PositionKey.OpponentBattlefield;
+    const [player, location] = position.Battlefield;
+    if (
+      player === DisplayPlayer.Viewer &&
+      location === BattlefieldPosition.Mana
+    ) {
+      return PositionKey.ViewerBattlefieldMana;
+    } else if (
+      player === DisplayPlayer.Opponent &&
+      location === BattlefieldPosition.Mana
+    ) {
+      return PositionKey.OpponentBattlefieldMana;
+    } else if (
+      player === DisplayPlayer.Viewer &&
+      location === BattlefieldPosition.Permanents
+    ) {
+      return PositionKey.ViewerBattlefield;
+    } else if (
+      player === DisplayPlayer.Opponent &&
+      location === BattlefieldPosition.Permanents
+    ) {
+      return PositionKey.OpponentBattlefield;
+    }
   }
 
   throw Error("Unknown position: " + JSON.stringify(position));

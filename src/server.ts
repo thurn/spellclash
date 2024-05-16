@@ -13,15 +13,12 @@
 // limitations under the License.
 
 import { invoke } from "@tauri-apps/api/core";
-import { ClientData, GameResponse, UserAction } from "../display_types";
+import { ClientData, GameResponse, UserAction } from "./display_types";
 import { Dispatch, SetStateAction } from "react";
 
 export async function connect(
-  setter: Dispatch<SetStateAction<GameResponse>> | undefined
+  setter: Dispatch<SetStateAction<GameResponse>>
 ): Promise<void> {
-  if (setter === undefined) {
-    throw Error("No state setter specified");
-  }
   console.log("Connecting...");
   const result: GameResponse = await invoke("client_connect", {});
   console.log("Connected!");
@@ -29,18 +26,15 @@ export async function connect(
   setter(result);
 }
 
-export async function handle_action(
-  setter: Dispatch<SetStateAction<GameResponse>> | undefined,
-  client_data: ClientData,
+export async function handleAction(
+  setter: Dispatch<SetStateAction<GameResponse>>,
+  clientData: ClientData,
   action: UserAction
 ): Promise<void> {
-  if (setter === undefined) {
-    throw Error("No state setter specified");
-  }
   console.log("Handling action...");
   console.dir(action);
   const result: GameResponse = await invoke("client_handle_action", {
-    client_data,
+    clientData,
     action,
   });
   console.log("Got action response");

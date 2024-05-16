@@ -19,6 +19,7 @@ export interface GameResponse {
 }
 
 export enum SceneName {
+  Loading = "Loading",
   MainMenu = "MainMenu",
   Game = "Game",
 }
@@ -27,6 +28,7 @@ export interface ClientData {}
 
 export interface Command {
   readonly UpdateGameView?: UpdateGameView;
+  readonly UpdateMainMenuView?: MainMenuView;
 }
 
 export interface UpdateGameView {
@@ -40,8 +42,8 @@ export interface GameView {
   readonly cards: CardView[];
   readonly status_description: string;
   readonly state: GameViewState;
-  readonly top_buttons: GameButton[];
-  readonly bottom_buttons: GameButton[];
+  readonly top_buttons: GameButtonView[];
+  readonly bottom_buttons: GameButtonView[];
 }
 
 export enum GameViewState {
@@ -49,9 +51,19 @@ export enum GameViewState {
   CombatActive = "CombatActive",
 }
 
-export interface GameButton {
+export interface MainMenuView {
+  readonly buttons: GameButtonView[]
+}
+
+export interface GameButtonView {
   readonly label: string;
   readonly action: UserAction;
+  readonly kind: GameButtonKind;
+}
+
+export enum GameButtonKind {
+  Primary = "Primary",
+  Default = "Default"
 }
 
 export interface UserAction {}
@@ -135,5 +147,10 @@ export interface Position {
   readonly DiscardPile?: DisplayPlayer;
   readonly Exile?: DisplayPlayer;
   readonly CommandZone?: DisplayPlayer;
-  readonly Battlefield?: DisplayPlayer;
+  readonly Battlefield?: [DisplayPlayer, BattlefieldPosition];
+}
+
+export enum BattlefieldPosition {
+  Mana = "Mana",
+  Permanents = "Permanents",
 }

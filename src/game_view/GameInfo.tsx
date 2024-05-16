@@ -14,7 +14,23 @@
 
 import { ReactNode } from "react";
 import { GameView } from "../display_types";
+import { PlayerInfo } from "./PlayerInfo";
+import { GameButton } from "../core/GameButton";
 
 export function GameInfo({ view }: { view: GameView }): ReactNode {
-  return <div />;
+  const topButtons = view.top_buttons.map((button, i) => (
+    <GameButton button={button} key={i} className="m-2" />
+  ));
+  const bottomButtons = view.bottom_buttons.map((button, i) => (
+    <GameButton button={button} key={i} className="m-2" />
+  ));
+  return (
+    <div className="flex flex-col grow justify-around text-center items-stretch">
+      <div className="flex flex-col">{topButtons}</div>
+      <PlayerInfo name="Opponent" player={view.opponent} />
+      <div className="items-center m-1 text-m">{view.status_description}</div>
+      <PlayerInfo name="Viewer" player={view.viewer} />
+      <div className="flex flex-col">{bottomButtons}</div>
+    </div>
+  );
 }

@@ -22,4 +22,5 @@ pub enum UserAction {
     NewGameAction(NewGameAction),
     GameAction(GameAction),
     LeaveGameAction,
+    QuitGameAction,
 }

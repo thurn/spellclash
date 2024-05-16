@@ -21,7 +21,7 @@ use data::game_states::game_state::GameState;
 use data::player_states::player_state::PlayerQueries;
 use rules::legality::legal_actions;
 
-use crate::core::game_view::{GameButton, GameView, GameViewState, PlayerView};
+use crate::core::game_view::{GameButtonView, GameView, GameViewState, PlayerView};
 use crate::core::response_builder::ResponseBuilder;
 use crate::rendering::card_sync;
 use crate::rendering::card_view_context::CardViewContext;
@@ -45,7 +45,7 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
         }),
         cards,
         status_description: format!(
-            "{:?}/Turn {}/Player {:?}",
+            "{:?}\nTurn {}\nPlayer {:?}",
             game.step, game.turn.turn_number, game.turn.active_player
         ),
         state: if game.combat.is_some() {
@@ -66,27 +66,30 @@ fn skip_sending_to_client(card: &CardState) -> bool {
     card.revealed_to.is_empty() && card.zone == Zone::Library
 }
 
-fn top_game_buttons(game: &GameState, _player: PlayerName) -> Vec<GameButton> {
-    let mut result = vec![GameButton::new("Leave Game", UserAction::LeaveGameAction)];
+fn top_game_buttons(game: &GameState, _player: PlayerName) -> Vec<GameButtonView> {
+    let mut result = vec![GameButtonView::new_default("Leave Game", UserAction::LeaveGameAction)];
     if game.undo_tracker.enabled && game.undo_tracker.undo.is_some() {
-        result.push(GameButton::new("Undo", DebugGameAction::Undo));
+        result.push(GameButtonView::new_default("Undo", DebugGameAction::Undo));
     }
     result
 }
 
-fn bottom_game_buttons(game: &GameState, player: PlayerName) -> Vec<GameButton> {
+fn bottom_game_buttons(game: &GameState, player: PlayerName) -> Vec<GameButtonView> {
     let mut result = vec![];
     if legal_actions::can_take_action(game, player, GameAction::PassPriority) {
-        result.push(GameButton::new("Continue", GameAction::PassPriority));
+        result.push(GameButtonView::new_primary("Continue", GameAction::PassPriority));
     }
     if legal_actions::can_take_action(game, player, CombatAction::ConfirmAttackers) {
-        result.push(GameButton::new("Confirm Attacks", CombatAction::ConfirmAttackers));
+        result.push(GameButtonView::new_primary("Confirm Attacks", CombatAction::ConfirmAttackers));
     }
     if legal_actions::can_take_action(game, player, CombatAction::ConfirmBlockers) {
-        result.push(GameButton::new("Confirm Blocks", CombatAction::ConfirmBlockers));
+        result.push(GameButtonView::new_primary("Confirm Blocks", CombatAction::ConfirmBlockers));
     }
     if legal_actions::can_take_action(game, player, CombatAction::ConfirmBlockerOrder) {
-        result.push(GameButton::new("Confirm Block Order", CombatAction::ConfirmBlockerOrder));
+        result.push(GameButtonView::new_primary(
+            "Confirm Block Order",
+            CombatAction::ConfirmBlockerOrder,
+        ));
     }
 
     result

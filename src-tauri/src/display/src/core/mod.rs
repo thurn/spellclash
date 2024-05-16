@@ -14,5 +14,6 @@
 
 pub mod card_view;
 pub mod game_view;
+pub mod main_menu_view;
 pub mod object_position;
 pub mod response_builder;

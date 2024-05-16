@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Button, ButtonProps } from "@nextui-org/react";
-import { ReactNode, useContext } from "react";
-import { GlobalContext } from "./App";
-import { connect } from "./assets/server";
+import { ReactNode } from "react";
+import {
+  MainMenuView,
+} from "./display_types";
+import { GameButton } from "./core/GameButton";
 
-function MainMenu(): ReactNode {
+function MainMenu({ view }: { view: MainMenuView }): ReactNode {
   const imageHeight = 125;
   const imageAspectRatio = 1.4;
   return (
@@ -37,46 +38,21 @@ function MainMenu(): ReactNode {
         }}
         src="https://cards.scryfall.io/png/front/2/3/23c4e8fb-0bc2-4449-a8df-a455b1ea9be4.png"
       />
-      <MenuItems />
+      <MenuItems view={view} />
       <Attribution />
     </div>
   );
 }
 
-function MenuItems(): ReactNode {
-  const { setState } = useContext(GlobalContext);
+function MenuItems({ view }: { view: MainMenuView }): ReactNode {
+  const buttons = view.buttons.map((button, i) => (
+    <GameButton button={button} key={i} className="m-2" />
+  ));
   return (
     <div className="flex flex-col w-1/5 items-stretch text-center absolute left-2 bottom-2">
       <h1 className="text-3xl font-bold text-white font-title">Spellclash</h1>
-      <MainMenuButton
-        color="primary"
-        onPress={() => {
-          connect(setState);
-        }}
-      >
-        Play
-      </MainMenuButton>
-      <MainMenuButton color="default">Codex</MainMenuButton>
-      <MainMenuButton color="default">Community</MainMenuButton>
-      <MainMenuButton color="default">Settings</MainMenuButton>
-      <MainMenuButton color="default">Quit</MainMenuButton>
+      {buttons}
     </div>
-  );
-}
-
-function MainMenuButton({
-  color,
-  children,
-  onPress,
-}: {
-  color: ButtonProps["color"];
-  children: ButtonProps["children"];
-  onPress?: ButtonProps["onPress"];
-}): ReactNode {
-  return (
-    <Button className="m-1" color={color} onPress={onPress}>
-      {children}
-    </Button>
   );
 }
 

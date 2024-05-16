@@ -61,6 +61,9 @@ pub async fn handle_action(
         UserAction::LeaveGameAction => {
             leave_game_server::leave(database, data).instrument(span).await
         }
+        UserAction::QuitGameAction => {
+            std::process::exit(0);
+        }
     }
 }
 

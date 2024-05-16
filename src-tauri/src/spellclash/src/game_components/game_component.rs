@@ -17,7 +17,7 @@ use std::sync::Arc;
 
 use dioxus::prelude::*;
 use display::core::card_view::CardView;
-use display::core::game_view::{DisplayPlayer, GameButton, GameView, PlayerView};
+use display::core::game_view::{DisplayPlayer, GameButtonView, GameView, PlayerView};
 use display::core::object_position::{BattlefieldPosition, Position};
 use game::server_data::ClientData;
 
@@ -79,7 +79,7 @@ fn GameInfo(view: Arc<GameView>) -> Element {
 }
 
 #[component]
-fn GameButtons(buttons: Vec<GameButton>) -> Element {
+fn GameButtons(buttons: Vec<GameButtonView>) -> Element {
     rsx! {
         div {
             class: "flex flex-col",
@@ -93,7 +93,7 @@ fn GameButtons(buttons: Vec<GameButton>) -> Element {
 }
 
 #[component]
-fn GameButton(model: GameButton) -> Element {
+fn GameButton(model: GameButtonView) -> Element {
     let cd_signal = consume_context::<Signal<ClientData>>();
     let view_signal = consume_context::<Signal<Option<GameView>>>();
     let nav = use_navigator();

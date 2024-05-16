@@ -23,12 +23,12 @@ export function RevealedCard({
   let borderClass = "border-2 border-black";
   let label = "";
   if (revealed.status?.CanPlay != null) {
-    borderClass = "border-4 border-amber-300";
+    borderClass = "border-2 border-amber-300";
   } else if (revealed.status?.Attacking != null) {
-    borderClass = "border-4 border-teal-300";
+    borderClass = "border-2 border-teal-300";
     label = revealed.status.Attacking;
   } else if (revealed.status?.Blocking != null) {
-    borderClass = "border-4 border-purple-300";
+    borderClass = "border-2 border-purple-300";
     label = revealed.status.Blocking;
   }
 

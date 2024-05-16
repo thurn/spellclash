@@ -88,6 +88,7 @@ fn handle_commands(
             Command::UpdateGameView(UpdateGameViewCommand { view, .. }) => {
                 *view_signal.write() = Some(view);
             }
+            Command::UpdateMainMenuView(_) => {}
         }
     }
 }

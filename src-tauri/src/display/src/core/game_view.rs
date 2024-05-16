@@ -38,22 +38,37 @@ pub struct GameView {
     pub state: GameViewState,
 
     /// Top user interaction options
-    pub top_buttons: Vec<GameButton>,
+    pub top_buttons: Vec<GameButtonView>,
 
     /// Bottom user interaction options
-    pub bottom_buttons: Vec<GameButton>,
+    pub bottom_buttons: Vec<GameButtonView>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct GameButton {
+pub struct GameButtonView {
     pub label: String,
     pub action: UserAction,
+    pub kind: GameButtonKind,
 }
 
-impl GameButton {
-    pub fn new(label: impl Into<String>, action: impl Into<UserAction>) -> Self {
-        Self { label: label.into(), action: action.into() }
+impl GameButtonView {
+    pub fn new_primary(label: impl Into<String>, action: impl Into<UserAction>) -> Self {
+        Self { label: label.into(), action: action.into(), kind: GameButtonKind::Primary }
     }
+
+    pub fn new_default(label: impl Into<String>, action: impl Into<UserAction>) -> Self {
+        Self { label: label.into(), action: action.into(), kind: GameButtonKind::Default }
+    }
+}
+
+/// Controls color for buttons
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub enum GameButtonKind {
+    /// Emphasized button, primary game action
+    Primary,
+
+    /// Deemphasized button, additional game actions
+    Default,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Copy, Serialize, Deserialize)]
