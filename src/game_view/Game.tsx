@@ -12,8 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { ReactNode } from "react";
 import { GameView } from "../display_types";
+import { PlayArea } from "./PlayArea";
+import { GameInfo } from "./GameInfo";
 
-export function Game({view}: {view: GameView}) {
-    return <div className="w-screen h-screen flex flex-row"></div>;
+export function Game({ view }: { view: GameView }): ReactNode {
+  return (
+    <div className="w-screen h-screen flex flex-row">
+      <div className="flex flex-col w-5/6">
+        <PlayArea view={view} />
+      </div>
+      <div className="flex flex-col justify-between w-1/6">
+        <GameInfo view={view} />
+      </div>
+    </div>
+  );
 }

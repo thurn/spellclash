@@ -12,4 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export function GameInfo() {}
+import { ReactNode } from "react";
+import { GameView } from "../display_types";
+
+export function GameInfo({ view }: { view: GameView }): ReactNode {
+  return <div />;
+}

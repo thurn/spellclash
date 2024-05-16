@@ -12,4 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export function PlayerInfo() {}
+import { ReactNode } from "react";
+
+export function PlayerInfo(): ReactNode {
+  return <div />;
+}

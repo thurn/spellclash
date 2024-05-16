@@ -12,4 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export function Zone() {}
+import { ReactNode } from "react";
+import { CardView } from "../display_types";
+
+export function Zone({
+  name,
+  cards,
+}: {
+  name: string;
+  cards: CardView[];
+}): ReactNode {
+  return <div className="text-xl">{name} with {cards.length} cards</div>;
+}

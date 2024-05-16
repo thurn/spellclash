@@ -13,11 +13,11 @@
 // limitations under the License.
 
 import { Button, ButtonProps } from "@nextui-org/react";
-import { useContext } from "react";
+import { ReactNode, useContext } from "react";
 import { GlobalContext } from "./App";
 import { connect } from "./assets/server";
 
-function MainMenu() {
+function MainMenu(): ReactNode {
   const imageHeight = 125;
   const imageAspectRatio = 1.4;
   return (
@@ -43,7 +43,7 @@ function MainMenu() {
   );
 }
 
-function MenuItems() {
+function MenuItems(): ReactNode {
   const { setState } = useContext(GlobalContext);
   return (
     <div className="flex flex-col w-1/5 items-stretch text-center absolute left-2 bottom-2">
@@ -72,7 +72,7 @@ function MainMenuButton({
   color: ButtonProps["color"];
   children: ButtonProps["children"];
   onPress?: ButtonProps["onPress"];
-}) {
+}): ReactNode {
   return (
     <Button className="m-1" color={color} onPress={onPress}>
       {children}
@@ -80,7 +80,7 @@ function MainMenuButton({
   );
 }
 
-function Attribution() {
+function Attribution(): ReactNode {
   return (
     <div className="flex flex-col items-stretch text-center absolute right-2 bottom-2">
       <h1 className="text-s text-slate-300">

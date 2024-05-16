@@ -128,11 +128,11 @@ export interface ObjectPosition {
 }
 
 export interface Position {
-  readonly Stack: {};
-  readonly Hand: DisplayPlayer;
-  readonly Deck: DisplayPlayer;
-  readonly DiscardPile: DisplayPlayer;
-  readonly Exile: DisplayPlayer;
-  readonly CommandZone: DisplayPlayer;
-  readonly Battlefield: DisplayPlayer;
+  readonly Stack?: {};
+  readonly Hand?: DisplayPlayer;
+  readonly Deck?: DisplayPlayer;
+  readonly DiscardPile?: DisplayPlayer;
+  readonly Exile?: DisplayPlayer;
+  readonly CommandZone?: DisplayPlayer;
+  readonly Battlefield?: DisplayPlayer;
 }
