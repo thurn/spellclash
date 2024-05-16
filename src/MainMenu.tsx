@@ -13,20 +13,9 @@
 // limitations under the License.
 
 import { Button, ButtonProps } from "@nextui-org/react";
-import { invoke } from "@tauri-apps/api/core";
-import { GameResponse } from "./display_types";
-
-async function connect() {
-  console.log("Connecting...")
-  const result: GameResponse = await invoke("client_connect", {});
-  console.log("Connected!");
-  console.dir(result);
-  console.log("commands " + result.commands);
-  console.log("first command " + result.commands[0]);
-  console.dir(result.commands[0].UpdateGameView);
-  console.log("animate? " + result.commands[0].UpdateGameView?.animate);
-  console.log("state: " + result.commands[0].UpdateGameView?.view.state);
-}
+import { useContext } from "react";
+import { GlobalContext } from "./App";
+import { connect } from "./assets/server";
 
 function MainMenu() {
   const imageHeight = 125;
@@ -55,10 +44,18 @@ function MainMenu() {
 }
 
 function MenuItems() {
+  const { setState } = useContext(GlobalContext);
   return (
     <div className="flex flex-col w-1/5 items-stretch text-center absolute left-2 bottom-2">
       <h1 className="text-3xl font-bold text-white font-title">Spellclash</h1>
-      <MainMenuButton color="primary" onPress={connect}>Play</MainMenuButton>
+      <MainMenuButton
+        color="primary"
+        onPress={() => {
+          connect(setState);
+        }}
+      >
+        Play
+      </MainMenuButton>
       <MainMenuButton color="default">Codex</MainMenuButton>
       <MainMenuButton color="default">Community</MainMenuButton>
       <MainMenuButton color="default">Settings</MainMenuButton>
@@ -72,9 +69,9 @@ function MainMenuButton({
   children,
   onPress,
 }: {
-  color: ButtonProps["color"],
-  children: ButtonProps["children"],
-  onPress?: ButtonProps["onPress"]
+  color: ButtonProps["color"];
+  children: ButtonProps["children"];
+  onPress?: ButtonProps["onPress"];
 }) {
   return (
     <Button className="m-1" color={color} onPress={onPress}>
@@ -92,6 +89,5 @@ function Attribution() {
     </div>
   );
 }
-
 
 export default MainMenu;
