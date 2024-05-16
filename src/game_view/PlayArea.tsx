@@ -22,37 +22,40 @@ export function PlayArea({ view }: { view: GameView }): ReactNode {
     <div>
       <Zone
         name="Opponent Hand"
-        cards={getPosition(map, { Hand: DisplayPlayer.Opponent })}
+        cards={getPosition(map, PositionKey.OpponentHand)}
       />
       <Zone
         name="Opponent Mana"
-        cards={getPosition(map, { Hand: DisplayPlayer.Opponent })}
+        cards={getPosition(map, PositionKey.OpponentBattlefieldMana)}
       />
       <Zone
         name="Opponent Permanents"
-        cards={getPosition(map, { Hand: DisplayPlayer.Opponent })}
+        cards={getPosition(map, PositionKey.OpponentBattlefield)}
       />
       <Zone
         name="Stack"
-        cards={getPosition(map, { Hand: DisplayPlayer.Opponent })}
+        cards={getPosition(map, PositionKey.Stack)}
       />
       <Zone
         name="Viewer Permanents"
-        cards={getPosition(map, { Hand: DisplayPlayer.Viewer })}
+        cards={getPosition(map, PositionKey.ViewerBattlefield)}
       />
       <Zone
         name="Viewer Mana"
-        cards={getPosition(map, { Hand: DisplayPlayer.Viewer })}
+        cards={getPosition(map, PositionKey.ViewerBattlefieldMana)}
       />
       <Zone
         name="Viewer Hand"
-        cards={getPosition(map, { Hand: DisplayPlayer.Viewer })}
+        cards={getPosition(map, PositionKey.ViewerHand)}
       />
     </div>
   );
 }
 
-function getPosition(map: Map<Position, CardView[]>, position: Position): CardView[] {
+function getPosition(
+  map: Map<PositionKey, CardView[]>,
+  position: PositionKey
+): CardView[] {
   if (map.has(position)) {
     return map.get(position)!;
   } else {
@@ -60,23 +63,88 @@ function getPosition(map: Map<Position, CardView[]>, position: Position): CardVi
   }
 }
 
-function cardPositions(view: GameView): Map<Position, CardView[]> {
-  const withKeys = new Map<Position, [number, CardView][]>();
+function cardPositions(view: GameView): Map<PositionKey, CardView[]> {
+  const withKeys = new Map<PositionKey, [number, CardView][]>();
   for (const card of view.cards) {
     const p = card.position;
-    if (withKeys.has(p.position)) {
-      withKeys.set(p.position, []);
+    if (!withKeys.has(keyForPosition(p.position))) {
+      withKeys.set(keyForPosition(p.position), []);
     }
-    withKeys.get(p.position)!.push([p.sorting_key, card]);
+    withKeys.get(keyForPosition(p.position))!.push([p.sorting_key, card]);
   }
-  const result = new Map<Position, CardView[]>();
+  const result = new Map<PositionKey, CardView[]>();
   for (const [position, array] of withKeys) {
     array.sort(function (a, b) {
       var x = a[0];
       var y = b[0];
       return x < y ? -1 : x > y ? 1 : 0;
     });
-    result.set(position, array.map(([_, card]) => card));
+    result.set(
+      position,
+      array.map(([_, card]) => card)
+    );
   }
   return result;
+}
+
+function keyForPosition(position: Position): PositionKey {
+  if (position.Stack != null) {
+    return PositionKey.Stack;
+  }
+
+  if (position.Hand != null) {
+    return position.Hand === DisplayPlayer.Viewer
+      ? PositionKey.ViewerHand
+      : PositionKey.OpponentHand;
+  }
+
+  if (position.Deck != null) {
+    return position.Deck === DisplayPlayer.Viewer
+      ? PositionKey.ViewerDeck
+      : PositionKey.OpponentDeck;
+  }
+
+  if (position.DiscardPile != null) {
+    return position.DiscardPile === DisplayPlayer.Viewer
+      ? PositionKey.ViewerDiscardPile
+      : PositionKey.OpponentDiscardPile;
+  }
+
+  if (position.Exile != null) {
+    return position.Exile === DisplayPlayer.Viewer
+      ? PositionKey.ViewerExile
+      : PositionKey.OpponentExile;
+  }
+
+  if (position.CommandZone != null) {
+    return position.CommandZone === DisplayPlayer.Viewer
+      ? PositionKey.ViewerCommandZone
+      : PositionKey.OpponentCommandZone;
+  }
+
+  if (position.Battlefield != null) {
+    return position.Battlefield === DisplayPlayer.Viewer
+      ? PositionKey.ViewerBattlefield
+      : PositionKey.OpponentBattlefield;
+  }
+
+  throw Error("Unknown position: " + JSON.stringify(position));
+}
+
+enum PositionKey {
+  Stack,
+  ViewerHand,
+  OpponentHand,
+  ViewerDeck,
+  OpponentDeck,
+  ViewerDiscardPile,
+  OpponentDiscardPile,
+  ViewerExile,
+  OpponentExile,
+  ViewerCommandZone,
+  OpponentCommandZone,
+  ViewerBattlefield,
+  OpponentBattlefield,
+  ViewerBattlefieldMana,
+  OpponentBattlefieldMana,
 }
