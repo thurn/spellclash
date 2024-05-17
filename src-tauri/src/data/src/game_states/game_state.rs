@@ -335,10 +335,36 @@ pub struct GameConfiguration {
     /// Currently only 2 players are supported, but I see no reason not to allow
     /// future expansion.
     pub all_players: EnumSet<PlayerName>,
+
+    /// Debug options for this game
+    pub debug: DebugConfiguration,
 }
 
 impl GameConfiguration {
-    pub fn new(all_players: EnumSet<PlayerName>) -> Self {
-        Self { deterministic: false, simulation: false, scripted_tutorial: false, all_players }
+    pub fn new(all_players: EnumSet<PlayerName>, debug: DebugConfiguration) -> Self {
+        Self {
+            deterministic: false,
+            simulation: false,
+            scripted_tutorial: false,
+            all_players,
+            debug,
+        }
     }
+}
+
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Serialize, Deserialize)]
+pub struct DebugConfiguration {
+    /// If true, all cards are revealed to all players
+    pub reveal_all_cards: bool,
+
+    /// Allows the user in a game to take actions as though they were another
+    /// specified player.
+    pub act_as_player: Option<DebugActAsPlayer>,
+}
+
+/// Allows a player to take actions for another player during debugging
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
+pub struct DebugActAsPlayer {
+    pub id: UserId,
+    pub name: PlayerName,
 }

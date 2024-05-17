@@ -95,6 +95,14 @@ pub async fn handle_game_action_internal(
 ) -> Value<GameResponse> {
     let user_player_name = game.find_player_name(data.user_id)?;
     let mut current_player = user_player_name;
+
+    if let Some(act_as) = game.configuration.debug.act_as_player {
+        // Override player we are acting as for debugging purposes
+        if act_as.name == legal_actions::next_to_act(game) {
+            current_player = act_as.name;
+        }
+    }
+
     let mut current_action = action;
     let mut current_action_is_automatic = false;
     let mut result = GameResponse::new(SceneName::Game, data.clone());

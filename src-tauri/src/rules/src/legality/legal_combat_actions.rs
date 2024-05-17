@@ -69,7 +69,7 @@ pub fn append(game: &GameState, player: PlayerName, actions: &mut Vec<GameAction
                 combat_queries::legal_blockers(game, player)
                     .filter(|card_id| {
                         !blockers.selected_blockers.contains(&game.card(card_id).entity_id)
-                            && blockers.proposed_blocks.contains_key(&game.card(card_id).entity_id)
+                            && !blockers.proposed_blocks.contains_key(&game.card(card_id).entity_id)
                     })
                     .map(|card_id| CombatAction::AddSelectedBlocker(game.card(card_id).entity_id)),
             );

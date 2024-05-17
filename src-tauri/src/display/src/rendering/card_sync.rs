@@ -33,18 +33,21 @@ use crate::rendering::positions;
 /// Builds a display representation of the state of a single card or card-like
 /// object
 pub fn card_view(builder: &ResponseBuilder, context: &CardViewContext) -> CardView {
-    let revealed = context.query_or(true, |_, card| card.revealed_to.contains(builder.player));
+    let is_revealed = context
+        .query_or(true, |_, card| card.revealed_to.contains(builder.display_as_player()))
+        || builder.state.reveal_all_cards;
     CardView {
         id: context.card_id(),
         position: context.query_or(ObjectPosition::default(), |game, card| {
             positions::calculate(builder, game, card)
         }),
         card_back: "https://i.imgur.com/gCqKv0M.png".to_string(),
-        revealed: revealed.then(|| RevealedCardView {
+        revealed: is_revealed.then(|| RevealedCardView {
             face: card_face(&context.printed().face),
-            status: context.query_or(None, |game, card| card_status(builder.player, game, card)),
+            status: context
+                .query_or(None, |game, card| card_status(builder.act_as_player(game), game, card)),
             click_action: context
-                .query_or(None, |game, card| card_action(builder.player, game, card)),
+                .query_or(None, |game, card| card_action(builder.act_as_player(game), game, card)),
             face_b: context.printed().face_b.as_ref().map(card_face),
             layout: context.printed().layout,
         }),

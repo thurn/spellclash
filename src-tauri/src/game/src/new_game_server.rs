@@ -25,7 +25,9 @@ use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
 use data::delegates::game_delegates::GameDelegates;
 use data::game_states::animation_tracker::AnimationTracker;
-use data::game_states::game_state::{GameConfiguration, GameState, GameStatus, TurnData};
+use data::game_states::game_state::{
+    DebugConfiguration, GameConfiguration, GameState, GameStatus, TurnData,
+};
 use data::game_states::game_step::GamePhaseStep;
 use data::game_states::history_data::GameHistory;
 use data::game_states::undo_tracker::UndoTracker;
@@ -68,7 +70,14 @@ pub async fn create(
     };
 
     info!(?game_id, "Creating new game");
-    let mut game = create_game(game_id, user.id, user_deck, action.opponent_id, opponent_deck);
+    let mut game = create_game(
+        game_id,
+        user.id,
+        user_deck,
+        action.debug_options.configuration.act_as_player.map(|p| p.id).or(action.opponent_id),
+        opponent_deck,
+        action.debug_options.configuration,
+    );
     requests::initialize_game(database.clone(), &mut game)?;
 
     game.shuffle_library(PlayerName::One)?;
@@ -127,6 +136,7 @@ fn create_game(
     user_deck: Deck,
     opponent_id: Option<UserId>,
     opponent_deck: Deck,
+    debug: DebugConfiguration,
 ) -> GameState {
     let user_player_name = PlayerName::One;
     let (p1, p1_deck, p2, p2_deck) = match user_player_name {
@@ -147,7 +157,7 @@ fn create_game(
         turn,
         priority: PlayerName::One,
         passed: EnumSet::empty(),
-        configuration: GameConfiguration::new(PlayerName::One | PlayerName::Two),
+        configuration: GameConfiguration::new(PlayerName::One | PlayerName::Two, debug),
         state_machines: StateMachines::default(),
         players: Players::new(p1, p2, LifeValue(20)),
         zones,
@@ -155,7 +165,7 @@ fn create_game(
         combat: None,
         animations: AnimationTracker::default(),
         history: GameHistory::default(),
-        rng: Xoshiro256StarStar::seed_from_u64(314159265358979323),
+        rng: Xoshiro256StarStar::seed_from_u64(3141592653589793),
         undo_tracker: UndoTracker { enabled: true, undo: vec![] },
         delegates: GameDelegates::default(),
     }

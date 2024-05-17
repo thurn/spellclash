@@ -17,12 +17,16 @@ use serde::{Deserialize, Serialize};
 use crate::actions::user_action::UserAction;
 use crate::core::primitives::{GameId, UserId};
 use crate::decks::deck_name::DeckName;
+use crate::game_states::game_state::DebugConfiguration;
 
 /// Debug options for a new game
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Serialize, Deserialize)]
 pub struct NewGameDebugOptions {
     /// Set the created game to have this ID
     pub override_game_id: Option<GameId>,
+
+    /// Debug options
+    pub configuration: DebugConfiguration,
 }
 
 /// Action to create a new game
@@ -34,7 +38,7 @@ pub struct NewGameAction {
     /// Deck for opponent to use
     pub opponent_deck: DeckName,
 
-    /// Optionally, a [UserId] for this player
+    /// Optionally, a [UserId] for the opposing player
     pub opponent_id: Option<UserId>,
 
     /// Debug options

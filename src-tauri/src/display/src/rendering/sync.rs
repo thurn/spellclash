@@ -38,8 +38,8 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
         .collect::<Vec<_>>();
 
     builder.push_game_view(GameView {
-        viewer: player_view(game, builder.player),
-        opponent: player_view(game, match builder.player {
+        viewer: player_view(game, builder.display_as_player()),
+        opponent: player_view(game, match builder.display_as_player() {
             PlayerName::One => PlayerName::Two,
             PlayerName::Two => PlayerName::One,
             _ => todo!("Not implemented"),
@@ -54,13 +54,16 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
         } else {
             GameViewState::None
         },
-        top_buttons: top_game_buttons(game, builder.player),
-        bottom_buttons: bottom_game_buttons(game, builder.player),
+        top_buttons: top_game_buttons(game, builder.act_as_player(game)),
+        bottom_buttons: bottom_game_buttons(game, builder.act_as_player(game)),
     });
 }
 
 fn player_view(game: &GameState, player: PlayerName) -> PlayerView {
-    PlayerView { life: game.player(player).life, can_act: game.priority == player }
+    PlayerView {
+        life: game.player(player).life,
+        can_act: legal_actions::next_to_act(game) == player,
+    }
 }
 
 fn skip_sending_to_client(card: &CardState) -> bool {
@@ -94,7 +97,7 @@ fn bottom_game_buttons(game: &GameState, player: PlayerName) -> Vec<GameButtonVi
             let count = blockers.proposed_blocks.len();
             result.push(GameButtonView::new_primary(
                 format!("{} Blocker{}", count, if count == 1 { "" } else { "s" }),
-                CombatAction::ConfirmAttackers,
+                CombatAction::ConfirmBlockers,
             ));
         }
     }

@@ -15,6 +15,8 @@
 use std::collections::HashMap;
 
 use data::core::primitives::{CardId, PlayerName};
+use data::game_states::game_state::{DebugActAsPlayer, GameState};
+use rules::legality::legal_actions;
 
 use crate::commands::command::{Command, UpdateGameViewCommand};
 use crate::commands::display_preferences::DisplayPreferences;
@@ -31,6 +33,12 @@ pub struct ResponseState {
 
     /// User configuration for how this response should be rendered.
     pub display_preferences: DisplayPreferences,
+
+    /// True if all cards should be revealed
+    pub reveal_all_cards: bool,
+
+    /// Allows a player to act as another player for debugging purposes
+    pub act_as_player: Option<DebugActAsPlayer>,
 }
 
 /// Primary builder used to render game state.
@@ -39,7 +47,7 @@ pub struct ResponseState {
 /// which [PlayerName] we are rendering for.
 pub struct ResponseBuilder {
     /// Player for whom we are building a UI update
-    pub player: PlayerName,
+    player: PlayerName,
 
     /// Response configuration
     pub state: ResponseState,
@@ -85,5 +93,26 @@ impl ResponseBuilder {
         } else {
             DisplayPlayer::Opponent
         }
+    }
+
+    /// Returns the [PlayerName] to use for top-level display & positioning
+    /// logic.
+    pub fn display_as_player(&self) -> PlayerName {
+        self.player
+    }
+
+    /// Returns the [PlayerName] that should be used for *actions* in the
+    /// rendered UI.
+    ///
+    /// If the debug option is being used to allow a player to act as another,
+    /// this may not match the user's [PlayerName].
+    pub fn act_as_player(&self, game: &GameState) -> PlayerName {
+        if let Some(act) = self.state.act_as_player {
+            if act.name == legal_actions::next_to_act(game) {
+                return act.name;
+            }
+        }
+
+        self.player
     }
 }

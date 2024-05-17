@@ -31,6 +31,8 @@ pub fn connect(
         animate: false,
         is_final_update: true,
         display_preferences,
+        reveal_all_cards: game.configuration.debug.reveal_all_cards,
+        act_as_player: game.configuration.debug.act_as_player,
     });
     sync::run(&mut builder, game);
     builder.commands
@@ -48,6 +50,8 @@ pub fn render_updates(
         animate: true,
         is_final_update: false,
         display_preferences,
+        reveal_all_cards: game.configuration.debug.reveal_all_cards,
+        act_as_player: game.configuration.debug.act_as_player,
     });
 
     for step in &game.animations.steps {
