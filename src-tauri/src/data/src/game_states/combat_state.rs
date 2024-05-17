@@ -86,7 +86,7 @@ pub struct ProposedAttackers {
     pub proposed_attacks: AttackerMap,
 
     /// Creatures the attacker is currently making attack decisions for
-    pub active_attackers: HashSet<AttackerId>,
+    pub selected_attackers: HashSet<AttackerId>,
 }
 
 /// Represents declared attacks within a combat phase
@@ -145,8 +145,8 @@ pub struct ProposedBlockers {
     /// Attacking creatures
     pub attackers: AttackerMap,
 
-    /// Creature the defender is currently making block decisions for
-    pub active_blockers: HashSet<BlockerId>,
+    /// Creatures the defender is currently making block decisions for
+    pub selected_blockers: HashSet<BlockerId>,
 
     /// Current proposed blocks, keyed by Blocker ID
     #[serde_as(as = "Vec<(_, _)>")]

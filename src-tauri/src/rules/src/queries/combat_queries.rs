@@ -96,10 +96,10 @@ pub fn attack_targets(game: &GameState) -> impl Iterator<Item = AttackTarget> + 
 /// Possible states for a creature to be in during combat.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum CombatRole {
-    ActiveAttacker,
+    SelectedAttacker,
     ProposedAttacker(AttackTarget),
     Attacker(AttackTarget),
-    ActiveBlocker,
+    SelectedBlocker,
     ProposedBlocker(EntityId),
     Blocking { attacker: EntityId, order: usize },
 }
@@ -111,8 +111,8 @@ pub fn role(game: &GameState, entity: EntityId) -> Option<CombatRole> {
         Some(CombatState::ProposingAttackers(attackers)) => {
             if attackers.proposed_attacks.contains(entity) {
                 Some(CombatRole::ProposedAttacker(attackers.proposed_attacks.get_target(entity)?))
-            } else if attackers.active_attackers.contains(&entity) {
-                Some(CombatRole::ActiveAttacker)
+            } else if attackers.selected_attackers.contains(&entity) {
+                Some(CombatRole::SelectedAttacker)
             } else {
                 None
             }
@@ -127,8 +127,8 @@ pub fn role(game: &GameState, entity: EntityId) -> Option<CombatRole> {
         Some(CombatState::ProposingBlockers(blockers)) => {
             if blockers.proposed_blocks.contains_key(&entity) {
                 Some(CombatRole::ProposedBlocker(blockers.proposed_blocks[&entity]))
-            } else if blockers.active_blockers.contains(&entity) {
-                Some(CombatRole::ActiveBlocker)
+            } else if blockers.selected_blockers.contains(&entity) {
+                Some(CombatRole::SelectedBlocker)
             } else if blockers.attackers.contains(entity) {
                 Some(CombatRole::Attacker(blockers.attackers.get_target(entity)?))
             } else {

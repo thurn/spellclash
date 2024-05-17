@@ -86,8 +86,8 @@ fn card_status(
     } else {
         match combat_queries::role(game, card.entity_id) {
             None => None,
-            Some(CombatRole::ActiveAttacker) => {
-                Some(RevealedCardStatus::Attacking("AA".to_string()))
+            Some(CombatRole::SelectedAttacker) => {
+                Some(RevealedCardStatus::Attacking("SA".to_string()))
             }
             Some(CombatRole::ProposedAttacker(target)) => {
                 Some(RevealedCardStatus::Attacking(format!("PA@{:?}", target)))
@@ -95,8 +95,8 @@ fn card_status(
             Some(CombatRole::Attacker(target)) => {
                 Some(RevealedCardStatus::Attacking(format!("A@{:?}", target)))
             }
-            Some(CombatRole::ActiveBlocker) => {
-                Some(RevealedCardStatus::Attacking("AB".to_string()))
+            Some(CombatRole::SelectedBlocker) => {
+                Some(RevealedCardStatus::Attacking("SB".to_string()))
             }
             Some(CombatRole::ProposedBlocker(attacker)) => Some(RevealedCardStatus::Blocking(
                 format!("B@{:?}", game.card_entity(attacker)?.printed().face.name),
@@ -113,23 +113,24 @@ fn card_action(player: PlayerName, game: &GameState, card: &CardState) -> Option
         Some(GameAction::ProposePlayingCard(card.id).into())
     } else if game.step == GamePhaseStep::DeclareAttackers && game.turn.active_player == player {
         if let Some(CombatState::ProposingAttackers(ProposedAttackers {
-            active_attackers, ..
+            selected_attackers: active_attackers,
+            ..
         })) = &game.combat
         {
             if active_attackers.contains(&card.entity_id) {
                 Some(CombatAction::RemoveAttacker(card.entity_id).into())
             } else {
-                Some(CombatAction::AddActiveAttacker(card.entity_id).into())
+                Some(CombatAction::AddSelectedAttacker(card.entity_id).into())
             }
         } else {
             None
         }
     } else if game.step == GamePhaseStep::DeclareBlockers && game.turn.active_player != player {
         if let Some(CombatState::ProposingBlockers(blockers)) = &game.combat {
-            if blockers.active_blockers.contains(&card.entity_id) {
+            if blockers.selected_blockers.contains(&card.entity_id) {
                 Some(CombatAction::RemoveBlocker(card.entity_id).into())
             } else {
-                Some(CombatAction::AddActiveBlocker(card.entity_id).into())
+                Some(CombatAction::AddSelectedBlocker(card.entity_id).into())
             }
         } else {
             None

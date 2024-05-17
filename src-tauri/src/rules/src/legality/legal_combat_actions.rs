@@ -34,23 +34,23 @@ pub fn append(game: &GameState, player: PlayerName, actions: &mut Vec<GameAction
         None => {}
         Some(CombatState::ProposingAttackers(ProposedAttackers {
             proposed_attacks,
-            active_attackers,
+            selected_attackers,
         })) => {
             extend_actions(
                 actions,
                 combat_queries::legal_attackers(game, player)
-                    .map(|card_id| CombatAction::AddActiveAttacker(game.card(card_id).entity_id)),
+                    .map(|card_id| CombatAction::AddSelectedAttacker(game.card(card_id).entity_id)),
             );
-            if !active_attackers.is_empty() {
+            if !selected_attackers.is_empty() {
                 extend_actions(
                     actions,
                     combat_queries::attack_targets(game)
-                        .map(CombatAction::SetActiveAttackersTarget),
+                        .map(CombatAction::SetSelectedAttackersTarget),
                 );
             }
             extend_actions(
                 actions,
-                active_attackers
+                selected_attackers
                     .iter()
                     .map(|&attacker_id| CombatAction::RemoveAttacker(attacker_id)),
             );
@@ -61,18 +61,18 @@ pub fn append(game: &GameState, player: PlayerName, actions: &mut Vec<GameAction
             extend_actions(
                 actions,
                 combat_queries::legal_blockers(game, player)
-                    .map(|card_id| CombatAction::AddActiveBlocker(game.card(card_id).entity_id)),
+                    .map(|card_id| CombatAction::AddSelectedBlocker(game.card(card_id).entity_id)),
             );
-            if !blockers.active_blockers.is_empty() {
+            if !blockers.selected_blockers.is_empty() {
                 extend_actions(
                     actions,
-                    blockers.attackers.all().map(CombatAction::SetActiveBlockersTarget),
+                    blockers.attackers.all().map(CombatAction::SetSelectedBlockersTarget),
                 );
             }
             extend_actions(
                 actions,
                 blockers
-                    .active_blockers
+                    .selected_blockers
                     .iter()
                     .map(|&blocker_id| CombatAction::RemoveBlocker(blocker_id)),
             );

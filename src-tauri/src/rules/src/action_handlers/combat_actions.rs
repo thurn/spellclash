@@ -35,17 +35,19 @@ use crate::queries::{card_queries, combat_queries, players};
 #[instrument(err, level = "debug", skip(game))]
 pub fn execute(game: &mut GameState, player: PlayerName, action: CombatAction) -> Outcome {
     match action {
-        CombatAction::AddActiveAttacker(card_id) => {
-            add_active_attacker(game, Source::Game, card_id)
+        CombatAction::AddSelectedAttacker(card_id) => {
+            add_selected_attacker(game, Source::Game, card_id)
         }
-        CombatAction::SetActiveAttackersTarget(target) => {
-            set_active_attackers_target(game, Source::Game, target)
+        CombatAction::SetSelectedAttackersTarget(target) => {
+            set_selected_attackers_target(game, Source::Game, target)
         }
         CombatAction::RemoveAttacker(card_id) => remove_attacker(game, Source::Game, card_id),
         CombatAction::ConfirmAttackers => confirm_attackers(game, Source::Game),
-        CombatAction::AddActiveBlocker(card_id) => add_active_blocker(game, Source::Game, card_id),
-        CombatAction::SetActiveBlockersTarget(attacker) => {
-            set_active_blockers_target(game, Source::Game, attacker)
+        CombatAction::AddSelectedBlocker(card_id) => {
+            add_selected_blocker(game, Source::Game, card_id)
+        }
+        CombatAction::SetSelectedBlockersTarget(attacker) => {
+            set_selected_blockers_target(game, Source::Game, attacker)
         }
         CombatAction::RemoveBlocker(card_id) => remove_blocker(game, Source::Game, card_id),
         CombatAction::ConfirmBlockers => confirm_blockers(game, Source::Game),
@@ -56,11 +58,11 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: CombatAction) -
     }
 }
 
-/// Sets a creature as the current attacker.
+/// Sets a creature as a selected attacker.
 ///
-/// See [CombatAction::SetActiveAttacker].
+/// See [CombatAction::AddSelectedAttacker].
 #[instrument(err, level = "debug", skip(game))]
-fn add_active_attacker(game: &mut GameState, source: Source, card_id: AttackerId) -> Outcome {
+fn add_selected_attacker(game: &mut GameState, source: Source, card_id: AttackerId) -> Outcome {
     let next = players::next_player(game);
     // There is more than one possible attack target because a planeswalker or
     // battle is in play (or there are more than 2 players), must select attack
@@ -71,7 +73,7 @@ fn add_active_attacker(game: &mut GameState, source: Source, card_id: AttackerId
         fail!("Not in the 'ProposingAttackers' state");
     };
     if requires_target {
-        attackers.active_attackers.insert(card_id);
+        attackers.selected_attackers.insert(card_id);
     } else {
         // Only one attack target, automatically assign it
         attackers.proposed_attacks.insert(card_id, AttackTarget::Player(next));
@@ -79,11 +81,11 @@ fn add_active_attacker(game: &mut GameState, source: Source, card_id: AttackerId
     outcome::OK
 }
 
-/// Sets an attack target for the active attacker.
+/// Sets an attack target for selected attackers.
 ///
-/// See [CombatAction::SetActiveAttackersTarget].
+/// See [CombatAction::SetSelectedAttackersTarget].
 #[instrument(err, level = "debug", skip(game))]
-fn set_active_attackers_target(
+fn set_selected_attackers_target(
     game: &mut GameState,
     source: Source,
     target: AttackTarget,
@@ -92,7 +94,7 @@ fn set_active_attackers_target(
         fail!("Not in the 'ProposingAttackers' state");
     };
 
-    for attacker_id in attackers.active_attackers.iter() {
+    for attacker_id in attackers.selected_attackers.iter() {
         attackers.proposed_attacks.insert(*attacker_id, target);
     }
     outcome::OK
@@ -106,7 +108,7 @@ fn remove_attacker(game: &mut GameState, source: Source, card_id: AttackerId) ->
     let Some(CombatState::ProposingAttackers(attackers)) = &mut game.combat else {
         fail!("Not in the 'ProposingAttackers' state");
     };
-    attackers.active_attackers.remove(&card_id);
+    attackers.selected_attackers.remove(&card_id);
     attackers.proposed_attacks.remove(card_id);
     outcome::OK
 }
@@ -126,11 +128,11 @@ fn confirm_attackers(game: &mut GameState, source: Source) -> Outcome {
     outcome::OK
 }
 
-/// Sets a creature as the current blocker.
+/// Sets a creature as a selected blocker.
 ///
-/// See [CombatAction::SetActiveBlocker].
+/// See [CombatAction::AddSelectedBlocker].
 #[instrument(err, level = "debug", skip(game))]
-fn add_active_blocker(game: &mut GameState, source: Source, card_id: BlockerId) -> Outcome {
+fn add_selected_blocker(game: &mut GameState, source: Source, card_id: BlockerId) -> Outcome {
     let Some(CombatState::ProposingBlockers(blockers)) = &mut game.combat else {
         fail!("Not in the 'ProposingBlockers' state");
     };
@@ -138,16 +140,16 @@ fn add_active_blocker(game: &mut GameState, source: Source, card_id: BlockerId) 
         // Only one attacker, automatically block it.
         blockers.proposed_blocks.insert(card_id, id);
     } else {
-        blockers.active_blockers.insert(card_id);
+        blockers.selected_blockers.insert(card_id);
     }
     outcome::OK
 }
 
-/// Sets a block target for the active blocker.
+/// Sets a block target for the selected blockers.
 ///
-/// See [CombatAction::SetActiveBlockersTarget].
+/// See [CombatAction::SetSelectedBlockersTarget].
 #[instrument(err, level = "debug", skip(game))]
-fn set_active_blockers_target(
+fn set_selected_blockers_target(
     game: &mut GameState,
     source: Source,
     attacker: AttackerId,
@@ -156,7 +158,7 @@ fn set_active_blockers_target(
         fail!("Not in the 'ProposingBlockers' state");
     };
 
-    for blocker_id in blockers.active_blockers.iter() {
+    for blocker_id in blockers.selected_blockers.iter() {
         blockers.proposed_blocks.insert(*blocker_id, attacker);
     }
     outcome::OK
@@ -170,7 +172,7 @@ fn remove_blocker(game: &mut GameState, source: Source, card_id: BlockerId) -> O
     let Some(CombatState::ProposingBlockers(blockers)) = &mut game.combat else {
         fail!("Not in the 'ProposingBlockers' state");
     };
-    blockers.active_blockers.remove(&card_id);
+    blockers.selected_blockers.remove(&card_id);
     blockers.proposed_blocks.remove(&card_id);
     outcome::OK
 }
