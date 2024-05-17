@@ -17,10 +17,9 @@ use data::actions::user_action::UserAction;
 use data::card_states::card_state::{CardFacing, CardState, TappedState};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{PlayerName, Source};
-use data::game_states::combat_state::{CombatState, ProposedAttackers};
 use data::game_states::game_state::GameState;
-use data::game_states::game_step::GamePhaseStep;
 use data::printed_cards::printed_card::{Face, PrintedCardFace};
+use rules::legality::legal_actions;
 use rules::play_cards::play_card;
 use rules::queries::combat_queries;
 use rules::queries::combat_queries::CombatRole;
@@ -111,30 +110,36 @@ fn card_status(
 fn card_action(player: PlayerName, game: &GameState, card: &CardState) -> Option<UserAction> {
     if play_card::can_play_card(game, player, Source::Game, card.id) {
         Some(GameAction::ProposePlayingCard(card.id).into())
-    } else if game.step == GamePhaseStep::DeclareAttackers && game.turn.active_player == player {
-        if let Some(CombatState::ProposingAttackers(ProposedAttackers {
-            selected_attackers: active_attackers,
-            ..
-        })) = &game.combat
-        {
-            if active_attackers.contains(&card.entity_id) {
-                Some(CombatAction::RemoveAttacker(card.entity_id).into())
-            } else {
-                Some(CombatAction::AddSelectedAttacker(card.entity_id).into())
-            }
-        } else {
-            None
-        }
-    } else if game.step == GamePhaseStep::DeclareBlockers && game.turn.active_player != player {
-        if let Some(CombatState::ProposingBlockers(blockers)) = &game.combat {
-            if blockers.selected_blockers.contains(&card.entity_id) {
-                Some(CombatAction::RemoveBlocker(card.entity_id).into())
-            } else {
-                Some(CombatAction::AddSelectedBlocker(card.entity_id).into())
-            }
-        } else {
-            None
-        }
+    } else if legal_actions::can_take_action(
+        game,
+        player,
+        CombatAction::AddSelectedAttacker(card.entity_id),
+    ) {
+        Some(CombatAction::AddSelectedAttacker(card.entity_id).into())
+    } else if legal_actions::can_take_action(
+        game,
+        player,
+        CombatAction::RemoveAttacker(card.entity_id),
+    ) {
+        Some(CombatAction::RemoveAttacker(card.entity_id).into())
+    } else if legal_actions::can_take_action(
+        game,
+        player,
+        CombatAction::AddSelectedBlocker(card.entity_id),
+    ) {
+        Some(CombatAction::AddSelectedBlocker(card.entity_id).into())
+    } else if legal_actions::can_take_action(
+        game,
+        player,
+        CombatAction::RemoveBlocker(card.entity_id),
+    ) {
+        Some(CombatAction::RemoveBlocker(card.entity_id).into())
+    } else if legal_actions::can_take_action(
+        game,
+        player,
+        CombatAction::SetSelectedBlockersTarget(card.entity_id),
+    ) {
+        Some(CombatAction::SetSelectedBlockersTarget(card.entity_id).into())
     } else {
         None
     }
