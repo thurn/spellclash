@@ -52,7 +52,7 @@ export enum GameViewState {
 }
 
 export interface MainMenuView {
-  readonly buttons: GameButtonView[]
+  readonly buttons: GameButtonView[];
 }
 
 export interface GameButtonView {
@@ -63,7 +63,7 @@ export interface GameButtonView {
 
 export enum GameButtonKind {
   Primary = "Primary",
-  Default = "Default"
+  Default = "Default",
 }
 
 export interface UserAction {}
@@ -93,11 +93,7 @@ export interface CardView {
 
 export interface CardId {}
 
-export type CardFacing = "FaceDown" | FaceUpFacing;
-
-export interface FaceUpFacing {
-  readonly FaceUp: Face;
-}
+export type CardFacing = "FaceDown" | { FaceUp: Face };
 
 export enum Face {
   Primary = "Primary",
@@ -111,17 +107,16 @@ export enum TappedState {
 
 export interface RevealedCardView {
   readonly face: RevealedCardFace;
-  readonly status: RevealedCardStatus;
+  readonly status?: RevealedCardStatus;
   readonly click_action?: UserAction;
   readonly face_b?: RevealedCardFace;
   readonly layout: CardLayout;
 }
 
-export interface RevealedCardStatus {
-  readonly CanPlay?: {};
-  readonly Attacking?: string;
-  readonly Blocking?: string;
-}
+export type RevealedCardStatus =
+  | "CanPlay"
+  | { Attacking: string }
+  | { Blocking: string };
 
 export type CardLayout = string;
 
@@ -140,15 +135,14 @@ export interface ObjectPosition {
   sorting_sub_key: number;
 }
 
-export interface Position {
-  readonly Stack?: {};
-  readonly Hand?: DisplayPlayer;
-  readonly Deck?: DisplayPlayer;
-  readonly DiscardPile?: DisplayPlayer;
-  readonly Exile?: DisplayPlayer;
-  readonly CommandZone?: DisplayPlayer;
-  readonly Battlefield?: [DisplayPlayer, BattlefieldPosition];
-}
+export type Position =
+  | "Stack"
+  | { Hand: DisplayPlayer }
+  | { Deck: DisplayPlayer }
+  | { DiscardPile: DisplayPlayer }
+  | { Exile: DisplayPlayer }
+  | { CommandZone: DisplayPlayer }
+  | { Battlefield: [DisplayPlayer, BattlefieldPosition] };
 
 export enum BattlefieldPosition {
   Mana = "Mana",

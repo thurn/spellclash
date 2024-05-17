@@ -27,27 +27,33 @@ export function PlayArea({ view }: { view: GameView }): ReactNode {
   return (
     <div>
       <Zone
+        key="oh"
         name="Opponent Hand"
         cards={getPosition(map, PositionKey.OpponentHand)}
       />
       <Zone
+        key="om"
         name="Opponent Mana"
         cards={getPosition(map, PositionKey.OpponentBattlefieldMana)}
       />
       <Zone
+        key="op"
         name="Opponent Permanents"
         cards={getPosition(map, PositionKey.OpponentBattlefield)}
       />
-      <Zone name="Stack" cards={getPosition(map, PositionKey.Stack)} />
+      <Zone key="st" name="Stack" cards={getPosition(map, PositionKey.Stack)} />
       <Zone
+        key="vp"
         name="Viewer Permanents"
         cards={getPosition(map, PositionKey.ViewerBattlefield)}
       />
       <Zone
+        key="vm"
         name="Viewer Mana"
         cards={getPosition(map, PositionKey.ViewerBattlefieldMana)}
       />
       <Zone
+        key="vh"
         name="Viewer Hand"
         cards={getPosition(map, PositionKey.ViewerHand)}
       />
@@ -91,41 +97,41 @@ function cardPositions(view: GameView): Map<PositionKey, CardView[]> {
 }
 
 function keyForPosition(position: Position): PositionKey {
-  if (position.Stack != null) {
+  if (position === "Stack") {
     return PositionKey.Stack;
   }
 
-  if (position.Hand != null) {
+  if ("Hand" in position) {
     return position.Hand === DisplayPlayer.Viewer
       ? PositionKey.ViewerHand
       : PositionKey.OpponentHand;
   }
 
-  if (position.Deck != null) {
+  if ("Deck" in position) {
     return position.Deck === DisplayPlayer.Viewer
       ? PositionKey.ViewerDeck
       : PositionKey.OpponentDeck;
   }
 
-  if (position.DiscardPile != null) {
+  if ("DiscardPile" in position) {
     return position.DiscardPile === DisplayPlayer.Viewer
       ? PositionKey.ViewerDiscardPile
       : PositionKey.OpponentDiscardPile;
   }
 
-  if (position.Exile != null) {
+  if ("Exile" in position) {
     return position.Exile === DisplayPlayer.Viewer
       ? PositionKey.ViewerExile
       : PositionKey.OpponentExile;
   }
 
-  if (position.CommandZone != null) {
+  if ("CommandZone" in position) {
     return position.CommandZone === DisplayPlayer.Viewer
       ? PositionKey.ViewerCommandZone
       : PositionKey.OpponentCommandZone;
   }
 
-  if (position.Battlefield != null) {
+  if ("Battlefield" in position) {
     const [player, location] = position.Battlefield;
     if (
       player === DisplayPlayer.Viewer &&

@@ -23,7 +23,7 @@ export function Zone({
   name: string;
   cards: CardView[];
 }): ReactNode {
-  const cardViews = cards.map((card) => <Card card={card} />);
+  const cardViews = cards.map((card, i) => <Card card={card} key={i} />);
   return (
     <div
       className="bg-slate-300 m-1 rounded flex flex-row items-center"

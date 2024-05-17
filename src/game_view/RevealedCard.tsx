@@ -22,12 +22,12 @@ export function RevealedCard({
 }): ReactNode {
   let borderClass = "border-2 border-black";
   let label = "";
-  if (revealed.status?.CanPlay != null) {
+  if (revealed.status === "CanPlay") {
     borderClass = "border-2 border-amber-300";
-  } else if (revealed.status?.Attacking != null) {
+  } else if (revealed.status != null && "Attacking" in revealed.status) {
     borderClass = "border-2 border-teal-300";
     label = revealed.status.Attacking;
-  } else if (revealed.status?.Blocking != null) {
+  } else if (revealed.status != null && "Blocking" in revealed.status) {
     borderClass = "border-2 border-purple-300";
     label = revealed.status.Blocking;
   }
@@ -41,6 +41,7 @@ export function RevealedCard({
           height: "100%",
         }}
       />
+      <span className="absolute bg-slate-100 text-white">{label}</span>
     </div>
   );
 }
