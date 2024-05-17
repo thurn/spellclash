@@ -152,7 +152,7 @@ impl GameState {
             // animation logic.
             let clone = Self {
                 animations: AnimationTracker::new(AnimationState::Ignore),
-                undo_tracker: UndoTracker { enabled: false, undo: None },
+                undo_tracker: UndoTracker { enabled: false, undo: vec![] },
                 ..self.clone()
             };
 

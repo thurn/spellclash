@@ -25,9 +25,12 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction
     match action {
         DebugGameAction::Undo => {
             debug!(?player, "Undoing last action");
-            let Some(previous) = game.undo_tracker.undo.take() else {
+            let mut undo_list = game.undo_tracker.undo.clone();
+            let Some(mut previous) = undo_list.pop() else {
                 fail!("No undo state available");
             };
+            previous.undo_tracker.enabled = true;
+            previous.undo_tracker.undo = undo_list;
             *game = *previous;
         }
     }

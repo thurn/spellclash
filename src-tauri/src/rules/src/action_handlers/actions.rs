@@ -54,8 +54,10 @@ pub fn execute(
         && game.undo_tracker.enabled
         && action != GameAction::DebugAction(DebugGameAction::Undo)
     {
-        let clone = game.clone();
-        game.undo_tracker.undo = Some(Box::new(clone));
+        let mut clone = game.clone();
+        clone.undo_tracker.enabled = false;
+        clone.undo_tracker.undo = vec![];
+        game.undo_tracker.undo.push(Box::new(clone));
     }
 
     match action {

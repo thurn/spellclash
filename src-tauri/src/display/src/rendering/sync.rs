@@ -68,7 +68,7 @@ fn skip_sending_to_client(card: &CardState) -> bool {
 
 fn top_game_buttons(game: &GameState, _player: PlayerName) -> Vec<GameButtonView> {
     let mut result = vec![GameButtonView::new_default("Leave Game", UserAction::LeaveGameAction)];
-    if game.undo_tracker.enabled && game.undo_tracker.undo.is_some() {
+    if game.undo_tracker.enabled && !game.undo_tracker.undo.is_empty() {
         result.push(GameButtonView::new_default("Undo", DebugGameAction::Undo));
     }
     result

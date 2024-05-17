@@ -156,7 +156,7 @@ fn create_game(
         animations: AnimationTracker::default(),
         history: GameHistory::default(),
         rng: Xoshiro256StarStar::seed_from_u64(314159265358979323),
-        undo_tracker: UndoTracker { enabled: true, undo: None },
+        undo_tracker: UndoTracker { enabled: true, undo: vec![] },
         delegates: GameDelegates::default(),
     }
 }

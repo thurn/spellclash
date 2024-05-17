@@ -37,11 +37,11 @@ pub async fn fetch_game(database: Arc<dyn Database>, game_id: GameId) -> Value<G
 }
 
 pub fn initialize_game(database: Arc<dyn Database>, game: &mut GameState) -> Outcome {
-    if let Some(mut previous) = game.undo_tracker.undo.take() {
-        // Recursively apply game initialization to all copies stored in the undo
+    if let Some(mut previous) = game.undo_tracker.undo.pop() {
+        // Apply game initialization to all copies stored in the undo
         // tracker.
         initialize_game(database.clone(), previous.as_mut())?;
-        game.undo_tracker.undo = Some(previous);
+        game.undo_tracker.undo.push(previous);
     }
 
     game.animations = AnimationTracker::new(if game.configuration.simulation {

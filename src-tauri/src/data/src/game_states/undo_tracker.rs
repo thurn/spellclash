@@ -21,6 +21,6 @@ use crate::game_states::game_state::GameState;
 pub struct UndoTracker {
     /// Whether we are tracking Undo operations for this game
     pub enabled: bool,
-    /// Previous state to jump to as a result of an 'undo' operation, if any.
-    pub undo: Option<Box<GameState>>,
+    /// Previous states to jump to as a result of an 'undo' operation, if any.
+    pub undo: Vec<Box<GameState>>,
 }
