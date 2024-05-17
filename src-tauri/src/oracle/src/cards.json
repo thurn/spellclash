@@ -1,29 +1,15 @@
 [
   {
     "artist": "D. J. Cleland-Hura",
-    "artistIds": [
-      "87d21070-2432-4167-8aab-5968af1c14f3"
-    ],
-    "availability": [
-      "mtgo",
-      "paper"
-    ],
-    "boosterTypes": [
-      "default"
-    ],
+    "artistIds": ["87d21070-2432-4167-8aab-5968af1c14f3"],
+    "availability": ["mtgo", "paper"],
+    "boosterTypes": ["default"],
     "borderColor": "black",
-    "colorIdentity": [
-      "G"
-    ],
-    "colors": [
-      "G"
-    ],
+    "colorIdentity": ["G"],
+    "colors": ["G"],
     "convertedManaCost": 2.0,
     "edhrecRank": 6439,
-    "finishes": [
-      "nonfoil",
-      "foil"
-    ],
+    "finishes": ["nonfoil", "foil"],
     "flavorText": "\"We cannot forget that among all of Dominaria's wonders, a system of life exists, with prey and predators that will never fight wars nor vie for ancient power.\"\n—Jolrael, empress of beasts",
     "foreignData": [
       {
@@ -162,48 +148,27 @@
     "rarity": "common",
     "setCode": "10E",
     "sourceProducts": {
-      "foil": [
-        "c690e178-661d-5e17-9b29-a5bf6319a844"
-      ],
-      "nonfoil": [
-        "c690e178-661d-5e17-9b29-a5bf6319a844"
-      ]
+      "foil": ["c690e178-661d-5e17-9b29-a5bf6319a844"],
+      "nonfoil": ["c690e178-661d-5e17-9b29-a5bf6319a844"]
     },
-    "subtypes": [
-      "Bear"
-    ],
+    "subtypes": ["Bear"],
     "supertypes": [],
     "toughness": "2",
     "type": "Creature — Bear",
-    "types": [
-      "Creature"
-    ],
+    "types": ["Creature"],
     "uuid": "b49d7ef1-e841-5647-8590-4857eca7e8bd"
   },
   {
     "artist": "Salvatorre Zee Yazzie",
-    "artistIds": [
-      "1629eaec-cc37-4870-bc89-1e8ca5569507"
-    ],
-    "availability": [
-      "arena",
-      "mtgo",
-      "paper"
-    ],
-    "boosterTypes": [
-      "default"
-    ],
+    "artistIds": ["1629eaec-cc37-4870-bc89-1e8ca5569507"],
+    "availability": ["arena", "mtgo", "paper"],
+    "boosterTypes": ["default"],
     "borderColor": "black",
-    "colorIdentity": [
-      "G"
-    ],
+    "colorIdentity": ["G"],
     "colors": [],
     "convertedManaCost": 0.0,
     "edhrecSaltiness": 0.35,
-    "finishes": [
-      "nonfoil",
-      "foil"
-    ],
+    "finishes": ["nonfoil", "foil"],
     "foreignData": [
       {
         "language": "German",
@@ -520,47 +485,25 @@
     },
     "rarity": "common",
     "setCode": "OTJ",
-    "subtypes": [
-      "Forest"
-    ],
-    "supertypes": [
-      "Basic"
-    ],
+    "subtypes": ["Forest"],
+    "supertypes": ["Basic"],
     "text": "({T}: Add {G}.)",
     "type": "Basic Land — Forest",
-    "types": [
-      "Land"
-    ],
+    "types": ["Land"],
     "uuid": "452d4eaf-d736-5dbf-9fc2-cb35022ee7d9",
-    "variations": [
-      "a7fda38b-455a-50b3-8408-eeddeaeb19f2",
-      "b24333e9-249c-5f4b-9503-a77069beaf4e"
-    ]
+    "variations": ["a7fda38b-455a-50b3-8408-eeddeaeb19f2", "b24333e9-249c-5f4b-9503-a77069beaf4e"]
   },
   {
     "artist": "Salvatorre Zee Yazzie",
-    "artistIds": [
-      "1629eaec-cc37-4870-bc89-1e8ca5569507"
-    ],
-    "availability": [
-      "arena",
-      "mtgo",
-      "paper"
-    ],
-    "boosterTypes": [
-      "default"
-    ],
+    "artistIds": ["1629eaec-cc37-4870-bc89-1e8ca5569507"],
+    "availability": ["arena", "mtgo", "paper"],
+    "boosterTypes": ["default"],
     "borderColor": "black",
-    "colorIdentity": [
-      "U"
-    ],
+    "colorIdentity": ["U"],
     "colors": [],
     "convertedManaCost": 0.0,
     "edhrecSaltiness": 0.76,
-    "finishes": [
-      "nonfoil",
-      "foil"
-    ],
+    "finishes": ["nonfoil", "foil"],
     "foreignData": [
       {
         "language": "German",
@@ -875,45 +818,25 @@
     },
     "rarity": "common",
     "setCode": "OTJ",
-    "subtypes": [
-      "Island"
-    ],
-    "supertypes": [
-      "Basic"
-    ],
+    "subtypes": ["Island"],
+    "supertypes": ["Basic"],
     "text": "({T}: Add {U}.)",
     "type": "Basic Land — Island",
-    "types": [
-      "Land"
-    ],
+    "types": ["Land"],
     "uuid": "95b06628-80db-5dc8-8b24-8b689994c1bb",
-    "variations": [
-      "3d2e9367-5afd-560b-869a-c7c612d0db53",
-      "f40527c4-8a3b-5cc8-99c3-f81fd94757bf"
-    ]
+    "variations": ["3d2e9367-5afd-560b-869a-c7c612d0db53", "f40527c4-8a3b-5cc8-99c3-f81fd94757bf"]
   },
   {
     "artist": "Willian Murai",
-    "artistIds": [
-      "5a553c8e-e3b9-40e0-bde5-1db621c53939"
-    ],
-    "availability": [
-      "mtgo",
-      "paper"
-    ],
+    "artistIds": ["5a553c8e-e3b9-40e0-bde5-1db621c53939"],
+    "availability": ["mtgo", "paper"],
     "borderColor": "black",
-    "colorIdentity": [
-      "U"
-    ],
-    "colors": [
-      "U"
-    ],
+    "colorIdentity": ["U"],
+    "colors": ["U"],
     "convertedManaCost": 1.0,
     "edhrecRank": 48,
     "edhrecSaltiness": 0.24,
-    "finishes": [
-      "nonfoil"
-    ],
+    "finishes": ["nonfoil"],
     "flavorText": "The mizzium-sphere array drove her mind deep into the thought field, where only the rarest motes of genius may be plucked.",
     "foreignData": [
       {
@@ -1037,9 +960,7 @@
     "supertypes": [],
     "text": "Draw three cards, then put two cards from your hand on top of your library in any order.",
     "type": "Instant",
-    "types": [
-      "Instant"
-    ],
+    "types": ["Instant"],
     "uuid": "1dcca5b4-1cff-519b-acd3-a6405f855a03"
   }
 ]

@@ -12,23 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ReactNode } from "react";
-import { CardView } from "../display_types";
-import { Card } from "./Card";
+import { ReactNode } from 'react';
+import { CardView } from '../display_types';
+import { Card } from './Card';
 
-export function Zone({
-  name,
-  cards,
-}: {
-  name: string;
-  cards: CardView[];
-}): ReactNode {
+export function Zone({ name, cards }: { name: string; cards: CardView[] }): ReactNode {
   const cardViews = cards.map((card, i) => <Card card={card} key={i} />);
   return (
     <div
       className="bg-slate-300 m-1 rounded flex flex-row items-center"
       style={{
-        height: "13.5vh",
+        height: '13.5vh',
       }}
     >
       {cardViews}

@@ -12,18 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ReactNode } from "react";
-import { GameView } from "../display_types";
-import { PlayerInfo } from "./PlayerInfo";
-import { GameButton } from "../core/GameButton";
+import { ReactNode } from 'react';
+import { GameView } from '../display_types';
+import { PlayerInfo } from './PlayerInfo';
+import { GameButton } from '../core/GameButton';
 
 export function GameInfo({ view }: { view: GameView }): ReactNode {
-  const topButtons = view.top_buttons.map((button, i) => (
-    <GameButton button={button} key={i} className="m-2" />
-  ));
-  const bottomButtons = view.bottom_buttons.map((button, i) => (
-    <GameButton button={button} key={i} className="m-2" />
-  ));
+  const topButtons = view.top_buttons.map((button, i) => <GameButton button={button} key={i} className="m-2" />);
+  const bottomButtons = view.bottom_buttons.map((button, i) => <GameButton button={button} key={i} className="m-2" />);
   return (
     <div className="flex flex-col grow justify-around text-center items-stretch">
       <div className="flex flex-col">{topButtons}</div>

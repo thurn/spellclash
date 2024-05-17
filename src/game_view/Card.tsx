@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ReactNode } from "react";
-import { CardView, TappedState } from "../display_types";
-import { HiddenCard } from "./HiddenCard";
-import { RevealedCard } from "./RevealedCard";
+import { ReactNode } from 'react';
+import { CardView, TappedState } from '../display_types';
+import { HiddenCard } from './HiddenCard';
+import { RevealedCard } from './RevealedCard';
 
 export function Card({ card }: { card: CardView }): ReactNode {
   const height = 13.5;
@@ -30,7 +30,7 @@ export function Card({ card }: { card: CardView }): ReactNode {
       style={{
         height: `${height}vh`,
         width: `${height * (5 / 7)}vh`,
-        margin: "0.1vh",
+        margin: '0.1vh',
         transform: card.tapped_state === TappedState.Tapped ? `rotate($90deg)` : undefined,
       }}
     >

@@ -12,16 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { invoke } from "@tauri-apps/api/core";
-import { ClientData, GameResponse, UserAction } from "./display_types";
-import { Dispatch, SetStateAction } from "react";
+import { invoke } from '@tauri-apps/api/core';
+import { ClientData, GameResponse, UserAction } from './display_types';
+import { Dispatch, SetStateAction } from 'react';
 
-export async function connect(
-  setter: Dispatch<SetStateAction<GameResponse>>
-): Promise<void> {
-  console.log("Connecting...");
-  const result: GameResponse = await invoke("client_connect", {});
-  console.log("Connected!");
+export async function connect(setter: Dispatch<SetStateAction<GameResponse>>): Promise<void> {
+  console.log('Connecting...');
+  const result: GameResponse = await invoke('client_connect', {});
+  console.log('Connected!');
   console.dir(result);
   setter(result);
 }
@@ -29,19 +27,19 @@ export async function connect(
 export async function handleAction(
   setter: Dispatch<SetStateAction<GameResponse>>,
   clientData: ClientData,
-  action?: UserAction
+  action?: UserAction,
 ): Promise<void> {
   if (action == null) {
     return;
   }
 
-  console.log("Handling action...");
+  console.log('Handling action...');
   console.dir(action);
-  const result: GameResponse = await invoke("client_handle_action", {
+  const result: GameResponse = await invoke('client_handle_action', {
     clientData,
     action,
   });
-  console.log("Got action response");
+  console.log('Got action response');
   console.dir(result);
   setter(result);
 }

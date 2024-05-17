@@ -49,6 +49,12 @@ check-format:
     # Manifest path seems to not work?
     cd src-tauri && cargo +nightly fmt -- --check
 
+lint-ts:
+  npx eslint src
+
+check-ts-format:
+  npx prettier src --check
+
 check-docs:
     RUSTDOCFLAGS="-D rustdoc::broken-intra-doc-links -D rustdoc::private-intra-doc-links -D rustdoc::bare-urls" cargo doc --manifest-path src-tauri/Cargo.toml --all
 

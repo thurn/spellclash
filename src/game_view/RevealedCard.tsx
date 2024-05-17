@@ -12,41 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ReactNode, useContext } from "react";
-import { RevealedCardView } from "../display_types";
-import { GlobalContext } from "../App";
-import { handleAction } from "../server";
+import { ReactNode, useContext } from 'react';
+import { RevealedCardView } from '../display_types';
+import { GlobalContext } from '../App';
+import { handleAction } from '../server';
 
-export function RevealedCard({
-  revealed,
-}: {
-  revealed: RevealedCardView;
-}): ReactNode {
+export function RevealedCard({ revealed }: { revealed: RevealedCardView }): ReactNode {
   const { response, setState } = useContext(GlobalContext);
-  let borderClass = "border-2 border-black";
-  let label = "";
-  if (revealed.status === "CanPlay") {
-    borderClass = "border-2 border-amber-300";
-  } else if (revealed.status != null && "Attacking" in revealed.status) {
-    borderClass = "border-2 border-teal-300";
+  let borderClass = 'border-2 border-black';
+  let label = '';
+  if (revealed.status === 'CanPlay') {
+    borderClass = 'border-2 border-amber-300';
+  } else if (revealed.status != null && 'Attacking' in revealed.status) {
+    borderClass = 'border-2 border-teal-300';
     label = revealed.status.Attacking;
-  } else if (revealed.status != null && "Blocking" in revealed.status) {
-    borderClass = "border-2 border-purple-300";
+  } else if (revealed.status != null && 'Blocking' in revealed.status) {
+    borderClass = 'border-2 border-purple-300';
     label = revealed.status.Blocking;
   }
 
   return (
-    <div
-      className={borderClass}
-      onClick={() =>
-        handleAction(setState, response.client_data, revealed.click_action)
-      }
-    >
+    <div className={borderClass} onClick={() => handleAction(setState, response.client_data, revealed.click_action)}>
       <img
         src={revealed.face.image}
         style={{
-          width: "100%",
-          height: "100%",
+          width: '100%',
+          height: '100%',
         }}
       />
       <span className="absolute bg-slate-900 text-white text-xs">{label}</span>

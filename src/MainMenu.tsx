@@ -12,11 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ReactNode } from "react";
-import {
-  MainMenuView,
-} from "./display_types";
-import { GameButton } from "./core/GameButton";
+import { ReactNode } from 'react';
+import { MainMenuView } from './display_types';
+import { GameButton } from './core/GameButton';
 
 function MainMenu({ view }: { view: MainMenuView }): ReactNode {
   const imageHeight = 125;
@@ -25,13 +23,13 @@ function MainMenu({ view }: { view: MainMenuView }): ReactNode {
     <div className="w-screen h-screen">
       <img
         style={{
-          transformOrigin: "center",
-          transform: "translateY(-15%) rotate(90deg)",
-          position: "absolute",
+          transformOrigin: 'center',
+          transform: 'translateY(-15%) rotate(90deg)',
+          position: 'absolute',
           left: 0,
           right: 0,
-          marginLeft: "auto",
-          marginRight: "auto",
+          marginLeft: 'auto',
+          marginRight: 'auto',
           width: `${imageHeight}vh`,
           height: `${imageHeight * imageAspectRatio}vh`,
           zIndex: -10,
@@ -45,9 +43,7 @@ function MainMenu({ view }: { view: MainMenuView }): ReactNode {
 }
 
 function MenuItems({ view }: { view: MainMenuView }): ReactNode {
-  const buttons = view.buttons.map((button, i) => (
-    <GameButton button={button} key={i} className="m-2" />
-  ));
+  const buttons = view.buttons.map((button, i) => <GameButton button={button} key={i} className="m-2" />);
   return (
     <div className="flex flex-col w-1/5 items-stretch text-center absolute left-2 bottom-2">
       <h1 className="text-3xl font-bold text-white font-title">Spellclash</h1>
@@ -59,9 +55,7 @@ function MenuItems({ view }: { view: MainMenuView }): ReactNode {
 function Attribution(): ReactNode {
   return (
     <div className="flex flex-col items-stretch text-center absolute right-2 bottom-2">
-      <h1 className="text-s text-slate-300">
-        "Brotherhood's End" by Bryan Sola
-      </h1>
+      <h1 className="text-s text-slate-300">&ldquo;Brotherhood&apos;s End&rdquo; by Bryan Sola</h1>
     </div>
   );
 }

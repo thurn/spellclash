@@ -19,9 +19,9 @@ export interface GameResponse {
 }
 
 export enum SceneName {
-  Loading = "Loading",
-  MainMenu = "MainMenu",
-  Game = "Game",
+  Loading = 'Loading',
+  MainMenu = 'MainMenu',
+  Game = 'Game',
 }
 
 export interface ClientData {}
@@ -47,8 +47,8 @@ export interface GameView {
 }
 
 export enum GameViewState {
-  None = "None",
-  CombatActive = "CombatActive",
+  None = 'None',
+  CombatActive = 'CombatActive',
 }
 
 export interface MainMenuView {
@@ -62,15 +62,15 @@ export interface GameButtonView {
 }
 
 export enum GameButtonKind {
-  Primary = "Primary",
-  Default = "Default",
+  Primary = 'Primary',
+  Default = 'Default',
 }
 
 export interface UserAction {}
 
 export enum DisplayPlayer {
-  Viewer = "Viewer",
-  Opponent = "Opponent",
+  Viewer = 'Viewer',
+  Opponent = 'Opponent',
 }
 
 export interface PlayerView {
@@ -93,16 +93,16 @@ export interface CardView {
 
 export interface CardId {}
 
-export type CardFacing = "FaceDown" | { FaceUp: Face };
+export type CardFacing = 'FaceDown' | { FaceUp: Face };
 
 export enum Face {
-  Primary = "Primary",
-  FaceB = "FaceB",
+  Primary = 'Primary',
+  FaceB = 'FaceB',
 }
 
 export enum TappedState {
-  Untapped = "Untapped",
-  Tapped = "Tapped",
+  Untapped = 'Untapped',
+  Tapped = 'Tapped',
 }
 
 export interface RevealedCardView {
@@ -113,10 +113,7 @@ export interface RevealedCardView {
   readonly layout: CardLayout;
 }
 
-export type RevealedCardStatus =
-  | "CanPlay"
-  | { Attacking: string }
-  | { Blocking: string };
+export type RevealedCardStatus = 'CanPlay' | { Attacking: string } | { Blocking: string };
 
 export type CardLayout = string;
 
@@ -136,7 +133,7 @@ export interface ObjectPosition {
 }
 
 export type Position =
-  | "Stack"
+  | 'Stack'
   | { Hand: DisplayPlayer }
   | { Deck: DisplayPlayer }
   | { DiscardPile: DisplayPlayer }
@@ -145,6 +142,6 @@ export type Position =
   | { Battlefield: [DisplayPlayer, BattlefieldPosition] };
 
 export enum BattlefieldPosition {
-  Mana = "Mana",
-  Permanents = "Permanents",
+  Mana = 'Mana',
+  Permanents = 'Permanents',
 }

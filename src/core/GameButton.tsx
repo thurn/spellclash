@@ -12,27 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ReactNode, useContext } from "react";
-import { GameButtonKind, GameButtonView } from "../display_types";
-import { GlobalContext } from "../App";
-import { Button, ButtonProps } from "@nextui-org/react";
-import { handleAction } from "../server";
+import { ReactNode, useContext } from 'react';
+import { GameButtonKind, GameButtonView } from '../display_types';
+import { GlobalContext } from '../App';
+import { Button, ButtonProps } from '@nextui-org/react';
+import { handleAction } from '../server';
 
-export function GameButton({
-  button,
-  className
-}: {
-  button: GameButtonView;
-  className?: string
-}): ReactNode {
+export function GameButton({ button, className }: { button: GameButtonView; className?: string }): ReactNode {
   const { response, setState } = useContext(GlobalContext);
-  let color: ButtonProps["color"];
+  let color: ButtonProps['color'];
   switch (button.kind) {
     case GameButtonKind.Primary:
-      color = "primary";
+      color = 'primary';
       break;
     case GameButtonKind.Default:
-      color = "default";
+      color = 'default';
       break;
   }
 
@@ -40,9 +34,7 @@ export function GameButton({
     <Button
       className={className}
       color={color}
-      onClick={() =>
-        handleAction(setState, response.client_data, button.action)
-      }
+      onClick={() => handleAction(setState, response.client_data, button.action)}
     >
       {button.label}
     </Button>

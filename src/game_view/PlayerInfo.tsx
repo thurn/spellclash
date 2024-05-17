@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ReactNode } from "react";
-import { PlayerView } from "../display_types";
+import { ReactNode } from 'react';
+import { PlayerView } from '../display_types';
 
-export function PlayerInfo({name, player}: {name: string, player: PlayerView}): ReactNode {
+export function PlayerInfo({ name, player }: { name: string; player: PlayerView }): ReactNode {
   return (
     <div className="m-1 text-center flex flex-col">
       <div className="text-lg">{name}</div>
       <div className="text-sm">Life: {player.life}</div>
-      <div className="text-sm">Can Act: {player.can_act ? "true" : "false"}</div>
+      <div className="text-sm">Can Act: {player.can_act ? 'true' : 'false'}</div>
     </div>
   );
 }
