@@ -86,10 +86,8 @@ fn bottom_game_buttons(game: &GameState, player: PlayerName) -> Vec<GameButtonVi
         result.push(GameButtonView::new_primary("Confirm Blocks", CombatAction::ConfirmBlockers));
     }
     if legal_actions::can_take_action(game, player, CombatAction::ConfirmBlockerOrder) {
-        result.push(GameButtonView::new_primary(
-            "Confirm Block Order",
-            CombatAction::ConfirmBlockerOrder,
-        ));
+        result
+            .push(GameButtonView::new_primary("Confirm Order", CombatAction::ConfirmBlockerOrder));
     }
 
     result

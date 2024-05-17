@@ -14,6 +14,10 @@ build:
 run *args='':
     npm run tauri dev
 
+# To run under a rust debugger, *first* use this command and then start the rust binary
+dev:
+  npm run dev
+
 test:
     cargo test --manifest-path src-tauri/Cargo.toml
 
@@ -28,8 +32,8 @@ clippy:
 
 # Reformats code. Requires nightly because several useful options (e.g. imports_granularity) are
 # nightly-only
+# Manifest path seems to not work?
 fmt:
-    # Manifest path seems to not work?
     cd src-tauri && cargo +nightly fmt
 
 nim *args='':

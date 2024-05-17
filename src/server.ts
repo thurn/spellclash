@@ -29,8 +29,12 @@ export async function connect(
 export async function handleAction(
   setter: Dispatch<SetStateAction<GameResponse>>,
   clientData: ClientData,
-  action: UserAction
+  action?: UserAction
 ): Promise<void> {
+  if (action == null) {
+    return;
+  }
+
   console.log("Handling action...");
   console.dir(action);
   const result: GameResponse = await invoke("client_handle_action", {

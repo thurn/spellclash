@@ -12,14 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ReactNode } from "react";
+import { ReactNode, useContext } from "react";
 import { RevealedCardView } from "../display_types";
+import { GlobalContext } from "../App";
+import { handleAction } from "../server";
 
 export function RevealedCard({
   revealed,
 }: {
   revealed: RevealedCardView;
 }): ReactNode {
+  const { response, setState } = useContext(GlobalContext);
   let borderClass = "border-2 border-black";
   let label = "";
   if (revealed.status === "CanPlay") {
@@ -33,7 +36,12 @@ export function RevealedCard({
   }
 
   return (
-    <div className={borderClass}>
+    <div
+      className={borderClass}
+      onClick={() =>
+        handleAction(setState, response.client_data, revealed.click_action)
+      }
+    >
       <img
         src={revealed.face.image}
         style={{
@@ -41,7 +49,7 @@ export function RevealedCard({
           height: "100%",
         }}
       />
-      <span className="absolute bg-slate-100 text-white">{label}</span>
+      <span className="absolute bg-slate-900 text-white text-xs">{label}</span>
     </div>
   );
 }

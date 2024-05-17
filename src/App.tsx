@@ -56,11 +56,11 @@ export function App(): ReactNode {
   let scene;
   switch (globalState.scene) {
     case SceneName.MainMenu: {
-      scene = <MainMenu view={globalState.commands[0].UpdateMainMenuView!}  />;
+      scene = <MainMenu view={globalState.commands.at(-1)!.UpdateMainMenuView!}  />;
       break;
     }
     case SceneName.Game: {
-      scene = <Game view={globalState.commands[0].UpdateGameView!.view} />;
+      scene = <Game view={globalState.commands.at(-1)!.UpdateGameView!.view} />;
       break;
     }
     case SceneName.Loading: {
