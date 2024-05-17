@@ -35,8 +35,11 @@ pub struct PlayerOptions {
     /// turns.
     pub inactive_turn_stops: EnumSet<GamePhaseStep>,
 
-    /// If true, the player will automatically pass priority when items are on
-    /// the stack if they have no other legal game actions available.
+    /// If true, the player will automatically pass priority if they have no
+    /// other legal game actions available.
+    ///
+    /// Certain specific steps (main phases, end of opponent turn) always stop
+    /// the game even if this option is enabled.
     pub auto_pass: bool,
 
     /// Should this player retain priority after putting something on the stack?

@@ -141,6 +141,10 @@ pub async fn handle_game_action_internal(
     }
 }
 
+const ALWAYS_STOP_ACTIVE: EnumSet<GamePhaseStep> =
+    enum_set!(GamePhaseStep::PreCombatMain | GamePhaseStep::PostCombatMain);
+const ALWAYS_STOP_INACTIVE: EnumSet<GamePhaseStep> = enum_set!(GamePhaseStep::EndStep);
+
 const ATTACK_STEPS: EnumSet<GamePhaseStep> = enum_set!(
     GamePhaseStep::DeclareAttackers
         | GamePhaseStep::DeclareBlockers
@@ -173,6 +177,16 @@ pub fn auto_pass_action(game: &GameState, player: PlayerName) -> Option<GameActi
 
             if ATTACK_STEPS.contains(game.step) && empty_combat {
                 // A stop is set for combat, but there are no attackers, automatically pass
+                return Some(GameAction::PassPriority);
+            }
+
+            if game.player(player).options.auto_pass
+                && legal_actions::compute(game, player).len() <= 1
+                && !(is_active_player && ALWAYS_STOP_ACTIVE.contains(game.step)
+                    || !is_active_player && ALWAYS_STOP_INACTIVE.contains(game.step))
+            {
+                // No possible actions and we're not in an "always stop" step, automatically
+                // pass
                 return Some(GameAction::PassPriority);
             }
         } else if game.player(player).options.auto_pass

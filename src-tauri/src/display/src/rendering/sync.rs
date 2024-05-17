@@ -16,9 +16,11 @@ use data::actions::debug_action::DebugGameAction;
 use data::actions::game_action::{CombatAction, GameAction};
 use data::actions::user_action::UserAction;
 use data::card_states::card_state::CardState;
+use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{PlayerName, Zone};
 use data::game_states::combat_state::CombatState;
 use data::game_states::game_state::GameState;
+use data::game_states::game_step::GamePhaseStep;
 use data::player_states::player_state::PlayerQueries;
 use rules::legality::legal_actions;
 
@@ -81,7 +83,25 @@ fn top_game_buttons(game: &GameState, _player: PlayerName) -> Vec<GameButtonView
 fn bottom_game_buttons(game: &GameState, player: PlayerName) -> Vec<GameButtonView> {
     let mut result = vec![];
     if legal_actions::can_take_action(game, player, GameAction::PassPriority) {
-        result.push(GameButtonView::new_primary("Continue", GameAction::PassPriority));
+        if game.stack().is_empty() {
+            let next = match game.step {
+                GamePhaseStep::Upkeep => "To Draw",
+                GamePhaseStep::Draw => "To Main",
+                GamePhaseStep::PreCombatMain => "To Combat",
+                GamePhaseStep::BeginCombat => "To Attackers",
+                GamePhaseStep::DeclareAttackers => "To Blockers",
+                GamePhaseStep::DeclareBlockers => "To Damage",
+                GamePhaseStep::FirstStrikeDamage => "To Damage",
+                GamePhaseStep::CombatDamage => "End Combat",
+                GamePhaseStep::EndCombat => "End Combat",
+                GamePhaseStep::PostCombatMain => "End Turn",
+                GamePhaseStep::EndStep => "Next Turn",
+                _ => "Continue",
+            };
+            result.push(GameButtonView::new_primary(next, GameAction::PassPriority));
+        } else {
+            result.push(GameButtonView::new_primary("Resolve", GameAction::PassPriority));
+        }
     }
     if legal_actions::can_take_action(game, player, CombatAction::ConfirmAttackers) {
         if let Some(CombatState::ProposingAttackers(attackers)) = &game.combat {
