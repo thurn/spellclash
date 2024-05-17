@@ -31,7 +31,7 @@ export function Card({ card }: { card: CardView }): ReactNode {
         height: `${height}vh`,
         width: `${height * (5 / 7)}vh`,
         margin: '0.1vh',
-        transform: card.tapped_state === TappedState.Tapped ? `rotate($90deg)` : undefined,
+        transform: card.tapped_state === TappedState.Tapped ? `rotate(90deg)` : undefined,
       }}
     >
       {body}

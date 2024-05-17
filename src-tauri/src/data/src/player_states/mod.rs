@@ -13,5 +13,6 @@
 // limitations under the License.
 
 pub mod mana_pool;
+mod player_options;
 pub mod player_state;
 pub mod prompt_stack;

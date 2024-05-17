@@ -71,7 +71,7 @@ pub fn next_to_act(game: &GameState) -> PlayerName {
 
 /// Returns true if the named player can currently take the action to pass
 /// priority.
-fn can_pass_priority(game: &GameState, player: PlayerName) -> bool {
+pub fn can_pass_priority(game: &GameState, player: PlayerName) -> bool {
     match game.combat.as_ref().map(|c| c.kind()) {
         Some(CombatStateKind::ProposingAttackers)
         | Some(CombatStateKind::ProposingBlockers)

@@ -85,3 +85,6 @@ internal_clean:
   rm -rf src-tauri/target/tmp
 
 clean: internal_clean dropbox
+
+version:
+  cargo run --manifest-path src-tauri/Cargo.toml --bin client -- --version

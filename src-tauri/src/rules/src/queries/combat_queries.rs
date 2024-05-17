@@ -16,11 +16,11 @@ use std::iter;
 
 use data::card_states::card_state::TappedState;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, CardType, EntityId};
+use data::core::primitives::{CardId, CardType, EntityId, PlayerName};
 use data::game_states::combat_state::{AttackTarget, BlockerMap, CombatState, ProposedAttackers};
 use data::game_states::game_state::GameState;
 
-use crate::queries::{card_queries, players};
+use crate::queries::{card_queries, combat_queries, players};
 
 /// Returns true if the card with the provided [CardId] can attack in the
 /// current combat phase.
@@ -42,6 +42,11 @@ pub fn can_attack(game: &GameState, card_id: CardId) -> bool {
         && !types.contains(CardType::Battle)
 }
 
+/// Returns an iterator over all legal attackers for the provided player.
+pub fn legal_attackers(game: &GameState, player: PlayerName) -> impl Iterator<Item = CardId> + '_ {
+    game.battlefield(player).iter().filter(|&&card_id| can_attack(game, card_id)).copied()
+}
+
 /// Returns true if the card with the provided [CardId] can block in the current
 /// combat phase.
 ///
@@ -56,6 +61,11 @@ pub fn can_block(game: &GameState, card_id: CardId) -> bool {
         && card.tapped_state != TappedState::Tapped
         && types.contains(CardType::Creature)
         && !types.contains(CardType::Battle)
+}
+
+/// Returns an iterator over all legal blockers for the provided player.
+pub fn legal_blockers(game: &GameState, player: PlayerName) -> impl Iterator<Item = CardId> + '_ {
+    game.battlefield(player).iter().filter(|&&card_id| can_block(game, card_id)).copied()
 }
 
 /// Returns an iterator over legal targets the active player could attack during

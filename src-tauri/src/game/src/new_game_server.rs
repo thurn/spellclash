@@ -48,8 +48,8 @@ use utils::fail;
 use utils::outcome::Value;
 use uuid::Uuid;
 
-use crate::requests;
 use crate::server_data::{ClientData, GameResponse};
+use crate::{game_action_server, requests};
 
 pub async fn create(
     database: Arc<dyn Database>,
@@ -76,6 +76,11 @@ pub async fn create(
     game.shuffle_library(PlayerName::Two)?;
     library::draw_cards(&mut game, Source::Game, PlayerName::Two, 7)?;
     step::advance(&mut game)?;
+    if let Some(action) = game_action_server::auto_pass_action(&game, PlayerName::One) {
+        // Pass priority until the first configured stop.
+        game_action_server::handle_game_action_internal(database.clone(), &data, action, &mut game)
+            .await?;
+    }
 
     user.activity = UserActivity::Playing(game.id);
 

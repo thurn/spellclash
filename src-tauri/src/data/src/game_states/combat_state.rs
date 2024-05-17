@@ -65,6 +65,18 @@ impl CombatState {
     pub fn kind(&self) -> CombatStateKind {
         self.into()
     }
+
+    /// Returns all confirmed attackers for this combat state, or None if
+    /// attackers have not yet been confirmed.
+    pub fn confirmed_attackers(&self) -> Option<&AttackerMap> {
+        match self {
+            Self::ProposingAttackers(_) => None,
+            Self::ConfirmedAttackers(attackers) => Some(attackers),
+            Self::ProposingBlockers(blockers) => Some(&blockers.attackers),
+            Self::OrderingBlockers(blockers) => Some(&blockers.all_attackers),
+            Self::ConfirmedBlockers(blockers) => Some(&blockers.all_attackers),
+        }
+    }
 }
 
 /// Attacks the active player is considering
@@ -106,6 +118,11 @@ impl AttackerMap {
 
     pub fn get_target(&self, attacker: AttackerId) -> Option<AttackTarget> {
         self.attacks.get(&attacker).copied()
+    }
+
+    /// Returns true if there are no declared attackers
+    pub fn is_empty(&self) -> bool {
+        self.attacks.is_empty()
     }
 
     /// If there is exactly one attacking creature, returns its [AttackerId].

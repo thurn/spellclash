@@ -16,6 +16,7 @@ use data::card_states::play_card_plan::{PlayCardPlan, PlayCardTiming};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, PlayerName, Source, Zone};
 use data::game_states::game_state::GameState;
+use data::player_states::player_state::PlayerQueries;
 use utils::outcome::Outcome;
 use utils::{fail, outcome};
 
@@ -42,8 +43,11 @@ pub fn execute_plan(
         game.card_mut(card_id).cast_as = plan.spell_choices.play_as.faces;
         game.move_card(source, card_id, Zone::Stack)?;
 
-        // Automatically pass priority after putting something on the stack.
-        // TODO: Implement holding priority.
-        priority::pass(game, player)
+        if game.player(player).options.hold_priority {
+            outcome::OK
+        } else {
+            // Automatically pass priority after putting something on the stack.
+            priority::pass(game, player)
+        }
     }
 }

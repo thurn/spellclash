@@ -38,10 +38,8 @@ pub fn append(game: &GameState, player: PlayerName, actions: &mut Vec<GameAction
         })) => {
             extend_actions(
                 actions,
-                game.battlefield(player)
-                    .iter()
-                    .filter(|&&card_id| combat_queries::can_attack(game, card_id))
-                    .map(|&card_id| CombatAction::AddActiveAttacker(game.card(card_id).entity_id)),
+                combat_queries::legal_attackers(game, player)
+                    .map(|card_id| CombatAction::AddActiveAttacker(game.card(card_id).entity_id)),
             );
             if !active_attackers.is_empty() {
                 extend_actions(
@@ -62,10 +60,8 @@ pub fn append(game: &GameState, player: PlayerName, actions: &mut Vec<GameAction
         Some(CombatState::ProposingBlockers(blockers)) => {
             extend_actions(
                 actions,
-                game.battlefield(player)
-                    .iter()
-                    .filter(|&&card_id| combat_queries::can_block(game, card_id))
-                    .map(|&card_id| CombatAction::AddActiveBlocker(game.card(card_id).entity_id)),
+                combat_queries::legal_blockers(game, player)
+                    .map(|card_id| CombatAction::AddActiveBlocker(game.card(card_id).entity_id)),
             );
             if !blockers.active_blockers.is_empty() {
                 extend_actions(

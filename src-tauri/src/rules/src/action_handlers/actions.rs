@@ -41,7 +41,7 @@ pub fn execute(
     game: &mut GameState,
     player: PlayerName,
     action: GameAction,
-    player_type: PlayerType,
+    automatic: bool,
 ) -> Outcome {
     verify!(
         legal_actions::can_take_action(game, player, action) || action.is_debug_action(),
@@ -50,7 +50,7 @@ pub fn execute(
         player
     );
 
-    if player_type == PlayerType::User
+    if !automatic
         && game.undo_tracker.enabled
         && action != GameAction::DebugAction(DebugGameAction::Undo)
     {

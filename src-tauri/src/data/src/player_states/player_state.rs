@@ -20,6 +20,7 @@ use crate::core::primitives::{
     CardId, EntityId, HasController, HasEntityId, HasPlayerName, PlayerName, UserId,
 };
 use crate::player_states::mana_pool::ManaPool;
+use crate::player_states::player_options::PlayerOptions;
 use crate::player_states::prompt_stack::PromptStack;
 
 pub trait PlayerQueries {
@@ -82,6 +83,9 @@ pub struct PlayerState {
     /// Entity ID for this player
     pub entity_id: EntityId,
 
+    /// Configuration for this player
+    pub options: PlayerOptions,
+
     /// Current amount of life for this player
     pub life: LifeValue,
 
@@ -112,6 +116,7 @@ impl PlayerState {
             name,
             user_id,
             entity_id: name.entity_id(),
+            options: PlayerOptions::default(),
             life,
             controller: name,
             counters: Counters::default(),

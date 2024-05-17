@@ -26,7 +26,7 @@ use database::sled_database::SledDatabase;
 use game::server;
 use game::server_data::{ClientData, GameResponse};
 use once_cell::sync::Lazy;
-use tracing::info;
+use tracing::{error, info};
 use utils::outcome;
 use utils::outcome::Outcome;
 use utils::with_error::WithError;
@@ -48,25 +48,30 @@ fn greet(name: String) -> String {
 }
 
 #[tauri::command]
-async fn client_connect() -> GameResponse {
+async fn client_connect() -> Result<GameResponse, ()> {
     info!("Got connect request");
     let result = server::connect(DATABASE.clone(), UserId(Uuid::default())).await;
     match result {
-        Ok(response) => response,
+        Ok(response) => Ok(response),
         Err(err) => {
-            panic!("Error on connect: {:?}", err);
+            error!("Error on connect: {:?}", err);
+            Err(())
         }
     }
 }
 
 #[tauri::command]
-async fn client_handle_action(client_data: ClientData, action: UserAction) -> GameResponse {
+async fn client_handle_action(
+    client_data: ClientData,
+    action: UserAction,
+) -> Result<GameResponse, ()> {
     info!(?action, ?client_data, "Got handle_action request");
     let result = server::handle_action(DATABASE.clone(), client_data, action).await;
     match result {
-        Ok(response) => response,
+        Ok(response) => Ok(response),
         Err(err) => {
-            panic!("Error on handle_action: {:?}", err);
+            error!("Error on handle_action: {:?}", err);
+            Err(())
         }
     }
 }
