@@ -39,7 +39,10 @@ pub fn append(game: &GameState, player: PlayerName, actions: &mut Vec<GameAction
             extend_actions(
                 actions,
                 combat_queries::legal_attackers(game, player)
-                    .filter(|card_id| !selected_attackers.contains(&game.card(card_id).entity_id))
+                    .filter(|card_id| {
+                        !selected_attackers.contains(&game.card(card_id).entity_id)
+                            && !proposed_attacks.contains(game.card(card_id).entity_id)
+                    })
                     .map(|card_id| CombatAction::AddSelectedAttacker(game.card(card_id).entity_id)),
             );
             if !selected_attackers.is_empty() {
@@ -53,7 +56,9 @@ pub fn append(game: &GameState, player: PlayerName, actions: &mut Vec<GameAction
                 actions,
                 selected_attackers
                     .iter()
-                    .map(|&attacker_id| CombatAction::RemoveAttacker(attacker_id)),
+                    .copied()
+                    .chain(proposed_attacks.all())
+                    .map(CombatAction::RemoveAttacker),
             );
             actions.push(CombatAction::ConfirmAttackers.into());
         }
@@ -64,6 +69,7 @@ pub fn append(game: &GameState, player: PlayerName, actions: &mut Vec<GameAction
                 combat_queries::legal_blockers(game, player)
                     .filter(|card_id| {
                         !blockers.selected_blockers.contains(&game.card(card_id).entity_id)
+                            && blockers.proposed_blocks.contains_key(&game.card(card_id).entity_id)
                     })
                     .map(|card_id| CombatAction::AddSelectedBlocker(game.card(card_id).entity_id)),
             );
@@ -78,7 +84,9 @@ pub fn append(game: &GameState, player: PlayerName, actions: &mut Vec<GameAction
                 blockers
                     .selected_blockers
                     .iter()
-                    .map(|&blocker_id| CombatAction::RemoveBlocker(blocker_id)),
+                    .chain(blockers.proposed_blocks.keys())
+                    .copied()
+                    .map(CombatAction::RemoveBlocker),
             );
             actions.push(CombatAction::ConfirmBlockers.into());
         }

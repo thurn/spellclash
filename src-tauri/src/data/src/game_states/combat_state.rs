@@ -120,6 +120,11 @@ impl AttackerMap {
         self.attacks.get(&attacker).copied()
     }
 
+    /// Returns the number of declared attackers
+    pub fn len(&self) -> usize {
+        self.attacks.len()
+    }
+
     /// Returns true if there are no declared attackers
     pub fn is_empty(&self) -> bool {
         self.attacks.is_empty()

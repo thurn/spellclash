@@ -17,6 +17,7 @@ use data::actions::game_action::{CombatAction, GameAction};
 use data::actions::user_action::UserAction;
 use data::card_states::card_state::CardState;
 use data::core::primitives::{PlayerName, Zone};
+use data::game_states::combat_state::CombatState;
 use data::game_states::game_state::GameState;
 use data::player_states::player_state::PlayerQueries;
 use rules::legality::legal_actions;
@@ -80,10 +81,22 @@ fn bottom_game_buttons(game: &GameState, player: PlayerName) -> Vec<GameButtonVi
         result.push(GameButtonView::new_primary("Continue", GameAction::PassPriority));
     }
     if legal_actions::can_take_action(game, player, CombatAction::ConfirmAttackers) {
-        result.push(GameButtonView::new_primary("Confirm Attacks", CombatAction::ConfirmAttackers));
+        if let Some(CombatState::ProposingAttackers(attackers)) = &game.combat {
+            let count = attackers.proposed_attacks.len();
+            result.push(GameButtonView::new_primary(
+                format!("{} Attacker{}", count, if count == 1 { "" } else { "s" }),
+                CombatAction::ConfirmAttackers,
+            ));
+        }
     }
     if legal_actions::can_take_action(game, player, CombatAction::ConfirmBlockers) {
-        result.push(GameButtonView::new_primary("Confirm Blocks", CombatAction::ConfirmBlockers));
+        if let Some(CombatState::ProposingBlockers(blockers)) = &game.combat {
+            let count = blockers.proposed_blocks.len();
+            result.push(GameButtonView::new_primary(
+                format!("{} Blocker{}", count, if count == 1 { "" } else { "s" }),
+                CombatAction::ConfirmAttackers,
+            ));
+        }
     }
     if legal_actions::can_take_action(game, player, CombatAction::ConfirmBlockerOrder) {
         result
