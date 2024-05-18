@@ -20,6 +20,7 @@ use enum_map::Enum;
 use enumset::{EnumSet, EnumSetType};
 use serde::{Deserialize, Serialize};
 use slotmap::new_key_type;
+use strum::EnumString;
 use utils::fail;
 use utils::outcome::Value;
 use uuid::Uuid;
@@ -48,7 +49,7 @@ pub enum ManaColor {
 /// Supertypes for a card.
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R2054>
-#[derive(Debug, Serialize, Deserialize, EnumSetType)]
+#[derive(Debug, Serialize, Deserialize, EnumSetType, EnumString)]
 pub enum CardSupertype {
     Basic,
     Legendary,
@@ -60,7 +61,7 @@ pub enum CardSupertype {
 /// Types for a card.
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R2052>
-#[derive(Debug, Serialize, Deserialize, EnumSetType)]
+#[derive(Debug, Serialize, Deserialize, EnumSetType, EnumString)]
 pub enum CardType {
     Artifact,
     Battle,

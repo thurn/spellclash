@@ -14,12 +14,13 @@
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use strum::EnumString;
 
 /// Describes how the multiple faces of a card are organized in relation to each
 /// other.
 ///
 /// See <https://scryfall.com/docs/api/layouts>
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CardLayout {
     Adventure,
     Aftermath,
@@ -35,8 +36,9 @@ pub enum CardLayout {
 /// Describes how a single face of a card is laid out.
 ///
 /// See <https://scryfall.com/docs/api/layouts>
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumString, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
 pub enum FaceLayout {
     Adventure,
     Aftermath,
@@ -52,8 +54,10 @@ pub enum FaceLayout {
     Leveler,
     Meld,
     ModalDfc,
+    Mutate,
     Normal,
     Planar,
+    Prototype,
     ReversibleCard,
     Saga,
     Scheme,

@@ -12,8 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod card_database;
+use std::collections::HashMap;
 
-mod all_printings;
-mod card_json;
-mod set_card;
+use serde::{Deserialize, Serialize};
+
+use crate::set_card::SetCard;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AllPrintings {
+    pub data: HashMap<String, SetPrinting>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SetPrinting {
+    pub cards: Vec<SetCard>,
+}

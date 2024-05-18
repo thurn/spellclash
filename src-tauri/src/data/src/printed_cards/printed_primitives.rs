@@ -54,7 +54,7 @@ pub enum PrintedPower {
 }
 
 /// Printed toughness value on a card
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone)]
 pub enum PrintedToughness {
     /// Numeric toughness
     Number(Toughness),

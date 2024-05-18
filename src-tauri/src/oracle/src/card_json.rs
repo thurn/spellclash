@@ -38,19 +38,22 @@ use utils::outcome::Value;
 use utils::with_error::WithError;
 use uuid::Uuid;
 
+use crate::all_printings::AllPrintings;
 use crate::set_card::SetCard;
 
 pub static CARDS: Lazy<Value<HashMap<CardName, PrintedCard>>> = Lazy::new(build_cards);
 static JSON: &str = include_str!("./cards.json");
 
 fn build_cards() -> Value<HashMap<CardName, PrintedCard>> {
-    let set_cards: Vec<SetCard> = de::from_str(JSON).expect("Error deserializing cards.json");
+    let all_printings: AllPrintings = de::from_str(JSON).expect("Error deserializing cards.json");
     let mut result = HashMap::new();
-    for card in &set_cards {
-        let Ok((name, printed)) = build_printed_card(card) else {
-            continue;
-        };
-        result.insert(name, printed);
+    for set_cards in all_printings.data.values() {
+        for card in &set_cards.cards {
+            let Ok((name, printed)) = build_printed_card(card) else {
+                continue;
+            };
+            result.insert(name, printed);
+        }
     }
     Ok(result)
 }
@@ -105,9 +108,7 @@ fn supertypes(types: &[String]) -> Value<EnumSet<CardSupertype>> {
     types
         .iter()
         .map(|s| {
-            let value: Value<CardSupertype> = serde_json::from_str(&format!("\"{s}\""))
-                .with_error(|| format!("Error deserializing supertype {s}"));
-            value
+            s.parse::<CardSupertype>().with_error(|| format!("Error deserializing supertype {s}"))
         })
         .collect()
 }
@@ -115,11 +116,7 @@ fn supertypes(types: &[String]) -> Value<EnumSet<CardSupertype>> {
 fn types(types: &[String]) -> Value<EnumSet<CardType>> {
     types
         .iter()
-        .map(|s| {
-            let value: Value<CardType> = serde_json::from_str(&format!("\"{s}\""))
-                .with_error(|| format!("Error deserializing card type {s}"));
-            value
-        })
+        .map(|s| s.parse::<CardType>().with_error(|| format!("Error deserializing supertype {s}")))
         .collect()
 }
 
