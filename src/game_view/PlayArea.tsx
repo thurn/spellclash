@@ -14,19 +14,34 @@
 
 import { ReactNode } from 'react';
 import { BattlefieldPosition, CardView, DisplayPlayer, GameView, Position } from '../display_types';
-import { Zone } from './Zone';
+import { LinearCardDisplay } from './LinearCardDisplay';
+import { StackCardDisplay } from './StackCardDisplay';
 
 export function PlayArea({ view }: { view: GameView }): ReactNode {
   const map = cardPositions(view);
   return (
-    <div>
-      <Zone key="oh" name="Opponent Hand" cards={getPosition(map, PositionKey.OpponentHand)} />
-      <Zone key="om" name="Opponent Mana" cards={getPosition(map, PositionKey.OpponentBattlefieldMana)} />
-      <Zone key="op" name="Opponent Permanents" cards={getPosition(map, PositionKey.OpponentBattlefield)} />
-      <Zone key="st" name="Stack" cards={getPosition(map, PositionKey.Stack)} />
-      <Zone key="vp" name="Viewer Permanents" cards={getPosition(map, PositionKey.ViewerBattlefield)} />
-      <Zone key="vm" name="Viewer Mana" cards={getPosition(map, PositionKey.ViewerBattlefieldMana)} />
-      <Zone key="vh" name="Viewer Hand" cards={getPosition(map, PositionKey.ViewerHand)} />
+    <div className="flex flex-row">
+      <div className="w-11/12">
+        <LinearCardDisplay key="oh" name="Opponent Hand" cards={getPosition(map, PositionKey.OpponentHand)} />
+        <LinearCardDisplay
+          key="om"
+          name="Opponent Mana"
+          cards={getPosition(map, PositionKey.OpponentBattlefieldMana)}
+        />
+        <LinearCardDisplay
+          key="op"
+          name="Opponent Permanents"
+          cards={getPosition(map, PositionKey.OpponentBattlefield)}
+        />
+        <LinearCardDisplay key="st" name="Stack" cards={getPosition(map, PositionKey.Stack)} />
+        <LinearCardDisplay key="vp" name="Viewer Permanents" cards={getPosition(map, PositionKey.ViewerBattlefield)} />
+        <LinearCardDisplay key="vm" name="Viewer Mana" cards={getPosition(map, PositionKey.ViewerBattlefieldMana)} />
+        <LinearCardDisplay key="vh" name="Viewer Hand" cards={getPosition(map, PositionKey.ViewerHand)} />
+      </div>
+      <div className="w-1/12 flex flex-col justify-between">
+        <StackCardDisplay key="og" cards={getPosition(map, PositionKey.OpponentDiscardPile)} />
+        <StackCardDisplay key="vg" cards={getPosition(map, PositionKey.ViewerDiscardPile)} />
+      </div>
     </div>
   );
 }

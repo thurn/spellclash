@@ -16,17 +16,20 @@ import { ReactNode } from 'react';
 import { CardView } from '../display_types';
 import { Card } from './Card';
 
-export function Zone({ name, cards }: { name: string; cards: CardView[] }): ReactNode {
-  const cardViews = cards.map((card, i) => <Card card={card} key={i} />);
+export function StackCardDisplay({ cards }: { cards: CardView[] }): ReactNode {
+  const cardViews = cards.map((card, i) => (
+    <div className="absolute">
+      <Card card={card} key={i} />
+    </div>
+  ));
   return (
     <div
-      className="bg-slate-300 m-1 rounded flex flex-row items-center"
+      className="bg-slate-300 m-1 rounded"
       style={{
         height: '13.5vh',
       }}
     >
       {cardViews}
-      <div className="w-32 text-center text-sm">{name}</div>
     </div>
   );
 }
