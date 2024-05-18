@@ -16,7 +16,6 @@ use std::collections::HashMap;
 use std::iter;
 
 use data::card_definitions::card_name::CardName;
-use data::core::numerics::ManaValue;
 use data::core::primitives::{CardSupertype, CardType, Color, ManaColor};
 use data::printed_cards::card_subtypes::{
     ArtifactSubtype, BattleSubtype, CardSubtypes, CreatureSubtype, DungeonSubtype,
@@ -89,7 +88,7 @@ fn build_face(card: &SetCard, face_identifier: Face) -> Value<PrintedCardFace> {
         oracle_text: card.text.clone(),
         colors: colors(&card.colors),
         mana_cost: mana_cost(card.mana_cost.as_ref())?,
-        mana_value: ManaValue(card.mana_value.round() as u64),
+        mana_value: card.mana_value.round() as u64,
         power: power(card.power.as_ref()),
         toughness: toughness(card.toughness.as_ref()),
         loyalty: loyalty(card.loyalty.as_ref()),
@@ -191,12 +190,24 @@ fn to_mana_item(symbol: &str) -> Value<Vec<ManaCostItem>> {
     }])
 }
 
-fn power(_power: Option<&String>) -> Option<PrintedPower> {
-    None
+fn power(power: Option<&String>) -> Option<PrintedPower> {
+    power.map(|p| {
+        if let Ok(value) = p.parse::<i64>() {
+            PrintedPower::Number(value)
+        } else {
+            todo!("Implement support for non-numeric power")
+        }
+    })
 }
 
-fn toughness(_toughness: Option<&String>) -> Option<PrintedToughness> {
-    None
+fn toughness(toughness: Option<&String>) -> Option<PrintedToughness> {
+    toughness.map(|t| {
+        if let Ok(value) = t.parse::<i64>() {
+            PrintedToughness::Number(value)
+        } else {
+            todo!("Implement support for non-numeric toughness")
+        }
+    })
 }
 
 fn loyalty(_loyalty: Option<&String>) -> Option<PrintedLoyalty> {

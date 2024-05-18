@@ -19,7 +19,7 @@ use tracing::{debug, instrument};
 use utils::outcome::Outcome;
 use utils::{outcome, verify};
 
-use crate::queries::players;
+use crate::queries::player_queries;
 use crate::resolve_cards::resolve;
 use crate::steps::step;
 
@@ -29,7 +29,7 @@ use crate::steps::step;
 #[instrument(err, level = "debug", skip(game))]
 pub fn pass(game: &mut GameState, player: PlayerName) -> Outcome {
     verify!(game.priority == player, "Player {player:?} does not have priority");
-    debug!(?player, "Passing priority");
+    debug!(?player, ?game.step, "Passing priority");
     game.passed.insert(player);
     if game.passed.len() == game.configuration.all_players.len() {
         game.clear_passed();
@@ -39,7 +39,7 @@ pub fn pass(game: &mut GameState, player: PlayerName) -> Outcome {
             resolve::resolve_top_of_stack(game)
         }
     } else {
-        game.priority = players::next_player_after(game, game.priority);
+        game.priority = player_queries::next_player_after(game, game.priority);
         outcome::OK
     }
 }

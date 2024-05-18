@@ -20,7 +20,7 @@ use data::core::primitives::{CardId, CardType, EntityId, PlayerName};
 use data::game_states::combat_state::{AttackTarget, BlockerMap, CombatState, ProposedAttackers};
 use data::game_states::game_state::GameState;
 
-use crate::queries::{card_queries, combat_queries, players};
+use crate::queries::{card_queries, combat_queries, player_queries};
 
 /// Returns true if the card with the provided [CardId] can attack in the
 /// current combat phase.
@@ -71,7 +71,7 @@ pub fn legal_blockers(game: &GameState, player: PlayerName) -> impl Iterator<Ite
 /// Returns an iterator over legal targets the active player could attack during
 /// combat.
 pub fn attack_targets(game: &GameState) -> impl Iterator<Item = AttackTarget> + '_ {
-    players::inactive_players(game)
+    player_queries::inactive_players(game)
         .iter()
         .flat_map(|player| {
             iter::once(AttackTarget::Player(player)).chain(
@@ -126,7 +126,7 @@ pub fn role(game: &GameState, entity: EntityId) -> Option<CombatRole> {
         }
         Some(CombatState::ProposingBlockers(blockers)) => {
             if blockers.proposed_blocks.contains_key(&entity) {
-                Some(CombatRole::ProposedBlocker(blockers.proposed_blocks[&entity]))
+                Some(CombatRole::ProposedBlocker(blockers.proposed_blocks[&entity][0]))
             } else if blockers.selected_blockers.contains(&entity) {
                 Some(CombatRole::SelectedBlocker)
             } else if blockers.attackers.contains(entity) {
@@ -141,10 +141,10 @@ pub fn role(game: &GameState, entity: EntityId) -> Option<CombatRole> {
 }
 
 fn role_in_blocker_map(entity: EntityId, blockers: &BlockerMap) -> Option<CombatRole> {
-    if blockers.all_attackers.contains(entity) {
-        Some(CombatRole::Attacker(blockers.all_attackers.get_target(entity)?))
+    if blockers.attackers.contains(entity) {
+        Some(CombatRole::Attacker(blockers.attackers.get_target(entity)?))
     } else if blockers.reverse_lookup.contains_key(&entity) {
-        let attacker_id = blockers.reverse_lookup[&entity];
+        let attacker_id = blockers.reverse_lookup[&entity][0];
         Some(CombatRole::Blocking {
             attacker: attacker_id,
             order: blockers.blocked_attackers[&attacker_id]

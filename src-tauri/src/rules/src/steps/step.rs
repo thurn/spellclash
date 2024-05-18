@@ -15,9 +15,11 @@
 use std::collections::{HashMap, HashSet};
 
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardType, PlayerName, Source};
+use data::core::numerics;
+use data::core::numerics::Damage;
+use data::core::primitives::{CardId, CardType, PlayerName, Source};
 use data::game_states::combat_state::{
-    AttackerMap, CombatState, ProposedAttackers, ProposedBlockers,
+    AttackTarget, AttackerMap, CombatState, ProposedAttackers, ProposedBlockers,
 };
 use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
@@ -25,8 +27,8 @@ use enumset::EnumSet;
 use utils::outcome::Outcome;
 use utils::{fail, outcome};
 
-use crate::mutations::{library, permanents};
-use crate::queries::{card_queries, players};
+use crate::mutations::{library, permanents, players};
+use crate::queries::{card_queries, player_queries};
 
 /// Advances the game state to the indicated `step`.
 ///
@@ -61,7 +63,7 @@ fn begin_step(game: &mut GameState, step: GamePhaseStep) -> Outcome {
 
 fn untap(game: &mut GameState) -> Outcome {
     begin_step(game, GamePhaseStep::Untap)?;
-    let next = players::next_player_after(game, game.turn.active_player);
+    let next = player_queries::next_player_after(game, game.turn.active_player);
     if next == PlayerName::One {
         game.turn.turn_number += 1;
     }
@@ -139,7 +141,7 @@ fn declare_blockers(game: &mut GameState) -> Outcome {
     // > attacking that player, a planeswalker they control, or a battle they
     // > protect.
     // <https://yawgatog.com/resources/magic-rules/#R5091>
-    let next = players::next_player(game);
+    let next = player_queries::next_player(game);
     let Some(CombatState::ConfirmedAttackers(attackers)) = game.combat.take() else {
         fail!("Not in the 'ConfirmedAttackers' state");
     };
@@ -156,8 +158,105 @@ fn first_strike_damage(game: &mut GameState) -> Outcome {
     begin_step(game, GamePhaseStep::FirstStrikeDamage)
 }
 
+enum CombatDamageAssignment {
+    Player(PlayerName, Damage),
+    Planeswalker(PlayerName, Damage),
+    Battle(PlayerName, Damage),
+    Creature(CardId, Damage),
+}
+
 fn combat_damage(game: &mut GameState) -> Outcome {
-    begin_step(game, GamePhaseStep::CombatDamage)
+    begin_step(game, GamePhaseStep::CombatDamage)?;
+    let Some(CombatState::ConfirmedBlockers(blockers)) = &game.combat else {
+        fail!("Not in the 'ConfirmedBlockers' state");
+    };
+
+    // > 510.1. First, the active player announces how each attacking creature
+    // > assigns its combat damage, then the defending player announces how each
+    // > blocking creature assigns its combat damage.
+
+    let mut damage_assignments = vec![];
+    for (attacker, target) in blockers.attackers.all_targets() {
+        // > 510.1a. Each attacking creature and each blocking creature assigns
+        // > combat damage equal to its power. Creatures that would assign 0 or less
+        // > damage this way don't assign combat damage at all.
+        // <https://yawgatog.com/resources/magic-rules/#R5101>
+
+        let Some(attacker_id) = game.card_entity(*attacker).map(|c| c.id) else {
+            continue;
+        };
+
+        if blockers.blocked_attackers.contains_key(attacker) {
+            let blockers = &blockers.blocked_attackers[attacker];
+            if blockers.len() != 1 {
+                todo!("Implement support for multiple blockers");
+            }
+            let Some(blocker_id) = game.card_entity(blockers[0]).map(|c| c.id) else {
+                continue;
+            };
+            damage_assignments.push(CombatDamageAssignment::Creature(
+                blocker_id,
+                numerics::power_to_damage(card_queries::power(game, attacker_id)),
+            ));
+        } else {
+            match target {
+                AttackTarget::Player(player) => {
+                    damage_assignments.push(CombatDamageAssignment::Player(
+                        *player,
+                        numerics::power_to_damage(card_queries::power(game, attacker_id)),
+                    ));
+                }
+                _ => todo!("Implement attack target"),
+            }
+        }
+    }
+
+    for (blocker_id, attackers) in &blockers.reverse_lookup {
+        // > 510.1d. A blocking creature assigns combat damage to the creatures it's blocking.
+        // > If it isn't currently blocking any creatures (if, for example, they were destroyed
+        // > or removed from combat), it assigns no combat damage. If it's blocking exactly one
+        // > creature, it assigns all its combat damage to that creature.
+        // <https://yawgatog.com/resources/magic-rules/#R5101d>
+        if attackers.len() != 1 {
+            todo!("Implement support for blocking multiple attackers");
+        }
+        let Some(attacker_id) = game.card_entity(attackers[0]).map(|c| c.id) else {
+            continue;
+        };
+        let Some(blocker_id) = game.card_entity(*blocker_id).map(|c| c.id) else {
+            continue;
+        };
+        damage_assignments.push(CombatDamageAssignment::Creature(
+            attacker_id,
+            numerics::power_to_damage(card_queries::power(game, blocker_id)),
+        ));
+    }
+
+    // > 510.2. Second, all combat damage that's been assigned is dealt
+    // > simultaneously. This turn-based action doesn't use the stack. No player has
+    // > the chance to cast spells or activate abilities between the time combat
+    // > damage is assigned and the time it's dealt.
+    // <https://yawgatog.com/resources/magic-rules/#R5102>
+    for assignment in damage_assignments {
+        match assignment {
+            CombatDamageAssignment::Player(player, damage) => {
+                players::deal_damage(game, Source::Game, player, damage)?;
+            }
+            CombatDamageAssignment::Planeswalker(player, damage) => {
+                todo!("Implement planeswalker damage");
+            }
+            CombatDamageAssignment::Battle(player, damage) => {
+                todo!("Implement battle damage");
+            }
+            CombatDamageAssignment::Creature(card_id, damage) => {
+                permanents::deal_damage(game, Source::Game, card_id, damage)?;
+            }
+        }
+    }
+
+    // > 510.3. Third, the active player gets priority.
+    // <https://yawgatog.com/resources/magic-rules/#R5103>
+    outcome::OK
 }
 
 fn end_combat(game: &mut GameState) -> Outcome {

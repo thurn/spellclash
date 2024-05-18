@@ -87,7 +87,7 @@ fn bottom_game_buttons(game: &GameState, player: PlayerName) -> Vec<GameButtonVi
             let next = match game.step {
                 GamePhaseStep::Upkeep => "To Draw",
                 GamePhaseStep::Draw => "To Main",
-                GamePhaseStep::PreCombatMain => "To Combat",
+                GamePhaseStep::PreCombatMain => "Continue",
                 GamePhaseStep::BeginCombat => "To Attackers",
                 GamePhaseStep::DeclareAttackers => "To Blockers",
                 GamePhaseStep::DeclareBlockers => "To Damage",

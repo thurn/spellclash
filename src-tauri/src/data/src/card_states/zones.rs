@@ -262,7 +262,7 @@ impl Zones {
             tapped_state: TappedState::Untapped,
             revealed_to: EnumSet::empty(),
             counters: Counters::default(),
-            damage: Damage(0),
+            damage: 0,
             targets: vec![],
             attached_to: None,
             custom_state: CustomCardStateList::default(),
@@ -286,13 +286,7 @@ impl Zones {
     /// The card is added as the top card of the target zone if it is ordered.
     ///
     /// Returns an error if this card was not found in its previous zone.
-    pub fn move_card(
-        &mut self,
-        _source: impl HasSource,
-        id: impl HasCardId,
-        zone: Zone,
-        current_turn: TurnData,
-    ) -> Outcome {
+    pub fn move_card(&mut self, id: impl HasCardId, zone: Zone) -> Outcome {
         let card_id = id.card_id();
         let old_zone = self.card_mut(card_id).zone;
         let owner = self.card_mut(card_id).owner;
@@ -302,7 +296,6 @@ impl Zones {
         let card = self.card_mut(card_id);
         card.zone = zone;
         card.entity_id = entity_id;
-        card.entered_current_zone = current_turn;
         outcome::OK
     }
 
@@ -340,7 +333,6 @@ impl Zones {
     }
 
     fn remove_from_zone(&mut self, owner: PlayerName, card_id: CardId, zone: Zone) -> Outcome {
-        self.on_leave_zone(card_id, zone);
         match zone {
             Zone::Hand => self.hands.remove(card_id, owner),
             Zone::Graveyard => self.graveyards.remove(card_id, owner),
@@ -374,44 +366,7 @@ impl Zones {
         }
     }
 
-    fn on_leave_zone(&mut self, card_id: CardId, zone: Zone) {
-        match zone {
-            Zone::Stack => {
-                let card = self.card_mut(card_id);
-                card.cast_as.clear();
-                card.targets.clear();
-            }
-            Zone::Battlefield => {
-                let card = self.card_mut(card_id);
-                card.tapped_state = TappedState::Untapped;
-                card.damage = Damage(0);
-                card.attached_to = None;
-            }
-            _ => {}
-        }
-    }
-
-    fn on_enter_zone(&mut self, card_id: CardId, zone: Zone) {
-        match zone {
-            Zone::Stack | Zone::Battlefield | Zone::Graveyard => {
-                self.card_mut(card_id).revealed_to = ALL_POSSIBLE_PLAYERS;
-            }
-            Zone::Hand => {
-                let controller = self.card(card_id).controller;
-                let card = self.card_mut(card_id);
-                card.revealed_to.insert(controller);
-                card.facing = CardFacing::FaceDown;
-            }
-            Zone::Library => {
-                let card = self.card_mut(card_id);
-                card.facing = CardFacing::FaceDown;
-            }
-            _ => {}
-        }
-    }
-
     fn add_to_zone(&mut self, owner: PlayerName, card_id: CardId, zone: Zone) {
-        self.on_enter_zone(card_id, zone);
         match zone {
             Zone::Library => self.libraries.cards_mut(owner).push_back(card_id),
             Zone::Hand => {

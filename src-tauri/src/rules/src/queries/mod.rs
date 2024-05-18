@@ -14,4 +14,4 @@
 
 pub mod card_queries;
 pub mod combat_queries;
-pub mod players;
+pub mod player_queries;

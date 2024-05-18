@@ -18,6 +18,8 @@ use data::game_states::game_state::GameState;
 use utils::outcome;
 use utils::outcome::Outcome;
 
+use crate::mutations::move_card;
+
 /// Draws a card from the top of the `player`'s library.
 ///
 /// Marks the card as revealed to its owner. Returns `outcome::GAME_OVER` if
@@ -25,7 +27,7 @@ use utils::outcome::Outcome;
 pub fn draw(game: &mut GameState, source: impl HasSource, player: impl HasPlayerName) -> Outcome {
     let Some(&id) = game.library(player).back() else { return outcome::GAME_OVER };
     let card = game.card_mut(id);
-    game.move_card(source, id, Zone::Hand)
+    move_card::run(game, source, id, Zone::Hand)
 }
 
 /// Draws `count` cards in sequence from the top of the `player`'s library.
@@ -52,7 +54,7 @@ pub fn move_to_top(
     source: impl HasSource,
     card_id: impl HasCardId,
 ) -> Outcome {
-    game.move_card(source, card_id.card_id(), Zone::Library)
+    move_card::run(game, source, card_id.card_id(), Zone::Library)
 }
 
 pub fn move_all_to_top<'a>(

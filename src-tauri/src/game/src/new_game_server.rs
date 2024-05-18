@@ -159,7 +159,7 @@ fn create_game(
         passed: EnumSet::empty(),
         configuration: GameConfiguration::new(PlayerName::One | PlayerName::Two, debug),
         state_machines: StateMachines::default(),
-        players: Players::new(p1, p2, LifeValue(20)),
+        players: Players::new(p1, p2, 20),
         zones,
         prompts: PromptManager::default(),
         combat: None,
@@ -168,6 +168,7 @@ fn create_game(
         rng: Xoshiro256StarStar::seed_from_u64(3141592653589793),
         undo_tracker: UndoTracker { enabled: true, undo: vec![] },
         delegates: GameDelegates::default(),
+        state_based_events: Some(vec![]),
     }
 }
 

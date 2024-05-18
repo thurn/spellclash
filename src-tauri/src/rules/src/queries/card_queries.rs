@@ -16,6 +16,7 @@ use std::iter;
 
 use data::card_states::play_card_plan::CastSpellChoices;
 use data::card_states::zones::ZoneQueries;
+use data::core::numerics::{Power, Toughness};
 use data::core::primitives::{CardId, CardType, Zone};
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandSubtype;
@@ -23,6 +24,7 @@ use data::printed_cards::layout::CardLayout;
 #[allow(unused)] // Used in docs
 use data::printed_cards::mana_cost::{ManaCost, ManaCostItem};
 use data::printed_cards::printed_card::{Face, PrintedCardFace};
+use data::printed_cards::printed_primitives::{PrintedPower, PrintedToughness};
 use either::Either;
 use enumset::EnumSet;
 use utils::fail;
@@ -129,4 +131,46 @@ pub fn mana_cost_for_casting_card(
         game.card(card_id).printed().face(choices.play_as.single_face()?).mana_cost.clone();
     cost.items.sort();
     Ok(cost)
+}
+
+/// Computes the power on card's characteristic faces.
+///
+/// See [characteristic_faces] for more information.
+pub fn power(game: &GameState, card_id: CardId) -> Power {
+    let characteristic = characteristic_faces(game, card_id);
+    match characteristic[..] {
+        [] => {
+            // > 708.2a. If a face-up permanent is turned face down by a spell or ability that
+            // > doesn't list any characteristics for that object, it becomes a 2/2 face-down
+            // > creature with no text, no name, no subtypes, and no mana cost.
+            // <https://yawgatog.com/resources/magic-rules/#R7082a>
+            2
+        }
+        [face] => match face.power {
+            Some(PrintedPower::Number(p)) => p,
+            _ => todo!("Implement support for non-numeric power"),
+        },
+        _ => panic!("Cannot compute power for card with multiple active faces"),
+    }
+}
+
+/// Computes the toughness on card's characteristic faces.
+///
+/// See [characteristic_faces] for more information.
+pub fn toughness(game: &GameState, card_id: CardId) -> Toughness {
+    let characteristic = characteristic_faces(game, card_id);
+    match characteristic[..] {
+        [] => {
+            // > 708.2a. If a face-up permanent is turned face down by a spell or ability that
+            // > doesn't list any characteristics for that object, it becomes a 2/2 face-down
+            // > creature with no text, no name, no subtypes, and no mana cost.
+            // <https://yawgatog.com/resources/magic-rules/#R7082a>
+            2
+        }
+        [face] => match face.toughness {
+            Some(PrintedToughness::Number(t)) => t,
+            _ => todo!("Implement support for non-numeric toughness"),
+        },
+        _ => panic!("Cannot compute toughness for card with multiple active faces"),
+    }
 }

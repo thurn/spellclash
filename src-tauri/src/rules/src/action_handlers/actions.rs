@@ -24,9 +24,9 @@ use utils::{fail, outcome, verify};
 
 use crate::action_handlers::{combat_actions, debug_actions};
 use crate::legality::legal_actions;
-use crate::mutations::{permanents, priority};
+use crate::mutations::{permanents, priority, state_based_actions};
 use crate::play_cards::{pick_face_to_play, play_card};
-use crate::queries::players;
+use crate::queries::player_queries;
 use crate::resolve_cards::resolve;
 use crate::steps::step;
 
@@ -65,7 +65,15 @@ pub fn execute(
         GameAction::PassPriority => handle_pass_priority(game, player),
         GameAction::ProposePlayingCard(id) => handle_play_card(game, Source::Game, player, id),
         GameAction::CombatAction(action) => combat_actions::execute(game, player, action),
+    }?;
+
+    if legal_actions::can_any_player_pass_priority(game) {
+        // If any player has priority as a result of this game action, check state-based
+        // actions.
+        state_based_actions::run(game)?;
     }
+
+    outcome::OK
 }
 
 #[instrument(err, level = "debug", skip(game))]

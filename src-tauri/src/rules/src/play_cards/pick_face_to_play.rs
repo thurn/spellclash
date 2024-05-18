@@ -26,7 +26,7 @@ use enumset::EnumSet;
 
 use crate::play_cards::play_card::PlayCardStep;
 use crate::play_cards::play_card_choices::{PlayCardChoice, PlayCardChoicePrompt};
-use crate::queries::players;
+use crate::queries::player_queries;
 
 pub fn run(
     game: &GameState,
@@ -77,7 +77,7 @@ fn can_play_as(game: &GameState, card: &CardState, face: &PrintedCardFace) -> Op
     match result.play_as {
         PlayCardTiming::Land => {
             if in_main_phase_with_stack_empty(game, player)
-                && players::land_plays_remaining(game, player) > 0
+                && player_queries::land_plays_remaining(game, player) > 0
             {
                 return Some(result);
             }

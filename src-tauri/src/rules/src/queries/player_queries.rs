@@ -53,20 +53,10 @@ pub fn next_player(game: &GameState) -> PlayerName {
     next_player_after(game, game.turn.active_player)
 }
 
-const TWO_PLAYERS: EnumSet<PlayerName> = enum_set!(PlayerName::One | PlayerName::Two);
-const THREE_PLAYERS: EnumSet<PlayerName> =
-    enum_set!(PlayerName::One | PlayerName::Two | PlayerName::Three);
-const FOUR_PLAYERS: EnumSet<PlayerName> =
-    enum_set!(PlayerName::One | PlayerName::Two | PlayerName::Three | PlayerName::Four);
-
-/// Returns the names of all players in the provided game
+/// Returns the names of all players currently playing in the provided game
+/// (i.e. who have not lost)
 pub fn all_players(game: &GameState) -> EnumSet<PlayerName> {
-    match game.configuration.all_players.len() {
-        2 => TWO_PLAYERS,
-        3 => THREE_PLAYERS,
-        4 => FOUR_PLAYERS,
-        _ => panic!("Unsupported player count"),
-    }
+    game.configuration.all_players
 }
 
 /// Returns the set of players who are not currently taking their turn.

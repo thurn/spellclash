@@ -36,6 +36,7 @@ use crate::game_states::animation_tracker::{
 use crate::game_states::combat_state::CombatState;
 use crate::game_states::game_step::GamePhaseStep;
 use crate::game_states::history_data::{GameHistory, HistoryCounters, HistoryEvent};
+use crate::game_states::state_based_event::StateBasedEvent;
 use crate::game_states::undo_tracker::UndoTracker;
 use crate::player_states::player_state::{PlayerQueries, PlayerState, Players};
 use crate::prompts::prompt_manager::PromptManager;
@@ -121,19 +122,14 @@ pub struct GameState {
     /// Active Delegates for the game. See [GameDelegates].
     #[serde(skip)]
     pub delegates: GameDelegates,
+
+    /// Tracks events which have occurred since the last time state-based
+    /// actions were checked which may trigger game mutations during the next
+    /// state-based action check.
+    pub state_based_events: Option<Vec<StateBasedEvent>>,
 }
 
 impl GameState {
-    /// Moves a card to a new zone, updates indices, and assigns a new
-    /// [EntityId] to it.
-    ///
-    /// The card is added as the top card of the target zone if it is ordered.
-    ///
-    /// Returns an error if this card was not found in its previous zone.
-    pub fn move_card(&mut self, source: impl HasSource, id: impl HasCardId, zone: Zone) -> Outcome {
-        self.zones.move_card(source, id, zone, self.turn)
-    }
-
     /// Changes the controller for a card.
     ///
     /// Returns an error if this card was not found on the battlefield.
@@ -202,6 +198,15 @@ impl GameState {
     /// Mutable equivalent of [Self::history_counters].
     pub fn history_counters_mut(&mut self, player: PlayerName) -> &mut HistoryCounters {
         self.history.counters_for_turn_mut(self.turn, player)
+    }
+
+    /// Adds a new tracked [StateBasedEvent].
+    pub fn add_state_based_event(&mut self, event: StateBasedEvent) {
+        if let Some(events) = &mut self.state_based_events {
+            events.push(event);
+        } else {
+            self.state_based_events = Some(vec![event]);
+        }
     }
 }
 
@@ -291,7 +296,7 @@ pub enum GameStatus {
     /// See <https://yawgatog.com/resources/magic-rules/#R1035>
     ResolveMulligans,
 
-    /// Players take action_handlers with cards in their opening hands
+    /// Players take actions with cards in their opening hands
     ///
     /// See <https://yawgatog.com/resources/magic-rules/#R1036>
     PreGameActions,
@@ -299,8 +304,10 @@ pub enum GameStatus {
     /// Game is currently ongoing
     Playing,
 
-    /// Game has ended and the [PlayerName] player has won.
-    GameOver { winner: PlayerName },
+    /// Game has ended and the [PlayerName] players have won.
+    ///
+    /// If the winner set is empty, the game has ended in a draw.
+    GameOver { winners: EnumSet<PlayerName> },
 }
 
 /// Identifies a turn within the game.
@@ -330,7 +337,7 @@ pub struct GameConfiguration {
     /// pre-scripted new player experience.
     pub scripted_tutorial: bool,
 
-    /// Set of players in this game
+    /// Set of players currently in this game, i.e. who have not yet lost
     ///
     /// Currently only 2 players are supported, but I see no reason not to allow
     /// future expansion.

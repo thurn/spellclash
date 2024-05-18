@@ -17,4 +17,5 @@ pub mod combat_state;
 pub mod game_state;
 pub mod game_step;
 pub mod history_data;
+pub mod state_based_event;
 pub mod undo_tracker;

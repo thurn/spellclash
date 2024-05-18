@@ -50,8 +50,7 @@ pub struct CardState {
     /// the battlefield it gets a new entity ID and effects targeting it will
     /// end.
     ///
-    /// Do not mutate this field directly, use [GameState::move_card] or a
-    /// higher-level function instead.
+    /// Do not mutate this field directly, use the `move_card` module instead.
     pub entity_id: EntityId,
 
     /// Name of the printed card for this card, used to populate the result of
@@ -82,8 +81,7 @@ pub struct CardState {
 
     /// Current game zone location for this card.
     ///
-    /// Do not mutate this field directly, use [GameState::move_card] or a
-    /// higher-level function instead.
+    /// Do not mutate this field directly, use the `move_card` module instead.
     pub zone: Zone,
 
     /// Whether this card is currently face down or has one of its faces up.
@@ -140,7 +138,7 @@ pub struct CardState {
 
     /// Turn on which this card last entered its current zone.
     ///
-    /// Do not mutate this field directly, use [GameState::move_card] instead.
+    /// Do not mutate this field directly, use the `move_card` module instead.
     pub entered_current_zone: TurnData,
 
     /// Turn on which this card gained its current controller.

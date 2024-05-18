@@ -30,7 +30,7 @@ use utils::with_error::WithError;
 use utils::{fail, outcome, verify};
 
 use crate::mutations::permanents;
-use crate::queries::{card_queries, combat_queries, players};
+use crate::queries::{card_queries, combat_queries, player_queries};
 
 #[instrument(err, level = "debug", skip(game))]
 pub fn execute(game: &mut GameState, player: PlayerName, action: CombatAction) -> Outcome {
@@ -63,7 +63,7 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: CombatAction) -
 /// See [CombatAction::AddSelectedAttacker].
 #[instrument(err, level = "debug", skip(game))]
 fn add_selected_attacker(game: &mut GameState, source: Source, card_id: AttackerId) -> Outcome {
-    let next = players::next_player(game);
+    let next = player_queries::next_player(game);
     // There is more than one possible attack target because a planeswalker or
     // battle is in play (or there are more than 2 players), must select attack
     // targets.
@@ -138,7 +138,7 @@ fn add_selected_blocker(game: &mut GameState, source: Source, card_id: BlockerId
     };
     if let Some(id) = blockers.attackers.exactly_one() {
         // Only one attacker, automatically block it.
-        blockers.proposed_blocks.insert(card_id, id);
+        blockers.proposed_blocks.insert(card_id, vec![id]);
     } else {
         blockers.selected_blockers.insert(card_id);
     }
@@ -159,7 +159,7 @@ fn set_selected_blockers_target(
     };
 
     for blocker_id in blockers.selected_blockers.iter() {
-        blockers.proposed_blocks.insert(*blocker_id, attacker);
+        blockers.proposed_blocks.insert(*blocker_id, vec![attacker]);
     }
     outcome::OK
 }
@@ -186,12 +186,15 @@ fn confirm_blockers(game: &mut GameState, source: Source) -> Outcome {
         fail!("Not in the 'ProposingBlockers' state");
     };
     let mut attackers_to_blockers = HashMap::new();
-    for (&blocker_id, &attacker_id) in &blockers.proposed_blocks {
+    for (&blocker_id, attackers) in &blockers.proposed_blocks {
+        if attackers.len() != 1 {
+            todo!("Implement support for blocking multiple attackers");
+        }
         // TODO: Figure out some kind of default ordering for blockers
-        attackers_to_blockers.entry(attacker_id).or_insert_with(Vec::new).push(blocker_id);
+        attackers_to_blockers.entry(attackers[0]).or_insert_with(Vec::new).push(blocker_id);
     }
     game.combat = Some(CombatState::OrderingBlockers(BlockerMap {
-        all_attackers: blockers.attackers,
+        attackers: blockers.attackers,
         blocked_attackers: attackers_to_blockers,
         reverse_lookup: blockers.proposed_blocks,
     }));

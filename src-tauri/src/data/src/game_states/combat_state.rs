@@ -73,8 +73,8 @@ impl CombatState {
             Self::ProposingAttackers(_) => None,
             Self::ConfirmedAttackers(attackers) => Some(attackers),
             Self::ProposingBlockers(blockers) => Some(&blockers.attackers),
-            Self::OrderingBlockers(blockers) => Some(&blockers.all_attackers),
-            Self::ConfirmedBlockers(blockers) => Some(&blockers.all_attackers),
+            Self::OrderingBlockers(blockers) => Some(&blockers.attackers),
+            Self::ConfirmedBlockers(blockers) => Some(&blockers.attackers),
         }
     }
 }
@@ -116,6 +116,10 @@ impl AttackerMap {
         self.attacks.keys().copied()
     }
 
+    pub fn all_targets(&self) -> impl Iterator<Item = (&AttackerId, &AttackTarget)> + '_ {
+        self.attacks.iter()
+    }
+
     pub fn get_target(&self, attacker: AttackerId) -> Option<AttackTarget> {
         self.attacks.get(&attacker).copied()
     }
@@ -155,21 +159,24 @@ pub struct ProposedBlockers {
 
     /// Current proposed blocks, keyed by Blocker ID
     #[serde_as(as = "Vec<(_, _)>")]
-    pub proposed_blocks: HashMap<BlockerId, AttackerId>,
+    pub proposed_blocks: HashMap<BlockerId, Vec<AttackerId>>,
 }
 
 #[serde_as]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BlockerMap {
     /// All declared attackers along with their attack targets
-    pub all_attackers: AttackerMap,
+    pub attackers: AttackerMap,
 
     /// Attackers which have been blocked and will not deal combat damage to
-    /// their target
+    /// their target.
+    ///
+    /// A [BlockerId] will be retained in this map even if the blocking creature
+    /// is subsequently removed.
     #[serde_as(as = "Vec<(_, _)>")]
     pub blocked_attackers: HashMap<AttackerId, Vec<BlockerId>>,
 
-    /// Map from Blocker ID to the attacker that creature is blocking
+    /// Map from Blocker ID to the attackers that creature is blocking
     #[serde_as(as = "Vec<(_, _)>")]
-    pub reverse_lookup: HashMap<BlockerId, AttackerId>,
+    pub reverse_lookup: HashMap<BlockerId, Vec<AttackerId>>,
 }

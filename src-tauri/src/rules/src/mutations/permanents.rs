@@ -14,9 +14,12 @@
 
 use data::card_states::card_state::{CardFacing, TappedState};
 use data::card_states::zones::ZoneQueries;
+use data::core::numerics::Damage;
 use data::core::primitives::{CardId, Source, Zone, ALL_POSSIBLE_PLAYERS};
 use data::game_states::game_state::GameState;
+use data::game_states::state_based_event::StateBasedEvent;
 use data::printed_cards::printed_card::Face;
+use tracing::debug;
 use utils::outcome::Outcome;
 use utils::{outcome, verify};
 
@@ -47,5 +50,18 @@ pub fn untap(game: &mut GameState, _source: Source, card_id: CardId) -> Outcome 
     let card = game.card_mut(card_id);
     verify!(card.zone == Zone::Battlefield, "Card {card_id:?} is not on the battlefield");
     card.tapped_state = TappedState::Untapped;
+    outcome::OK
+}
+
+/// Deals damage to a permanent
+pub fn deal_damage(
+    game: &mut GameState,
+    source: Source,
+    card_id: CardId,
+    damage: Damage,
+) -> Outcome {
+    debug!("Dealing {damage:?} damage to {card_id:?}");
+    game.card_mut(card_id).damage += damage;
+    game.add_state_based_event(StateBasedEvent::CreatureDamaged(card_id));
     outcome::OK
 }
