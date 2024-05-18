@@ -47,7 +47,9 @@ fn build_cards() -> Value<HashMap<CardName, PrintedCard>> {
     let set_cards: Vec<SetCard> = de::from_str(JSON).expect("Error deserializing cards.json");
     let mut result = HashMap::new();
     for card in &set_cards {
-        let (name, printed) = build_printed_card(card)?;
+        let Ok((name, printed)) = build_printed_card(card) else {
+            continue;
+        };
         result.insert(name, printed);
     }
     Ok(result)
@@ -89,8 +91,8 @@ fn build_face(card: &SetCard, face_identifier: Face) -> Value<PrintedCardFace> {
         colors: colors(&card.colors),
         mana_cost: mana_cost(card.mana_cost.as_ref())?,
         mana_value: card.mana_value.round() as u64,
-        power: power(card.power.as_ref()),
-        toughness: toughness(card.toughness.as_ref()),
+        power: power(card.power.as_ref())?,
+        toughness: toughness(card.toughness.as_ref())?,
         loyalty: loyalty(card.loyalty.as_ref()),
         layout: card.layout,
         attraction_lights: attraction_lights(card.attraction_lights.clone().unwrap_or_default()),
@@ -190,24 +192,28 @@ fn to_mana_item(symbol: &str) -> Value<Vec<ManaCostItem>> {
     }])
 }
 
-fn power(power: Option<&String>) -> Option<PrintedPower> {
-    power.map(|p| {
-        if let Ok(value) = p.parse::<i64>() {
-            PrintedPower::Number(value)
-        } else {
-            todo!("Implement support for non-numeric power")
-        }
-    })
+fn power(power: Option<&String>) -> Value<Option<PrintedPower>> {
+    power
+        .map(|p| {
+            if let Ok(value) = p.parse::<i64>() {
+                Ok(PrintedPower::Number(value))
+            } else {
+                fail!("TODO: Implement support for non-numeric power");
+            }
+        })
+        .transpose()
 }
 
-fn toughness(toughness: Option<&String>) -> Option<PrintedToughness> {
-    toughness.map(|t| {
-        if let Ok(value) = t.parse::<i64>() {
-            PrintedToughness::Number(value)
-        } else {
-            todo!("Implement support for non-numeric toughness")
-        }
-    })
+fn toughness(toughness: Option<&String>) -> Value<Option<PrintedToughness>> {
+    toughness
+        .map(|t| {
+            if let Ok(value) = t.parse::<i64>() {
+                Ok(PrintedToughness::Number(value))
+            } else {
+                fail!("TODO: Implement support for non-numeric toughness");
+            }
+        })
+        .transpose()
 }
 
 fn loyalty(_loyalty: Option<&String>) -> Option<PrintedLoyalty> {
