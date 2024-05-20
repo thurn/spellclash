@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { Dispatch, ReactNode, SetStateAction, createContext, useEffect, useState } from 'react';
-import { GameResponse, SceneName } from './display_types';
+import { GameResponse } from './display_types';
 import MainMenu from './MainMenu';
 import { Game } from './game_view/Game';
 import { connect, handleAction } from './server';
@@ -22,9 +22,10 @@ import { Modal, ModalBody, ModalContent, ModalHeader, useDisclosure } from '@nex
 
 function defaultGameResponse(): GameResponse {
   return {
-    scene: SceneName.Loading,
     commands: [],
-    client_data: {},
+    client_data: {
+      scene: "Loading"
+    },
   };
 }
 
@@ -44,22 +45,16 @@ export function App(): ReactNode {
   useEffect(() => {
     connect(setGlobalState);
   }, []);
-  console.log('Global state scene is ' + globalState.scene);
+  const sceneIdentifier = globalState.client_data.scene;
+  console.log('Global state scene is ' + sceneIdentifier);
 
   let scene;
-  switch (globalState.scene) {
-    case SceneName.MainMenu: {
-      scene = <MainMenu view={globalState.commands.at(-1)!.UpdateMainMenuView!} />;
-      break;
-    }
-    case SceneName.Game: {
-      scene = <Game view={globalState.commands.at(-1)!.UpdateGameView!.view} />;
-      break;
-    }
-    case SceneName.Loading: {
-      scene = <h1>Loading...</h1>;
-      break;
-    }
+  if (sceneIdentifier === 'MainMenu') {
+    scene = <MainMenu view={globalState.commands.at(-1)!.UpdateMainMenuView!} />;
+  } else if (sceneIdentifier === 'Loading') {
+    scene = <h1>Loading...</h1>;
+  } else if ('Game' in sceneIdentifier) {
+    scene = <Game view={globalState.commands.at(-1)!.UpdateGameView!.view} />;
   }
 
   const showModal = globalState.modal_panel != null;;

@@ -42,7 +42,6 @@ export async function handleAction(
   if (result.commands.length === 0) {
     // Propagate previous command state if no UI update provided
     result = {
-      scene: result.scene,
       modal_panel: result.modal_panel,
       commands: lastResponse.commands,
       client_data: result.client_data,

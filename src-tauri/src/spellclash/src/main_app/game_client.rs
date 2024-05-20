@@ -18,6 +18,7 @@ use data::core::primitives::{GameId, UserId};
 use data::decks::deck_name;
 use dioxus::desktop::{Config, WindowBuilder};
 use dioxus::prelude::*;
+use display::commands::scene_identifier::SceneIdentifier;
 use display::core::game_view::GameView;
 use game;
 use game::server_data::ClientData;
@@ -58,7 +59,7 @@ pub fn launch() {
 #[component]
 fn App() -> Element {
     let user_id = UserId(Uuid::default());
-    use_context_provider(|| Signal::new(ClientData::for_user(user_id)));
+    use_context_provider(|| Signal::new(ClientData::new(user_id, SceneIdentifier::MainMenu)));
     let view_signal_data: Option<GameView> = None;
     use_context_provider(|| Signal::new(view_signal_data));
     rsx! {

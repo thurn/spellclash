@@ -37,7 +37,7 @@ use data::state_machines::state_machine_data::StateMachines;
 use data::users::user_state::UserActivity;
 use database::database::Database;
 use display::commands::display_preferences::DisplayPreferences;
-use display::commands::scene_name::SceneName;
+use display::commands::scene_identifier::SceneIdentifier;
 use display::rendering::render;
 use enumset::EnumSet;
 use maplit::hashmap;
@@ -106,9 +106,9 @@ pub async fn create(
             Ok((id, commands))
         })
         .collect::<Result<Vec<_>, _>>()?;
-    let result = GameResponse::new(SceneName::Game, ClientData {
+    let result = GameResponse::new(ClientData {
         user_id: user.id,
-        game_id: Some(game.id),
+        scene: SceneIdentifier::Game(game.id),
         display_preferences: DisplayPreferences::default(),
         opponent_ids,
     })

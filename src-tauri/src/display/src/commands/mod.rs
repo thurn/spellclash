@@ -14,4 +14,4 @@
 
 pub mod command;
 pub mod display_preferences;
-pub mod scene_name;
+pub mod scene_identifier;

@@ -24,7 +24,7 @@ use data::player_states::player_state::PlayerQueries;
 use data::users::user_state::UserState;
 use database::database::Database;
 use display::commands::display_preferences::DisplayPreferences;
-use display::commands::scene_name::SceneName;
+use display::commands::scene_identifier::SceneIdentifier;
 use display::rendering::render;
 use enumset::{enum_set, EnumSet};
 use rules::action_handlers::actions;
@@ -62,11 +62,11 @@ pub async fn connect(
     let commands = render::connect(&game, player_name, DisplayPreferences::default());
     let client_data = ClientData {
         user_id: user.id,
-        game_id: Some(game.id),
+        scene: SceneIdentifier::Game(game.id),
         display_preferences: DisplayPreferences::default(),
         opponent_ids,
     };
-    Ok(GameResponse::new(SceneName::Game, client_data).commands(commands))
+    Ok(GameResponse::new(client_data).commands(commands))
 }
 
 #[instrument(level = "debug", skip(database))]
@@ -77,7 +77,7 @@ pub async fn handle_game_action(
 ) -> Value<GameResponse> {
     let mut game = requests::fetch_game(
         database.clone(),
-        data.game_id.with_error(|| "Expected current game ID")?,
+        data.game_id().with_error(|| "Expected current game ID")?,
     )
     .await?;
     let result = handle_game_action_internal(database, &data, action, &mut game).await;
@@ -105,7 +105,7 @@ pub async fn handle_game_action_internal(
 
     let mut current_action = action;
     let mut current_action_is_automatic = false;
-    let mut result = GameResponse::new(SceneName::Game, data.clone());
+    let mut result = GameResponse::new(data.clone());
 
     loop {
         actions::execute(game, current_player, current_action, current_action_is_automatic)?;

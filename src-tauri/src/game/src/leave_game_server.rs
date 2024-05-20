@@ -17,7 +17,7 @@ use std::sync::Arc;
 use data::users::user_state::UserActivity;
 use database::database::Database;
 use display::commands::command::Command;
-use display::commands::scene_name::SceneName;
+use display::commands::scene_identifier::SceneIdentifier;
 use utils::outcome::Value;
 
 use crate::server_data::{ClientData, GameResponse};
@@ -27,7 +27,7 @@ pub async fn leave(database: Arc<dyn Database>, mut data: ClientData) -> Value<G
     let mut user = requests::fetch_user(database.clone(), data.user_id).await?;
     user.activity = UserActivity::Menu;
     database.write_user(&user).await?;
-    data.game_id = None;
-    Ok(GameResponse::new(SceneName::MainMenu, data)
+    data.scene = SceneIdentifier::MainMenu;
+    Ok(GameResponse::new(data)
         .command(Command::UpdateMainMenuView(main_menu_server::main_menu_view())))
 }

@@ -18,7 +18,7 @@ use data::actions::user_action::UserAction;
 use database::sled_database::SledDatabase;
 use dioxus::prelude::{Navigator, Signal, Writable};
 use display::commands::command::{Command, UpdateGameViewCommand};
-use display::commands::scene_name::SceneName;
+use display::commands::scene_identifier::SceneIdentifier;
 use display::core::game_view::GameView;
 use game::server;
 use game::server_data::{ClientData, GameResponse};

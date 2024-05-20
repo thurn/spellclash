@@ -22,7 +22,7 @@ use data::game_states::game_state::{DebugActAsPlayer, DebugConfiguration};
 use data::users::user_state::UserState;
 use database::database::Database;
 use display::commands::command::Command;
-use display::commands::scene_name::SceneName;
+use display::commands::scene_identifier::SceneIdentifier;
 use display::core::game_view::GameButtonView;
 use display::core::main_menu_view::MainMenuView;
 use tracing::info;
@@ -34,9 +34,8 @@ use crate::server_data::{ClientData, GameResponse};
 /// Connect to the main menu scene
 pub async fn connect(_: Arc<dyn Database>, user: &UserState) -> Value<GameResponse> {
     info!(?user.id, "Connected");
-    let client_data = ClientData::for_user(user.id);
-    Ok(GameResponse::new(SceneName::MainMenu, client_data)
-        .command(Command::UpdateMainMenuView(main_menu_view())))
+    let client_data = ClientData::new(user.id, SceneIdentifier::MainMenu);
+    Ok(GameResponse::new(client_data).command(Command::UpdateMainMenuView(main_menu_view())))
 }
 
 pub fn main_menu_view() -> MainMenuView {

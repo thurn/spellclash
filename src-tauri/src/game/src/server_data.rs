@@ -15,16 +15,13 @@
 use data::core::primitives::{GameId, UserId};
 use display::commands::command::Command;
 use display::commands::display_preferences::DisplayPreferences;
-use display::commands::scene_name::SceneName;
+use display::commands::scene_identifier::SceneIdentifier;
 use display::panels::modal_panel::{ModalPanel, PanelData};
 use serde::{Deserialize, Serialize};
 
 /// A response to a user request.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GameResponse {
-    /// Primary visual content to display
-    pub scene: SceneName,
-
     /// Optionally, a panel to display on top of the primary scene content
     pub modal_panel: Option<ModalPanel>,
 
@@ -39,8 +36,8 @@ pub struct GameResponse {
 }
 
 impl GameResponse {
-    pub fn new(scene: SceneName, client_data: ClientData) -> Self {
-        Self { scene, modal_panel: None, client_data, commands: vec![], opponent_responses: vec![] }
+    pub fn new(client_data: ClientData) -> Self {
+        Self { modal_panel: None, client_data, commands: vec![], opponent_responses: vec![] }
     }
 
     pub fn modal_panel(mut self, panel: ModalPanel) -> Self {
@@ -76,7 +73,7 @@ impl GameResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ClientData {
     pub user_id: UserId,
-    pub game_id: Option<GameId>,
+    pub scene: SceneIdentifier,
 
     /// Options for how the game state should be visually rendered
     pub display_preferences: DisplayPreferences,
@@ -86,12 +83,19 @@ pub struct ClientData {
 }
 
 impl ClientData {
-    pub fn for_user(user_id: UserId) -> Self {
+    pub fn new(user_id: UserId, scene: SceneIdentifier) -> Self {
         Self {
             user_id,
-            game_id: None,
+            scene,
             display_preferences: DisplayPreferences::default(),
             opponent_ids: vec![],
+        }
+    }
+
+    pub fn game_id(&self) -> Option<GameId> {
+        match self.scene {
+            SceneIdentifier::Game(id) => Some(id),
+            _ => None,
         }
     }
 }

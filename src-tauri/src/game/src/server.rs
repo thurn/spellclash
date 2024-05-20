@@ -52,7 +52,8 @@ pub async fn handle_action(
     data: ClientData,
     action: UserAction,
 ) -> Value<GameResponse> {
-    let span = debug_span!("handle_action", ?data.user_id, ?data.game_id);
+    let game_id = data.game_id();
+    let span = debug_span!("handle_action", ?data.user_id, ?game_id);
     match action {
         UserAction::NewGameAction(action) => {
             new_game_server::create(database, data, action).instrument(span).await

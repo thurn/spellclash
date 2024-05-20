@@ -13,16 +13,9 @@
 // limitations under the License.
 
 export interface GameResponse {
-  readonly scene: SceneName;
   readonly modal_panel?: ModalPanel;
   readonly commands: Command[];
   readonly client_data: ClientData;
-}
-
-export enum SceneName {
-  Loading = 'Loading',
-  MainMenu = 'MainMenu',
-  Game = 'Game',
 }
 
 export interface ModalPanel {
@@ -36,8 +29,11 @@ export type PanelData = { Debug: DebugPanel };
 export interface DebugPanel {
   readonly buttons: GameButtonView[];
 }
+export interface ClientData {
+  readonly scene: SceneIdentifier;
+}
 
-export interface ClientData {}
+export type SceneIdentifier = 'Loading' | 'MainMenu' | { Game: string };
 
 export interface Command {
   readonly UpdateGameView?: UpdateGameView;

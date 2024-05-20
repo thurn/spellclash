@@ -17,7 +17,7 @@ use std::sync::Arc;
 use data::actions::game_action::GameAction;
 use data::core::panel_address::PanelAddress;
 use database::database::Database;
-use display::commands::scene_name::SceneName;
+use display::commands::scene_identifier::SceneIdentifier;
 use display::panels::panel;
 use tracing::instrument;
 use utils::outcome::Value;
@@ -34,16 +34,16 @@ pub async fn handle_open_panel(
 ) -> Value<GameResponse> {
     match panel {
         PanelAddress::GamePanel(game_panel) => {
-            let game_id = data.game_id.with_error(|| "Expected current game ID")?;
+            let game_id = data.game_id().with_error(|| "Expected current game ID")?;
             let game = requests::fetch_game(database, game_id).await?;
             let player_name = game.find_player_name(data.user_id)?;
             let panel = panel::build_game_panel(&game, player_name, game_panel);
-            Ok(GameResponse::new(SceneName::Game, data).modal_panel(panel))
+            Ok(GameResponse::new(data).modal_panel(panel))
         }
         PanelAddress::UserPanel(player_panel) => match player_panel {},
     }
 }
 
 pub fn handle_close_panel(data: ClientData) -> Value<GameResponse> {
-    Ok(GameResponse::new(SceneName::Game, data))
+    Ok(GameResponse::new(data))
 }
