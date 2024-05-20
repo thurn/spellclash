@@ -32,7 +32,7 @@ export function RevealedCard({ revealed }: { revealed: RevealedCardView }): Reac
   }
 
   return (
-    <div className={borderClass} onClick={() => handleAction(setState, response.client_data, revealed.click_action)}>
+    <div className={borderClass} onClick={() => handleAction(setState, response, revealed.click_action)}>
       <img
         src={revealed.face.image}
         style={{

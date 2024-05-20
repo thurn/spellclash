@@ -12,6 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod numerics;
-pub mod panel_address;
-pub mod primitives;
+import { ReactNode } from "react";
+import { DebugPanel } from "../display_types";
+import { GameButton } from "../core/GameButton";
+
+export function DebugPanelContent({ data }: { data: DebugPanel }): ReactNode {
+  const buttons = data.buttons.map((button, i) => <GameButton button={button} key={i} />);
+  return (
+    <div>
+      <h1>Debug Panel</h1>
+      {buttons}
+    </div>
+  );
+}

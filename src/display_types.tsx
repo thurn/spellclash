@@ -14,6 +14,7 @@
 
 export interface GameResponse {
   readonly scene: SceneName;
+  readonly modal_panel?: ModalPanel;
   readonly commands: Command[];
   readonly client_data: ClientData;
 }
@@ -22,6 +23,18 @@ export enum SceneName {
   Loading = 'Loading',
   MainMenu = 'MainMenu',
   Game = 'Game',
+}
+
+export interface ModalPanel {
+  readonly title: string;
+  readonly on_close: UserAction;
+  readonly data: PanelData;
+}
+
+export type PanelData = { Debug: DebugPanel };
+
+export interface DebugPanel {
+  readonly buttons: GameButtonView[];
 }
 
 export interface ClientData {}

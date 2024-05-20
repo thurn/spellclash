@@ -17,7 +17,7 @@ use mtgjson::{Color, Identifiers, Side};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-/// Represents a card printed in a set.
+/// Represents a card face printed in a set.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SetCard {

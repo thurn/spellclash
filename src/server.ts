@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { invoke } from '@tauri-apps/api/core';
-import { ClientData, GameResponse, UserAction } from './display_types';
+import { GameResponse, UserAction } from './display_types';
 import { Dispatch, SetStateAction } from 'react';
 
 export async function connect(setter: Dispatch<SetStateAction<GameResponse>>): Promise<void> {
@@ -26,7 +26,7 @@ export async function connect(setter: Dispatch<SetStateAction<GameResponse>>): P
 
 export async function handleAction(
   setter: Dispatch<SetStateAction<GameResponse>>,
-  clientData: ClientData,
+  lastResponse: GameResponse,
   action?: UserAction,
 ): Promise<void> {
   if (action == null) {
@@ -35,10 +35,19 @@ export async function handleAction(
 
   console.log('Handling action...');
   console.dir(action);
-  const result: GameResponse = await invoke('client_handle_action', {
-    clientData,
+  let result: GameResponse = await invoke('client_handle_action', {
+    clientData: lastResponse.client_data,
     action,
   });
+  if (result.commands.length === 0) {
+    // Propagate previous command state if no UI update provided
+    result = {
+      scene: result.scene,
+      modal_panel: result.modal_panel,
+      commands: lastResponse.commands,
+      client_data: result.client_data,
+    };
+  }
   console.log('Got action response');
   console.dir(result);
   setter(result);

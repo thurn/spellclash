@@ -17,6 +17,7 @@ use data::actions::game_action::{CombatAction, GameAction};
 use data::actions::user_action::UserAction;
 use data::card_states::card_state::CardState;
 use data::card_states::zones::ZoneQueries;
+use data::core::panel_address::GamePanelAddress;
 use data::core::primitives::{PlayerName, Zone};
 use data::game_states::combat_state::CombatState;
 use data::game_states::game_state::GameState;
@@ -73,7 +74,13 @@ fn skip_sending_to_client(card: &CardState) -> bool {
 }
 
 fn top_game_buttons(game: &GameState, _player: PlayerName) -> Vec<GameButtonView> {
-    let mut result = vec![GameButtonView::new_default("Leave Game", UserAction::LeaveGameAction)];
+    let mut result = vec![
+        GameButtonView::new_default("Leave Game", UserAction::LeaveGameAction),
+        GameButtonView::new_default(
+            "Debug",
+            UserAction::OpenPanel(GamePanelAddress::GameDebugPanel.into()),
+        ),
+    ];
     if game.undo_tracker.enabled && !game.undo_tracker.undo.is_empty() {
         result.push(GameButtonView::new_default("Undo", DebugGameAction::Undo));
     }

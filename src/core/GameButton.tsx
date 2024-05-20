@@ -34,7 +34,7 @@ export function GameButton({ button, className }: { button: GameButtonView; clas
     <Button
       className={className}
       color={color}
-      onClick={() => handleAction(setState, response.client_data, button.action)}
+      onClick={() => handleAction(setState, response, button.action)}
     >
       {button.label}
     </Button>

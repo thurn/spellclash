@@ -12,18 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use data::actions::user_action::UserAction;
 use serde::{Deserialize, Serialize};
 
-use crate::actions::game_action::GameAction;
-use crate::actions::new_game_action::NewGameAction;
-use crate::core::panel_address::PanelAddress;
+use crate::core::game_view::GameButtonView;
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
-pub enum UserAction {
-    NewGameAction(NewGameAction),
-    GameAction(GameAction),
-    LeaveGameAction,
-    QuitGameAction,
-    OpenPanel(PanelAddress),
-    ClosePanel,
+/// Rendering options for a modal window which can be displayed on top of other
+/// game content
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ModalPanel {
+    pub title: Option<String>,
+    pub on_close: UserAction,
+    pub data: PanelData,
+}
+
+/// Types of content which can appear in a modal panel
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum PanelData {
+    Debug(DebugPanel),
+}
+
+/// Debug options
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct DebugPanel {
+    pub buttons: Vec<GameButtonView>,
 }

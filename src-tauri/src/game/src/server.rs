@@ -22,7 +22,9 @@ use tracing::{debug_span, info, Instrument};
 use utils::outcome::Value;
 
 use crate::server_data::{ClientData, GameResponse};
-use crate::{game_action_server, leave_game_server, main_menu_server, new_game_server};
+use crate::{
+    game_action_server, leave_game_server, main_menu_server, new_game_server, panel_server,
+};
 
 /// Connects to the current game scene.
 ///
@@ -64,6 +66,10 @@ pub async fn handle_action(
         UserAction::QuitGameAction => {
             std::process::exit(0);
         }
+        UserAction::OpenPanel(panel_address) => {
+            panel_server::handle_open_panel(database, data, panel_address).instrument(span).await
+        }
+        UserAction::ClosePanel => panel_server::handle_close_panel(data),
     }
 }
 

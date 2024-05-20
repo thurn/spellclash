@@ -21,4 +21,5 @@ mod game_action_server;
 mod leave_game_server;
 mod main_menu_server;
 mod new_game_server;
+mod panel_server;
 mod requests;

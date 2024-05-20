@@ -16,20 +16,36 @@ use data::core::primitives::{GameId, UserId};
 use display::commands::command::Command;
 use display::commands::display_preferences::DisplayPreferences;
 use display::commands::scene_name::SceneName;
+use display::panels::modal_panel::{ModalPanel, PanelData};
 use serde::{Deserialize, Serialize};
 
 /// A response to a user request.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GameResponse {
+    /// Primary visual content to display
     pub scene: SceneName,
+
+    /// Optionally, a panel to display on top of the primary scene content
+    pub modal_panel: Option<ModalPanel>,
+
+    /// Current context, must be returned to server with all future requests
     pub client_data: ClientData,
+
+    /// Animated updates to game state
     pub commands: Vec<Command>,
+
+    /// Responses to send to other connected players in the game
     pub opponent_responses: Vec<(UserId, Vec<Command>)>,
 }
 
 impl GameResponse {
     pub fn new(scene: SceneName, client_data: ClientData) -> Self {
-        Self { scene, client_data, commands: vec![], opponent_responses: vec![] }
+        Self { scene, modal_panel: None, client_data, commands: vec![], opponent_responses: vec![] }
+    }
+
+    pub fn modal_panel(mut self, panel: ModalPanel) -> Self {
+        self.modal_panel = Some(panel);
+        self
     }
 
     pub fn command(mut self, command: impl Into<Command>) -> Self {

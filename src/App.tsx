@@ -16,7 +16,9 @@ import { Dispatch, ReactNode, SetStateAction, createContext, useEffect, useState
 import { GameResponse, SceneName } from './display_types';
 import MainMenu from './MainMenu';
 import { Game } from './game_view/Game';
-import { connect } from './server';
+import { connect, handleAction } from './server';
+import { DebugPanelContent } from './panels/DebugPanelContent';
+import { Modal, ModalBody, ModalContent, ModalHeader, useDisclosure } from '@nextui-org/react';
 
 function defaultGameResponse(): GameResponse {
   return {
@@ -43,6 +45,7 @@ export function App(): ReactNode {
     connect(setGlobalState);
   }, []);
   console.log('Global state scene is ' + globalState.scene);
+
   let scene;
   switch (globalState.scene) {
     case SceneName.MainMenu: {
@@ -58,6 +61,33 @@ export function App(): ReactNode {
       break;
     }
   }
+
+  const showModal = globalState.modal_panel != null;;
+  const { isOpen, onOpenChange } = useDisclosure({ isOpen: showModal });
+  let modal;
+  if (showModal) {
+    let modalContent;
+    let onCloseModal = globalState.modal_panel.on_close;
+    if ('Debug' in globalState.modal_panel.data) {
+      modalContent = <DebugPanelContent data={globalState.modal_panel.data.Debug} />;
+    }
+
+    modal = (
+      <Modal
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
+        onClose={() => {
+          handleAction(setGlobalState, globalState, onCloseModal);
+        }}
+      >
+        <ModalContent>
+          <ModalHeader>{globalState.modal_panel.title ?? ""}</ModalHeader>
+          <ModalBody>{modalContent}</ModalBody>
+        </ModalContent>
+      </Modal>
+    );
+  }
+
   return (
     <GlobalContext.Provider
       value={{
@@ -66,6 +96,7 @@ export function App(): ReactNode {
       }}
     >
       {scene}
+      {modal}
     </GlobalContext.Provider>
   );
 }

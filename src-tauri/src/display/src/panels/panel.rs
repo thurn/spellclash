@@ -12,18 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
+use data::core::panel_address::{GamePanelAddress, UserPanelAddress};
+use data::core::primitives::PlayerName;
+use data::game_states::game_state::GameState;
 
-use crate::actions::game_action::GameAction;
-use crate::actions::new_game_action::NewGameAction;
-use crate::core::panel_address::PanelAddress;
+use crate::panels::debug_panel;
+use crate::panels::modal_panel::ModalPanel;
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
-pub enum UserAction {
-    NewGameAction(NewGameAction),
-    GameAction(GameAction),
-    LeaveGameAction,
-    QuitGameAction,
-    OpenPanel(PanelAddress),
-    ClosePanel,
+pub fn build_game_panel(
+    game: &GameState,
+    player: PlayerName,
+    address: GamePanelAddress,
+) -> ModalPanel {
+    match address {
+        GamePanelAddress::GameDebugPanel => debug_panel::render(game, player),
+    }
+}
+
+pub fn build_user_panel(
+    _game: &GameState,
+    _player: PlayerName,
+    address: UserPanelAddress,
+) -> ModalPanel {
+    match address {}
 }

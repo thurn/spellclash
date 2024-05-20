@@ -12,6 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod numerics;
-pub mod panel_address;
-pub mod primitives;
+use data::actions::user_action::UserAction;
+use data::core::primitives::PlayerName;
+use data::game_states::game_state::GameState;
+
+use crate::core::game_view::GameButtonView;
+use crate::panels::modal_panel::{DebugPanel, ModalPanel, PanelData};
+
+pub fn render(_game: &GameState, _player: PlayerName) -> ModalPanel {
+    ModalPanel {
+        title: Some("Debug".to_string()),
+        on_close: UserAction::ClosePanel,
+        data: PanelData::Debug(DebugPanel {
+            buttons: vec![GameButtonView::new_primary("Close", UserAction::ClosePanel)],
+        }),
+    }
+}

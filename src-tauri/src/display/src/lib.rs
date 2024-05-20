@@ -14,4 +14,5 @@
 
 pub mod commands;
 pub mod core;
+pub mod panels;
 pub mod rendering;
