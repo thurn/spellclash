@@ -13,9 +13,9 @@
 // limitations under the License.
 
 import { ReactNode } from 'react';
-import { GameView } from '../display_types';
 import { PlayerInfo } from './PlayerInfo';
 import { GameButton } from '../core/GameButton';
+import { GameView } from '../generated_types';
 
 export function GameInfo({ view }: { view: GameView }): ReactNode {
   const topButtons = view.top_buttons.map((button, i) => <GameButton button={button} key={i} className="m-2" />);

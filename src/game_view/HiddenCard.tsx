@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { ReactNode } from 'react';
-import { CardView } from '../display_types';
+import { CardView } from '../generated_types';
 
 export function HiddenCard({ card }: { card: CardView }): ReactNode {
   return (

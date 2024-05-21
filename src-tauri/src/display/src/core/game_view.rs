@@ -16,11 +16,12 @@ use data::actions::user_action::UserAction;
 use data::core::numerics::LifeValue;
 use serde::Deserialize;
 use serde_with::serde_derive::Serialize;
+use specta::Type;
 
 use crate::core::card_view::CardView;
 
 /// Represents the visual state of an ongoing game
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Type)]
 pub struct GameView {
     /// Player who is operating the client
     pub viewer: PlayerView,
@@ -44,7 +45,7 @@ pub struct GameView {
     pub bottom_buttons: Vec<GameButtonView>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
 pub struct GameButtonView {
     pub label: String,
     pub action: UserAction,
@@ -62,7 +63,7 @@ impl GameButtonView {
 }
 
 /// Controls color for buttons
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
 pub enum GameButtonKind {
     /// Emphasized button, primary game action
     Primary,
@@ -71,7 +72,7 @@ pub enum GameButtonKind {
     Default,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Copy, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Copy, Serialize, Deserialize, Type)]
 pub enum GameViewState {
     None,
 
@@ -80,7 +81,7 @@ pub enum GameViewState {
 }
 
 /// Identifies a player in the context of the user interface.
-#[derive(Clone, Debug, Eq, PartialEq, Copy, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Copy, Hash, Serialize, Deserialize, Type)]
 pub enum DisplayPlayer {
     /// Player who is currently operating the client
     Viewer,
@@ -90,10 +91,13 @@ pub enum DisplayPlayer {
 }
 
 /// Represents the visual state of a player in a game
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Type)]
 pub struct PlayerView {
     /// Current life total
-    pub life: LifeValue,
+    ///
+    /// Note that the rules engine internally uses 64-bit integers, but in the
+    /// display layer we use floats for JavaScript compatibility.
+    pub life: f64,
 
     /// Can this player currently take a game action?
     pub can_act: bool,

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { Dispatch, ReactNode, SetStateAction, createContext, useEffect, useState } from 'react';
-import { GameResponse } from './display_types';
+import { GameResponse } from './generated_types';
 import MainMenu from './MainMenu';
 import { Game } from './game_view/Game';
 import { connect, handleAction } from './server';
@@ -23,9 +23,14 @@ import { Modal, ModalBody, ModalContent, ModalHeader, useDisclosure } from '@nex
 function defaultGameResponse(): GameResponse {
   return {
     commands: [],
+    modal_panel: null,
     client_data: {
-      scene: "Loading"
+      user_id: "",
+      display_preferences: {},
+      scene: "Loading",
+      opponent_ids: []
     },
+    opponent_responses: []
   };
 }
 
@@ -50,17 +55,22 @@ export function App(): ReactNode {
 
   let scene;
   if (sceneIdentifier === 'MainMenu') {
-    scene = <MainMenu view={globalState.commands.at(-1)!.UpdateMainMenuView!} />;
+    const command = globalState.commands.at(-1)!;
+    if ('UpdateMainMenuView' in command) {
+      scene = <MainMenu view={command.UpdateMainMenuView} />;
+    }
   } else if (sceneIdentifier === 'Loading') {
     scene = <h1>Loading...</h1>;
   } else if ('Game' in sceneIdentifier) {
-    scene = <Game view={globalState.commands.at(-1)!.UpdateGameView!.view} />;
+    const command = globalState.commands.at(-1)!;
+    if ('UpdateGameView' in command) {
+      scene = <Game view={command.UpdateGameView!.view} />;
+    }
   }
 
-  const showModal = globalState.modal_panel != null;;
-  const { isOpen, onOpenChange } = useDisclosure({ isOpen: showModal });
+  const { isOpen, onOpenChange } = useDisclosure({ isOpen: globalState.modal_panel != null });
   let modal;
-  if (showModal) {
+  if (globalState.modal_panel != null) {
     let modalContent;
     let onCloseModal = globalState.modal_panel.on_close;
     if ('Debug' in globalState.modal_panel.data) {
@@ -76,7 +86,7 @@ export function App(): ReactNode {
         }}
       >
         <ModalContent>
-          <ModalHeader>{globalState.modal_panel.title ?? ""}</ModalHeader>
+          <ModalHeader>{globalState.modal_panel.title ?? ''}</ModalHeader>
           <ModalBody>{modalContent}</ModalBody>
         </ModalContent>
       </Modal>

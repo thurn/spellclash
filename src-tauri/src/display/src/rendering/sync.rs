@@ -64,7 +64,7 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
 
 fn player_view(game: &GameState, player: PlayerName) -> PlayerView {
     PlayerView {
-        life: game.player(player).life,
+        life: game.player(player).life as f64,
         can_act: legal_actions::next_to_act(game) == player,
     }
 }

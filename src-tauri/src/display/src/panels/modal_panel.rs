@@ -14,12 +14,13 @@
 
 use data::actions::user_action::UserAction;
 use serde::{Deserialize, Serialize};
+use specta::Type;
 
 use crate::core::game_view::GameButtonView;
 
 /// Rendering options for a modal window which can be displayed on top of other
 /// game content
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, Type)]
 pub struct ModalPanel {
     pub title: Option<String>,
     pub on_close: UserAction,
@@ -27,13 +28,13 @@ pub struct ModalPanel {
 }
 
 /// Types of content which can appear in a modal panel
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, Type)]
 pub enum PanelData {
     Debug(DebugPanel),
 }
 
 /// Debug options
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, Type)]
 pub struct DebugPanel {
     pub buttons: Vec<GameButtonView>,
 }

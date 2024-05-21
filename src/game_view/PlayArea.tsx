@@ -13,34 +13,48 @@
 // limitations under the License.
 
 import { ReactNode } from 'react';
-import { BattlefieldPosition, CardView, DisplayPlayer, GameView, Position } from '../display_types';
+import { CardView, GameView, Position } from '../generated_types';
 import { LinearCardDisplay } from './LinearCardDisplay';
 import { StackCardDisplay } from './StackCardDisplay';
+
+export type PositionKey = string;
 
 export function PlayArea({ view }: { view: GameView }): ReactNode {
   const map = cardPositions(view);
   return (
     <div className="flex flex-row">
       <div className="w-11/12">
-        <LinearCardDisplay key="oh" name="Opponent Hand" cards={getPosition(map, PositionKey.OpponentHand)} />
+        <LinearCardDisplay
+          key="oh"
+          name="Opponent Hand"
+          cards={getPosition(map, keyForPosition({ Hand: 'Opponent' }))}
+        />
         <LinearCardDisplay
           key="om"
           name="Opponent Mana"
-          cards={getPosition(map, PositionKey.OpponentBattlefieldMana)}
+          cards={getPosition(map, keyForPosition({ Battlefield: ['Opponent', 'Mana'] }))}
         />
         <LinearCardDisplay
           key="op"
           name="Opponent Permanents"
-          cards={getPosition(map, PositionKey.OpponentBattlefield)}
+          cards={getPosition(map, keyForPosition({ Battlefield: ['Opponent', 'Permanents'] }))}
         />
-        <LinearCardDisplay key="st" name="Stack" cards={getPosition(map, PositionKey.Stack)} />
-        <LinearCardDisplay key="vp" name="Viewer Permanents" cards={getPosition(map, PositionKey.ViewerBattlefield)} />
-        <LinearCardDisplay key="vm" name="Viewer Mana" cards={getPosition(map, PositionKey.ViewerBattlefieldMana)} />
-        <LinearCardDisplay key="vh" name="Viewer Hand" cards={getPosition(map, PositionKey.ViewerHand)} />
+        <LinearCardDisplay key="st" name="Stack" cards={getPosition(map, keyForPosition('Stack'))} />
+        <LinearCardDisplay
+          key="vp"
+          name="Viewer Permanents"
+          cards={getPosition(map, keyForPosition({ Battlefield: ['Viewer', 'Permanents'] }))}
+        />
+        <LinearCardDisplay
+          key="vm"
+          name="Viewer Mana"
+          cards={getPosition(map, keyForPosition({ Battlefield: ['Viewer', 'Mana'] }))}
+        />
+        <LinearCardDisplay key="vh" name="Viewer Hand" cards={getPosition(map, keyForPosition({ Hand: 'Viewer' }))} />
       </div>
       <div className="w-1/12 flex flex-col justify-between">
-        <StackCardDisplay key="og" cards={getPosition(map, PositionKey.OpponentDiscardPile)} />
-        <StackCardDisplay key="vg" cards={getPosition(map, PositionKey.ViewerDiscardPile)} />
+        <StackCardDisplay key="og" cards={getPosition(map, keyForPosition({ DiscardPile: 'Opponent' }))} />
+        <StackCardDisplay key="vg" cards={getPosition(map, keyForPosition({ DiscardPile: 'Viewer' }))} />
       </div>
     </div>
   );
@@ -78,65 +92,6 @@ function cardPositions(view: GameView): Map<PositionKey, CardView[]> {
   return result;
 }
 
-function keyForPosition(position: Position): PositionKey {
-  if (position === 'Stack') {
-    return PositionKey.Stack;
-  }
-
-  if ('Hand' in position) {
-    return position.Hand === DisplayPlayer.Viewer ? PositionKey.ViewerHand : PositionKey.OpponentHand;
-  }
-
-  if ('Deck' in position) {
-    return position.Deck === DisplayPlayer.Viewer ? PositionKey.ViewerDeck : PositionKey.OpponentDeck;
-  }
-
-  if ('DiscardPile' in position) {
-    return position.DiscardPile === DisplayPlayer.Viewer
-      ? PositionKey.ViewerDiscardPile
-      : PositionKey.OpponentDiscardPile;
-  }
-
-  if ('Exile' in position) {
-    return position.Exile === DisplayPlayer.Viewer ? PositionKey.ViewerExile : PositionKey.OpponentExile;
-  }
-
-  if ('CommandZone' in position) {
-    return position.CommandZone === DisplayPlayer.Viewer
-      ? PositionKey.ViewerCommandZone
-      : PositionKey.OpponentCommandZone;
-  }
-
-  if ('Battlefield' in position) {
-    const [player, location] = position.Battlefield;
-    if (player === DisplayPlayer.Viewer && location === BattlefieldPosition.Mana) {
-      return PositionKey.ViewerBattlefieldMana;
-    } else if (player === DisplayPlayer.Opponent && location === BattlefieldPosition.Mana) {
-      return PositionKey.OpponentBattlefieldMana;
-    } else if (player === DisplayPlayer.Viewer && location === BattlefieldPosition.Permanents) {
-      return PositionKey.ViewerBattlefield;
-    } else if (player === DisplayPlayer.Opponent && location === BattlefieldPosition.Permanents) {
-      return PositionKey.OpponentBattlefield;
-    }
-  }
-
-  throw Error('Unknown position: ' + JSON.stringify(position));
-}
-
-enum PositionKey {
-  Stack,
-  ViewerHand,
-  OpponentHand,
-  ViewerDeck,
-  OpponentDeck,
-  ViewerDiscardPile,
-  OpponentDiscardPile,
-  ViewerExile,
-  OpponentExile,
-  ViewerCommandZone,
-  OpponentCommandZone,
-  ViewerBattlefield,
-  OpponentBattlefield,
-  ViewerBattlefieldMana,
-  OpponentBattlefieldMana,
+function keyForPosition(position: Position): string {
+  return JSON.stringify(position);
 }

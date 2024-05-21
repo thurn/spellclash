@@ -14,35 +14,45 @@
 
 use data::core::primitives::CardId;
 use serde::{Deserialize, Serialize};
+use specta::Type;
 
+use crate::core::card_view::ClientCardId;
 use crate::core::game_view::DisplayPlayer;
 
 /// Represents the position of some object in the UI
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Type)]
 pub struct ObjectPosition {
     /// Position category
     pub position: Position,
+    /// String representation of the [Position], used to simplify client lookup
+    /// logic.
+    pub position_string: String,
     /// Sorting key, determines order within the position
-    pub sorting_key: u64,
+    pub sorting_key: f64,
     /// Sub-key, used to break ties in sorting
-    pub sorting_sub_key: u64,
+    pub sorting_sub_key: f64,
 }
 
 impl Default for ObjectPosition {
     fn default() -> Self {
-        Self { position: Position::Default, sorting_key: 0, sorting_sub_key: 0 }
+        Self {
+            position: Position::Default,
+            position_string: "Default".to_string(),
+            sorting_key: 0.0,
+            sorting_sub_key: 0.0,
+        }
     }
 }
 
 /// Sub-positions for objects within the battlefield.
-#[derive(Clone, Debug, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
 pub enum BattlefieldPosition {
     Mana,
     Permanents,
 }
 
 /// Possible types of display positions
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Type)]
 pub enum Position {
     /// Object position used in interface elements like the deck viewer which
     /// don't rely on game positioning.
@@ -81,7 +91,7 @@ pub enum Position {
 
     /// Object is controlled by this player and is blocking the provided set of
     /// attackers
-    Blocking(DisplayPlayer, Vec<CardId>),
+    Blocking(DisplayPlayer, Vec<ClientCardId>),
 
     /// Object is being displayed in a card browser, e.g. to select from a list
     /// of cards
@@ -95,8 +105,8 @@ pub enum Position {
     HandStorage,
 
     /// Object is not visible because it is inside the indicated card.
-    InsideCard(CardId),
+    InsideCard(ClientCardId),
 
     /// Object is attached to the indicated card.
-    AttachedToCard(CardId),
+    AttachedToCard(ClientCardId),
 }

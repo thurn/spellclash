@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { ReactNode } from "react";
-import { DebugPanel } from "../display_types";
+import { DebugPanel } from "../generated_types";
 import { GameButton } from "../core/GameButton";
 
 export function DebugPanelContent({ data }: { data: DebugPanel }): ReactNode {

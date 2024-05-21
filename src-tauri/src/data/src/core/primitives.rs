@@ -19,7 +19,8 @@ use enum_iterator::Sequence;
 use enum_map::Enum;
 use enumset::{EnumSet, EnumSetType};
 use serde::{Deserialize, Serialize};
-use slotmap::new_key_type;
+use slotmap::{new_key_type, Key, KeyData};
+use specta::{DataType, Generics, Type, TypeMap};
 use strum::EnumString;
 use utils::fail;
 use utils::outcome::Value;
@@ -138,6 +139,20 @@ new_key_type! {
     pub struct CardId;
 }
 
+impl CardId {
+    /// Converts an opaque number received from [Self::to_ffi_value] into a card
+    /// id
+    pub fn from_ffi_value(value: u64) -> Self {
+        KeyData::from_ffi(value).into()
+    }
+
+    /// Returns an opaque number which can later be converted back into a card
+    /// id
+    pub fn to_ffi_value(&self) -> u64 {
+        self.data().as_ffi()
+    }
+}
+
 /// Identifies a struct that is 1:1 associated with a given [CardId].
 pub trait HasCardId {
     fn card_id(&self) -> CardId;
@@ -199,8 +214,8 @@ impl EntityId {
 pub struct ObjectId(pub u64);
 
 impl ObjectId {
-    pub fn as_u64(&self) -> u64 {
-        self.0
+    pub fn as_approximate_f64(&self) -> f64 {
+        self.0 as f64
     }
 }
 
@@ -290,7 +305,7 @@ impl Zone {
 }
 
 /// Unique identifier for a game
-#[derive(Debug, Display, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Display, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize, Type)]
 pub struct GameId(pub Uuid);
 
 impl FromStr for GameId {
@@ -305,7 +320,7 @@ impl FromStr for GameId {
 ///
 /// A 'user' is an operator of this software outside of the context of any game.
 /// A 'player' is a participate within a game who may or may not be a user.
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize, Type)]
 pub struct UserId(pub Uuid);
 
 /// Describes the source of some game mutation.

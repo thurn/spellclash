@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use serde::{Deserialize, Serialize};
+use specta::{DataType, EnumType, Generics, Type, TypeMap};
 
 use crate::actions::game_action::GameAction;
 use crate::actions::new_game_action::NewGameAction;
@@ -26,4 +27,15 @@ pub enum UserAction {
     QuitGameAction,
     OpenPanel(PanelAddress),
     ClosePanel,
+}
+
+#[derive(Serialize, Deserialize, Type)]
+pub struct UserActionType {
+    pub opaque_type_marker: (),
+}
+
+impl Type for UserAction {
+    fn inline(type_map: &mut TypeMap, generics: Generics) -> DataType {
+        DataType::Unknown
+    }
 }

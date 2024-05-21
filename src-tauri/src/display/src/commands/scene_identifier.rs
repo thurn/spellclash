@@ -14,11 +14,12 @@
 
 use data::core::primitives::GameId;
 use serde::{Deserialize, Serialize};
+use specta::Type;
 
 /// Top-level states the user interface can be in.
 ///
 /// This is used in a similar way to a browser url for the game.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Type)]
 pub enum SceneIdentifier {
     Loading,
     MainMenu,

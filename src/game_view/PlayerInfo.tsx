@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { ReactNode } from 'react';
-import { PlayerView } from '../display_types';
+import { PlayerView } from '../generated_types';
 
 export function PlayerInfo({ name, player }: { name: string; player: PlayerView }): ReactNode {
   return (

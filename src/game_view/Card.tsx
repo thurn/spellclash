@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { ReactNode } from 'react';
-import { CardView, TappedState } from '../display_types';
+import { CardView } from '../generated_types';
 import { HiddenCard } from './HiddenCard';
 import { RevealedCard } from './RevealedCard';
 
@@ -31,7 +31,7 @@ export function Card({ card }: { card: CardView }): ReactNode {
         height: `${height}vh`,
         width: `${height * (5 / 7)}vh`,
         margin: '0.1vh',
-        transform: card.tapped_state === TappedState.Tapped ? `rotate(90deg)` : undefined,
+        transform: card.tapped_state === 'Tapped' ? `rotate(90deg)` : undefined,
       }}
     >
       {body}

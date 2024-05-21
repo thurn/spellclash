@@ -13,19 +13,19 @@
 // limitations under the License.
 
 import { ReactNode, useContext } from 'react';
-import { GameButtonKind, GameButtonView } from '../display_types';
 import { GlobalContext } from '../App';
 import { Button, ButtonProps } from '@nextui-org/react';
 import { handleAction } from '../server';
+import { GameButtonView } from '../generated_types';
 
 export function GameButton({ button, className }: { button: GameButtonView; className?: string }): ReactNode {
   const { response, setState } = useContext(GlobalContext);
   let color: ButtonProps['color'];
   switch (button.kind) {
-    case GameButtonKind.Primary:
+    case 'Primary':
       color = 'primary';
       break;
-    case GameButtonKind.Default:
+    case 'Default':
       color = 'default';
       break;
   }

@@ -14,11 +14,12 @@
 
 use enum_kinds::EnumKind;
 use serde::{Deserialize, Serialize};
+use specta::Type;
 
 use crate::core::game_view::GameView;
 use crate::core::main_menu_view::MainMenuView;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, Type)]
 pub struct UpdateGameViewCommand {
     /// New visual game state
     pub view: GameView,
@@ -28,7 +29,7 @@ pub struct UpdateGameViewCommand {
 }
 
 /// Represents an instruction to the client to perform some visual update.
-#[derive(Clone, Debug, EnumKind, Serialize, Deserialize)]
+#[derive(Clone, Debug, EnumKind, Serialize, Deserialize, Type)]
 #[enum_kind(CommandKind)]
 pub enum Command {
     UpdateGameView(UpdateGameViewCommand),

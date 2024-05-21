@@ -24,7 +24,9 @@ use rules::play_cards::play_card;
 use rules::queries::combat_queries;
 use rules::queries::combat_queries::CombatRole;
 
-use crate::core::card_view::{CardView, RevealedCardFace, RevealedCardStatus, RevealedCardView};
+use crate::core::card_view::{
+    CardView, ClientCardId, RevealedCardFace, RevealedCardStatus, RevealedCardView,
+};
 use crate::core::object_position::ObjectPosition;
 use crate::core::response_builder::ResponseBuilder;
 use crate::rendering::card_view_context::CardViewContext;
@@ -37,7 +39,7 @@ pub fn card_view(builder: &ResponseBuilder, context: &CardViewContext) -> CardVi
         .query_or(true, |_, card| card.revealed_to.contains(builder.display_as_player()))
         || builder.state.reveal_all_cards;
     CardView {
-        id: context.card_id(),
+        id: ClientCardId::new(context.card_id()),
         position: context.query_or(ObjectPosition::default(), |game, card| {
             positions::calculate(builder, game, card)
         }),

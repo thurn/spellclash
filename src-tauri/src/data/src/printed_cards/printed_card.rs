@@ -16,6 +16,7 @@ use std::iter;
 
 use enumset::{EnumSet, EnumSetType};
 use serde::{Deserialize, Serialize};
+use specta::Type;
 use uuid::Uuid;
 
 use crate::core::numerics::ManaValue;
@@ -27,7 +28,7 @@ use crate::printed_cards::printed_primitives::{
     AttractionLight, PrintedLoyalty, PrintedPower, PrintedToughness,
 };
 
-#[derive(Debug, EnumSetType, Serialize, Deserialize)]
+#[derive(Debug, EnumSetType, Serialize, Deserialize, Type)]
 pub enum Face {
     Primary,
     FaceB,

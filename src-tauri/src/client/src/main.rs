@@ -42,12 +42,7 @@ static DATABASE: Lazy<Arc<SledDatabase>> =
     Lazy::new(|| Arc::new(SledDatabase::new(initialize::get_data_dir())));
 
 #[tauri::command]
-fn greet(name: String) -> String {
-    info!(?name, "Got greet request");
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
-#[tauri::command]
+#[specta::specta]
 async fn client_connect() -> Result<GameResponse, ()> {
     info!("Got connect request");
     let result = server::connect(DATABASE.clone(), UserId(Uuid::default())).await;
@@ -61,6 +56,7 @@ async fn client_connect() -> Result<GameResponse, ()> {
 }
 
 #[tauri::command]
+#[specta::specta]
 async fn client_handle_action(
     client_data: ClientData,
     action: UserAction,
@@ -88,9 +84,19 @@ fn main() -> Outcome {
     let commit = env!("VERGEN_GIT_SHA");
     info!(commit, "Starting game");
 
+    let invoke_handler = {
+        let builder = tauri_specta::ts::builder()
+            .commands(tauri_specta::collect_commands![client_connect, client_handle_action]);
+
+        #[cfg(debug_assertions)] // <- Only export on non-release builds
+        let builder = builder.path("../../../src/generated_types.ts");
+
+        builder.build().unwrap()
+    };
+
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![greet, client_connect, client_handle_action])
+        .invoke_handler(invoke_handler)
         .run(tauri::generate_context!())
         .with_error(|| "Failed to start tauri")?;
 

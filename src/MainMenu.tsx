@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { ReactNode } from 'react';
-import { MainMenuView } from './display_types';
+import { MainMenuView } from './generated_types';
 import { GameButton } from './core/GameButton';
 
 function MainMenu({ view }: { view: MainMenuView }): ReactNode {

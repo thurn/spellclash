@@ -12,22 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { invoke } from '@tauri-apps/api/core';
-import { GameResponse, UserAction } from './display_types';
 import { Dispatch, SetStateAction } from 'react';
+import { GameResponse, Result, commands } from './generated_types';
 
 export async function connect(setter: Dispatch<SetStateAction<GameResponse>>): Promise<void> {
   console.log('Connecting...');
-  const result: GameResponse = await invoke('client_connect', {});
-  console.log('Connected!');
-  console.dir(result);
-  setter(result);
+  const result: Result<GameResponse, null> = await commands.clientConnect();
+  if (result.status === "ok") {
+    console.log('Connected!');
+    console.dir(result.data);
+    setter(result.data);
+  } else {
+    console.error('Connect error!');
+  }
 }
 
 export async function handleAction(
   setter: Dispatch<SetStateAction<GameResponse>>,
   lastResponse: GameResponse,
-  action?: UserAction,
+  action?: unknown,
 ): Promise<void> {
   if (action == null) {
     return;
@@ -35,19 +38,22 @@ export async function handleAction(
 
   console.log('Handling action...');
   console.dir(action);
-  let result: GameResponse = await invoke('client_handle_action', {
-    clientData: lastResponse.client_data,
-    action,
-  });
-  if (result.commands.length === 0) {
-    // Propagate previous command state if no UI update provided
-    result = {
-      modal_panel: result.modal_panel,
-      commands: lastResponse.commands,
-      client_data: result.client_data,
-    };
+  let result: Result<GameResponse, null> = await commands.clientHandleAction(lastResponse.client_data, action);
+  if (result.status === "ok") {
+    let data = result.data;
+    if (data.commands.length === 0) {
+      // Propagate previous command state if no UI update provided
+      data = {
+        modal_panel: data.modal_panel,
+        commands: lastResponse.commands,
+        client_data: data.client_data,
+        opponent_responses: data.opponent_responses
+      };
+    }
+    console.log('Got action response');
+    console.dir(data);
+    setter(data);
+  } else {
+    console.error('Error handling action!', action);
   }
-  console.log('Got action response');
-  console.dir(result);
-  setter(result);
 }

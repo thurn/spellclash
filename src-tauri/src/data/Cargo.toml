@@ -26,6 +26,7 @@ schemars = "0.8.17"
 serde = { version = "1.0.198", features = ["derive"] }
 serde_with = "3.8.1"
 slotmap = { version = "1.0.7", features = ["serde"] }
+specta = { version = "2.0.0-rc.12", features = ["uuid"] }
 strum = { version = "0.26.2", features = ["derive"] }
 tokio = { version = "1.37.0", features = ["macros", "rt-multi-thread", "sync", "time"] }
 typed-builder = "0.18.1"

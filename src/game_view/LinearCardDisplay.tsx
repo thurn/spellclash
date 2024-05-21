@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { ReactNode } from 'react';
-import { CardView } from '../display_types';
+import { CardView } from '../generated_types';
 import { Card } from './Card';
 
 export function LinearCardDisplay({ name, cards }: { name: string; cards: CardView[] }): ReactNode {

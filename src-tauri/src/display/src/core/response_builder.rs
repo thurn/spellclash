@@ -14,12 +14,13 @@
 
 use std::collections::HashMap;
 
-use data::core::primitives::{CardId, PlayerName};
+use data::core::primitives::PlayerName;
 use data::game_states::game_state::{DebugActAsPlayer, GameState};
 use rules::legality::legal_actions;
 
 use crate::commands::command::{Command, UpdateGameViewCommand};
 use crate::commands::display_preferences::DisplayPreferences;
+use crate::core::card_view::ClientCardId;
 use crate::core::game_view::{DisplayPlayer, GameView};
 use crate::core::object_position::ObjectPosition;
 
@@ -61,7 +62,7 @@ pub struct ResponseBuilder {
     /// This is used to customize animation behavior, mostly in order to not
     /// move cards to the "display" browser when they're already in another
     /// similar card browser.
-    pub last_snapshot_positions: HashMap<CardId, ObjectPosition>,
+    pub last_snapshot_positions: HashMap<ClientCardId, ObjectPosition>,
 }
 
 impl ResponseBuilder {
@@ -77,7 +78,7 @@ impl ResponseBuilder {
     /// Adds a new command to update the [GameView]
     pub fn push_game_view(&mut self, game: GameView) {
         for card in &game.cards {
-            self.last_snapshot_positions.insert(card.id, card.position.clone());
+            self.last_snapshot_positions.insert(card.id.clone(), card.position.clone());
         }
 
         self.commands.push(Command::UpdateGameView(UpdateGameViewCommand {

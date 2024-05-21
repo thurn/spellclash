@@ -15,17 +15,18 @@
 use data::actions::user_action::UserAction;
 use data::card_states::card_state::{CardFacing, TappedState};
 use data::core::numerics::Damage;
-use data::core::primitives::CardId;
+use data::core::primitives::{CardId, HasCardId};
 use data::printed_cards::layout::{CardLayout, FaceLayout};
 use serde::{Deserialize, Serialize};
+use specta::Type;
 
 use crate::core::object_position::ObjectPosition;
 
 /// Represents the visual state of a card or ability in a game
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Type)]
 pub struct CardView {
     /// Identifier for this card
-    pub id: CardId,
+    pub id: ClientCardId,
 
     /// Position of this card in the UI
     pub position: ObjectPosition,
@@ -47,7 +48,10 @@ pub struct CardView {
     pub tapped_state: TappedState,
 
     /// Damage marked on this card
-    pub damage: Damage,
+    ///
+    /// Note that the rules engine internally uses 64-bit integers, but in the
+    /// display layer we use floats for JavaScript compatibility.
+    pub damage: f64,
 
     /// Optionally, a position at which to create this card.
     ///
@@ -62,8 +66,21 @@ pub struct CardView {
     pub destroy_position: Option<ObjectPosition>,
 }
 
+/// Identifies a card in client code
+///
+/// Serialized u64, represented as string because JavaScript is a silly
+/// language.
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Serialize, Deserialize, Type)]
+pub struct ClientCardId(pub String);
+
+impl ClientCardId {
+    pub fn new(card_id: CardId) -> Self {
+        Self(card_id.to_ffi_value().to_string())
+    }
+}
+
 /// Visual state of a revealed card
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
 pub struct RevealedCardView {
     /// Primary face of this card
     pub face: RevealedCardFace,
@@ -81,7 +98,7 @@ pub struct RevealedCardView {
     pub layout: CardLayout,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Type)]
 pub enum RevealedCardStatus {
     CanPlay,
     Attacking(String),
@@ -89,7 +106,7 @@ pub enum RevealedCardStatus {
 }
 
 /// Visual state of a revealed card face
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
 pub struct RevealedCardFace {
     /// Name of this face
     pub name: String,

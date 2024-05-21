@@ -18,9 +18,10 @@ use display::commands::display_preferences::DisplayPreferences;
 use display::commands::scene_identifier::SceneIdentifier;
 use display::panels::modal_panel::{ModalPanel, PanelData};
 use serde::{Deserialize, Serialize};
+use specta::Type;
 
 /// A response to a user request.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct GameResponse {
     /// Optionally, a panel to display on top of the primary scene content
     pub modal_panel: Option<ModalPanel>,
@@ -70,7 +71,7 @@ impl GameResponse {
 }
 
 /// Standard parameters for a client request & response
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct ClientData {
     pub user_id: UserId,
     pub scene: SceneIdentifier,

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { ReactNode, useContext } from 'react';
-import { RevealedCardView } from '../display_types';
+import { RevealedCardView } from '../generated_types';
 import { GlobalContext } from '../App';
 import { handleAction } from '../server';
 

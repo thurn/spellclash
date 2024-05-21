@@ -13,9 +13,9 @@
 // limitations under the License.
 
 import { ReactNode } from 'react';
-import { GameView } from '../display_types';
 import { PlayArea } from './PlayArea';
 import { GameInfo } from './GameInfo';
+import { GameView } from '../generated_types';
 
 export function Game({ view }: { view: GameView }): ReactNode {
   return (

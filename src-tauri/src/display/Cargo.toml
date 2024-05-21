@@ -15,3 +15,6 @@ rules = { path = "../rules", version = "0.0.0" }
 enum-kinds = "0.5.1"
 serde = { version = "1.0.198", features = ["derive"] }
 serde_with = "3.8.1"
+specta = { version = "2.0.0-rc.12", features = ["uuid"] }
+tauri = { version = "=2.0.0-beta.19", features = [] }
+tauri-specta = { version = "2.0.0-rc.10", features = ["typescript"] }
