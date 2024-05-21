@@ -18,7 +18,7 @@ import { GameResponse, Result, commands } from './generated_types';
 export async function connect(setter: Dispatch<SetStateAction<GameResponse>>): Promise<void> {
   console.log('Connecting...');
   const result: Result<GameResponse, null> = await commands.clientConnect();
-  if (result.status === "ok") {
+  if (result.status === 'ok') {
     console.log('Connected!');
     console.dir(result.data);
     setter(result.data);
@@ -38,16 +38,14 @@ export async function handleAction(
 
   console.log('Handling action...');
   console.dir(action);
-  let result: Result<GameResponse, null> = await commands.clientHandleAction(lastResponse.clientData, action);
-  if (result.status === "ok") {
+  const result: Result<GameResponse, null> = await commands.clientHandleAction(lastResponse.clientData, action);
+  if (result.status === 'ok') {
     let data = result.data;
     if (data.commands.length === 0) {
       // Propagate previous command state if no UI update provided
       data = {
-        modalPanel: data.modalPanel,
         commands: lastResponse.commands,
         clientData: data.clientData,
-        opponentResponses: data.opponentResponses,
       };
     }
     console.log('Got action response');

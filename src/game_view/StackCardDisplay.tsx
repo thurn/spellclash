@@ -18,8 +18,8 @@ import { Card } from './Card';
 
 export function StackCardDisplay({ cards }: { cards: CardView[] }): ReactNode {
   const cardViews = cards.map((card, i) => (
-    <div className="absolute">
-      <Card card={card} key={i} />
+    <div className="absolute" key={i}>
+      <Card card={card} />
     </div>
   ));
   return (

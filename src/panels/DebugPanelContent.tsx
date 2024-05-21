@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ReactNode } from "react";
-import { DebugPanel } from "../generated_types";
-import { GameButton } from "../core/GameButton";
+import { ReactNode } from 'react';
+import { DebugPanel } from '../generated_types';
+import { GameButton } from '../core/GameButton';
 
 export function DebugPanelContent({ data }: { data: DebugPanel }): ReactNode {
   const buttons = data.buttons.map((button, i) => <GameButton button={button} key={i} />);

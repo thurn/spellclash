@@ -24,27 +24,16 @@ use specta::Type;
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct GameResponse {
-    /// Optionally, a panel to display on top of the primary scene content
-    pub modal_panel: Option<ModalPanel>,
-
     /// Current context, must be returned to server with all future requests
     pub client_data: ClientData,
 
     /// Animated updates to game state
     pub commands: Vec<Command>,
-
-    /// Responses to send to other connected players in the game
-    pub opponent_responses: Vec<(UserId, Vec<Command>)>,
 }
 
 impl GameResponse {
     pub fn new(client_data: ClientData) -> Self {
-        Self { modal_panel: None, client_data, commands: vec![], opponent_responses: vec![] }
-    }
-
-    pub fn modal_panel(mut self, panel: ModalPanel) -> Self {
-        self.modal_panel = Some(panel);
-        self
+        Self { client_data, commands: vec![] }
     }
 
     pub fn command(mut self, command: impl Into<Command>) -> Self {
@@ -64,11 +53,6 @@ impl GameResponse {
         self.commands.append(&mut commands);
         self
     }
-
-    pub fn opponent_responses(mut self, response: Vec<(UserId, Vec<Command>)>) -> Self {
-        self.opponent_responses = response;
-        self
-    }
 }
 
 /// Standard parameters for a client request & response
@@ -78,11 +62,11 @@ pub struct ClientData {
     pub user_id: UserId,
     pub scene: SceneIdentifier,
 
+    /// Optionally, a panel to display on top of the primary scene content
+    pub modal_panel: Option<ModalPanel>,
+
     /// Options for how the game state should be visually rendered
     pub display_preferences: DisplayPreferences,
-
-    /// Other user who are opponents in this game.
-    pub opponent_ids: Vec<UserId>,
 }
 
 impl ClientData {
@@ -90,8 +74,8 @@ impl ClientData {
         Self {
             user_id,
             scene,
+            modal_panel: None,
             display_preferences: DisplayPreferences::default(),
-            opponent_ids: vec![],
         }
     }
 

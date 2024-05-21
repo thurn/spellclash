@@ -93,31 +93,17 @@ pub async fn create(
 
     user.activity = UserActivity::Playing(game.id);
 
-    let opponent_ids = action.opponent_id.map(|o| vec![o]).unwrap_or_default();
-    let opponent_responses = opponent_ids
-        .iter()
-        .map(|&id| {
-            let mut commands = vec![];
-            commands.append(&mut render::connect(
-                &game,
-                game.find_player_name(id)?,
-                DisplayPreferences::default(),
-            ));
-            Ok((id, commands))
-        })
-        .collect::<Result<Vec<_>, _>>()?;
     let result = GameResponse::new(ClientData {
         user_id: user.id,
         scene: SceneIdentifier::Game(game.id),
+        modal_panel: None,
         display_preferences: DisplayPreferences::default(),
-        opponent_ids,
     })
     .commands(render::connect(
         &game,
         game.find_player_name(user.id)?,
         DisplayPreferences::default(),
-    ))
-    .opponent_responses(opponent_responses);
+    ));
 
     database.write_game(&game).await?;
     database.write_user(&user).await?;

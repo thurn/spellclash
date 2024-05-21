@@ -31,11 +31,7 @@ export function GameButton({ button, className }: { button: GameButtonView; clas
   }
 
   return (
-    <Button
-      className={className}
-      color={color}
-      onClick={() => handleAction(setState, response, button.action)}
-    >
+    <Button className={className} color={color} onClick={() => handleAction(setState, response, button.action)}>
       {button.label}
     </Button>
   );

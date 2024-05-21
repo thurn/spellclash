@@ -48,23 +48,14 @@ pub async fn connect(
 ) -> Value<GameResponse> {
     let game = requests::fetch_game(database, game_id).await?;
     let player_name = game.find_player_name(user.id)?;
-    let mut opponent_ids = vec![];
-    for name in enum_iterator::all::<PlayerName>() {
-        match game.players.player(name).user_id {
-            Some(id) if id != user.id => {
-                opponent_ids.push(id);
-            }
-            _ => {}
-        }
-    }
 
     info!(?user.id, ?game.id, "Connected to game");
     let commands = render::connect(&game, player_name, DisplayPreferences::default());
     let client_data = ClientData {
         user_id: user.id,
         scene: SceneIdentifier::Game(game.id),
+        modal_panel: None,
         display_preferences: DisplayPreferences::default(),
-        opponent_ids,
     };
     Ok(GameResponse::new(client_data).commands(commands))
 }
@@ -110,18 +101,7 @@ pub async fn handle_game_action_internal(
     loop {
         actions::execute(game, current_player, current_action, current_action_is_automatic)?;
         let user_result = render::render_updates(game, user_player_name, data.display_preferences);
-
-        let mut opponent_responses = vec![];
-        for &opponent_id in &data.opponent_ids {
-            let opponent_name = game.find_player_name(opponent_id)?;
-            opponent_responses.push((
-                opponent_id,
-                render::render_updates(game, opponent_name, DisplayPreferences::default()),
-            ))
-        }
         result = result.commands(user_result);
-        result = result.opponent_responses(opponent_responses);
-
         let next_player = legal_actions::next_to_act(game);
         if let Some(action) = auto_pass_action(game, next_player) {
             debug!(?next_player, "Automatically passing");

@@ -23,14 +23,12 @@ import { Modal, ModalBody, ModalContent, ModalHeader, useDisclosure } from '@nex
 function defaultGameResponse(): GameResponse {
   return {
     commands: [],
-    modalPanel: null,
     clientData: {
-      userId: "",
-      displayPreferences: {},
+      userId: '',
       scene: 'loading',
-      opponentIds: []
+      modalPanel: null,
+      displayPreferences: {},
     },
-    opponentResponses: []
   };
 }
 
@@ -68,13 +66,14 @@ export function App(): ReactNode {
     }
   }
 
-  const { isOpen, onOpenChange } = useDisclosure({ isOpen: globalState.modalPanel != null });
+  const modalPanel = globalState.clientData.modalPanel;
+  const { isOpen, onOpenChange } = useDisclosure({ isOpen: modalPanel != null });
   let modal;
-  if (globalState.modalPanel != null) {
+  if (modalPanel != null) {
     let modalContent;
-    let onCloseModal = globalState.modalPanel.on_close;
-    if ('Debug' in globalState.modalPanel.data) {
-      modalContent = <DebugPanelContent data={globalState.modalPanel.data.Debug} />;
+    const onCloseModal = modalPanel.on_close;
+    if ('Debug' in modalPanel.data) {
+      modalContent = <DebugPanelContent data={modalPanel.data.Debug} />;
     }
 
     modal = (
@@ -86,7 +85,7 @@ export function App(): ReactNode {
         }}
       >
         <ModalContent>
-          <ModalHeader>{globalState.modalPanel.title ?? ''}</ModalHeader>
+          <ModalHeader>{modalPanel.title ?? ''}</ModalHeader>
           <ModalBody>{modalContent}</ModalBody>
         </ModalContent>
       </Modal>

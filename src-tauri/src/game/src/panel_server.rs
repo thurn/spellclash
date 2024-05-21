@@ -29,7 +29,7 @@ use crate::server_data::{ClientData, GameResponse};
 #[instrument(level = "debug", skip(database))]
 pub async fn handle_open_panel(
     database: Arc<dyn Database>,
-    data: ClientData,
+    mut data: ClientData,
     panel: PanelAddress,
 ) -> Value<GameResponse> {
     match panel {
@@ -38,12 +38,14 @@ pub async fn handle_open_panel(
             let game = requests::fetch_game(database, game_id).await?;
             let player_name = game.find_player_name(data.user_id)?;
             let panel = panel::build_game_panel(&game, player_name, game_panel);
-            Ok(GameResponse::new(data).modal_panel(panel))
+            data.modal_panel = Some(panel);
+            Ok(GameResponse::new(data))
         }
         PanelAddress::UserPanel(player_panel) => match player_panel {},
     }
 }
 
-pub fn handle_close_panel(data: ClientData) -> Value<GameResponse> {
+pub fn handle_close_panel(mut data: ClientData) -> Value<GameResponse> {
+    data.modal_panel = None;
     Ok(GameResponse::new(data))
 }

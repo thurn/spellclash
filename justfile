@@ -1,6 +1,6 @@
 set positional-arguments
 
-code-review: check-format build clippy test check-docs
+code-review: check-format check-ts-format build clippy lint-ts test check-docs
 
 check:
     cargo check --manifest-path src-tauri/Cargo.toml --workspace --all-targets --all-features
@@ -33,7 +33,7 @@ clippy:
 # Reformats code. Requires nightly because several useful options (e.g. imports_granularity) are
 # nightly-only
 # Manifest path seems to not work?
-fmt:
+fmt: fix-ts-format
     cd src-tauri && cargo +nightly fmt
 
 nim *args='':
@@ -54,6 +54,9 @@ lint-ts:
 
 check-ts-format:
   npx prettier src --check
+
+fix-ts-format:
+  npx prettier src --write
 
 check-docs:
     RUSTDOCFLAGS="-D rustdoc::broken-intra-doc-links -D rustdoc::private-intra-doc-links -D rustdoc::bare-urls" cargo doc --manifest-path src-tauri/Cargo.toml --all
