@@ -20,7 +20,7 @@ export function PlayerInfo({ name, player }: { name: string; player: PlayerView 
     <div className="m-1 text-center flex flex-col">
       <div className="text-lg">{name}</div>
       <div className="text-sm">Life: {player.life}</div>
-      <div className="text-sm">Can Act: {player.can_act ? 'true' : 'false'}</div>
+      <div className="text-sm">Can Act: {player.canAct ? 'true' : 'false'}</div>
     </div>
   );
 }

@@ -18,7 +18,7 @@ import { CardView } from '../generated_types';
 export function HiddenCard({ card }: { card: CardView }): ReactNode {
   return (
     <div>
-      <img src={card.card_back} style={{ width: '100%', height: '100%' }} />
+      <img src={card.cardBack} style={{ width: '100%', height: '100%' }} />
     </div>
   );
 }

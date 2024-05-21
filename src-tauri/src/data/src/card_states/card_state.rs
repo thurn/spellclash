@@ -203,6 +203,7 @@ impl CardState {
 /// I assume within 10 years WoTC will introduce a third tapped state somehow,
 /// so might as well make this an enum.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub enum TappedState {
     Untapped,
     Tapped,
@@ -216,6 +217,7 @@ impl TappedState {
 
 /// Facing for this card, corresponding to the [PrintedCard] faces.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub enum CardFacing {
     FaceDown,
 

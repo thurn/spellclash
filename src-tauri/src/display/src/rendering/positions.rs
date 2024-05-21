@@ -50,8 +50,7 @@ pub fn for_card(card: &CardState, position: Position) -> ObjectPosition {
         EntityId::StackAbility(..) => 0.0,
     };
 
-    let position_string = format!("{:?}", position);
-    ObjectPosition { position, position_string, sorting_key, sorting_sub_key: 0.0 }
+    ObjectPosition { position, sorting_key, sorting_sub_key: 0.0 }
 }
 
 pub fn deck(builder: &ResponseBuilder, player: PlayerName) -> Position {

@@ -38,16 +38,16 @@ export async function handleAction(
 
   console.log('Handling action...');
   console.dir(action);
-  let result: Result<GameResponse, null> = await commands.clientHandleAction(lastResponse.client_data, action);
+  let result: Result<GameResponse, null> = await commands.clientHandleAction(lastResponse.clientData, action);
   if (result.status === "ok") {
     let data = result.data;
     if (data.commands.length === 0) {
       // Propagate previous command state if no UI update provided
       data = {
-        modal_panel: data.modal_panel,
+        modalPanel: data.modalPanel,
         commands: lastResponse.commands,
-        client_data: data.client_data,
-        opponent_responses: data.opponent_responses
+        clientData: data.clientData,
+        opponentResponses: data.opponentResponses,
       };
     }
     console.log('Got action response');

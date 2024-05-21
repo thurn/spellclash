@@ -21,12 +21,10 @@ use crate::core::game_view::DisplayPlayer;
 
 /// Represents the position of some object in the UI
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub struct ObjectPosition {
     /// Position category
     pub position: Position,
-    /// String representation of the [Position], used to simplify client lookup
-    /// logic.
-    pub position_string: String,
     /// Sorting key, determines order within the position
     pub sorting_key: f64,
     /// Sub-key, used to break ties in sorting
@@ -35,17 +33,13 @@ pub struct ObjectPosition {
 
 impl Default for ObjectPosition {
     fn default() -> Self {
-        Self {
-            position: Position::Default,
-            position_string: "Default".to_string(),
-            sorting_key: 0.0,
-            sorting_sub_key: 0.0,
-        }
+        Self { position: Position::Default, sorting_key: 0.0, sorting_sub_key: 0.0 }
     }
 }
 
 /// Sub-positions for objects within the battlefield.
 #[derive(Clone, Debug, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub enum BattlefieldPosition {
     Mana,
     Permanents,
@@ -53,6 +47,7 @@ pub enum BattlefieldPosition {
 
 /// Possible types of display positions
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub enum Position {
     /// Object position used in interface elements like the deck viewer which
     /// don't rely on game positioning.

@@ -27,34 +27,34 @@ export function PlayArea({ view }: { view: GameView }): ReactNode {
         <LinearCardDisplay
           key="oh"
           name="Opponent Hand"
-          cards={getPosition(map, keyForPosition({ Hand: 'Opponent' }))}
+          cards={getPosition(map, keyForPosition({ hand: 'opponent' }))}
         />
         <LinearCardDisplay
           key="om"
           name="Opponent Mana"
-          cards={getPosition(map, keyForPosition({ Battlefield: ['Opponent', 'Mana'] }))}
+          cards={getPosition(map, keyForPosition({ battlefield: ['opponent', 'mana'] }))}
         />
         <LinearCardDisplay
           key="op"
           name="Opponent Permanents"
-          cards={getPosition(map, keyForPosition({ Battlefield: ['Opponent', 'Permanents'] }))}
+          cards={getPosition(map, keyForPosition({ battlefield: ['opponent', 'permanents'] }))}
         />
-        <LinearCardDisplay key="st" name="Stack" cards={getPosition(map, keyForPosition('Stack'))} />
+        <LinearCardDisplay key="st" name="Stack" cards={getPosition(map, keyForPosition('stack'))} />
         <LinearCardDisplay
           key="vp"
           name="Viewer Permanents"
-          cards={getPosition(map, keyForPosition({ Battlefield: ['Viewer', 'Permanents'] }))}
+          cards={getPosition(map, keyForPosition({ battlefield: ['viewer', 'permanents'] }))}
         />
         <LinearCardDisplay
           key="vm"
           name="Viewer Mana"
-          cards={getPosition(map, keyForPosition({ Battlefield: ['Viewer', 'Mana'] }))}
+          cards={getPosition(map, keyForPosition({ battlefield: ['viewer', 'mana'] }))}
         />
-        <LinearCardDisplay key="vh" name="Viewer Hand" cards={getPosition(map, keyForPosition({ Hand: 'Viewer' }))} />
+        <LinearCardDisplay key="vh" name="Viewer Hand" cards={getPosition(map, keyForPosition({ hand: 'viewer' }))} />
       </div>
       <div className="w-1/12 flex flex-col justify-between">
-        <StackCardDisplay key="og" cards={getPosition(map, keyForPosition({ DiscardPile: 'Opponent' }))} />
-        <StackCardDisplay key="vg" cards={getPosition(map, keyForPosition({ DiscardPile: 'Viewer' }))} />
+        <StackCardDisplay key="og" cards={getPosition(map, keyForPosition({ discardPile: 'opponent' }))} />
+        <StackCardDisplay key="vg" cards={getPosition(map, keyForPosition({ discardPile: 'viewer' }))} />
       </div>
     </div>
   );
@@ -75,7 +75,7 @@ function cardPositions(view: GameView): Map<PositionKey, CardView[]> {
     if (!withKeys.has(keyForPosition(p.position))) {
       withKeys.set(keyForPosition(p.position), []);
     }
-    withKeys.get(keyForPosition(p.position))!.push([p.sorting_key, card]);
+    withKeys.get(keyForPosition(p.position))!.push([p.sortingKey, card]);
   }
   const result = new Map<PositionKey, CardView[]>();
   for (const [position, array] of withKeys) {

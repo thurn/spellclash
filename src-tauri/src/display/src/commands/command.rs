@@ -20,6 +20,7 @@ use crate::core::game_view::GameView;
 use crate::core::main_menu_view::MainMenuView;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateGameViewCommand {
     /// New visual game state
     pub view: GameView,
@@ -30,6 +31,7 @@ pub struct UpdateGameViewCommand {
 
 /// Represents an instruction to the client to perform some visual update.
 #[derive(Clone, Debug, EnumKind, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 #[enum_kind(CommandKind)]
 pub enum Command {
     UpdateGameView(UpdateGameViewCommand),

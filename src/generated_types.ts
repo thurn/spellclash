@@ -26,22 +26,22 @@ try {
 /**
  * Sub-positions for objects within the battlefield.
  */
-export type BattlefieldPosition = "Mana" | "Permanents"
+export type BattlefieldPosition = "mana" | "permanents"
 /**
  * Facing for this card, corresponding to the [PrintedCard] faces.
  */
-export type CardFacing = "FaceDown" | 
+export type CardFacing = "faceDown" | 
 /**
  * The indicated card face is currently up
  */
-{ FaceUp: Face }
+{ faceUp: Face }
 /**
  * Describes how the multiple faces of a card are organized in relation to each
  * other.
  * 
  * See <https://scryfall.com/docs/api/layouts>
  */
-export type CardLayout = "Adventure" | "Aftermath" | "Battle" | "Flip" | "Meld" | "ModalDfc" | "Normal" | "Split" | "Transform"
+export type CardLayout = "adventure" | "aftermath" | "battle" | "flip" | "meld" | "modal_dfc" | "normal" | "split" | "transform"
 /**
  * Represents the visual state of a card or ability in a game
  */
@@ -57,7 +57,7 @@ position: ObjectPosition;
 /**
  * Card back image
  */
-card_back: string; 
+cardBack: string; 
 /**
  * If this card is revealed to the viewer, contains information on the
  * revealed face of the card.
@@ -66,15 +66,15 @@ revealed: RevealedCardView | null;
 /**
  * True if this card is in a hidden zone but known to one or more opponents
  */
-revealed_to_opponents: boolean; 
+revealedToOpponents: boolean; 
 /**
  * Face up/face down state for this card
  */
-card_facing: CardFacing; 
+cardFacing: CardFacing; 
 /**
  * Tapped/untapped state for this card
  */
-tapped_state: TappedState; 
+tappedState: TappedState; 
 /**
  * Damage marked on this card
  * 
@@ -88,14 +88,14 @@ damage: number;
  * If this card does not already exist, it will be created at this position
  * before being animated to [Self::position].
  */
-create_position: ObjectPosition | null; 
+createPosition: ObjectPosition | null; 
 /**
  * Optionally, a position at which to destroy this card.
  * 
  * If provided, the card will be animated to this position before being
  * destroyed.
  */
-destroy_position: ObjectPosition | null }
+destroyPosition: ObjectPosition | null }
 /**
  * Identifies a card in client code
  * 
@@ -106,19 +106,19 @@ export type ClientCardId = string
 /**
  * Standard parameters for a client request & response
  */
-export type ClientData = { user_id: UserId; scene: SceneIdentifier; 
+export type ClientData = { userId: UserId; scene: SceneIdentifier; 
 /**
  * Options for how the game state should be visually rendered
  */
-display_preferences: DisplayPreferences; 
+displayPreferences: DisplayPreferences; 
 /**
  * Other user who are opponents in this game.
  */
-opponent_ids: UserId[] }
+opponentIds: UserId[] }
 /**
  * Represents an instruction to the client to perform some visual update.
  */
-export type Command = { UpdateGameView: UpdateGameViewCommand } | { UpdateMainMenuView: MainMenuView }
+export type Command = { updateGameView: UpdateGameViewCommand } | { updateMainMenuView: MainMenuView }
 /**
  * Debug options
  */
@@ -130,13 +130,13 @@ export type DisplayPlayer =
 /**
  * Player who is currently operating the client
  */
-"Viewer" | 
+"viewer" | 
 /**
  * Opponent of viewer
  */
-"Opponent"
+"opponent"
 export type DisplayPreferences = Record<string, never>
-export type Face = "Primary" | "FaceB"
+export type Face = "primary" | "faceB"
 /**
  * Describes how a single face of a card is laid out.
  * 
@@ -150,11 +150,11 @@ export type GameButtonKind =
 /**
  * Emphasized button, primary game action
  */
-"Primary" | 
+"primary" | 
 /**
  * Deemphasized button, additional game actions
  */
-"Default"
+"default"
 export type GameButtonView = { label: string; action: unknown; kind: GameButtonKind }
 /**
  * Unique identifier for a game
@@ -167,11 +167,11 @@ export type GameResponse = {
 /**
  * Optionally, a panel to display on top of the primary scene content
  */
-modal_panel: ModalPanel | null; 
+modalPanel: ModalPanel | null; 
 /**
  * Current context, must be returned to server with all future requests
  */
-client_data: ClientData; 
+clientData: ClientData; 
 /**
  * Animated updates to game state
  */
@@ -179,7 +179,7 @@ commands: Command[];
 /**
  * Responses to send to other connected players in the game
  */
-opponent_responses: ([UserId, Command[]])[] }
+opponentResponses: ([UserId, Command[]])[] }
 /**
  * Represents the visual state of an ongoing game
  */
@@ -199,7 +199,7 @@ cards: CardView[];
 /**
  * Describes the status of the game, e.g. which phase & step the game is in
  */
-status_description: string; 
+statusDescription: string; 
 /**
  * High level visual game state
  */
@@ -207,16 +207,16 @@ state: GameViewState;
 /**
  * Top user interaction options
  */
-top_buttons: GameButtonView[]; 
+topButtons: GameButtonView[]; 
 /**
  * Bottom user interaction options
  */
-bottom_buttons: GameButtonView[] }
-export type GameViewState = "None" | 
+bottomButtons: GameButtonView[] }
+export type GameViewState = "none" | 
 /**
  * There is an ongoing combat phase
  */
-"CombatActive"
+"combatActive"
 /**
  * Represents the visual state of the main menu
  */
@@ -239,18 +239,13 @@ export type ObjectPosition = {
  */
 position: Position; 
 /**
- * String representation of the [Position], used to simplify client lookup
- * logic.
- */
-position_string: string; 
-/**
  * Sorting key, determines order within the position
  */
-sorting_key: number; 
+sortingKey: number; 
 /**
  * Sub-key, used to break ties in sorting
  */
-sorting_sub_key: number }
+sortingSubKey: number }
 /**
  * Types of content which can appear in a modal panel
  */
@@ -269,7 +264,7 @@ life: number;
 /**
  * Can this player currently take a game action?
  */
-can_act: boolean }
+canAct: boolean }
 /**
  * Possible types of display positions
  */
@@ -278,75 +273,75 @@ export type Position =
  * Object position used in interface elements like the deck viewer which
  * don't rely on game positioning.
  */
-"Default" | 
+"default" | 
 /**
  * Object is not visible.
  */
-"Offscreen" | 
+"offscreen" | 
 /**
  * Object is prominently revealed, being shown at a large size after
  * being played.
  */
-"Played" | 
+"played" | 
 /**
  * Object is on the stack
  */
-"Stack" | 
+"stack" | 
 /**
  * Object is in this player's hand
  */
-{ Hand: DisplayPlayer } | 
+{ hand: DisplayPlayer } | 
 /**
  * Object is in this player's deck
  */
-{ Deck: DisplayPlayer } | 
+{ deck: DisplayPlayer } | 
 /**
  * Object is in this player's discard pile
  */
-{ DiscardPile: DisplayPlayer } | 
+{ discardPile: DisplayPlayer } | 
 /**
  * Object is in this player's exile zone
  */
-{ Exile: DisplayPlayer } | 
+{ exile: DisplayPlayer } | 
 /**
  * Object is in this player's command zone
  */
-{ CommandZone: DisplayPlayer } | 
+{ commandZone: DisplayPlayer } | 
 /**
  * Object is controlled by this player in a given battlefield position
  */
-{ Battlefield: [DisplayPlayer, BattlefieldPosition] } | 
+{ battlefield: [DisplayPlayer, BattlefieldPosition] } | 
 /**
  * Object is in attack position for this player
  */
-{ Attacking: DisplayPlayer } | 
+{ attacking: DisplayPlayer } | 
 /**
  * Object is controlled by this player and is blocking the provided set of
  * attackers
  */
-{ Blocking: [DisplayPlayer, ClientCardId[]] } | 
+{ blocking: [DisplayPlayer, ClientCardId[]] } | 
 /**
  * Object is being displayed in a card browser, e.g. to select from a list
  * of cards
  */
-"Browser" | 
+"browser" | 
 /**
  * Object has just been revealed to this viewer
  */
-"Revealed" | 
+"revealed" | 
 /**
  * Object is in a temporary holding space for cards in hand while resolving
  * some other 'play card' ability.
  */
-"HandStorage" | 
+"handStorage" | 
 /**
  * Object is not visible because it is inside the indicated card.
  */
-{ InsideCard: ClientCardId } | 
+{ insideCard: ClientCardId } | 
 /**
  * Object is attached to the indicated card.
  */
-{ AttachedToCard: ClientCardId }
+{ attachedToCard: ClientCardId }
 /**
  * Visual state of a revealed card face
  */
@@ -366,8 +361,8 @@ layout: FaceLayout;
 /**
  * Rules text_strings for this face, if any.
  */
-rules_text: string | null }
-export type RevealedCardStatus = "CanPlay" | { Attacking: string } | { Blocking: string }
+rulesText: string | null }
+export type RevealedCardStatus = "canPlay" | { attacking: string } | { blocking: string }
 /**
  * Visual state of a revealed card
  */
@@ -383,11 +378,11 @@ status: RevealedCardStatus | null;
 /**
  * Action to take when this card is clicked, if any.
  */
-click_action: unknown | null; 
+clickAction: unknown | null; 
 /**
  * Secondary or additional face of this card, if any
  */
-face_b: RevealedCardFace | null; 
+faceB: RevealedCardFace | null; 
 /**
  * Visual style of this card, how the faces are displayed
  */
@@ -397,14 +392,14 @@ layout: CardLayout }
  * 
  * This is used in a similar way to a browser url for the game.
  */
-export type SceneIdentifier = "Loading" | "MainMenu" | { Game: GameId }
+export type SceneIdentifier = "loading" | "mainMenu" | { game: GameId }
 /**
  * Whether a card is tapped or untapped.
  * 
  * I assume within 10 years WoTC will introduce a third tapped state somehow,
  * so might as well make this an enum.
  */
-export type TappedState = "Untapped" | "Tapped"
+export type TappedState = "untapped" | "tapped"
 export type UpdateGameViewCommand = { 
 /**
  * New visual game state

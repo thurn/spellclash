@@ -22,10 +22,10 @@ export function GameButton({ button, className }: { button: GameButtonView; clas
   const { response, setState } = useContext(GlobalContext);
   let color: ButtonProps['color'];
   switch (button.kind) {
-    case 'Primary':
+    case 'primary':
       color = 'primary';
       break;
-    case 'Default':
+    case 'default':
       color = 'default';
       break;
   }

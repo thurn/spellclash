@@ -22,6 +22,7 @@ use crate::core::card_view::CardView;
 
 /// Represents the visual state of an ongoing game
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub struct GameView {
     /// Player who is operating the client
     pub viewer: PlayerView,
@@ -46,6 +47,7 @@ pub struct GameView {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub struct GameButtonView {
     pub label: String,
     pub action: UserAction,
@@ -64,6 +66,7 @@ impl GameButtonView {
 
 /// Controls color for buttons
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub enum GameButtonKind {
     /// Emphasized button, primary game action
     Primary,
@@ -73,6 +76,7 @@ pub enum GameButtonKind {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Copy, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub enum GameViewState {
     None,
 
@@ -82,6 +86,7 @@ pub enum GameViewState {
 
 /// Identifies a player in the context of the user interface.
 #[derive(Clone, Debug, Eq, PartialEq, Copy, Hash, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub enum DisplayPlayer {
     /// Player who is currently operating the client
     Viewer,
@@ -92,6 +97,7 @@ pub enum DisplayPlayer {
 
 /// Represents the visual state of a player in a game
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub struct PlayerView {
     /// Current life total
     ///

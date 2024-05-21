@@ -23,14 +23,14 @@ import { Modal, ModalBody, ModalContent, ModalHeader, useDisclosure } from '@nex
 function defaultGameResponse(): GameResponse {
   return {
     commands: [],
-    modal_panel: null,
-    client_data: {
-      user_id: "",
-      display_preferences: {},
-      scene: "Loading",
-      opponent_ids: []
+    modalPanel: null,
+    clientData: {
+      userId: "",
+      displayPreferences: {},
+      scene: 'loading',
+      opponentIds: []
     },
-    opponent_responses: []
+    opponentResponses: []
   };
 }
 
@@ -50,31 +50,31 @@ export function App(): ReactNode {
   useEffect(() => {
     connect(setGlobalState);
   }, []);
-  const sceneIdentifier = globalState.client_data.scene;
+  const sceneIdentifier = globalState.clientData.scene;
   console.log('Global state scene is ' + sceneIdentifier);
 
   let scene;
-  if (sceneIdentifier === 'MainMenu') {
+  if (sceneIdentifier === 'mainMenu') {
     const command = globalState.commands.at(-1)!;
-    if ('UpdateMainMenuView' in command) {
-      scene = <MainMenu view={command.UpdateMainMenuView} />;
+    if ('updateMainMenuView' in command) {
+      scene = <MainMenu view={command.updateMainMenuView} />;
     }
-  } else if (sceneIdentifier === 'Loading') {
+  } else if (sceneIdentifier === 'loading') {
     scene = <h1>Loading...</h1>;
-  } else if ('Game' in sceneIdentifier) {
+  } else if ('game' in sceneIdentifier) {
     const command = globalState.commands.at(-1)!;
-    if ('UpdateGameView' in command) {
-      scene = <Game view={command.UpdateGameView!.view} />;
+    if ('updateGameView' in command) {
+      scene = <Game view={command.updateGameView!.view} />;
     }
   }
 
-  const { isOpen, onOpenChange } = useDisclosure({ isOpen: globalState.modal_panel != null });
+  const { isOpen, onOpenChange } = useDisclosure({ isOpen: globalState.modalPanel != null });
   let modal;
-  if (globalState.modal_panel != null) {
+  if (globalState.modalPanel != null) {
     let modalContent;
-    let onCloseModal = globalState.modal_panel.on_close;
-    if ('Debug' in globalState.modal_panel.data) {
-      modalContent = <DebugPanelContent data={globalState.modal_panel.data.Debug} />;
+    let onCloseModal = globalState.modalPanel.on_close;
+    if ('Debug' in globalState.modalPanel.data) {
+      modalContent = <DebugPanelContent data={globalState.modalPanel.data.Debug} />;
     }
 
     modal = (
@@ -86,7 +86,7 @@ export function App(): ReactNode {
         }}
       >
         <ModalContent>
-          <ModalHeader>{globalState.modal_panel.title ?? ''}</ModalHeader>
+          <ModalHeader>{globalState.modalPanel.title ?? ''}</ModalHeader>
           <ModalBody>{modalContent}</ModalBody>
         </ModalContent>
       </Modal>

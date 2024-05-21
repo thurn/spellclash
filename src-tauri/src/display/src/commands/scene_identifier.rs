@@ -20,6 +20,7 @@ use specta::Type;
 ///
 /// This is used in a similar way to a browser url for the game.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub enum SceneIdentifier {
     Loading,
     MainMenu,

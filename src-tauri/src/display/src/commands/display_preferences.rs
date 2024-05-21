@@ -16,4 +16,5 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub struct DisplayPreferences {}

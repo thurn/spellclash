@@ -22,6 +22,7 @@ use specta::Type;
 
 /// A response to a user request.
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub struct GameResponse {
     /// Optionally, a panel to display on top of the primary scene content
     pub modal_panel: Option<ModalPanel>,
@@ -72,6 +73,7 @@ impl GameResponse {
 
 /// Standard parameters for a client request & response
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub struct ClientData {
     pub user_id: UserId,
     pub scene: SceneIdentifier,

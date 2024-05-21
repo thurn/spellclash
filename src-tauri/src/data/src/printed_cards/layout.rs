@@ -22,6 +22,7 @@ use strum::EnumString;
 ///
 /// See <https://scryfall.com/docs/api/layouts>
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
+#[serde(rename_all = "snake_case")]
 pub enum CardLayout {
     Adventure,
     Aftermath,

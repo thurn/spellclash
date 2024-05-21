@@ -21,18 +21,18 @@ export function RevealedCard({ revealed }: { revealed: RevealedCardView }): Reac
   const { response, setState } = useContext(GlobalContext);
   let borderClass = 'border-2 border-black';
   let label = '';
-  if (revealed.status === 'CanPlay') {
+  if (revealed.status === 'canPlay') {
     borderClass = 'border-2 border-amber-300';
-  } else if (revealed.status != null && 'Attacking' in revealed.status) {
+  } else if (revealed.status != null && 'attacking' in revealed.status) {
     borderClass = 'border-2 border-teal-300';
-    label = revealed.status.Attacking;
-  } else if (revealed.status != null && 'Blocking' in revealed.status) {
+    label = revealed.status.attacking;
+  } else if (revealed.status != null && 'alocking' in revealed.status) {
     borderClass = 'border-2 border-purple-300';
-    label = revealed.status.Blocking;
+    label = revealed.status.blocking;
   }
 
   return (
-    <div className={borderClass} onClick={() => handleAction(setState, response, revealed.click_action)}>
+    <div className={borderClass} onClick={() => handleAction(setState, response, revealed.clickAction)}>
       <img
         src={revealed.face.image}
         style={{

@@ -24,6 +24,7 @@ use crate::core::object_position::ObjectPosition;
 
 /// Represents the visual state of a card or ability in a game
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub struct CardView {
     /// Identifier for this card
     pub id: ClientCardId,
@@ -71,6 +72,7 @@ pub struct CardView {
 /// Serialized u64, represented as string because JavaScript is a silly
 /// language.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub struct ClientCardId(pub String);
 
 impl ClientCardId {
@@ -81,6 +83,7 @@ impl ClientCardId {
 
 /// Visual state of a revealed card
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub struct RevealedCardView {
     /// Primary face of this card
     pub face: RevealedCardFace,
@@ -99,6 +102,7 @@ pub struct RevealedCardView {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub enum RevealedCardStatus {
     CanPlay,
     Attacking(String),
@@ -107,6 +111,7 @@ pub enum RevealedCardStatus {
 
 /// Visual state of a revealed card face
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub struct RevealedCardFace {
     /// Name of this face
     pub name: String,

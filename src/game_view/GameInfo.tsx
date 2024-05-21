@@ -18,13 +18,13 @@ import { GameButton } from '../core/GameButton';
 import { GameView } from '../generated_types';
 
 export function GameInfo({ view }: { view: GameView }): ReactNode {
-  const topButtons = view.top_buttons.map((button, i) => <GameButton button={button} key={i} className="m-2" />);
-  const bottomButtons = view.bottom_buttons.map((button, i) => <GameButton button={button} key={i} className="m-2" />);
+  const topButtons = view.topButtons.map((button, i) => <GameButton button={button} key={i} className="m-2" />);
+  const bottomButtons = view.bottomButtons.map((button, i) => <GameButton button={button} key={i} className="m-2" />);
   return (
     <div className="flex flex-col grow justify-around text-center items-stretch">
       <div className="flex flex-col">{topButtons}</div>
       <PlayerInfo name="Opponent" player={view.opponent} />
-      <div className="items-center m-1 text-m">{view.status_description}</div>
+      <div className="items-center m-1 text-m">{view.statusDescription}</div>
       <PlayerInfo name="Viewer" player={view.viewer} />
       <div className="flex flex-col">{bottomButtons}</div>
     </div>
