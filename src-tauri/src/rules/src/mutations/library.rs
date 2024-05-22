@@ -15,6 +15,7 @@
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, HasCardId, HasPlayerName, HasSource, Zone};
 use data::game_states::game_state::GameState;
+use data::game_states::state_based_event::StateBasedEvent;
 use utils::outcome;
 use utils::outcome::Outcome;
 
@@ -25,7 +26,11 @@ use crate::mutations::move_card;
 /// Marks the card as revealed to its owner. Returns `outcome::GAME_OVER` if
 /// this causes the game to end due to drawing from an empty library.
 pub fn draw(game: &mut GameState, source: impl HasSource, player: impl HasPlayerName) -> Outcome {
-    let Some(&id) = game.library(player).back() else { return outcome::GAME_OVER };
+    let player = player.player_name();
+    let Some(&id) = game.library(player).back() else {
+        game.add_state_based_event(StateBasedEvent::DrawFromEmptyLibrary(player));
+        return outcome::OK;
+    };
     let card = game.card_mut(id);
     move_card::run(game, source, id, Zone::Hand)
 }

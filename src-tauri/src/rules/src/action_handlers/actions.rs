@@ -16,10 +16,10 @@ use data::actions::debug_action::DebugGameAction;
 use data::actions::game_action::GameAction;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, PlayerName, Source, Zone};
-use data::game_states::game_state::GameState;
+use data::game_states::game_state::{GameState, GameStatus};
 use data::printed_cards::printed_card::Face;
 use tracing::{debug, info, instrument};
-use utils::outcome::Outcome;
+use utils::outcome::{Outcome, StopCondition};
 use utils::{fail, outcome, verify};
 
 use crate::action_handlers::{combat_actions, debug_actions};
@@ -49,16 +49,6 @@ pub fn execute(
         action,
         player
     );
-
-    if !automatic
-        && game.undo_tracker.enabled
-        && action != GameAction::DebugAction(DebugGameAction::Undo)
-    {
-        let mut clone = game.clone();
-        clone.undo_tracker.enabled = false;
-        clone.undo_tracker.undo = vec![];
-        game.undo_tracker.undo.push(Box::new(clone));
-    }
 
     match action {
         GameAction::DebugAction(a) => debug_actions::execute(game, player, a),

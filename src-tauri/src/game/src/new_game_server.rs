@@ -84,6 +84,8 @@ pub async fn create(
     library::draw_cards(&mut game, Source::Game, PlayerName::One, 7)?;
     game.shuffle_library(PlayerName::Two)?;
     library::draw_cards(&mut game, Source::Game, PlayerName::Two, 7)?;
+    // TODO: Resolve mulligans
+    game.status = GameStatus::Playing;
     step::advance(&mut game)?;
     if let Some(action) = game_action_server::auto_pass_action(&game, PlayerName::One) {
         // Pass priority until the first configured stop.

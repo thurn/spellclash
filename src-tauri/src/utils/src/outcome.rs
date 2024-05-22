@@ -53,4 +53,7 @@ pub const OK: Outcome = Ok(());
 pub const PROMPT: Outcome = Err(StopCondition::Prompt);
 
 /// Mutation resulted in the game being over, execution should halt.
+///
+/// If you return this value from a function, you are also responsible for
+/// updating `game.status` with the players who have won the game.
 pub const GAME_OVER: Outcome = Err(StopCondition::GameOver);

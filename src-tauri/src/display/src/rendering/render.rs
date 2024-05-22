@@ -13,10 +13,11 @@
 // limitations under the License.
 
 use data::core::primitives::PlayerName;
-use data::game_states::game_state::GameState;
+use data::game_states::game_state::{GameState, GameStatus};
 
-use crate::commands::command::Command;
+use crate::commands::command::{Command, DisplayGameMessageCommand};
 use crate::commands::display_preferences::DisplayPreferences;
+use crate::core::game_message::GameMessage;
 use crate::core::response_builder::{ResponseBuilder, ResponseState};
 use crate::rendering::{animations, sync};
 
@@ -35,6 +36,16 @@ pub fn connect(
         act_as_player: game.configuration.debug.act_as_player,
     });
     sync::run(&mut builder, game);
+
+    if let GameStatus::GameOver { winners } = game.status {
+        builder.commands.push(Command::DisplayGameMessage(DisplayGameMessageCommand {
+            message: if winners.contains(builder.display_as_player()) {
+                GameMessage::Victory
+            } else {
+                GameMessage::Defeat
+            },
+        }))
+    }
     builder.commands
 }
 
@@ -61,5 +72,16 @@ pub fn render_updates(
 
     builder.state.is_final_update = true;
     sync::run(&mut builder, game);
+
+    if let GameStatus::GameOver { winners } = game.status {
+        builder.commands.push(Command::DisplayGameMessage(DisplayGameMessageCommand {
+            message: if winners.contains(builder.display_as_player()) {
+                GameMessage::Victory
+            } else {
+                GameMessage::Defeat
+            },
+        }))
+    }
+
     builder.commands
 }

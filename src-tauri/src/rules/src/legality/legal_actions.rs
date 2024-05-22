@@ -18,7 +18,7 @@ use data::actions::game_action::GameAction;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, PlayerName, Source};
 use data::game_states::combat_state::{CombatState, CombatStateKind};
-use data::game_states::game_state::GameState;
+use data::game_states::game_state::{GameState, GameStatus};
 use data::printed_cards::printed_card::Face;
 
 use crate::legality::{can_pay_mana_cost, legal_combat_actions};
@@ -29,6 +29,10 @@ use crate::play_cards::{pick_face_to_play, play_card};
 pub fn compute(game: &GameState, player: PlayerName) -> Vec<GameAction> {
     let mut result = vec![];
     if next_to_act(game) != player {
+        return result;
+    }
+
+    if game.status != GameStatus::Playing {
         return result;
     }
 
@@ -58,6 +62,10 @@ pub fn can_take_action(
 }
 
 /// Returns the name of the player who is currently allowed to take an action.
+///
+/// If the game has not yet started, this will be player one. If the game
+/// has ended, this will be the player who held priority at the end of the
+/// game.
 pub fn next_to_act(game: &GameState) -> PlayerName {
     match game.combat.as_ref() {
         Some(CombatState::ProposingAttackers(_)) => game.turn.active_player,

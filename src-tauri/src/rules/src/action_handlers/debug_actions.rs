@@ -14,11 +14,14 @@
 
 use data::actions::debug_action::DebugGameAction;
 use data::actions::game_action::GameAction;
-use data::core::primitives::PlayerName;
+use data::core::primitives::{PlayerName, Source};
 use data::game_states::game_state::GameState;
+use data::player_states::player_state::PlayerQueries;
 use tracing::{debug, instrument};
 use utils::outcome::Outcome;
 use utils::{fail, outcome};
+
+use crate::mutations::players;
 
 #[instrument(err, level = "debug", skip(game))]
 pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction) -> Outcome {
@@ -32,6 +35,10 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction
             previous.undo_tracker.enabled = true;
             previous.undo_tracker.undo = undo_list;
             *game = *previous;
+        }
+        DebugGameAction::SetLifeTotal(player, life_total) => {
+            debug!(?player, ?life_total, "Debug setting life total");
+            players::set_life_total(game, Source::Game, player, life_total);
         }
     }
     outcome::OK

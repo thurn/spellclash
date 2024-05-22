@@ -130,11 +130,20 @@ export type ClientData = {
 /**
  * Represents an instruction to the client to perform some visual update.
  */
-export type Command = { updateGameView: UpdateGameViewCommand } | { updateMainMenuView: MainMenuView };
+export type Command =
+  | { updateGameView: UpdateGameViewCommand }
+  | { updateMainMenuView: MainMenuView }
+  | { displayGameMessage: DisplayGameMessageCommand };
 /**
  * Debug options
  */
 export type DebugPanel = { buttons: GameButtonView[] };
+export type DisplayGameMessageCommand = {
+  /**
+   * Top-level status message to display to the player
+   */
+  message: GameMessage;
+};
 /**
  * Identifies a player in the context of the user interface.
  */
@@ -197,6 +206,7 @@ export type GameButtonView = { label: string; action: unknown; kind: GameButtonK
  * Unique identifier for a game
  */
 export type GameId = string;
+export type GameMessage = 'yourTurn' | 'opponentTurn' | 'victory' | 'defeat';
 /**
  * A response to a user request.
  */

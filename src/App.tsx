@@ -51,18 +51,27 @@ export function App(): ReactNode {
   const sceneIdentifier = globalState.clientData.scene;
   console.log('Global state scene is ' + sceneIdentifier);
 
-  let scene;
-  if (sceneIdentifier === 'mainMenu') {
-    const command = globalState.commands.at(-1)!;
+  let scene = <h1>Loading...</h1>;
+  let gameMessage = null;
+  for (const command of globalState.commands) {
     if ('updateMainMenuView' in command) {
       scene = <MainMenu view={command.updateMainMenuView} />;
-    }
-  } else if (sceneIdentifier === 'loading') {
-    scene = <h1>Loading...</h1>;
-  } else if ('game' in sceneIdentifier) {
-    const command = globalState.commands.at(-1)!;
-    if ('updateGameView' in command) {
+    } else if ('updateGameView' in command) {
       scene = <Game view={command.updateGameView!.view} />;
+    } else if ('displayGameMessage' in command) {
+      const text = {
+        yourTurn: 'Your Turn',
+        opponentTurn: 'Opponent Turn',
+        victory: 'Victory!',
+        defeat: 'Defeat',
+      };
+      gameMessage = (
+        <Modal isOpen={true} hideCloseButton={true}>
+          <ModalContent>
+            <ModalBody>{text[command.displayGameMessage.message]}</ModalBody>
+          </ModalContent>
+        </Modal>
+      );
     }
   }
 
@@ -101,6 +110,7 @@ export function App(): ReactNode {
     >
       {scene}
       {modal}
+      {gameMessage}
     </GlobalContext.Provider>
   );
 }

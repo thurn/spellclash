@@ -32,7 +32,7 @@ use rules::action_handlers::actions::PlayerType;
 use rules::legality::legal_actions;
 use rules::queries::combat_queries;
 use tracing::{debug, error, info, instrument};
-use utils::outcome::Value;
+use utils::outcome::{StopCondition, Value};
 use utils::with_error::WithError;
 
 use crate::requests;
@@ -99,9 +99,27 @@ pub async fn handle_game_action_internal(
     let mut result = GameResponse::new(data.clone());
 
     loop {
-        actions::execute(game, current_player, current_action, current_action_is_automatic)?;
+        let halt = match actions::execute(
+            game,
+            current_player,
+            current_action,
+            current_action_is_automatic,
+        ) {
+            Ok(_) => false,
+            Err(StopCondition::Prompt) | Err(StopCondition::GameOver) => true,
+            error @ Err(..) => {
+                return error.map(|_| result);
+            }
+        };
+
         let user_result = render::render_updates(game, user_player_name, data.display_preferences);
         result = result.commands(user_result);
+
+        if halt {
+            database.write_game(game).await?;
+            return Ok(result);
+        }
+
         let next_player = legal_actions::next_to_act(game);
         if let Some(action) = auto_pass_action(game, next_player) {
             debug!(?next_player, "Automatically passing");

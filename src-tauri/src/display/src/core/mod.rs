@@ -13,6 +13,7 @@
 // limitations under the License.
 
 pub mod card_view;
+pub mod game_message;
 pub mod game_view;
 pub mod main_menu_view;
 pub mod object_position;

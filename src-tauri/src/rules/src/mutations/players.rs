@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::numerics::Damage;
+use data::core::numerics::{Damage, LifeValue};
 use data::core::primitives::{PlayerName, Source};
 use data::game_states::game_state::GameState;
 use data::game_states::state_based_event::StateBasedEvent;
@@ -29,6 +29,18 @@ pub fn deal_damage(
 ) -> Outcome {
     debug!("Dealing {damage:?} damage to {player:?}");
     game.player_mut(player).life -= damage as i64;
+    game.add_state_based_event(StateBasedEvent::LifeTotalDecrease(player));
+    outcome::OK
+}
+
+pub fn set_life_total(
+    game: &mut GameState,
+    _source: Source,
+    player: PlayerName,
+    value: LifeValue,
+) -> Outcome {
+    debug!("Setting life total to {value:?} for {player:?}");
+    game.player_mut(player).life = value;
     game.add_state_based_event(StateBasedEvent::LifeTotalDecrease(player));
     outcome::OK
 }

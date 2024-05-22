@@ -16,10 +16,13 @@ use serde::{Deserialize, Serialize};
 
 use crate::actions::game_action::GameAction;
 use crate::actions::user_action::UserAction;
+use crate::core::numerics::LifeValue;
+use crate::core::primitives::PlayerName;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub enum DebugGameAction {
     Undo,
+    SetLifeTotal(PlayerName, LifeValue),
 }
 
 impl From<DebugGameAction> for UserAction {

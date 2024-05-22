@@ -18,10 +18,5 @@ import { GameButton } from '../core/GameButton';
 
 export function DebugPanelContent({ data }: { data: DebugPanel }): ReactNode {
   const buttons = data.buttons.map((button, i) => <GameButton button={button} key={i} />);
-  return (
-    <div>
-      <h1>Debug Panel</h1>
-      {buttons}
-    </div>
-  );
+  return <div>{buttons}</div>;
 }

@@ -72,7 +72,7 @@ pub struct GameState {
     /// 'simultaneous' action, hence there is always exactly one player who can
     /// currently act.
     ///
-    /// If the game has not yet started, this will be player one. if the game
+    /// If the game has not yet started, this will be player one. If the game
     /// has ended, this will be the player who held priority at the end of the
     /// game.
     pub priority: PlayerName,
@@ -283,7 +283,7 @@ impl PlayerQueries for GameState {
 }
 
 /// Status of the game: whether it is starting, is ongoing, or has ended.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub enum GameStatus {
     /// Initial step of game setup. Players reveal commanders, companions,
     /// sticker sheets, etc.

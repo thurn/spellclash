@@ -16,8 +16,27 @@ use enum_kinds::EnumKind;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
+use crate::core::game_message::GameMessage;
 use crate::core::game_view::GameView;
 use crate::core::main_menu_view::MainMenuView;
+
+/// Represents an instruction to the client to perform some visual update.
+#[derive(Clone, Debug, EnumKind, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+#[enum_kind(CommandKind)]
+pub enum Command {
+    UpdateGameView(UpdateGameViewCommand),
+
+    UpdateMainMenuView(MainMenuView),
+
+    DisplayGameMessage(DisplayGameMessageCommand),
+}
+
+impl Command {
+    pub fn kind(&self) -> CommandKind {
+        CommandKind::from(self)
+    }
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
@@ -29,18 +48,9 @@ pub struct UpdateGameViewCommand {
     pub animate: bool,
 }
 
-/// Represents an instruction to the client to perform some visual update.
-#[derive(Clone, Debug, EnumKind, Serialize, Deserialize, Type)]
+#[derive(Clone, Debug, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
-#[enum_kind(CommandKind)]
-pub enum Command {
-    UpdateGameView(UpdateGameViewCommand),
-
-    UpdateMainMenuView(MainMenuView),
-}
-
-impl Command {
-    pub fn kind(&self) -> CommandKind {
-        CommandKind::from(self)
-    }
+pub struct DisplayGameMessageCommand {
+    /// Top-level status message to display to the player
+    pub message: GameMessage,
 }
