@@ -22,10 +22,11 @@ use all_cards::card_list;
 use clap::Parser;
 use data::actions::user_action::UserAction;
 use data::core::primitives::UserId;
-use database::sled_database::SledDatabase;
+use database::sqlite_database::SqliteDatabase;
 use game::server;
 use game::server_data::{ClientData, GameResponse};
 use once_cell::sync::Lazy;
+use rusqlite::{Connection, Error};
 use tracing::{error, info};
 use utils::outcome;
 use utils::outcome::Outcome;
@@ -38,8 +39,22 @@ mod cli;
 mod initialize;
 mod logging;
 
-static DATABASE: Lazy<Arc<SledDatabase>> =
-    Lazy::new(|| Arc::new(SledDatabase::new(initialize::get_data_dir())));
+static DATABASE: Lazy<Arc<SqliteDatabase>> =
+    Lazy::new(|| Arc::new(SqliteDatabase::new(connection()).unwrap()));
+
+fn connection() -> Connection {
+    match Connection::open(initialize::get_data_dir().join("game.db")) {
+        Ok(connection) => connection,
+        Err(Error::SqliteFailure(_, s)) => {
+            error!("Error opening database connection: {:?}", s);
+            panic!("Error opening database connection");
+        }
+        Err(err) => {
+            error!("Error opening database connection: {:?}", err);
+            panic!("Error opening database connection");
+        }
+    }
+}
 
 #[tauri::command]
 #[specta::specta]

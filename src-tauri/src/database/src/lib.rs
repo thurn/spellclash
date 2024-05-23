@@ -14,3 +14,4 @@
 
 pub mod database;
 pub mod sled_database;
+pub mod sqlite_database;
