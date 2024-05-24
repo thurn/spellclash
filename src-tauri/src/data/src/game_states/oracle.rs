@@ -15,6 +15,7 @@
 use std::fmt::Debug;
 
 use dyn_clone::DynClone;
+use utils::outcome::Value;
 
 use crate::card_states::card_reference::CardReference;
 use crate::printed_cards::printed_card_id::PrintedCardId;
@@ -22,7 +23,10 @@ use crate::printed_cards::printed_card_id::PrintedCardId;
 /// Trait representing access to the Oracle card database.
 pub trait Oracle: Debug + DynClone {
     /// Looks up card information based on its [PrintedCardId]
-    fn card(&self, id: PrintedCardId) -> CardReference;
+    ///
+    /// Returns an error if this card does not exist in the database or an error
+    /// was encountered while deserializing the card.
+    fn card(&self, id: PrintedCardId) -> Value<CardReference>;
 }
 
 dyn_clone::clone_trait_object!(Oracle);

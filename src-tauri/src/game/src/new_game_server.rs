@@ -49,8 +49,8 @@ use rand_xoshiro::Xoshiro256StarStar;
 use rules::mutations::library;
 use rules::steps::step;
 use tracing::info;
-use utils::fail;
-use utils::outcome::Value;
+use utils::outcome::{Outcome, Value};
+use utils::{fail, outcome};
 use uuid::Uuid;
 
 use crate::server_data::{ClientData, GameResponse};
@@ -81,7 +81,7 @@ pub fn create(
         action.debug_options.configuration.act_as_player.map(|p| p.id).or(action.opponent_id),
         opponent_deck,
         action.debug_options.configuration,
-    );
+    )?;
     requests::initialize_game(database.clone(), &mut game)?;
 
     game.shuffle_library(PlayerName::One)?;
@@ -134,7 +134,7 @@ fn create_game(
     opponent_id: Option<UserId>,
     opponent_deck: Deck,
     debug: DebugConfiguration,
-) -> GameState {
+) -> Value<GameState> {
     let user_player_name = PlayerName::One;
     let (p1, p1_deck, p2, p2_deck) = match user_player_name {
         PlayerName::One => (Some(user_id), user_deck, opponent_id, opponent_deck),
@@ -144,10 +144,10 @@ fn create_game(
 
     let mut zones = Zones::default();
     let turn = TurnData { active_player: PlayerName::One, turn_number: 0 };
-    create_cards_in_deck(oracle.as_ref(), &mut zones, p1_deck, PlayerName::One, turn);
-    create_cards_in_deck(oracle.as_ref(), &mut zones, p2_deck, PlayerName::Two, turn);
+    create_cards_in_deck(oracle.as_ref(), &mut zones, p1_deck, PlayerName::One, turn)?;
+    create_cards_in_deck(oracle.as_ref(), &mut zones, p2_deck, PlayerName::Two, turn)?;
 
-    GameState {
+    Ok(GameState {
         id: game_id,
         status: GameStatus::Setup,
         step: GamePhaseStep::Untap,
@@ -167,7 +167,7 @@ fn create_game(
         delegates: GameDelegates::default(),
         state_based_events: Some(vec![]),
         oracle_reference: Some(oracle),
-    }
+    })
 }
 
 fn create_cards_in_deck(
@@ -176,12 +176,13 @@ fn create_cards_in_deck(
     deck: Deck,
     owner: PlayerName,
     turn: TurnData,
-) {
+) -> Outcome {
     for (&id, &quantity) in &deck.cards {
         for _ in 0..quantity {
-            zones.create_card_in_library(oracle.card(id), CardKind::Normal, owner, turn);
+            zones.create_card_in_library(oracle.card(id)?, CardKind::Normal, owner, turn);
         }
     }
+    outcome::OK
 }
 
 fn find_deck(name: DeckName) -> Value<Deck> {

@@ -18,23 +18,21 @@ use utils::outcome::Outcome;
 use utils::with_error::WithError;
 use utils::{fail, outcome};
 
-use crate::card_json;
-
 pub fn populate(_: SqliteDatabase, game: &mut GameState) -> Outcome {
-    let cards = match card_json::CARDS.as_ref() {
-        Ok(c) => c,
-        Err(e) => {
-            fail!("Error parsing card json data: {:?}", e);
-        }
-    };
-
-    for card in game.zones.all_cards_mut() {
-        card.printed_card_reference = Some(
-            cards
-                .get(&card.card_name)
-                .with_error(|| format!("Unknown card: {:?}", card.card_name))?,
-        );
-    }
+    // let cards = match card_json::CARDS.as_ref() {
+    //     Ok(c) => c,
+    //     Err(e) => {
+    //         fail!("Error parsing card json data: {:?}", e);
+    //     }
+    // };
+    //
+    // for card in game.zones.all_cards_mut() {
+    //     card.printed_card_reference = Some(
+    //         cards
+    //             .get(&card.card_name)
+    //             .with_error(|| format!("Unknown card: {:?}", card.card_name))?,
+    //     );
+    // }
 
     outcome::OK
 }

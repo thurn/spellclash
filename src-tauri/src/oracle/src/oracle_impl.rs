@@ -12,10 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::sync::Arc;
+
+use dashmap::{DashMap, DashSet};
+use data::card_definitions::definitions::CardFn;
 use data::card_states::card_reference::CardReference;
 use data::game_states::oracle::Oracle;
+use data::printed_cards::printed_card::PrintedCard;
 use data::printed_cards::printed_card_id::PrintedCardId;
 use database::sqlite_database::SqliteDatabase;
+use once_cell::sync::Lazy;
+use utils::outcome::Value;
+
+use crate::card_parser;
+
+static CARDS: Lazy<DashMap<PrintedCardId, Arc<PrintedCard>>> = Lazy::new(DashMap::new);
 
 #[derive(Debug, Clone)]
 pub struct OracleImpl {
@@ -29,7 +40,15 @@ impl OracleImpl {
 }
 
 impl Oracle for OracleImpl {
-    fn card(&self, id: PrintedCardId) -> CardReference {
-        todo!()
+    fn card(&self, id: PrintedCardId) -> Value<CardReference> {
+        if let Some(printed) = CARDS.get(&id) {
+            Ok(CardReference { identifier: id, printed_card_reference: printed.value().clone() })
+        } else {
+            let card = self.database.fetch_printed_card(id)?;
+            let parsed = card_parser::parse(card)?;
+            let reference = Arc::new(parsed);
+            CARDS.insert(id, reference.clone());
+            Ok(CardReference { identifier: id, printed_card_reference: reference })
+        }
     }
 }

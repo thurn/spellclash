@@ -254,7 +254,7 @@ impl Zones {
         let id = self.all_cards.insert(CardState {
             id: CardId::default(),
             entity_id: EntityId::Card(CardId::default(), ObjectId(0)),
-            card_name: reference.name,
+            card_name: reference.printed_card_reference.name,
             printed_card_id: reference.identifier,
             kind,
             owner,

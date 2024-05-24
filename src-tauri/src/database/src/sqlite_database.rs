@@ -17,6 +17,8 @@ use std::sync::{Arc, Mutex, MutexGuard};
 
 use data::core::primitives::{GameId, UserId};
 use data::game_states::game_state::GameState;
+use data::printed_cards::database_card::DatabaseCard;
+use data::printed_cards::printed_card_id::PrintedCardId;
 use data::users::user_state::UserState;
 use rusqlite::{Connection, Error, OptionalExtension};
 use serde_json::{de, ser};
@@ -136,6 +138,10 @@ impl SqliteDatabase {
             )
             .with_error(|| format!("Error writing user to sqlite {:?}", user.id))?;
         outcome::OK
+    }
+
+    pub fn fetch_printed_card(&self, _id: PrintedCardId) -> Value<DatabaseCard> {
+        todo!("")
     }
 
     fn db(&self) -> Value<MutexGuard<Connection>> {

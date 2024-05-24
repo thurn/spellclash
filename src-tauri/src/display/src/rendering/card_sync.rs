@@ -73,7 +73,7 @@ pub fn card_view(builder: &ResponseBuilder, context: &CardViewContext) -> CardVi
 
 fn card_face(printed: &PrintedCardFace) -> RevealedCardFace {
     RevealedCardFace {
-        name: printed.name.clone(),
+        name: printed.displayed_name.clone(),
         image: card_image(printed),
         layout: printed.layout,
         rules_text: printed.oracle_text.clone(),
@@ -103,11 +103,15 @@ fn card_status(
                 Some(RevealedCardStatus::Attacking("SB".to_string()))
             }
             Some(CombatRole::ProposedBlocker(attacker)) => Some(RevealedCardStatus::Blocking(
-                format!("B@{:?}", game.card_entity(attacker)?.printed().face.name),
+                format!("B@{:?}", game.card_entity(attacker)?.printed().face.displayed_name),
             )),
-            Some(CombatRole::Blocking { attacker, order }) => Some(RevealedCardStatus::Blocking(
-                format!("B@{:?}@{}", game.card_entity(attacker)?.printed().face.name, order),
-            )),
+            Some(CombatRole::Blocking { attacker, order }) => {
+                Some(RevealedCardStatus::Blocking(format!(
+                    "B@{:?}@{}",
+                    game.card_entity(attacker)?.printed().face.displayed_name,
+                    order
+                )))
+            }
         }
     }
 }

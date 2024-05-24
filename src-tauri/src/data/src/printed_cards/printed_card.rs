@@ -19,6 +19,7 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use uuid::Uuid;
 
+use crate::card_definitions::card_name::CardName;
 use crate::core::numerics::ManaValue;
 use crate::core::primitives::{CardSupertype, CardType, Color};
 use crate::printed_cards::card_subtypes::CardSubtypes;
@@ -41,6 +42,11 @@ pub enum Face {
 /// generally correspond to the definition at <https://mtgjson.com/data-models/card/card-set/>
 #[derive(Clone, Debug)]
 pub struct PrintedCard {
+    /// Identifies this card within the Oracle card database.
+    ///
+    /// See [CardName] for more information.
+    pub name: CardName,
+
     /// The primary face of the card. This represents:
     ///
     /// - The card information on all normal cards
@@ -95,7 +101,7 @@ pub struct PrintedCardFace {
     /// MTG JSON identifier for this face
     pub id: Uuid,
     /// The name for this face.
-    pub name: String,
+    pub displayed_name: String,
     /// Identifier for this face.
     pub face_identifier: Face,
     /// Different printings of this card face
@@ -106,7 +112,7 @@ pub struct PrintedCardFace {
     pub card_types: EnumSet<CardType>,
     /// The set of subtypes for this face, found after em-dash.
     pub subtypes: CardSubtypes,
-    /// The rules text_strings for this face.
+    /// The rules text for this face.
     pub oracle_text: Option<String>,
     /// Colors of this face. This incorporates the mana cost and color
     /// indicators as well as static rules text_strings modifiers like Devoid.

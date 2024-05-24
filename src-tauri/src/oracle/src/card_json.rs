@@ -82,7 +82,7 @@ fn build_printed_card(card: &SetCard) -> Value<(CardName, PrintedCard)> {
 fn build_face(card: &SetCard, face_identifier: Face) -> Value<PrintedCardFace> {
     Ok(PrintedCardFace {
         id: card.uuid,
-        name: card.face_name.clone().unwrap_or_else(|| card.name.clone()),
+        displayed_name: card.face_name.clone().unwrap_or_else(|| card.name.clone()),
         face_identifier,
         variants: vec![PrintedCardFaceVariant {
             scryfall_id: parse_uuid(card.identifiers.scryfall_id.as_ref())?,

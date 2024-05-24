@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::sync::Arc;
+
 use enumset::EnumSet;
 use serde::{Deserialize, Serialize};
 use specta::Type;
@@ -55,11 +57,12 @@ pub struct CardState {
     /// Do not mutate this field directly, use the `move_card` module instead.
     pub entity_id: EntityId,
 
-    /// Identifier for the name of this card.
+    /// Identifier for this card within the rules of the game.
+    ///
+    /// See [CardName] for more information.
     pub card_name: CardName,
 
-    /// Identifier for the printed card for this card, used to populate the
-    /// result of the [Self::printed] method after deserialization.
+    /// Identifier for the printed card for this card.
     pub printed_card_id: PrintedCardId,
 
     /// Describes which kind of card-like object this is.
@@ -156,11 +159,10 @@ pub struct CardState {
     /// instead of accessing this directly.
     ///
     /// All cards must have a [PrintedCard] and this is populated immediately
-    /// after deserialization with a static reference. It should basically
-    /// always be fine to .unwrap() this value by calling the
-    /// [Self::printed] method.
+    /// after deserialization. It should basically always be fine to .unwrap()
+    /// this value by calling the [Self::printed] method.
     #[serde(skip)]
-    pub printed_card_reference: Option<&'static PrintedCard>,
+    pub printed_card_reference: Option<Arc<PrintedCard>>,
 }
 
 impl HasCardId for CardState {
@@ -189,12 +191,12 @@ impl HasController for CardState {
 
 impl CardState {
     /// Returns the [PrintedCard] for this card.
-    pub fn printed(&self) -> &'static PrintedCard {
-        self.printed_card_reference.unwrap()
+    pub fn printed(&self) -> &PrintedCard {
+        self.printed_card_reference.as_ref().unwrap()
     }
 
     /// Returns the [PrintedCardFace] for this card if it is currently face up.
-    pub fn face_up_printed_face(&self) -> Option<&'static PrintedCardFace> {
+    pub fn face_up_printed_face(&self) -> Option<&PrintedCardFace> {
         match self.facing {
             CardFacing::FaceDown => None,
             CardFacing::FaceUp(face) => Some(self.printed().face(face)),

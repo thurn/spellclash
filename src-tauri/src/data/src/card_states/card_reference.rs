@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::sync::Arc;
+
+use dashmap::mapref::one::Ref;
+
 use crate::card_definitions::card_name::CardName;
 use crate::printed_cards::printed_card::PrintedCard;
 use crate::printed_cards::printed_card_id::PrintedCardId;
@@ -20,7 +24,6 @@ use crate::printed_cards::printed_card_id::PrintedCardId;
 /// in a game.
 #[derive(Debug)]
 pub struct CardReference {
-    pub name: CardName,
     pub identifier: PrintedCardId,
-    pub printed_card_reference: &'static PrintedCard,
+    pub printed_card_reference: Arc<PrintedCard>,
 }

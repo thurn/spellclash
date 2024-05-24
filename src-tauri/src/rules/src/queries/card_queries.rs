@@ -90,7 +90,7 @@ use utils::outcome::Value;
 ///   > or permanent to be face down.
 ///
 ///   <https://yawgatog.com/resources/magic-rules/#R7082>
-pub fn characteristic_faces(game: &GameState, card_id: CardId) -> Vec<&'static PrintedCardFace> {
+pub fn characteristic_faces(game: &GameState, card_id: CardId) -> Vec<&PrintedCardFace> {
     let card = game.card(card_id);
     match card.zone {
         Zone::Battlefield => card.face_up_printed_face().map_or_else(Vec::new, |face| vec![face]),
