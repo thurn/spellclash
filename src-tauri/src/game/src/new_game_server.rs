@@ -54,7 +54,7 @@ use crate::server_data::{ClientData, GameResponse};
 use crate::{game_action_server, requests};
 
 pub fn create(
-    database: Arc<SqliteDatabase>,
+    database: SqliteDatabase,
     data: ClientData,
     action: NewGameAction,
 ) -> Value<GameResponse> {

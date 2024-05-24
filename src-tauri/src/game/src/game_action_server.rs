@@ -41,11 +41,7 @@ use crate::server_data::{ClientData, GameResponse};
 /// Connects to an ongoing game scene, returning a [GameResponse] which renders
 /// its current visual state.
 #[instrument(level = "debug", skip(database))]
-pub fn connect(
-    database: Arc<SqliteDatabase>,
-    user: &UserState,
-    game_id: GameId,
-) -> Value<GameResponse> {
+pub fn connect(database: SqliteDatabase, user: &UserState, game_id: GameId) -> Value<GameResponse> {
     let game = requests::fetch_game(database, game_id)?;
     let player_name = game.find_player_name(user.id)?;
 
@@ -62,7 +58,7 @@ pub fn connect(
 
 #[instrument(level = "debug", skip(database))]
 pub fn handle_game_action(
-    database: Arc<SqliteDatabase>,
+    database: SqliteDatabase,
     data: ClientData,
     action: GameAction,
 ) -> Value<GameResponse> {
@@ -78,7 +74,7 @@ pub fn handle_game_action(
 }
 
 pub fn handle_game_action_internal(
-    database: Arc<SqliteDatabase>,
+    database: SqliteDatabase,
     data: &ClientData,
     action: GameAction,
     game: &mut GameState,

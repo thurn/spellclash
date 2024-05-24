@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::sync::Arc;
-
 use data::game_states::game_state::GameState;
 use database::sqlite_database::SqliteDatabase;
 use utils::outcome::Outcome;
@@ -22,7 +20,7 @@ use utils::{fail, outcome};
 
 use crate::card_json;
 
-pub fn populate(_: Arc<SqliteDatabase>, game: &mut GameState) -> Outcome {
+pub fn populate(_: SqliteDatabase, game: &mut GameState) -> Outcome {
     let cards = match card_json::CARDS.as_ref() {
         Ok(c) => c,
         Err(e) => {

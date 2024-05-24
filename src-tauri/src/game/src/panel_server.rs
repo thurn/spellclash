@@ -28,7 +28,7 @@ use crate::server_data::{ClientData, GameResponse};
 
 #[instrument(level = "debug", skip(database))]
 pub fn handle_open_panel(
-    database: Arc<SqliteDatabase>,
+    database: SqliteDatabase,
     mut data: ClientData,
     panel: PanelAddress,
 ) -> Value<GameResponse> {

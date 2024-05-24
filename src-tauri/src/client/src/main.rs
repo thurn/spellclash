@@ -16,7 +16,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::env;
-use std::sync::Arc;
 
 use all_cards::card_list;
 use clap::Parser;
@@ -38,8 +37,8 @@ mod cli;
 mod initialize;
 mod logging;
 
-static DATABASE: Lazy<Arc<SqliteDatabase>> =
-    Lazy::new(|| Arc::new(SqliteDatabase::new(initialize::get_data_dir()).unwrap()));
+static DATABASE: Lazy<SqliteDatabase> =
+    Lazy::new(|| SqliteDatabase::new(initialize::get_data_dir()).unwrap());
 
 #[tauri::command]
 #[specta::specta]

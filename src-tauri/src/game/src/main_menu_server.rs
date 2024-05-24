@@ -32,7 +32,7 @@ use uuid::uuid;
 use crate::server_data::{ClientData, GameResponse};
 
 /// Connect to the main menu scene
-pub fn connect(_: Arc<SqliteDatabase>, user: &UserState) -> Value<GameResponse> {
+pub fn connect(_: SqliteDatabase, user: &UserState) -> Value<GameResponse> {
     info!(?user.id, "Connected");
     let client_data = ClientData::new(user.id, SceneIdentifier::MainMenu);
     Ok(GameResponse::new(client_data).command(Command::UpdateMainMenuView(main_menu_view())))

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use std::path::PathBuf;
-use std::sync::{Mutex, MutexGuard};
+use std::sync::{Arc, Mutex, MutexGuard};
 
 use data::core::primitives::{GameId, UserId};
 use data::game_states::game_state::GameState;
@@ -24,8 +24,14 @@ use utils::outcome::{Outcome, Value};
 use utils::with_error::WithError;
 use utils::{fail, outcome};
 
+/// SQLite database connection.
+///
+/// This struct is used to fetch data from & mutate the database. It operates as
+/// a smart pointer, so calling .clone() is inexpensive and this is the expected
+/// way to pass the connection between callers.
+#[derive(Clone)]
 pub struct SqliteDatabase {
-    connection: Mutex<Connection>,
+    connection: Arc<Mutex<Connection>>,
 }
 
 impl SqliteDatabase {
@@ -67,12 +73,12 @@ impl SqliteDatabase {
             )
             .with_error(|| "Error creating table")?;
 
-        Ok(Self { connection: Mutex::new(connection) })
+        Ok(Self { connection: Arc::new(Mutex::new(connection)) })
     }
 
     pub fn fetch_game(&self, id: GameId) -> Value<Option<GameState>> {
         let data = self
-            .db()
+            .db()?
             .query_row("SELECT data FROM games WHERE id = ?1", [&id.0], |row| {
                 let data: Vec<u8> = row.get(0)?;
                 Ok(data)
@@ -90,7 +96,7 @@ impl SqliteDatabase {
     pub fn write_game(&self, game: &GameState) -> Outcome {
         let data =
             ser::to_vec(game).with_error(|| format!("Error serializing game {:?}", game.id))?;
-        self.db()
+        self.db()?
             .execute(
                 "INSERT INTO games (id, data)
                  VALUES (?1, ?2)
@@ -103,7 +109,7 @@ impl SqliteDatabase {
 
     pub fn fetch_user(&self, id: UserId) -> Value<Option<UserState>> {
         let data = self
-            .db()
+            .db()?
             .query_row("SELECT data FROM users WHERE id = ?1", [&id.0], |row| {
                 let data: Vec<u8> = row.get(0)?;
                 Ok(data)
@@ -121,7 +127,7 @@ impl SqliteDatabase {
     pub fn write_user(&self, user: &UserState) -> Outcome {
         let data =
             ser::to_vec(user).with_error(|| format!("Error serializing user {:?}", user.id))?;
-        self.db()
+        self.db()?
             .execute(
                 "INSERT INTO users (id, data)
                 VALUES (?1, ?2)
@@ -132,7 +138,12 @@ impl SqliteDatabase {
         outcome::OK
     }
 
-    fn db(&self) -> MutexGuard<Connection> {
-        self.connection.lock().expect("Error locking connection")
+    fn db(&self) -> Value<MutexGuard<Connection>> {
+        match self.connection.lock() {
+            Ok(guard) => Ok(guard),
+            Err(er) => {
+                fail!("Error getting database lock, did a writer panic? {:?}", er);
+            }
+        }
     }
 }

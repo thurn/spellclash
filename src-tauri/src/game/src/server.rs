@@ -30,7 +30,7 @@ use crate::{
 ///
 /// This returns commands to load & render the current game state. It's expected
 /// that this will be invoked on application start and on scene change.
-pub fn connect(database: Arc<SqliteDatabase>, user_id: UserId) -> Value<GameResponse> {
+pub fn connect(database: SqliteDatabase, user_id: UserId) -> Value<GameResponse> {
     let user = fetch_or_create_user(database.clone(), user_id)?;
     let _span = debug_span!("connect", ?user_id);
     match user.activity {
@@ -44,7 +44,7 @@ pub fn connect(database: Arc<SqliteDatabase>, user_id: UserId) -> Value<GameResp
 /// The most recently-returned [ClientData] (from a call to this function or
 /// [connect]) must be provided to this call.
 pub fn handle_action(
-    database: Arc<SqliteDatabase>,
+    database: SqliteDatabase,
     data: ClientData,
     action: UserAction,
 ) -> Value<GameResponse> {
@@ -66,7 +66,7 @@ pub fn handle_action(
     }
 }
 
-fn fetch_or_create_user(database: Arc<SqliteDatabase>, user_id: UserId) -> Value<UserState> {
+fn fetch_or_create_user(database: SqliteDatabase, user_id: UserId) -> Value<UserState> {
     Ok(if let Some(player) = database.fetch_user(user_id)? {
         player
     } else {
