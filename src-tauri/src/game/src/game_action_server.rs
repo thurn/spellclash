@@ -41,12 +41,12 @@ use crate::server_data::{ClientData, GameResponse};
 /// Connects to an ongoing game scene, returning a [GameResponse] which renders
 /// its current visual state.
 #[instrument(level = "debug", skip(database))]
-pub async fn connect(
+pub fn connect(
     database: Arc<SqliteDatabase>,
     user: &UserState,
     game_id: GameId,
 ) -> Value<GameResponse> {
-    let game = requests::fetch_game(database, game_id).await?;
+    let game = requests::fetch_game(database, game_id)?;
     let player_name = game.find_player_name(user.id)?;
 
     info!(?user.id, ?game.id, "Connected to game");
@@ -61,7 +61,7 @@ pub async fn connect(
 }
 
 #[instrument(level = "debug", skip(database))]
-pub async fn handle_game_action(
+pub fn handle_game_action(
     database: Arc<SqliteDatabase>,
     data: ClientData,
     action: GameAction,
@@ -69,16 +69,15 @@ pub async fn handle_game_action(
     let mut game = requests::fetch_game(
         database.clone(),
         data.game_id().with_error(|| "Expected current game ID")?,
-    )
-    .await?;
-    let result = handle_game_action_internal(database, &data, action, &mut game).await;
+    )?;
+    let result = handle_game_action_internal(database, &data, action, &mut game);
     if result.is_err() {
         error!(?action, "Error running game action loop");
     }
     result
 }
 
-pub async fn handle_game_action_internal(
+pub fn handle_game_action_internal(
     database: Arc<SqliteDatabase>,
     data: &ClientData,
     action: GameAction,
@@ -116,7 +115,7 @@ pub async fn handle_game_action_internal(
         result = result.commands(user_result);
 
         if halt {
-            database.write_game(game).await?;
+            database.write_game(game)?;
             return Ok(result);
         }
 
@@ -127,12 +126,12 @@ pub async fn handle_game_action_internal(
             current_action = action;
             current_action_is_automatic = true;
         } else if game.player(next_player).user_id.is_some() {
-            database.write_game(game).await?;
+            database.write_game(game)?;
             return Ok(result);
         } else {
             debug!(?next_player, "Searching for AI action");
             current_player = next_player;
-            current_action = ai_action::select(game, next_player).await?;
+            current_action = ai_action::select(game, next_player)?;
             current_action_is_automatic = true;
             debug!(?next_player, ?current_action, "AI action selected");
         }

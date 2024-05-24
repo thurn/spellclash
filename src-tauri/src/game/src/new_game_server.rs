@@ -53,12 +53,12 @@ use uuid::Uuid;
 use crate::server_data::{ClientData, GameResponse};
 use crate::{game_action_server, requests};
 
-pub async fn create(
+pub fn create(
     database: Arc<SqliteDatabase>,
     data: ClientData,
     action: NewGameAction,
 ) -> Value<GameResponse> {
-    let mut user = requests::fetch_user(database.clone(), data.user_id).await?;
+    let mut user = requests::fetch_user(database.clone(), data.user_id)?;
 
     let user_deck = find_deck(action.deck)?;
     let opponent_deck = find_deck(action.opponent_deck)?;
@@ -89,8 +89,12 @@ pub async fn create(
     step::advance(&mut game)?;
     if let Some(action) = game_action_server::auto_pass_action(&game, PlayerName::One) {
         // Pass priority until the first configured stop.
-        game_action_server::handle_game_action_internal(database.clone(), &data, action, &mut game)
-            .await?;
+        game_action_server::handle_game_action_internal(
+            database.clone(),
+            &data,
+            action,
+            &mut game,
+        )?;
     }
 
     user.activity = UserActivity::Playing(game.id);
@@ -107,12 +111,12 @@ pub async fn create(
         DisplayPreferences::default(),
     ));
 
-    database.write_game(&game).await?;
-    database.write_user(&user).await?;
+    database.write_game(&game)?;
+    database.write_user(&user)?;
     if let Some(opponent_id) = action.opponent_id {
-        let mut opponent = requests::fetch_user(database.clone(), opponent_id).await?;
+        let mut opponent = requests::fetch_user(database.clone(), opponent_id)?;
         opponent.activity = UserActivity::Playing(game_id);
-        database.write_user(&opponent).await?;
+        database.write_user(&opponent)?;
     }
 
     Ok(result)

@@ -30,56 +30,48 @@ use crate::{
 ///
 /// This returns commands to load & render the current game state. It's expected
 /// that this will be invoked on application start and on scene change.
-pub async fn connect(database: Arc<SqliteDatabase>, user_id: UserId) -> Value<GameResponse> {
-    let user = fetch_or_create_user(database.clone(), user_id).await?;
-    let span = debug_span!("connect", ?user_id);
-    let result = match user.activity {
-        UserActivity::Menu => main_menu_server::connect(database, &user).instrument(span).await,
-        UserActivity::Playing(game_id) => {
-            game_action_server::connect(database, &user, game_id).instrument(span).await
-        }
-    }?;
-
-    Ok(result)
+pub fn connect(database: Arc<SqliteDatabase>, user_id: UserId) -> Value<GameResponse> {
+    let user = fetch_or_create_user(database.clone(), user_id)?;
+    let _span = debug_span!("connect", ?user_id);
+    match user.activity {
+        UserActivity::Menu => main_menu_server::connect(database, &user),
+        UserActivity::Playing(game_id) => game_action_server::connect(database, &user, game_id),
+    }
 }
 
 /// Handles a [UserAction] from the client and returns a [GameResponse].
 ///
 /// The most recently-returned [ClientData] (from a call to this function or
 /// [connect]) must be provided to this call.
-pub async fn handle_action(
+pub fn handle_action(
     database: Arc<SqliteDatabase>,
     data: ClientData,
     action: UserAction,
 ) -> Value<GameResponse> {
     let game_id = data.game_id();
-    let span = debug_span!("handle_action", ?data.user_id, ?game_id);
+    let _span = debug_span!("handle_action", ?data.user_id, ?game_id);
     match action {
-        UserAction::NewGameAction(action) => {
-            new_game_server::create(database, data, action).instrument(span).await
-        }
+        UserAction::NewGameAction(action) => new_game_server::create(database, data, action),
         UserAction::GameAction(action) => {
-            game_action_server::handle_game_action(database, data, action).instrument(span).await
+            game_action_server::handle_game_action(database, data, action)
         }
-        UserAction::LeaveGameAction => {
-            leave_game_server::leave(database, data).instrument(span).await
-        }
+        UserAction::LeaveGameAction => leave_game_server::leave(database, data),
         UserAction::QuitGameAction => {
             std::process::exit(0);
         }
         UserAction::OpenPanel(panel_address) => {
-            panel_server::handle_open_panel(database, data, panel_address).instrument(span).await
+            panel_server::handle_open_panel(database, data, panel_address)
         }
         UserAction::ClosePanel => panel_server::handle_close_panel(data),
     }
 }
 
-async fn fetch_or_create_user(database: Arc<SqliteDatabase>, user_id: UserId) -> Value<UserState> {
-    Ok(if let Some(player) = database.fetch_user(user_id).await? {
+fn fetch_or_create_user(database: Arc<SqliteDatabase>, user_id: UserId) -> Value<UserState> {
+    Ok(if let Some(player) = database.fetch_user(user_id)? {
         player
     } else {
         let user = UserState { id: user_id, activity: UserActivity::Menu };
-        database.write_user(&user).await?;
+        database.write_user(&user)?;
         info!(?user_id, "Created new user");
         user
     })

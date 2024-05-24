@@ -23,10 +23,10 @@ use utils::outcome::Value;
 use crate::server_data::{ClientData, GameResponse};
 use crate::{main_menu_server, requests};
 
-pub async fn leave(database: Arc<SqliteDatabase>, mut data: ClientData) -> Value<GameResponse> {
-    let mut user = requests::fetch_user(database.clone(), data.user_id).await?;
+pub fn leave(database: Arc<SqliteDatabase>, mut data: ClientData) -> Value<GameResponse> {
+    let mut user = requests::fetch_user(database.clone(), data.user_id)?;
     user.activity = UserActivity::Menu;
-    database.write_user(&user).await?;
+    database.write_user(&user)?;
     data.scene = SceneIdentifier::MainMenu;
     Ok(GameResponse::new(data)
         .command(Command::UpdateMainMenuView(main_menu_server::main_menu_view())))

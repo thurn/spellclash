@@ -27,7 +27,7 @@ use crate::requests;
 use crate::server_data::{ClientData, GameResponse};
 
 #[instrument(level = "debug", skip(database))]
-pub async fn handle_open_panel(
+pub fn handle_open_panel(
     database: Arc<SqliteDatabase>,
     mut data: ClientData,
     panel: PanelAddress,
@@ -35,7 +35,7 @@ pub async fn handle_open_panel(
     match panel {
         PanelAddress::GamePanel(game_panel) => {
             let game_id = data.game_id().with_error(|| "Expected current game ID")?;
-            let game = requests::fetch_game(database, game_id).await?;
+            let game = requests::fetch_game(database, game_id)?;
             let player_name = game.find_player_name(data.user_id)?;
             let panel = panel::build_game_panel(&game, player_name, game_panel);
             data.modal_panel = Some(panel);

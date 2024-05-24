@@ -43,9 +43,9 @@ static DATABASE: Lazy<Arc<SqliteDatabase>> =
 
 #[tauri::command]
 #[specta::specta]
-async fn client_connect() -> Result<GameResponse, ()> {
+fn client_connect() -> Result<GameResponse, ()> {
     info!("Got connect request");
-    let result = server::connect(DATABASE.clone(), UserId(Uuid::default())).await;
+    let result = server::connect(DATABASE.clone(), UserId(Uuid::default()));
     match result {
         Ok(response) => Ok(response),
         Err(err) => {
@@ -57,12 +57,9 @@ async fn client_connect() -> Result<GameResponse, ()> {
 
 #[tauri::command]
 #[specta::specta]
-async fn client_handle_action(
-    client_data: ClientData,
-    action: UserAction,
-) -> Result<GameResponse, ()> {
+fn client_handle_action(client_data: ClientData, action: UserAction) -> Result<GameResponse, ()> {
     info!(?action, ?client_data, "Got handle_action request");
-    let result = server::handle_action(DATABASE.clone(), client_data, action).await;
+    let result = server::handle_action(DATABASE.clone(), client_data, action);
     match result {
         Ok(response) => Ok(response),
         Err(err) => {

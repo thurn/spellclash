@@ -21,7 +21,7 @@ use utils::outcome::Value;
 use utils::with_error::WithError;
 
 /// Select a game action for the [PlayerName] in the given [GameState].
-pub async fn select(game: &GameState, player: PlayerName) -> Value<GameAction> {
+pub fn select(game: &GameState, player: PlayerName) -> Value<GameAction> {
     legal_actions::compute(game, player)
         .into_iter()
         .choose(&mut rand::thread_rng())

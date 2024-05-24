@@ -24,14 +24,14 @@ use utils::outcome::{Outcome, Value};
 use utils::with_error::WithError;
 
 /// Looks up a user by ID in the database.
-pub async fn fetch_user(database: Arc<SqliteDatabase>, user_id: UserId) -> Value<UserState> {
-    database.fetch_user(user_id).await?.with_error(|| format!("User not found {user_id:?}"))
+pub fn fetch_user(database: Arc<SqliteDatabase>, user_id: UserId) -> Value<UserState> {
+    database.fetch_user(user_id)?.with_error(|| format!("User not found {user_id:?}"))
 }
 
 /// Looks up a game by ID in the database.
-pub async fn fetch_game(database: Arc<SqliteDatabase>, game_id: GameId) -> Value<GameState> {
+pub fn fetch_game(database: Arc<SqliteDatabase>, game_id: GameId) -> Value<GameState> {
     let mut game =
-        database.fetch_game(game_id).await?.with_error(|| format!("Game not found {game_id:?}"))?;
+        database.fetch_game(game_id)?.with_error(|| format!("Game not found {game_id:?}"))?;
     initialize_game(database, &mut game)?;
     Ok(game)
 }
