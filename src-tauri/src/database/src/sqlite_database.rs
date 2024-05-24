@@ -12,17 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::path::PathBuf;
 use std::sync::{Mutex, MutexGuard};
 
 use async_trait::async_trait;
 use data::core::primitives::{GameId, UserId};
 use data::game_states::game_state::GameState;
 use data::users::user_state::UserState;
-use rusqlite::{Connection, OptionalExtension};
+use rusqlite::{Connection, Error, OptionalExtension};
 use serde_json::{de, ser};
-use utils::outcome;
 use utils::outcome::{Outcome, Value};
 use utils::with_error::WithError;
+use utils::{fail, outcome};
 
 use crate::database::Database;
 
@@ -31,10 +32,25 @@ pub struct SqliteDatabase {
 }
 
 impl SqliteDatabase {
-    pub fn new(connection: Connection) -> Value<Self> {
+    pub fn new(directory: PathBuf) -> Value<Self> {
+        let connection = match Connection::open(directory.join("game.sqlite")) {
+            Ok(connection) => connection,
+            Err(Error::SqliteFailure(_, s)) => {
+                fail!("Error opening database connection: {:?}", s);
+            }
+            Err(err) => {
+                fail!("Error opening database connection: {:?}", err);
+            }
+        };
+
         connection
             .pragma_update(None, "foreign_keys", true)
             .with_error(|| "Error setting foreign keys pragma")?;
+        let attach_printings = format!(
+            "ATTACH '{}' as oracle;",
+            directory.join("AllPrintings.sqlite").to_str().unwrap()
+        );
+        connection.execute(&attach_printings, ()).with_error(|| "Error attaching table")?;
         connection
             .execute(
                 "CREATE TABLE IF NOT EXISTS games (

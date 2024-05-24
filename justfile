@@ -66,8 +66,7 @@ outdated:
     cargo outdated ---manifest-path src-tauri/Cargo.toml -exit-code 1
 
 clear-data:
-    rm -r ~/Library/Application\ Support/com.spellclash.spellclash/
-    mkdir ~/Library/Application\ Support/com.spellclash.spellclash/
+    rm ~/Library/Application\ Support/com.spellclash.spellclash/game.sqlite
 
 upgrade:
     cargo upgrade --manifest-path src-tauri/Cargo.toml --workspace

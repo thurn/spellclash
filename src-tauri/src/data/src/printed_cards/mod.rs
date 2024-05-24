@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+pub mod card_printing_id;
 pub mod card_subtypes;
+pub mod database_card;
 pub mod layout;
 pub mod mana_cost;
 pub mod printed_card;
