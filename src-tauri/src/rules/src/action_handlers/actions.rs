@@ -50,6 +50,16 @@ pub fn execute(
         player
     );
 
+    if !automatic
+        && game.undo_tracker.enabled
+        && action != GameAction::DebugAction(DebugGameAction::Undo)
+    {
+        let mut clone = game.clone();
+        clone.undo_tracker.enabled = false;
+        clone.undo_tracker.undo = vec![];
+        game.undo_tracker.undo.push(Box::new(clone));
+    }
+
     match action {
         GameAction::DebugAction(a) => debug_actions::execute(game, player, a),
         GameAction::PassPriority => handle_pass_priority(game, player),
