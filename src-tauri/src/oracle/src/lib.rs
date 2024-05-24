@@ -15,9 +15,5 @@
 #![allow(unused)]
 
 pub mod card_database;
+pub mod card_parser;
 pub mod oracle_impl;
-
-// mod all_printings;
-// mod card_json;
-mod card_parser;
-// mod set_card;

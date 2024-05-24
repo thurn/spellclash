@@ -396,10 +396,6 @@ export type RevealedCardFace = {
    */
   name: string;
   /**
-   * Image URL for this card
-   */
-  image: string;
-  /**
    * Visual style of specifically this face
    */
   layout: FaceLayout;
@@ -413,6 +409,14 @@ export type RevealedCardStatus = 'canPlay' | { attacking: string } | { blocking:
  * Visual state of a revealed card
  */
 export type RevealedCardView = {
+  /**
+   * Image URL for this card
+   *
+   * For double-faced cards, this is the image of the face which is currently
+   * face-up. For other kinds of multi-faced cards, this is an image
+   * containing both faces.
+   */
+  image: string;
   /**
    * Primary face of this card
    */

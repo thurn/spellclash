@@ -28,4 +28,4 @@ pub struct PrintedCardId(pub Uuid);
 
 pub const GRIZZLY_BEARS: PrintedCardId =
     PrintedCardId(uuid!("409f9b88-f03e-40b6-9883-68c14c37c0de"));
-pub const FOREST: PrintedCardId = PrintedCardId(uuid!("baf8a774-65f3-431e-b084-328ff1000895"));
+pub const FOREST: PrintedCardId = PrintedCardId(uuid!("8c13cafb-3078-4856-a5b0-c38aace8a34a"));

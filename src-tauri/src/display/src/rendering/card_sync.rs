@@ -19,6 +19,7 @@ use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{PlayerName, Source};
 use data::game_states::game_state::GameState;
 use data::printed_cards::printed_card::{Face, PrintedCardFace};
+use data::printed_cards::printed_card_id::PrintedCardId;
 use rules::legality::legal_actions;
 use rules::play_cards::play_card;
 use rules::queries::combat_queries;
@@ -45,6 +46,7 @@ pub fn card_view(builder: &ResponseBuilder, context: &CardViewContext) -> CardVi
         }),
         card_back: "https://i.imgur.com/gCqKv0M.png".to_string(),
         revealed: is_revealed.then(|| RevealedCardView {
+            image: card_image(context.printed_card_id(), context.image_face()),
             face: card_face(&context.printed().face),
             status: context
                 .query_or(None, |game, card| card_status(builder.act_as_player(game), game, card)),
@@ -74,7 +76,6 @@ pub fn card_view(builder: &ResponseBuilder, context: &CardViewContext) -> CardVi
 fn card_face(printed: &PrintedCardFace) -> RevealedCardFace {
     RevealedCardFace {
         name: printed.displayed_name.clone(),
-        image: card_image(printed),
         layout: printed.layout,
         rules_text: printed.oracle_text.clone(),
     }
@@ -154,9 +155,14 @@ fn card_action(player: PlayerName, game: &GameState, card: &CardState) -> Option
     }
 }
 
-fn card_image(printed: &PrintedCardFace) -> String {
-    let id = printed.variants[0].scryfall_id.to_string();
+fn card_image(card_id: PrintedCardId, face: Face) -> String {
+    let id = card_id.0.to_string();
     let dir1 = id.chars().next().unwrap();
     let dir2 = id.chars().nth(1).unwrap();
-    format!("https://cards.scryfall.io/large/front/{dir1}/{dir2}/{id}.jpg")
+    match face {
+        Face::Primary => format!("https://cards.scryfall.io/large/front/{dir1}/{dir2}/{id}.jpg"),
+        Face::FaceB => {
+            format!("https://cards.scryfall.io/large/back/{dir1}/{dir2}/{id}.jpg")
+        }
+    }
 }

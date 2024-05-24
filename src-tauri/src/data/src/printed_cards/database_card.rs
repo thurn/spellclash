@@ -61,6 +61,9 @@ pub struct DatabaseCardFace {
     /// database.
     pub scryfall_oracle_id: Uuid,
 
+    /// Identifies this face within a multi-face card.
+    pub side: Option<String>,
+
     /// A list of card subtypes found after em-dash.
     pub subtypes: Option<String>,
 

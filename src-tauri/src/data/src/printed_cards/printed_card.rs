@@ -98,14 +98,10 @@ impl PrintedCard {
 /// See the comments in [PrintedCard] for more information.
 #[derive(Clone, Debug)]
 pub struct PrintedCardFace {
-    /// MTG JSON identifier for this face
-    pub id: Uuid,
     /// The name for this face.
     pub displayed_name: String,
     /// Identifier for this face.
     pub face_identifier: Face,
-    /// Different printings of this card face
-    pub variants: Vec<PrintedCardFaceVariant>,
     /// The set of face supertypes
     pub supertypes: EnumSet<CardSupertype>,
     /// The set of all card types of the face
@@ -114,11 +110,6 @@ pub struct PrintedCardFace {
     pub subtypes: CardSubtypes,
     /// The rules text for this face.
     pub oracle_text: Option<String>,
-    /// Colors of this face. This incorporates the mana cost and color
-    /// indicators as well as static rules text_strings modifiers like Devoid.
-    ///
-    /// See <https://yawgatog.com/resources/magic-rules/#R2022>
-    pub colors: EnumSet<Color>,
     /// The mana cost for this face.
     ///
     /// See <https://yawgatog.com/resources/magic-rules/#R1074>
@@ -135,20 +126,10 @@ pub struct PrintedCardFace {
     pub power: Option<PrintedPower>,
     /// The printed toughness of the card.
     pub toughness: Option<PrintedToughness>,
-    /// Starting loyalty value for a Planeswalker card
-    pub loyalty: Option<PrintedLoyalty>,
     /// Face layout, describing its printed structure.
     ///
     /// See <https://scryfall.com/docs/api/layouts> for descriptions & examples of layouts.
     pub layout: FaceLayout,
-    /// A list of attraction lights found on a card, available only to cards
-    /// printed in certain Un-sets.
-    pub attraction_lights: EnumSet<AttractionLight>,
-    /// Another card which this face can be melded with. Both faces combine into
-    /// their identical `face_b` back face.
-    pub melds_with: Option<Uuid>,
-    /// True if the card allows a value other than 4 copies in a deck.
-    pub has_alternative_deck_limit: bool,
 }
 
 /// A visually unique printed version of a card face.

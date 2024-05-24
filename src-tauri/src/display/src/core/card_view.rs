@@ -85,6 +85,13 @@ impl ClientCardId {
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct RevealedCardView {
+    /// Image URL for this card
+    ///
+    /// For double-faced cards, this is the image of the face which is currently
+    /// face-up. For other kinds of multi-faced cards, this is an image
+    /// containing both faces.
+    pub image: String,
+
     /// Primary face of this card
     pub face: RevealedCardFace,
 
@@ -115,9 +122,6 @@ pub enum RevealedCardStatus {
 pub struct RevealedCardFace {
     /// Name of this face
     pub name: String,
-
-    /// Image URL for this card
-    pub image: String,
 
     /// Visual style of specifically this face
     pub layout: FaceLayout,

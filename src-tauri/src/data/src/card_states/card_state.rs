@@ -192,7 +192,7 @@ impl HasController for CardState {
 impl CardState {
     /// Returns the [PrintedCard] for this card.
     pub fn printed(&self) -> &PrintedCard {
-        self.printed_card_reference.as_ref().unwrap()
+        self.printed_card_reference.as_ref().expect("PrintedCard reference not populated!")
     }
 
     /// Returns the [PrintedCardFace] for this card if it is currently face up.

@@ -12,22 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_states::card_state::CardState;
+use data::card_states::card_state::{CardFacing, CardState};
 use data::core::primitives::CardId;
 use data::game_states::game_state::GameState;
-use data::printed_cards::printed_card::PrintedCard;
+use data::printed_cards::printed_card::{Face, PrintedCard};
+use data::printed_cards::printed_card_id::PrintedCardId;
 
 /// Provides the context in which a card view is being displayed, i.e. either
 /// during an active game or in a deck editor.
 pub enum CardViewContext<'a> {
-    Default(&'a PrintedCard, CardId),
+    Default(&'a PrintedCard, PrintedCardId, CardId),
     Game(&'a PrintedCard, &'a GameState, &'a CardState),
 }
 
 impl<'a> CardViewContext<'a> {
     pub fn printed(&self) -> &PrintedCard {
         match self {
-            Self::Default(d, _) => d,
+            Self::Default(d, _, _) => d,
             Self::Game(d, _, _) => d,
         }
     }
@@ -46,10 +47,29 @@ impl<'a> CardViewContext<'a> {
         }
     }
 
+    /// Returns the [Face] of this card whose image should currently be
+    /// displayed.
+    pub fn image_face(&self) -> Face {
+        match self {
+            Self::Default(_, _, _) => Face::Primary,
+            Self::Game(_, _, card) => match card.facing {
+                CardFacing::FaceUp(Face::FaceB) => Face::FaceB,
+                _ => Face::Primary,
+            },
+        }
+    }
+
     pub fn card_id(&self) -> CardId {
         match self {
-            Self::Default(_, id) => *id,
+            Self::Default(_, _, id) => *id,
             Self::Game(_, _, card) => card.id,
+        }
+    }
+
+    pub fn printed_card_id(&self) -> PrintedCardId {
+        match self {
+            Self::Default(_, id, _) => *id,
+            Self::Game(_, _, card) => card.printed_card_id,
         }
     }
 
