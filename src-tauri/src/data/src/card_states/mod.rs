@@ -13,6 +13,7 @@
 // limitations under the License.
 
 pub mod card_kind;
+pub mod card_reference;
 pub mod card_state;
 pub mod counters;
 pub mod custom_card_state;

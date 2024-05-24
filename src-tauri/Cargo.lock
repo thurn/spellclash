@@ -963,6 +963,7 @@ dependencies = [
  "color-eyre",
  "dashmap",
  "derive_more",
+ "dyn-clone",
  "enum-iterator",
  "enum-kinds",
  "enum-map",
@@ -3366,6 +3367,7 @@ name = "oracle"
 version = "0.0.0"
 dependencies = [
  "color-eyre",
+ "dashmap",
  "data",
  "database",
  "enumset",

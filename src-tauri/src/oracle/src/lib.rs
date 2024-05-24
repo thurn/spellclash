@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![allow(unused)]
+
 pub mod card_database;
+pub mod oracle_impl;
 
 mod all_printings;
 mod card_json;

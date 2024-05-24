@@ -29,7 +29,7 @@ use utils::{fail, outcome};
 /// This struct is used to fetch data from & mutate the database. It operates as
 /// a smart pointer, so calling .clone() is inexpensive and this is the expected
 /// way to pass the connection between callers.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct SqliteDatabase {
     connection: Arc<Mutex<Connection>>,
 }

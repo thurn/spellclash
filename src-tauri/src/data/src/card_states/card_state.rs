@@ -29,6 +29,7 @@ use crate::core::primitives::{
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::{GameState, TurnData};
 use crate::printed_cards::printed_card::{Face, PrintedCard, PrintedCardFace};
+use crate::printed_cards::printed_card_id::PrintedCardId;
 
 /// Represents the state of a card or card-like object.
 ///
@@ -54,9 +55,12 @@ pub struct CardState {
     /// Do not mutate this field directly, use the `move_card` module instead.
     pub entity_id: EntityId,
 
-    /// Name of the printed card for this card, used to populate the result of
-    /// the [Self::printed] method after deserialization.
+    /// Identifier for the name of this card.
     pub card_name: CardName,
+
+    /// Identifier for the printed card for this card, used to populate the
+    /// result of the [Self::printed] method after deserialization.
+    pub printed_card_id: PrintedCardId,
 
     /// Describes which kind of card-like object this is.
     ///

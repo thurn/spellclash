@@ -12,24 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashMap;
+use std::fmt::Debug;
 
-use enumset::EnumSet;
-use serde::{Deserialize, Serialize};
-use serde_with::serde_as;
+use dyn_clone::DynClone;
 
-use crate::card_definitions::card_name::CardName;
-use crate::core::primitives::Color;
+use crate::card_states::card_reference::CardReference;
 use crate::printed_cards::printed_card_id::PrintedCardId;
 
-/// Data for a deck
-#[serde_as]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Deck {
-    /// Which colors are associated with this deck?
-    pub colors: EnumSet<Color>,
-
-    /// Quantities of cards in this deck
-    #[serde_as(as = "Vec<(_, _)>")]
-    pub cards: HashMap<PrintedCardId, u64>,
+/// Trait representing access to the Oracle card database.
+pub trait Oracle: Debug + DynClone {
+    /// Looks up card information based on its [PrintedCardId]
+    fn card(&self, id: PrintedCardId) -> CardReference;
 }
+
+dyn_clone::clone_trait_object!(Oracle);

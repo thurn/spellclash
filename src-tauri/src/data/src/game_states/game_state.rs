@@ -36,6 +36,7 @@ use crate::game_states::animation_tracker::{
 use crate::game_states::combat_state::CombatState;
 use crate::game_states::game_step::GamePhaseStep;
 use crate::game_states::history_data::{GameHistory, HistoryCounters, HistoryEvent};
+use crate::game_states::oracle::Oracle;
 use crate::game_states::state_based_event::StateBasedEvent;
 use crate::game_states::undo_tracker::UndoTracker;
 use crate::player_states::player_state::{PlayerQueries, PlayerState, Players};
@@ -127,9 +128,21 @@ pub struct GameState {
     /// actions were checked which may trigger game mutations during the next
     /// state-based action check.
     pub state_based_events: Option<Vec<StateBasedEvent>>,
+
+    /// Reference to the Oracle card database to use with this game.
+    ///
+    /// This value is populated immediately after deserialization and should
+    /// almost always be safe to unwrap. Instead of accessing this field, use
+    /// the [Self::oracle] method.
+    #[serde(skip)]
+    pub oracle_reference: Option<Box<dyn Oracle>>,
 }
 
 impl GameState {
+    pub fn oracle(&self) -> &dyn Oracle {
+        self.oracle_reference.as_ref().expect("Oracle reference not populated").as_ref()
+    }
+
     /// Changes the controller for a card.
     ///
     /// Returns an error if this card was not found on the battlefield.

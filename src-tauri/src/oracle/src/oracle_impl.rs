@@ -12,24 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashMap;
+use data::card_states::card_reference::CardReference;
+use data::game_states::oracle::Oracle;
+use data::printed_cards::printed_card_id::PrintedCardId;
+use database::sqlite_database::SqliteDatabase;
 
-use enumset::EnumSet;
-use serde::{Deserialize, Serialize};
-use serde_with::serde_as;
+#[derive(Debug, Clone)]
+pub struct OracleImpl {
+    database: SqliteDatabase,
+}
 
-use crate::card_definitions::card_name::CardName;
-use crate::core::primitives::Color;
-use crate::printed_cards::printed_card_id::PrintedCardId;
+impl OracleImpl {
+    pub fn new(database: SqliteDatabase) -> Self {
+        Self { database }
+    }
+}
 
-/// Data for a deck
-#[serde_as]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Deck {
-    /// Which colors are associated with this deck?
-    pub colors: EnumSet<Color>,
-
-    /// Quantities of cards in this deck
-    #[serde_as(as = "Vec<(_, _)>")]
-    pub cards: HashMap<PrintedCardId, u64>,
+impl Oracle for OracleImpl {
+    fn card(&self, id: PrintedCardId) -> CardReference {
+        todo!()
+    }
 }

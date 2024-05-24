@@ -25,6 +25,7 @@ use utils::{fail, outcome};
 
 use crate::card_definitions::card_name::CardName;
 use crate::card_states::card_kind::CardKind;
+use crate::card_states::card_reference::CardReference;
 use crate::card_states::card_state::{CardFacing, CardState, TappedState};
 use crate::card_states::counters::Counters;
 use crate::card_states::custom_card_state::CustomCardStateList;
@@ -37,6 +38,7 @@ use crate::core::primitives::{
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::GameState;
 use crate::game_states::game_state::TurnData;
+use crate::printed_cards::printed_card_id::PrintedCardId;
 
 pub trait ZoneQueries {
     /// Looks up the state for a card.
@@ -244,7 +246,7 @@ impl Zones {
     /// player. The card is assigned a [CardId] and [EntityId] on creation.
     pub fn create_card_in_library(
         &mut self,
-        name: CardName,
+        reference: CardReference,
         kind: CardKind,
         owner: PlayerName,
         current_turn: TurnData,
@@ -252,7 +254,8 @@ impl Zones {
         let id = self.all_cards.insert(CardState {
             id: CardId::default(),
             entity_id: EntityId::Card(CardId::default(), ObjectId(0)),
-            card_name: name,
+            card_name: reference.name,
+            printed_card_id: reference.identifier,
             kind,
             owner,
             controller: owner,
@@ -268,7 +271,7 @@ impl Zones {
             custom_state: CustomCardStateList::default(),
             entered_current_zone: current_turn,
             last_changed_control: current_turn,
-            printed_card_reference: None,
+            printed_card_reference: Some(reference.printed_card_reference),
         });
 
         self.add_to_zone(owner, id, Zone::Library);

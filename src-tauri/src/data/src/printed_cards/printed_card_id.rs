@@ -22,8 +22,8 @@ use crate::card_definitions::card_name::CardName;
 /// This is a wrapper around the MJSON ID for the card and uniquely identifies
 /// printings in the MTJSON database.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub struct CardPrintingId(pub Uuid);
+pub struct PrintedCardId(pub Uuid);
 
-pub const GRIZZLY_BEARS: CardPrintingId =
-    CardPrintingId(uuid!("4b35d338-f8cd-5d65-86f8-49cc76756592"));
-pub const FOREST: CardPrintingId = CardPrintingId(uuid!("2f8a3f3d-3b11-5f26-b766-0b0bbda0a5bb"));
+pub const GRIZZLY_BEARS: PrintedCardId =
+    PrintedCardId(uuid!("4b35d338-f8cd-5d65-86f8-49cc76756592"));
+pub const FOREST: PrintedCardId = PrintedCardId(uuid!("2f8a3f3d-3b11-5f26-b766-0b0bbda0a5bb"));

@@ -24,14 +24,16 @@ use data::decks::deck::Deck;
 use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
 use data::delegates::game_delegates::GameDelegates;
-use data::game_states::animation_tracker::AnimationTracker;
+use data::game_states::animation_tracker::{AnimationState, AnimationTracker};
 use data::game_states::game_state::{
     DebugConfiguration, GameConfiguration, GameState, GameStatus, TurnData,
 };
 use data::game_states::game_step::GamePhaseStep;
 use data::game_states::history_data::GameHistory;
+use data::game_states::oracle::Oracle;
 use data::game_states::undo_tracker::UndoTracker;
 use data::player_states::player_state::Players;
+use data::printed_cards::printed_card_id;
 use data::prompts::prompt_manager::PromptManager;
 use data::state_machines::state_machine_data::StateMachines;
 use data::users::user_state::UserActivity;
@@ -41,6 +43,7 @@ use display::commands::scene_identifier::SceneIdentifier;
 use display::rendering::render;
 use enumset::EnumSet;
 use maplit::hashmap;
+use oracle::oracle_impl::OracleImpl;
 use rand_xoshiro::rand_core::SeedableRng;
 use rand_xoshiro::Xoshiro256StarStar;
 use rules::mutations::library;
@@ -68,9 +71,10 @@ pub fn create(
     } else {
         GameId(Uuid::new_v4())
     };
-
+    let oracle = Box::new(OracleImpl::new(database.clone()));
     info!(?game_id, "Creating new game");
     let mut game = create_game(
+        oracle,
         game_id,
         user.id,
         user_deck,
@@ -123,6 +127,7 @@ pub fn create(
 }
 
 fn create_game(
+    oracle: Box<dyn Oracle>,
     game_id: GameId,
     user_id: UserId,
     user_deck: Deck,
@@ -139,8 +144,8 @@ fn create_game(
 
     let mut zones = Zones::default();
     let turn = TurnData { active_player: PlayerName::One, turn_number: 0 };
-    create_cards_in_deck(&mut zones, p1_deck, PlayerName::One, turn);
-    create_cards_in_deck(&mut zones, p2_deck, PlayerName::Two, turn);
+    create_cards_in_deck(oracle.as_ref(), &mut zones, p1_deck, PlayerName::One, turn);
+    create_cards_in_deck(oracle.as_ref(), &mut zones, p2_deck, PlayerName::Two, turn);
 
     GameState {
         id: game_id,
@@ -155,19 +160,26 @@ fn create_game(
         zones,
         prompts: PromptManager::default(),
         combat: None,
-        animations: AnimationTracker::default(),
+        animations: AnimationTracker { state: AnimationState::Track, steps: vec![] },
         history: GameHistory::default(),
         rng: Xoshiro256StarStar::seed_from_u64(3141592653589793),
         undo_tracker: UndoTracker { enabled: true, undo: vec![] },
         delegates: GameDelegates::default(),
         state_based_events: Some(vec![]),
+        oracle_reference: Some(oracle),
     }
 }
 
-fn create_cards_in_deck(zones: &mut Zones, deck: Deck, owner: PlayerName, turn: TurnData) {
-    for (&name, &quantity) in &deck.cards {
+fn create_cards_in_deck(
+    oracle: &dyn Oracle,
+    zones: &mut Zones,
+    deck: Deck,
+    owner: PlayerName,
+    turn: TurnData,
+) {
+    for (&id, &quantity) in &deck.cards {
         for _ in 0..quantity {
-            zones.create_card_in_library(name, CardKind::Normal, owner, turn);
+            zones.create_card_in_library(oracle.card(id), CardKind::Normal, owner, turn);
         }
     }
 }
@@ -177,8 +189,8 @@ fn find_deck(name: DeckName) -> Value<Deck> {
         deck_name::ALL_GRIZZLY_BEARS => Deck {
             colors: EnumSet::only(Color::Green),
             cards: hashmap! {
-                card_name::GRIZZLY_BEARS => 35,
-                card_name::FOREST => 25
+                printed_card_id::GRIZZLY_BEARS => 35,
+                printed_card_id::FOREST => 25
             },
         },
         _ => {
