@@ -18,25 +18,25 @@ use data::core::primitives::{GameId, UserId};
 use data::game_states::animation_tracker::{AnimationState, AnimationTracker};
 use data::game_states::game_state::GameState;
 use data::users::user_state::UserState;
-use database::database::Database;
+use database::sqlite_database::SqliteDatabase;
 use oracle::card_database;
 use utils::outcome::{Outcome, Value};
 use utils::with_error::WithError;
 
 /// Looks up a user by ID in the database.
-pub async fn fetch_user(database: Arc<dyn Database>, user_id: UserId) -> Value<UserState> {
+pub async fn fetch_user(database: Arc<SqliteDatabase>, user_id: UserId) -> Value<UserState> {
     database.fetch_user(user_id).await?.with_error(|| format!("User not found {user_id:?}"))
 }
 
 /// Looks up a game by ID in the database.
-pub async fn fetch_game(database: Arc<dyn Database>, game_id: GameId) -> Value<GameState> {
+pub async fn fetch_game(database: Arc<SqliteDatabase>, game_id: GameId) -> Value<GameState> {
     let mut game =
         database.fetch_game(game_id).await?.with_error(|| format!("Game not found {game_id:?}"))?;
     initialize_game(database, &mut game)?;
     Ok(game)
 }
 
-pub fn initialize_game(database: Arc<dyn Database>, game: &mut GameState) -> Outcome {
+pub fn initialize_game(database: Arc<SqliteDatabase>, game: &mut GameState) -> Outcome {
     for previous in game.undo_tracker.undo.iter_mut() {
         initialize_game(database.clone(), previous.as_mut())?;
     }

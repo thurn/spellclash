@@ -20,7 +20,7 @@ use data::core::primitives::{PlayerName, UserId};
 use data::decks::deck_name;
 use data::game_states::game_state::{DebugActAsPlayer, DebugConfiguration};
 use data::users::user_state::UserState;
-use database::database::Database;
+use database::sqlite_database::SqliteDatabase;
 use display::commands::command::Command;
 use display::commands::scene_identifier::SceneIdentifier;
 use display::core::game_view::GameButtonView;
@@ -32,7 +32,7 @@ use uuid::uuid;
 use crate::server_data::{ClientData, GameResponse};
 
 /// Connect to the main menu scene
-pub async fn connect(_: Arc<dyn Database>, user: &UserState) -> Value<GameResponse> {
+pub async fn connect(_: Arc<SqliteDatabase>, user: &UserState) -> Value<GameResponse> {
     info!(?user.id, "Connected");
     let client_data = ClientData::new(user.id, SceneIdentifier::MainMenu);
     Ok(GameResponse::new(client_data).command(Command::UpdateMainMenuView(main_menu_view())))

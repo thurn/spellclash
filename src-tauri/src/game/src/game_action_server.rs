@@ -22,7 +22,7 @@ use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
 use data::player_states::player_state::PlayerQueries;
 use data::users::user_state::UserState;
-use database::database::Database;
+use database::sqlite_database::SqliteDatabase;
 use display::commands::display_preferences::DisplayPreferences;
 use display::commands::scene_identifier::SceneIdentifier;
 use display::rendering::render;
@@ -42,7 +42,7 @@ use crate::server_data::{ClientData, GameResponse};
 /// its current visual state.
 #[instrument(level = "debug", skip(database))]
 pub async fn connect(
-    database: Arc<dyn Database>,
+    database: Arc<SqliteDatabase>,
     user: &UserState,
     game_id: GameId,
 ) -> Value<GameResponse> {
@@ -62,7 +62,7 @@ pub async fn connect(
 
 #[instrument(level = "debug", skip(database))]
 pub async fn handle_game_action(
-    database: Arc<dyn Database>,
+    database: Arc<SqliteDatabase>,
     data: ClientData,
     action: GameAction,
 ) -> Value<GameResponse> {
@@ -79,7 +79,7 @@ pub async fn handle_game_action(
 }
 
 pub async fn handle_game_action_internal(
-    database: Arc<dyn Database>,
+    database: Arc<SqliteDatabase>,
     data: &ClientData,
     action: GameAction,
     game: &mut GameState,

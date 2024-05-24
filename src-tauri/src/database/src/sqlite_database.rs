@@ -15,7 +15,6 @@
 use std::path::PathBuf;
 use std::sync::{Mutex, MutexGuard};
 
-use async_trait::async_trait;
 use data::core::primitives::{GameId, UserId};
 use data::game_states::game_state::GameState;
 use data::users::user_state::UserState;
@@ -24,8 +23,6 @@ use serde_json::{de, ser};
 use utils::outcome::{Outcome, Value};
 use utils::with_error::WithError;
 use utils::{fail, outcome};
-
-use crate::database::Database;
 
 pub struct SqliteDatabase {
     connection: Mutex<Connection>,
@@ -73,14 +70,7 @@ impl SqliteDatabase {
         Ok(Self { connection: Mutex::new(connection) })
     }
 
-    fn db(&self) -> MutexGuard<Connection> {
-        self.connection.lock().expect("Error locking connection")
-    }
-}
-
-#[async_trait]
-impl Database for SqliteDatabase {
-    async fn fetch_game(&self, id: GameId) -> Value<Option<GameState>> {
+    pub async fn fetch_game(&self, id: GameId) -> Value<Option<GameState>> {
         let data = self
             .db()
             .query_row("SELECT data FROM games WHERE id = ?1", [&id.0], |row| {
@@ -97,7 +87,7 @@ impl Database for SqliteDatabase {
         .transpose()
     }
 
-    async fn write_game(&self, game: &GameState) -> Outcome {
+    pub async fn write_game(&self, game: &GameState) -> Outcome {
         let data =
             ser::to_vec(game).with_error(|| format!("Error serializing game {:?}", game.id))?;
         self.db()
@@ -111,7 +101,7 @@ impl Database for SqliteDatabase {
         outcome::OK
     }
 
-    async fn fetch_user(&self, id: UserId) -> Value<Option<UserState>> {
+    pub async fn fetch_user(&self, id: UserId) -> Value<Option<UserState>> {
         let data = self
             .db()
             .query_row("SELECT data FROM users WHERE id = ?1", [&id.0], |row| {
@@ -128,7 +118,7 @@ impl Database for SqliteDatabase {
         .transpose()
     }
 
-    async fn write_user(&self, user: &UserState) -> Outcome {
+    pub async fn write_user(&self, user: &UserState) -> Outcome {
         let data =
             ser::to_vec(user).with_error(|| format!("Error serializing user {:?}", user.id))?;
         self.db()
@@ -140,5 +130,9 @@ impl Database for SqliteDatabase {
             )
             .with_error(|| format!("Error writing user to sqlite {:?}", user.id))?;
         outcome::OK
+    }
+
+    fn db(&self) -> MutexGuard<Connection> {
+        self.connection.lock().expect("Error locking connection")
     }
 }

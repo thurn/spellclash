@@ -16,7 +16,7 @@ use std::sync::Arc;
 
 use data::actions::game_action::GameAction;
 use data::core::panel_address::PanelAddress;
-use database::database::Database;
+use database::sqlite_database::SqliteDatabase;
 use display::commands::scene_identifier::SceneIdentifier;
 use display::panels::panel;
 use tracing::instrument;
@@ -28,7 +28,7 @@ use crate::server_data::{ClientData, GameResponse};
 
 #[instrument(level = "debug", skip(database))]
 pub async fn handle_open_panel(
-    database: Arc<dyn Database>,
+    database: Arc<SqliteDatabase>,
     mut data: ClientData,
     panel: PanelAddress,
 ) -> Value<GameResponse> {

@@ -35,7 +35,7 @@ use data::player_states::player_state::Players;
 use data::prompts::prompt_manager::PromptManager;
 use data::state_machines::state_machine_data::StateMachines;
 use data::users::user_state::UserActivity;
-use database::database::Database;
+use database::sqlite_database::SqliteDatabase;
 use display::commands::display_preferences::DisplayPreferences;
 use display::commands::scene_identifier::SceneIdentifier;
 use display::rendering::render;
@@ -54,7 +54,7 @@ use crate::server_data::{ClientData, GameResponse};
 use crate::{game_action_server, requests};
 
 pub async fn create(
-    database: Arc<dyn Database>,
+    database: Arc<SqliteDatabase>,
     data: ClientData,
     action: NewGameAction,
 ) -> Value<GameResponse> {

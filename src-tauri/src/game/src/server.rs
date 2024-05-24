@@ -17,7 +17,7 @@ use std::sync::Arc;
 use data::actions::user_action::UserAction;
 use data::core::primitives::UserId;
 use data::users::user_state::{UserActivity, UserState};
-use database::database::Database;
+use database::sqlite_database::SqliteDatabase;
 use tracing::{debug_span, info, Instrument};
 use utils::outcome::Value;
 
@@ -30,7 +30,7 @@ use crate::{
 ///
 /// This returns commands to load & render the current game state. It's expected
 /// that this will be invoked on application start and on scene change.
-pub async fn connect(database: Arc<dyn Database>, user_id: UserId) -> Value<GameResponse> {
+pub async fn connect(database: Arc<SqliteDatabase>, user_id: UserId) -> Value<GameResponse> {
     let user = fetch_or_create_user(database.clone(), user_id).await?;
     let span = debug_span!("connect", ?user_id);
     let result = match user.activity {
@@ -48,7 +48,7 @@ pub async fn connect(database: Arc<dyn Database>, user_id: UserId) -> Value<Game
 /// The most recently-returned [ClientData] (from a call to this function or
 /// [connect]) must be provided to this call.
 pub async fn handle_action(
-    database: Arc<dyn Database>,
+    database: Arc<SqliteDatabase>,
     data: ClientData,
     action: UserAction,
 ) -> Value<GameResponse> {
@@ -74,7 +74,7 @@ pub async fn handle_action(
     }
 }
 
-async fn fetch_or_create_user(database: Arc<dyn Database>, user_id: UserId) -> Value<UserState> {
+async fn fetch_or_create_user(database: Arc<SqliteDatabase>, user_id: UserId) -> Value<UserState> {
     Ok(if let Some(player) = database.fetch_user(user_id).await? {
         player
     } else {
