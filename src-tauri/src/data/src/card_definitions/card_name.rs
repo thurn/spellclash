@@ -27,7 +27,7 @@ use uuid::{uuid, Uuid};
 /// > each face instead.
 ///
 /// You can find this information on a Scryfall card page by clicking
-/// "Copy-pasteable JSON" and copying the oracle-id field.
+/// "Copy-pasteable JSON" and copying the oracle_id field.
 ///
 /// See <https://scryfall.com/docs/api/cards>
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]

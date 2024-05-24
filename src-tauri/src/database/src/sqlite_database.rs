@@ -17,7 +17,7 @@ use std::sync::{Arc, Mutex, MutexGuard};
 
 use data::core::primitives::{GameId, UserId};
 use data::game_states::game_state::GameState;
-use data::printed_cards::database_card::DatabaseCard;
+use data::printed_cards::database_card::DatabaseCardFace;
 use data::printed_cards::printed_card_id::PrintedCardId;
 use data::users::user_state::UserState;
 use rusqlite::{Connection, Error, OptionalExtension};
@@ -140,8 +140,21 @@ impl SqliteDatabase {
         outcome::OK
     }
 
-    pub fn fetch_printed_card(&self, _id: PrintedCardId) -> Value<DatabaseCard> {
-        todo!("")
+    /// Fetch the [DatabaseCardFace]s of a given [PrintedCardId].
+    pub fn fetch_printed_faces(&self, id: PrintedCardId) -> Value<Vec<DatabaseCardFace>> {
+        let connection = self.db()?;
+        let mut statement = connection
+            .prepare(
+                "SELECT *
+                 FROM oracle.cards NATURAL JOIN oracle.cardIdentifiers
+                 WHERE scryfallId = ?1",
+            )
+            .with_error(|| "Error preparing query")?;
+
+        // Note: database stores UUIDs as literal strings, not blobs.
+        let rows = statement.query([id.0.to_string()]).with_error(|| "Error querying database")?;
+        let cards = serde_rusqlite::from_rows::<DatabaseCardFace>(rows);
+        cards.collect::<Result<_, _>>().with_error(|| "Error fetching card")
     }
 
     fn db(&self) -> Value<MutexGuard<Connection>> {

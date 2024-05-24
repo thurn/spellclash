@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::printed_cards::database_card::DatabaseCard;
+use data::printed_cards::database_card::DatabaseCardFace;
 use data::printed_cards::printed_card::PrintedCard;
 use utils::outcome::Value;
 
-/// Turns a [DatabaseCard] into a [PrintedCard].
+/// Turns a [DatabaseCardFace] into a [PrintedCard].
 ///
 /// This translates the raw data coming from MTGJSON into a more useful rust
 /// data structure.
 ///
 /// Returns an error if the card doesn't follow the expected format.
-pub fn parse(database_card: DatabaseCard) -> Value<PrintedCard> {
-    todo!("")
+pub fn parse(faces: Vec<DatabaseCardFace>) -> Value<PrintedCard> {
+    todo!("Implement {:?}", faces[0].name)
 }

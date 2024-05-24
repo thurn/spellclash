@@ -44,8 +44,8 @@ impl Oracle for OracleImpl {
         if let Some(printed) = CARDS.get(&id) {
             Ok(CardReference { identifier: id, printed_card_reference: printed.value().clone() })
         } else {
-            let card = self.database.fetch_printed_card(id)?;
-            let parsed = card_parser::parse(card)?;
+            let faces = self.database.fetch_printed_faces(id)?;
+            let parsed = card_parser::parse(faces)?;
             let reference = Arc::new(parsed);
             CARDS.insert(id, reference.clone());
             Ok(CardReference { identifier: id, printed_card_reference: reference })

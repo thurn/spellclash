@@ -17,13 +17,15 @@ use uuid::{uuid, Uuid};
 
 use crate::card_definitions::card_name::CardName;
 
-/// Identifies a specific printing of a card or token.
+/// A unique ID for a specific printing of card.
 ///
-/// This is a wrapper around the MJSON ID for the card and uniquely identifies
-/// printings in the MTJSON database.
+/// This is the identifier for a card in the scryfall database. If you click
+/// "copy-pasteable JSON' on scryfall, this is the identifier in the "id" field.
+///
+/// See <https://scryfall.com/docs/api/cards>
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct PrintedCardId(pub Uuid);
 
 pub const GRIZZLY_BEARS: PrintedCardId =
-    PrintedCardId(uuid!("4b35d338-f8cd-5d65-86f8-49cc76756592"));
-pub const FOREST: PrintedCardId = PrintedCardId(uuid!("2f8a3f3d-3b11-5f26-b766-0b0bbda0a5bb"));
+    PrintedCardId(uuid!("409f9b88-f03e-40b6-9883-68c14c37c0de"));
+pub const FOREST: PrintedCardId = PrintedCardId(uuid!("baf8a774-65f3-431e-b084-328ff1000895"));

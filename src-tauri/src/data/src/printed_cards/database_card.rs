@@ -15,10 +15,10 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-/// Represents a card as it appears in the MTGJSON card database.
+/// Represents a card face as it appears in the MTGJSON card database.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct DatabaseCard {
+pub struct DatabaseCardFace {
     /// The name of the artist that illustrated the card art.
     pub artist: Option<String>,
 
