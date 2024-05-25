@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use serde::{Deserialize, Serialize};
+
 use crate::core::primitives::CardId;
 
 /// A prompt for a player to select one or more cards from a set of cards to
 /// apply some effect to.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CardSelectionPrompt {
     /// Cards which should be displayed in the browser.
     ///

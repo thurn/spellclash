@@ -14,15 +14,14 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::core::primitives::{CardId, Zone};
-use crate::game_states::game_state::GameState;
+use crate::core::primitives::CardId;
 
-/// A prompt shown to the user to allow them to play one or more cards from a
-/// set of cards.
+/// A prompt for a player to select an integer numeric value in a given range.
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct PlayCardsPrompt {
-    /// Zone of origin for the cards being played.
-    pub from_zone: Zone,
-    /// Identifies the choices of cards that the user can possibly play.
-    pub cards: Vec<CardId>,
+pub struct PickNumberPrompt {
+    /// Smallest allowed value
+    pub minimum: u32,
+
+    /// Largest allowed value
+    pub maximum: u32,
 }

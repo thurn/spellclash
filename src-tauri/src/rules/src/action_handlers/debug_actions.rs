@@ -14,20 +14,23 @@
 
 use data::actions::debug_action::DebugGameAction;
 use data::actions::game_action::GameAction;
+use data::core::numerics::LifeValue;
 use data::core::primitives::{PlayerName, Source};
 use data::game_states::game_state::GameState;
 use data::player_states::player_state::PlayerQueries;
+use data::prompts::pick_number_prompt::PickNumberPrompt;
+use data::text_strings::Text;
 use tracing::{debug, instrument};
 use utils::outcome::Outcome;
 use utils::{fail, outcome};
 
 use crate::mutations::players;
 
-#[instrument(err, level = "debug", skip(game))]
+#[instrument(level = "debug", skip(game))]
 pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction) -> Outcome {
     match action {
         DebugGameAction::Undo => {
-            debug!(?player, "Undoing last action");
+            debug!(?player, "(Debug) Undoing last action");
             let mut undo_list = game.undo_tracker.undo.clone();
             let Some(mut previous) = undo_list.pop() else {
                 fail!("No undo state available");
@@ -36,9 +39,14 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction
             previous.undo_tracker.undo = undo_list;
             *game = *previous;
         }
-        DebugGameAction::SetLifeTotal(player, life_total) => {
-            debug!(?player, ?life_total, "Debug setting life total");
-            players::set_life_total(game, Source::Game, player, life_total);
+        DebugGameAction::SetLifeTotal(target) => {
+            debug!(?target, "(Debug) Setting life total");
+            let amount =
+                game.prompts.pick_number(player, Text::SelectNumber, PickNumberPrompt {
+                    minimum: 0,
+                    maximum: 20,
+                })?;
+            players::set_life_total(game, Source::Game, player, amount as LifeValue);
         }
     }
     outcome::OK

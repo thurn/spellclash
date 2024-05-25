@@ -23,9 +23,12 @@ use data::game_states::combat_state::CombatState;
 use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
 use data::player_states::player_state::PlayerQueries;
+use data::prompts::prompt::{Prompt, PromptType};
 use rules::legality::legal_actions;
 
-use crate::core::game_view::{GameButtonView, GameView, GameViewState, PlayerView};
+use crate::core::game_view::{
+    GameButtonView, GameControlView, GameView, GameViewState, PlayerView, TextInputView,
+};
 use crate::core::response_builder::ResponseBuilder;
 use crate::rendering::card_sync;
 use crate::rendering::card_view_context::CardViewContext;
@@ -57,8 +60,8 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
         } else {
             GameViewState::None
         },
-        top_buttons: top_game_buttons(game, builder.act_as_player(game)),
-        bottom_buttons: bottom_game_buttons(game, builder.act_as_player(game)),
+        top_controls: top_game_controls(game, builder.act_as_player(game)),
+        bottom_controls: bottom_game_controls(game, builder.act_as_player(game)),
     });
 }
 
@@ -73,7 +76,7 @@ fn skip_sending_to_client(card: &CardState) -> bool {
     card.revealed_to.is_empty() && card.zone == Zone::Library
 }
 
-fn top_game_buttons(game: &GameState, _player: PlayerName) -> Vec<GameButtonView> {
+fn top_game_controls(game: &GameState, _player: PlayerName) -> Vec<GameControlView> {
     let mut result = vec![
         GameButtonView::new_default("Leave Game", UserAction::LeaveGameAction),
         GameButtonView::new_default(
@@ -84,10 +87,14 @@ fn top_game_buttons(game: &GameState, _player: PlayerName) -> Vec<GameButtonView
     if game.undo_tracker.enabled && !game.undo_tracker.undo.is_empty() {
         result.push(GameButtonView::new_default("Undo", DebugGameAction::Undo));
     }
-    result
+    result.into_iter().map(GameControlView::Button).collect()
 }
 
-fn bottom_game_buttons(game: &GameState, player: PlayerName) -> Vec<GameButtonView> {
+fn bottom_game_controls(game: &GameState, player: PlayerName) -> Vec<GameControlView> {
+    if let Some(current) = &game.prompts.current_prompt {
+        return prompt_view(current);
+    }
+
     let mut result = vec![];
     if legal_actions::can_take_action(game, player, GameAction::PassPriority) {
         if game.stack().is_empty() {
@@ -133,5 +140,17 @@ fn bottom_game_buttons(game: &GameState, player: PlayerName) -> Vec<GameButtonVi
             .push(GameButtonView::new_primary("Confirm Order", CombatAction::ConfirmBlockerOrder));
     }
 
-    result
+    result.into_iter().map(GameControlView::Button).collect()
+}
+
+fn prompt_view(prompt: &Prompt) -> Vec<GameControlView> {
+    match &prompt.prompt_type {
+        PromptType::EntityChoice(_) => {}
+        PromptType::SelectCards(_) => {}
+        PromptType::PlayCards(_) => {}
+        PromptType::PickNumber(pick_number) => {
+            return vec![GameControlView::TextInput(TextInputView {})];
+        }
+    }
+    vec![]
 }

@@ -63,6 +63,9 @@ pub fn handle_action(
             panel_server::handle_open_panel(database, data, panel_address)
         }
         UserAction::ClosePanel => panel_server::handle_close_panel(data),
+        UserAction::PanelTransition(transition) => {
+            panel_server::handle_panel_transition(database, data, transition)
+        }
     }
 }
 

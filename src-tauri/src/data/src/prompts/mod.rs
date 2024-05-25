@@ -14,6 +14,7 @@
 
 pub mod card_selection_prompt;
 pub mod choice_prompt;
+pub mod pick_number_prompt;
 pub mod play_cards_prompt;
 pub mod prompt;
 pub mod prompt_manager;

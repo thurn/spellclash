@@ -16,6 +16,7 @@ use serde::Deserialize;
 use slotmap::__impl::Serialize;
 
 use crate::actions::debug_action::DebugGameAction;
+use crate::actions::prompt_action::PromptAction;
 use crate::actions::user_action::UserAction;
 use crate::core::primitives::CardId;
 use crate::game_states::combat_state::{AttackTarget, AttackerId, BlockerId};
@@ -101,6 +102,9 @@ pub enum GameAction {
     /// Debugging action.
     DebugAction(DebugGameAction),
 
+    /// Action to respond to an active prompt
+    PromptAction(PromptAction),
+
     /// Pass priority on the current stack item or game step.
     ///
     /// > If all players pass in succession (that is, if all players pass
@@ -129,6 +133,10 @@ pub enum GameAction {
 impl GameAction {
     pub fn is_debug_action(&self) -> bool {
         matches!(self, GameAction::DebugAction(..))
+    }
+
+    pub fn is_prompt_action(&self) -> bool {
+        matches!(self, GameAction::PromptAction(..))
     }
 }
 

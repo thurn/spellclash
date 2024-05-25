@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use serde::{Deserialize, Serialize};
+
 use crate::text_strings::Text;
 
 /// A blocking choice for a player to pick one of a list of options before
 /// any other game action_handlers can occur.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ChoicePrompt<T> {
     /// If true, display a "continue" option to skip this prompt without taking
     /// an action.
@@ -26,7 +28,7 @@ pub struct ChoicePrompt<T> {
 }
 
 /// A single option a user can select in a [ChoicePrompt].
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Choice<T> {
     /// A label to display for the choice
     pub label: Text,
@@ -34,7 +36,7 @@ pub struct Choice<T> {
     /// The game entity associated with this choice.
     ///
     /// The UI will display a choice button attached to this object. If this
-    /// entity ID no longer exists when the prompt is shown, the choice will
+    /// entity ID does not exist when the prompt is shown, the choice will
     /// be omitted. If all choices are skipped, no prompt is shown at all.
     pub entity_id: T,
 }

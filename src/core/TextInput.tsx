@@ -12,17 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
+import { ReactNode } from 'react';
+import { Input } from '@nextui-org/react';
 
-use crate::core::primitives::{CardId, Zone};
-use crate::game_states::game_state::GameState;
-
-/// A prompt shown to the user to allow them to play one or more cards from a
-/// set of cards.
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct PlayCardsPrompt {
-    /// Zone of origin for the cards being played.
-    pub from_zone: Zone,
-    /// Identifies the choices of cards that the user can possibly play.
-    pub cards: Vec<CardId>,
+export function TextInput({ className }: { className?: string }): ReactNode {
+  return <Input className={className} />;
 }

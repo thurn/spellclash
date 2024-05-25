@@ -12,17 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
+import { ReactNode } from 'react';
+import { GameControlView } from '../generated_types';
+import { GameButton } from './GameButton';
+import { TextInput } from './TextInput';
 
-use crate::core::primitives::{CardId, Zone};
-use crate::game_states::game_state::GameState;
-
-/// A prompt shown to the user to allow them to play one or more cards from a
-/// set of cards.
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct PlayCardsPrompt {
-    /// Zone of origin for the cards being played.
-    pub from_zone: Zone,
-    /// Identifies the choices of cards that the user can possibly play.
-    pub cards: Vec<CardId>,
+export function GameControl({ control, className }: { control: GameControlView; className?: string }): ReactNode {
+  if ('button' in control) {
+    return <GameButton button={control.button} className={className} />;
+  } else if ('textInput' in control) {
+    return <TextInput className={className} />;
+  }
 }

@@ -97,8 +97,7 @@ pub struct GameState {
     /// game zone they are in.
     pub zones: Zones,
 
-    /// Handles sending prompts for user action_handlers to players in this game
-    #[serde(skip)]
+    /// Handles sending prompts for user actions to players in this game
     pub prompts: PromptManager,
 
     /// State of creatures participating in the currently active combat phase,

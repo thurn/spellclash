@@ -12,16 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use serde::{Deserialize, Serialize};
+
 use crate::core::primitives::{CardId, EntityId, PlayerName};
 use crate::prompts::card_selection_prompt::CardSelectionPrompt;
 use crate::prompts::choice_prompt::ChoicePrompt;
+use crate::prompts::pick_number_prompt::PickNumberPrompt;
 use crate::prompts::play_cards_prompt::PlayCardsPrompt;
 use crate::text_strings::Text;
 
 /// Data for showing a prompt to a player.
 ///
 /// Prompts allow players to make a choice within the game interface.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Prompt {
     /// Player who is being prompted
     pub player: PlayerName,
@@ -32,7 +35,7 @@ pub struct Prompt {
 }
 
 /// Possible types of prompts
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum PromptType {
     /// A blocking choice for a player to pick one of a list of entities before
     /// any other game action_handlers can occur.
@@ -44,11 +47,15 @@ pub enum PromptType {
 
     /// A prompt for a player to play one or more cards from a set of cards.
     PlayCards(PlayCardsPrompt),
+
+    /// Pick an integer value
+    PickNumber(PickNumberPrompt),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum PromptResponse {
     EntityChoice(EntityId),
     SelectCards(Vec<CardId>),
     PlayCards(Vec<CardId>),
+    PickNumber(u32),
 }

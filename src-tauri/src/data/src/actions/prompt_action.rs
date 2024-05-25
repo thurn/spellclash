@@ -14,15 +14,17 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::core::primitives::{CardId, Zone};
-use crate::game_states::game_state::GameState;
+use crate::actions::game_action::GameAction;
+use crate::actions::user_action::UserAction;
 
-/// A prompt shown to the user to allow them to play one or more cards from a
-/// set of cards.
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct PlayCardsPrompt {
-    /// Zone of origin for the cards being played.
-    pub from_zone: Zone,
-    /// Identifies the choices of cards that the user can possibly play.
-    pub cards: Vec<CardId>,
+/// Action to respond to a prompt within an ongoing game
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
+pub enum PromptAction {
+    PickNumber(u32),
+}
+
+impl From<PromptAction> for UserAction {
+    fn from(value: PromptAction) -> Self {
+        GameAction::PromptAction(value).into()
+    }
 }

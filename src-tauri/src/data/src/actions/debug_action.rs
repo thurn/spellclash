@@ -22,11 +22,17 @@ use crate::core::primitives::PlayerName;
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub enum DebugGameAction {
     Undo,
-    SetLifeTotal(PlayerName, LifeValue),
+    SetLifeTotal(PlayerName),
+}
+
+impl From<DebugGameAction> for GameAction {
+    fn from(value: DebugGameAction) -> Self {
+        GameAction::DebugAction(value)
+    }
 }
 
 impl From<DebugGameAction> for UserAction {
     fn from(value: DebugGameAction) -> Self {
-        UserAction::GameAction(GameAction::DebugAction(value))
+        UserAction::GameAction(value.into())
     }
 }

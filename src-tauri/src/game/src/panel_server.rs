@@ -15,16 +15,18 @@
 use std::sync::Arc;
 
 use data::actions::game_action::GameAction;
+use data::actions::user_action::PanelTransition;
 use data::core::panel_address::PanelAddress;
 use database::sqlite_database::SqliteDatabase;
 use display::commands::scene_identifier::SceneIdentifier;
+use display::panels::modal_panel::ModalPanel;
 use display::panels::panel;
 use tracing::instrument;
 use utils::outcome::Value;
 use utils::with_error::WithError;
 
-use crate::requests;
 use crate::server_data::{ClientData, GameResponse};
+use crate::{game_action_server, requests};
 
 #[instrument(level = "debug", skip(database))]
 pub fn handle_open_panel(
@@ -32,20 +34,49 @@ pub fn handle_open_panel(
     mut data: ClientData,
     panel: PanelAddress,
 ) -> Value<GameResponse> {
-    match panel {
+    data.modal_panel = Some(open_panel(database, &data, panel)?);
+    Ok(GameResponse::new(data))
+}
+
+#[instrument(level = "debug")]
+pub fn handle_close_panel(mut data: ClientData) -> Value<GameResponse> {
+    data.modal_panel = None;
+    Ok(GameResponse::new(data))
+}
+
+#[instrument(level = "debug")]
+pub fn handle_panel_transition(
+    database: SqliteDatabase,
+    mut data: ClientData,
+    transition: PanelTransition,
+) -> Value<GameResponse> {
+    data.modal_panel = None;
+    let mut result = if let Some(action) = transition.action {
+        game_action_server::handle_game_action(database.clone(), data, action)?
+    } else {
+        GameResponse::new(data)
+    };
+
+    if let Some(next_panel) = transition.open {
+        result.client_data.modal_panel =
+            Some(open_panel(database, &result.client_data, next_panel)?);
+    }
+
+    Ok(result)
+}
+
+fn open_panel(
+    database: SqliteDatabase,
+    data: &ClientData,
+    panel: PanelAddress,
+) -> Value<ModalPanel> {
+    Ok(match panel {
         PanelAddress::GamePanel(game_panel) => {
             let game_id = data.game_id().with_error(|| "Expected current game ID")?;
             let game = requests::fetch_game(database, game_id)?;
             let player_name = game.find_player_name(data.user_id)?;
-            let panel = panel::build_game_panel(&game, player_name, game_panel);
-            data.modal_panel = Some(panel);
-            Ok(GameResponse::new(data))
+            panel::build_game_panel(&game, player_name, game_panel)
         }
         PanelAddress::UserPanel(player_panel) => match player_panel {},
-    }
-}
-
-pub fn handle_close_panel(mut data: ClientData) -> Value<GameResponse> {
-    data.modal_panel = None;
-    Ok(GameResponse::new(data))
+    })
 }

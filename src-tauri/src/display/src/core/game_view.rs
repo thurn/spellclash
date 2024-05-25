@@ -40,10 +40,17 @@ pub struct GameView {
     pub state: GameViewState,
 
     /// Top user interaction options
-    pub top_buttons: Vec<GameButtonView>,
+    pub top_controls: Vec<GameControlView>,
 
     /// Bottom user interaction options
-    pub bottom_buttons: Vec<GameButtonView>,
+    pub bottom_controls: Vec<GameControlView>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub enum GameControlView {
+    Button(GameButtonView),
+    TextInput(TextInputView),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
@@ -63,6 +70,10 @@ impl GameButtonView {
         Self { label: label.into(), action: action.into(), kind: GameButtonKind::Default }
     }
 }
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct TextInputView {}
 
 /// Controls color for buttons
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]

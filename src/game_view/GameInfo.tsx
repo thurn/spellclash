@@ -14,12 +14,12 @@
 
 import { ReactNode } from 'react';
 import { PlayerInfo } from './PlayerInfo';
-import { GameButton } from '../core/GameButton';
 import { GameView } from '../generated_types';
+import { GameControl } from '../core/GameControl';
 
 export function GameInfo({ view }: { view: GameView }): ReactNode {
-  const topButtons = view.topButtons.map((button, i) => <GameButton button={button} key={i} className="m-2" />);
-  const bottomButtons = view.bottomButtons.map((button, i) => <GameButton button={button} key={i} className="m-2" />);
+  const topButtons = view.topControls.map((c, i) => <GameControl control={c} key={i} className="m-2" />);
+  const bottomButtons = view.bottomControls.map((c, i) => <GameControl control={c} key={i} className="m-2" />);
   return (
     <div className="flex flex-col grow justify-around text-center items-stretch">
       <div className="flex flex-col">{topButtons}</div>

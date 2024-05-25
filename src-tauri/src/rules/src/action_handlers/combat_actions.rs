@@ -32,7 +32,7 @@ use utils::{fail, outcome, verify};
 use crate::mutations::permanents;
 use crate::queries::{card_queries, combat_queries, player_queries};
 
-#[instrument(err, level = "debug", skip(game))]
+#[instrument(level = "debug", skip(game))]
 pub fn execute(game: &mut GameState, player: PlayerName, action: CombatAction) -> Outcome {
     match action {
         CombatAction::AddSelectedAttacker(card_id) => {
@@ -61,7 +61,7 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: CombatAction) -
 /// Sets a creature as a selected attacker.
 ///
 /// See [CombatAction::AddSelectedAttacker].
-#[instrument(err, level = "debug", skip(game))]
+#[instrument(level = "debug", skip(game))]
 fn add_selected_attacker(game: &mut GameState, source: Source, card_id: AttackerId) -> Outcome {
     let next = player_queries::next_player(game);
     // There is more than one possible attack target because a planeswalker or
@@ -84,7 +84,7 @@ fn add_selected_attacker(game: &mut GameState, source: Source, card_id: Attacker
 /// Sets an attack target for selected attackers.
 ///
 /// See [CombatAction::SetSelectedAttackersTarget].
-#[instrument(err, level = "debug", skip(game))]
+#[instrument(level = "debug", skip(game))]
 fn set_selected_attackers_target(
     game: &mut GameState,
     source: Source,
@@ -103,7 +103,7 @@ fn set_selected_attackers_target(
 /// Removes an attacker proposal.
 ///
 /// See [CombatAction::RemoveAttacker].
-#[instrument(err, level = "debug", skip(game))]
+#[instrument(level = "debug", skip(game))]
 fn remove_attacker(game: &mut GameState, source: Source, card_id: AttackerId) -> Outcome {
     let Some(CombatState::ProposingAttackers(attackers)) = &mut game.combat else {
         fail!("Not in the 'ProposingAttackers' state");
@@ -116,7 +116,7 @@ fn remove_attacker(game: &mut GameState, source: Source, card_id: AttackerId) ->
 /// Submits the attacker list.
 ///
 /// See [CombatAction::ConfirmAttackers].
-#[instrument(err, level = "debug", skip(game))]
+#[instrument(level = "debug", skip(game))]
 fn confirm_attackers(game: &mut GameState, source: Source) -> Outcome {
     let Some(CombatState::ProposingAttackers(attackers)) = game.combat.take() else {
         fail!("Not in the 'ProposingAttackers' state");
@@ -131,7 +131,7 @@ fn confirm_attackers(game: &mut GameState, source: Source) -> Outcome {
 /// Sets a creature as a selected blocker.
 ///
 /// See [CombatAction::AddSelectedBlocker].
-#[instrument(err, level = "debug", skip(game))]
+#[instrument(level = "debug", skip(game))]
 fn add_selected_blocker(game: &mut GameState, source: Source, card_id: BlockerId) -> Outcome {
     let Some(CombatState::ProposingBlockers(blockers)) = &mut game.combat else {
         fail!("Not in the 'ProposingBlockers' state");
@@ -148,7 +148,7 @@ fn add_selected_blocker(game: &mut GameState, source: Source, card_id: BlockerId
 /// Sets a block target for the selected blockers.
 ///
 /// See [CombatAction::SetSelectedBlockersTarget].
-#[instrument(err, level = "debug", skip(game))]
+#[instrument(level = "debug", skip(game))]
 fn set_selected_blockers_target(
     game: &mut GameState,
     source: Source,
@@ -167,7 +167,7 @@ fn set_selected_blockers_target(
 /// Removes a blocker proposal.
 ///
 /// See [CombatAction::RemoveBlocker].
-#[instrument(err, level = "debug", skip(game))]
+#[instrument(level = "debug", skip(game))]
 fn remove_blocker(game: &mut GameState, source: Source, card_id: BlockerId) -> Outcome {
     let Some(CombatState::ProposingBlockers(blockers)) = &mut game.combat else {
         fail!("Not in the 'ProposingBlockers' state");
@@ -180,7 +180,7 @@ fn remove_blocker(game: &mut GameState, source: Source, card_id: BlockerId) -> O
 /// Submits the blocker list.
 ///
 /// See [CombatAction::ConfirmBlockers].
-#[instrument(err, level = "debug", skip(game))]
+#[instrument(level = "debug", skip(game))]
 fn confirm_blockers(game: &mut GameState, source: Source) -> Outcome {
     let Some(CombatState::ProposingBlockers(blockers)) = game.combat.take() else {
         fail!("Not in the 'ProposingBlockers' state");
@@ -204,7 +204,7 @@ fn confirm_blockers(game: &mut GameState, source: Source) -> Outcome {
 /// Sets the order of a blocker for a creature.
 ///
 /// See [CombatAction::OrderBlocker].
-#[instrument(err, level = "debug", skip(game))]
+#[instrument(level = "debug", skip(game))]
 fn order_blocker(
     game: &mut GameState,
     source: Source,
@@ -227,7 +227,7 @@ fn order_blocker(
 /// Submits the blocker order.
 ///
 /// See [CombatAction::ConfirmBlockerOrder].
-#[instrument(err, level = "debug", skip(game))]
+#[instrument(level = "debug", skip(game))]
 fn confirm_blocker_order(game: &mut GameState, source: Source) -> Outcome {
     let Some(CombatState::OrderingBlockers(blockers)) = game.combat.take() else {
         fail!("Not in the 'OrderingBlockers' state");

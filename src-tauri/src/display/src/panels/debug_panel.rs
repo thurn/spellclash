@@ -13,7 +13,8 @@
 // limitations under the License.
 
 use data::actions::debug_action::DebugGameAction;
-use data::actions::user_action::UserAction;
+use data::actions::game_action::GameAction;
+use data::actions::user_action::{PanelTransition, UserAction};
 use data::core::primitives::PlayerName;
 use data::game_states::game_state::GameState;
 
@@ -25,10 +26,14 @@ pub fn render(_game: &GameState, _player: PlayerName) -> ModalPanel {
         title: Some("Debug".to_string()),
         on_close: UserAction::ClosePanel,
         data: PanelData::Debug(DebugPanel {
-            buttons: vec![GameButtonView::new_primary(
-                "P2 Life -> 2",
-                DebugGameAction::SetLifeTotal(PlayerName::Two, 2),
-            )],
+            buttons: vec![button("P2 Life", DebugGameAction::SetLifeTotal(PlayerName::Two))],
         }),
     }
+}
+
+fn button(label: impl Into<String>, action: impl Into<GameAction>) -> GameButtonView {
+    GameButtonView::new_primary(
+        label,
+        UserAction::PanelTransition(PanelTransition { action: Some(action.into()), open: None }),
+    )
 }

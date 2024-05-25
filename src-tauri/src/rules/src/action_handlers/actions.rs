@@ -20,9 +20,10 @@ use data::game_states::game_state::{GameState, GameStatus};
 use data::printed_cards::printed_card::Face;
 use tracing::{debug, info, instrument};
 use utils::outcome::{Outcome, StopCondition};
+use utils::with_error::WithError;
 use utils::{fail, outcome, verify};
 
-use crate::action_handlers::{combat_actions, debug_actions};
+use crate::action_handlers::{combat_actions, debug_actions, prompt_actions};
 use crate::legality::legal_actions;
 use crate::mutations::{permanents, priority, state_based_actions};
 use crate::play_cards::{pick_face_to_play, play_card};
@@ -36,11 +37,11 @@ pub enum PlayerType {
     Agent,
 }
 
-#[instrument(err, level = "debug", skip(game))]
+#[instrument(level = "debug", skip(game))]
 pub fn execute(
     game: &mut GameState,
     player: PlayerName,
-    action: GameAction,
+    mut action: GameAction,
     automatic: bool,
 ) -> Outcome {
     verify!(
@@ -60,12 +61,29 @@ pub fn execute(
         game.undo_tracker.undo.push(Box::new(clone));
     }
 
-    match action {
-        GameAction::DebugAction(a) => debug_actions::execute(game, player, a),
-        GameAction::PassPriority => handle_pass_priority(game, player),
-        GameAction::ProposePlayingCard(id) => handle_play_card(game, Source::Game, player, id),
-        GameAction::CombatAction(action) => combat_actions::execute(game, player, action),
-    }?;
+    if !action.is_prompt_action() {
+        game.prompts.reset_with_action(action);
+    }
+
+    loop {
+        match action {
+            GameAction::DebugAction(a) => debug_actions::execute(game, player, a),
+            GameAction::PassPriority => handle_pass_priority(game, player),
+            GameAction::ProposePlayingCard(id) => handle_play_card(game, Source::Game, player, id),
+            GameAction::CombatAction(a) => combat_actions::execute(game, player, a),
+            GameAction::PromptAction(a) => {
+                // Store the prompt selection and then re-simulate the previous action using
+                // this prompt response if needed.
+                if let Some(run_action) = prompt_actions::execute(game, player, a)? {
+                    action = run_action;
+                    continue;
+                } else {
+                    outcome::OK
+                }
+            }
+        }?;
+        break;
+    }
 
     if legal_actions::can_any_player_pass_priority(game) {
         // If any player has priority as a result of this game action, check state-based
@@ -76,12 +94,12 @@ pub fn execute(
     outcome::OK
 }
 
-#[instrument(err, level = "debug", skip(game))]
+#[instrument(level = "debug", skip(game))]
 fn handle_pass_priority(game: &mut GameState, player: PlayerName) -> Outcome {
     priority::pass(game, player)
 }
 
-#[instrument(err, level = "debug", skip(game))]
+#[instrument(level = "debug", skip(game))]
 fn handle_play_card(
     game: &mut GameState,
     source: Source,

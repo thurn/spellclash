@@ -202,6 +202,7 @@ export type GameButtonKind =
    */
   | 'default';
 export type GameButtonView = { label: string; action: unknown; kind: GameButtonKind };
+export type GameControlView = { button: GameButtonView } | { textInput: TextInputView };
 /**
  * Unique identifier for a game
  */
@@ -247,11 +248,11 @@ export type GameView = {
   /**
    * Top user interaction options
    */
-  topButtons: GameButtonView[];
+  topControls: GameControlView[];
   /**
    * Bottom user interaction options
    */
-  bottomButtons: GameButtonView[];
+  bottomControls: GameControlView[];
 };
 export type GameViewState =
   | 'none'
@@ -451,6 +452,7 @@ export type SceneIdentifier = 'loading' | 'mainMenu' | { game: GameId };
  * so might as well make this an enum.
  */
 export type TappedState = 'untapped' | 'tapped';
+export type TextInputView = Record<string, never>;
 export type UpdateGameViewCommand = {
   /**
    * New visual game state

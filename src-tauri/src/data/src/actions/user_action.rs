@@ -27,6 +27,7 @@ pub enum UserAction {
     QuitGameAction,
     OpenPanel(PanelAddress),
     ClosePanel,
+    PanelTransition(PanelTransition),
 }
 
 #[derive(Serialize, Deserialize, Type)]
@@ -38,4 +39,17 @@ impl Type for UserAction {
     fn inline(type_map: &mut TypeMap, generics: Generics) -> DataType {
         DataType::Unknown
     }
+}
+
+/// Transition between panel states.
+///
+/// Closes the currently displayed game panel, if any, then optionally performs
+/// a [GameAction] and/or opens a new panel.
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
+pub struct PanelTransition {
+    /// Optionally, a [GameAction] to perform when performing this transition.
+    pub action: Option<GameAction>,
+
+    /// Optionally, a new panel to open when performing this transition.
+    pub open: Option<PanelAddress>,
 }

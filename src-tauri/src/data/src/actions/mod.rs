@@ -15,4 +15,5 @@
 pub mod debug_action;
 pub mod game_action;
 pub mod new_game_action;
+pub mod prompt_action;
 pub mod user_action;
