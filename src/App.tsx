@@ -27,7 +27,7 @@ function defaultGameResponse(): GameResponse {
       userId: '',
       scene: 'loading',
       modalPanel: null,
-      displayPreferences: {},
+      displayState: {},
     },
   };
 }
@@ -41,7 +41,8 @@ export interface GlobalContextType {
   readonly setState: Dispatch<SetStateAction<GameResponse>>;
 }
 
-export const GlobalContext: React.Context<GlobalContextType> = createContext(defaultGlobalContext());
+export const GlobalContext: React.Context<GlobalContextType> =
+  createContext(defaultGlobalContext());
 
 export function App(): ReactNode {
   const [globalState, setGlobalState] = useState(defaultGameResponse());

@@ -12,25 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ReactNode } from 'react';
-import { Input } from '@nextui-org/react';
-import { useContext } from 'react';
-import { GlobalContext } from '../App';
-import { updateField } from '../server';
-import { TextInputView } from '../generated_types';
+use std::collections::HashMap;
 
-export function TextInput({
-  input,
-  className,
-}: {
-  input: TextInputView;
-  className?: string;
-}): ReactNode {
-  const { response, setState } = useContext(GlobalContext);
-  return (
-    <Input
-      className={className}
-      onValueChange={(val) => updateField(setState, response, input.key, { string: val })}
-    />
-  );
+use data::actions::user_action::UserAction;
+use serde::{Deserialize, Serialize};
+use specta::{DataType, Generics, Type, TypeMap};
+
+use crate::commands::field_state::{FieldKey, FieldValue};
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DisplayState {
+    /// States of displayed input fields.
+    pub fields: HashMap<FieldKey, FieldValue>,
+}
+
+impl Type for DisplayState {
+    fn inline(type_map: &mut TypeMap, generics: Generics) -> DataType {
+        DataType::Unknown
+    }
 }

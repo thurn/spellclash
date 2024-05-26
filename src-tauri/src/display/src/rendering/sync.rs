@@ -14,6 +14,7 @@
 
 use data::actions::debug_action::DebugGameAction;
 use data::actions::game_action::{CombatAction, GameAction};
+use data::actions::prompt_action::PromptAction;
 use data::actions::user_action::UserAction;
 use data::card_states::card_state::CardState;
 use data::card_states::zones::ZoneQueries;
@@ -24,8 +25,11 @@ use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
 use data::player_states::player_state::PlayerQueries;
 use data::prompts::prompt::{Prompt, PromptType};
+use log::info;
 use rules::legality::legal_actions;
 
+use crate::commands::display_state::DisplayState;
+use crate::commands::field_state::FieldKey;
 use crate::core::game_view::{
     GameButtonView, GameControlView, GameView, GameViewState, PlayerView, TextInputView,
 };
@@ -61,7 +65,11 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
             GameViewState::None
         },
         top_controls: top_game_controls(game, builder.act_as_player(game)),
-        bottom_controls: bottom_game_controls(game, builder.act_as_player(game)),
+        bottom_controls: bottom_game_controls(
+            game,
+            &builder.response_state.display_state,
+            builder.act_as_player(game),
+        ),
     });
 }
 
@@ -90,9 +98,13 @@ fn top_game_controls(game: &GameState, _player: PlayerName) -> Vec<GameControlVi
     result.into_iter().map(GameControlView::Button).collect()
 }
 
-fn bottom_game_controls(game: &GameState, player: PlayerName) -> Vec<GameControlView> {
+fn bottom_game_controls(
+    game: &GameState,
+    state: &DisplayState,
+    player: PlayerName,
+) -> Vec<GameControlView> {
     if let Some(current) = &game.prompts.current_prompt {
-        return prompt_view(current);
+        return prompt_view(state, current);
     }
 
     let mut result = vec![];
@@ -143,13 +155,28 @@ fn bottom_game_controls(game: &GameState, player: PlayerName) -> Vec<GameControl
     result.into_iter().map(GameControlView::Button).collect()
 }
 
-fn prompt_view(prompt: &Prompt) -> Vec<GameControlView> {
+fn prompt_view(state: &DisplayState, prompt: &Prompt) -> Vec<GameControlView> {
     match &prompt.prompt_type {
         PromptType::EntityChoice(_) => {}
         PromptType::SelectCards(_) => {}
         PromptType::PlayCards(_) => {}
         PromptType::PickNumber(pick_number) => {
-            return vec![GameControlView::TextInput(TextInputView {})];
+            let input =
+                GameControlView::TextInput(TextInputView { key: FieldKey::PickNumberPrompt });
+            if let Some(value) = state.fields.get(&FieldKey::PickNumberPrompt) {
+                if let Some(n) = value.as_u32() {
+                    if n >= pick_number.minimum && n <= pick_number.maximum {
+                        return vec![
+                            input,
+                            GameControlView::Button(GameButtonView::new_primary(
+                                format!("Set {}", n),
+                                PromptAction::PickNumber(n),
+                            )),
+                        ];
+                    }
+                }
+            }
+            return vec![input];
         }
     }
     vec![]

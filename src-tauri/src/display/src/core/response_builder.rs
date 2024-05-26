@@ -19,7 +19,7 @@ use data::game_states::game_state::{DebugActAsPlayer, GameState};
 use rules::legality::legal_actions;
 
 use crate::commands::command::{Command, UpdateGameViewCommand};
-use crate::commands::display_preferences::DisplayPreferences;
+use crate::commands::display_state::DisplayState;
 use crate::core::card_view::ClientCardId;
 use crate::core::game_view::{DisplayPlayer, GameView};
 use crate::core::object_position::ObjectPosition;
@@ -33,7 +33,7 @@ pub struct ResponseState {
     pub is_final_update: bool,
 
     /// User configuration for how this response should be rendered.
-    pub display_preferences: DisplayPreferences,
+    pub display_state: DisplayState,
 
     /// True if all cards should be revealed
     pub reveal_all_cards: bool,
@@ -51,7 +51,7 @@ pub struct ResponseBuilder {
     player: PlayerName,
 
     /// Response configuration
-    pub state: ResponseState,
+    pub response_state: ResponseState,
 
     /// Commands to send to this client
     pub commands: Vec<Command>,
@@ -67,7 +67,12 @@ pub struct ResponseBuilder {
 
 impl ResponseBuilder {
     pub fn new(player: PlayerName, state: ResponseState) -> Self {
-        Self { player, state, commands: vec![], last_snapshot_positions: HashMap::default() }
+        Self {
+            player,
+            response_state: state,
+            commands: vec![],
+            last_snapshot_positions: HashMap::default(),
+        }
     }
 
     /// Adds a new command
@@ -83,7 +88,7 @@ impl ResponseBuilder {
 
         self.commands.push(Command::UpdateGameView(UpdateGameViewCommand {
             view: game,
-            animate: self.state.animate,
+            animate: self.response_state.animate,
         }));
     }
 
@@ -108,7 +113,7 @@ impl ResponseBuilder {
     /// If the debug option is being used to allow a player to act as another,
     /// this may not match the user's [PlayerName].
     pub fn act_as_player(&self, game: &GameState) -> PlayerName {
-        if let Some(act) = self.state.act_as_player {
+        if let Some(act) = self.response_state.act_as_player {
             if act.name == legal_actions::next_to_act(game) {
                 return act.name;
             }

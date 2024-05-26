@@ -38,7 +38,7 @@ use data::prompts::prompt_manager::PromptManager;
 use data::state_machines::state_machine_data::StateMachines;
 use data::users::user_state::UserActivity;
 use database::sqlite_database::SqliteDatabase;
-use display::commands::display_preferences::DisplayPreferences;
+use display::commands::display_state::DisplayState;
 use display::commands::scene_identifier::SceneIdentifier;
 use display::rendering::render;
 use enumset::EnumSet;
@@ -107,12 +107,12 @@ pub fn create(
         user_id: user.id,
         scene: SceneIdentifier::Game(game.id),
         modal_panel: None,
-        display_preferences: DisplayPreferences::default(),
+        display_state: DisplayState::default(),
     })
     .commands(render::connect(
         &game,
         game.find_player_name(user.id)?,
-        DisplayPreferences::default(),
+        DisplayState::default(),
     ));
 
     database.write_game(&game)?;

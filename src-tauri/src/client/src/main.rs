@@ -22,6 +22,7 @@ use clap::Parser;
 use data::actions::user_action::UserAction;
 use data::core::primitives::UserId;
 use database::sqlite_database::SqliteDatabase;
+use display::commands::field_state::{FieldKey, FieldValue};
 use game::server;
 use game::server_data::{ClientData, GameResponse};
 use once_cell::sync::Lazy;
@@ -44,28 +45,30 @@ static DATABASE: Lazy<SqliteDatabase> =
 #[specta::specta]
 fn client_connect() -> Result<GameResponse, ()> {
     info!("Got connect request");
-    let result = server::connect(DATABASE.clone(), UserId(Uuid::default()));
-    match result {
-        Ok(response) => Ok(response),
-        Err(err) => {
-            error!("Error on connect: {:?}", err);
-            Err(())
-        }
-    }
+    server::connect(DATABASE.clone(), UserId(Uuid::default())).map_err(|err| {
+        error!("Error on connect: {:?}", err);
+    })
 }
 
 #[tauri::command]
 #[specta::specta]
 fn client_handle_action(client_data: ClientData, action: UserAction) -> Result<GameResponse, ()> {
     info!(?action, ?client_data, "Got handle_action request");
-    let result = server::handle_action(DATABASE.clone(), client_data, action);
-    match result {
-        Ok(response) => Ok(response),
-        Err(err) => {
-            error!("Error on handle_action: {:?}", err);
-            Err(())
-        }
-    }
+    server::handle_action(DATABASE.clone(), client_data, action).map_err(|err| {
+        error!("Error on handle_action: {:?}", err);
+    })
+}
+
+#[tauri::command]
+#[specta::specta]
+fn client_update_field(
+    client_data: ClientData,
+    key: FieldKey,
+    value: FieldValue,
+) -> Result<GameResponse, ()> {
+    server::handle_update_field(DATABASE.clone(), client_data, key, value).map_err(|err| {
+        error!("Error on update_fields: {:?}", err);
+    })
 }
 
 fn main() -> Outcome {
@@ -81,8 +84,11 @@ fn main() -> Outcome {
     info!(commit, "Starting game");
 
     let invoke_handler = {
-        let builder = tauri_specta::ts::builder()
-            .commands(tauri_specta::collect_commands![client_connect, client_handle_action]);
+        let builder = tauri_specta::ts::builder().commands(tauri_specta::collect_commands![
+            client_connect,
+            client_handle_action,
+            client_update_field
+        ]);
 
         #[cfg(debug_assertions)] // <- Only export on non-release builds
         let builder = builder.path("../../../src/generated_types.ts");

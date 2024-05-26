@@ -18,6 +18,7 @@ use serde::Deserialize;
 use serde_with::serde_derive::Serialize;
 use specta::Type;
 
+use crate::commands::field_state::FieldKey;
 use crate::core::card_view::CardView;
 
 /// Represents the visual state of an ongoing game
@@ -71,9 +72,13 @@ impl GameButtonView {
     }
 }
 
+/// Data to render a text input field
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
-pub struct TextInputView {}
+pub struct TextInputView {
+    /// Unique identifier for this field
+    pub key: FieldKey,
+}
 
 /// Controls color for buttons
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]

@@ -12,9 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
+use serde_with::serde_as;
 use specta::Type;
 
-#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, Type)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
-pub struct DisplayPreferences {}
+pub enum FieldKey {
+    PickNumberPrompt,
+}
+
+#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub enum FieldValue {
+    String(String),
+}
+
+impl FieldValue {
+    pub fn as_u32(&self) -> Option<u32> {
+        match self {
+            FieldValue::String(s) => s.parse().ok(),
+        }
+    }
+}

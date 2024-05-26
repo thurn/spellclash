@@ -17,10 +17,16 @@ import { GameControlView } from '../generated_types';
 import { GameButton } from './GameButton';
 import { TextInput } from './TextInput';
 
-export function GameControl({ control, className }: { control: GameControlView; className?: string }): ReactNode {
+export function GameControl({
+  control,
+  className,
+}: {
+  control: GameControlView;
+  className?: string;
+}): ReactNode {
   if ('button' in control) {
     return <GameButton button={control.button} className={className} />;
   } else if ('textInput' in control) {
-    return <TextInput className={className} />;
+    return <TextInput input={control.textInput} className={className} />;
   }
 }

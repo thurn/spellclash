@@ -43,7 +43,9 @@ function MainMenu({ view }: { view: MainMenuView }): ReactNode {
 }
 
 function MenuItems({ view }: { view: MainMenuView }): ReactNode {
-  const buttons = view.buttons.map((button, i) => <GameButton button={button} key={i} className="m-2" />);
+  const buttons = view.buttons.map((button, i) => (
+    <GameButton button={button} key={i} className="m-2" />
+  ));
   return (
     <div className="flex flex-col w-1/5 items-stretch text-center absolute left-2 bottom-2">
       <h1 className="text-3xl font-bold text-white font-title">Spellclash</h1>

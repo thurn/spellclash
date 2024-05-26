@@ -18,6 +18,7 @@ use data::actions::user_action::UserAction;
 use data::core::primitives::UserId;
 use data::users::user_state::{UserActivity, UserState};
 use database::sqlite_database::SqliteDatabase;
+use display::commands::field_state::{FieldKey, FieldValue};
 use tracing::{debug_span, info, Instrument};
 use utils::outcome::Value;
 
@@ -67,6 +68,16 @@ pub fn handle_action(
             panel_server::handle_panel_transition(database, data, transition)
         }
     }
+}
+
+pub fn handle_update_field(
+    database: SqliteDatabase,
+    mut data: ClientData,
+    key: FieldKey,
+    value: FieldValue,
+) -> Value<GameResponse> {
+    data.display_state.fields.insert(key, value);
+    game_action_server::handle_update_fields(database, data)
 }
 
 fn fetch_or_create_user(database: SqliteDatabase, user_id: UserId) -> Value<UserState> {

@@ -18,3 +18,4 @@ serde_with = "3.8.1"
 specta = { version = "2.0.0-rc.12", features = ["uuid"] }
 tauri = { version = "=2.0.0-beta.19", features = [] }
 tauri-specta = { version = "2.0.0-rc.10", features = ["typescript"] }
+log = "0.4.21"

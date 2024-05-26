@@ -38,7 +38,7 @@ use crate::rendering::positions;
 pub fn card_view(builder: &ResponseBuilder, context: &CardViewContext) -> CardView {
     let is_revealed = context
         .query_or(true, |_, card| card.revealed_to.contains(builder.display_as_player()))
-        || builder.state.reveal_all_cards;
+        || builder.response_state.reveal_all_cards;
     CardView {
         id: ClientCardId::new(context.card_id()),
         position: context.query_or(ObjectPosition::default(), |game, card| {
@@ -60,7 +60,7 @@ pub fn card_view(builder: &ResponseBuilder, context: &CardViewContext) -> CardVi
         card_facing: context.query_or(CardFacing::FaceUp(Face::Primary), |_, card| card.facing),
         tapped_state: context.query_or(TappedState::Untapped, |_, card| card.tapped_state),
         damage: Default::default(),
-        create_position: if builder.state.animate {
+        create_position: if builder.response_state.animate {
             context.query_or_none(|_, card| {
                 positions::for_card(card, positions::deck(builder, card.owner))
             })

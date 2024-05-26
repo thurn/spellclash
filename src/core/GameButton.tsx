@@ -18,7 +18,13 @@ import { Button, ButtonProps } from '@nextui-org/react';
 import { handleAction } from '../server';
 import { GameButtonView } from '../generated_types';
 
-export function GameButton({ button, className }: { button: GameButtonView; className?: string }): ReactNode {
+export function GameButton({
+  button,
+  className,
+}: {
+  button: GameButtonView;
+  className?: string;
+}): ReactNode {
   const { response, setState } = useContext(GlobalContext);
   let color: ButtonProps['color'];
   switch (button.kind) {
@@ -31,7 +37,11 @@ export function GameButton({ button, className }: { button: GameButtonView; clas
   }
 
   return (
-    <Button className={className} color={color} onClick={() => handleAction(setState, response, button.action)}>
+    <Button
+      className={className}
+      color={color}
+      onClick={() => handleAction(setState, response, button.action)}
+    >
       {button.label}
     </Button>
   );

@@ -1089,6 +1089,7 @@ version = "0.0.0"
 dependencies = [
  "data",
  "enum-kinds",
+ "log",
  "rules",
  "serde",
  "serde_with",

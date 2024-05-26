@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { Dispatch, SetStateAction } from 'react';
-import { GameResponse, Result, commands } from './generated_types';
+import { FieldKey, FieldValue, GameResponse, Result, commands } from './generated_types';
 
 export async function connect(setter: Dispatch<SetStateAction<GameResponse>>): Promise<void> {
   console.log('Connecting...');
@@ -38,7 +38,10 @@ export async function handleAction(
 
   console.log('Handling action...');
   console.dir(action);
-  const result: Result<GameResponse, null> = await commands.clientHandleAction(lastResponse.clientData, action);
+  const result: Result<GameResponse, null> = await commands.clientHandleAction(
+    lastResponse.clientData,
+    action,
+  );
   if (result.status === 'ok') {
     let data = result.data;
     if (data.commands.length === 0) {
@@ -53,5 +56,30 @@ export async function handleAction(
     setter(data);
   } else {
     console.error('Error handling action!', action);
+  }
+}
+
+export async function updateField(
+  setter: Dispatch<SetStateAction<GameResponse>>,
+  lastResponse: GameResponse,
+  key: FieldKey,
+  value: FieldValue,
+): Promise<void> {
+  const result: Result<GameResponse, null> = await commands.clientUpdateField(
+    lastResponse.clientData,
+    key,
+    value,
+  );
+  if (result.status === 'ok') {
+    let data = result.data;
+    if (data.commands.length === 0) {
+      data = {
+        commands: lastResponse.commands,
+        clientData: data.clientData,
+      };
+    }
+    setter(data);
+  } else {
+    console.error('Error updating field', key, value);
   }
 }

@@ -9,9 +9,30 @@ export const commands = {
       else return { status: 'error', error: e as any };
     }
   },
-  async clientHandleAction(clientData: ClientData, action: unknown): Promise<Result<GameResponse, null>> {
+  async clientHandleAction(
+    clientData: ClientData,
+    action: unknown,
+  ): Promise<Result<GameResponse, null>> {
     try {
-      return { status: 'ok', data: await TAURI_INVOKE('client_handle_action', { clientData, action }) };
+      return {
+        status: 'ok',
+        data: await TAURI_INVOKE('client_handle_action', { clientData, action }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: 'error', error: e as any };
+    }
+  },
+  async clientUpdateField(
+    clientData: ClientData,
+    key: FieldKey,
+    value: FieldValue,
+  ): Promise<Result<GameResponse, null>> {
+    try {
+      return {
+        status: 'ok',
+        data: await TAURI_INVOKE('client_update_field', { clientData, key, value }),
+      };
     } catch (e) {
       if (e instanceof Error) throw e;
       else return { status: 'error', error: e as any };
@@ -125,7 +146,7 @@ export type ClientData = {
   /**
    * Options for how the game state should be visually rendered
    */
-  displayPreferences: DisplayPreferences;
+  displayState: unknown;
 };
 /**
  * Represents an instruction to the client to perform some visual update.
@@ -156,7 +177,6 @@ export type DisplayPlayer =
    * Opponent of viewer
    */
   | 'opponent';
-export type DisplayPreferences = Record<string, never>;
 export type Face = 'primary' | 'faceB';
 /**
  * Describes how a single face of a card is laid out.
@@ -189,6 +209,8 @@ export type FaceLayout =
   | 'token'
   | 'transform'
   | 'vanguard';
+export type FieldKey = 'pickNumberPrompt';
+export type FieldValue = { string: string };
 /**
  * Controls color for buttons
  */
@@ -452,7 +474,15 @@ export type SceneIdentifier = 'loading' | 'mainMenu' | { game: GameId };
  * so might as well make this an enum.
  */
 export type TappedState = 'untapped' | 'tapped';
-export type TextInputView = Record<string, never>;
+/**
+ * Data to render a text input field
+ */
+export type TextInputView = {
+  /**
+   * Unique identifier for this field
+   */
+  key: FieldKey;
+};
 export type UpdateGameViewCommand = {
   /**
    * New visual game state

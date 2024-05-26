@@ -23,7 +23,7 @@ use data::game_states::game_step::GamePhaseStep;
 use data::player_states::player_state::PlayerQueries;
 use data::users::user_state::UserState;
 use database::sqlite_database::SqliteDatabase;
-use display::commands::display_preferences::DisplayPreferences;
+use display::commands::display_state::DisplayState;
 use display::commands::scene_identifier::SceneIdentifier;
 use display::rendering::render;
 use enumset::{enum_set, EnumSet};
@@ -46,12 +46,12 @@ pub fn connect(database: SqliteDatabase, user: &UserState, game_id: GameId) -> V
     let player_name = game.find_player_name(user.id)?;
 
     info!(?user.id, ?game.id, "Connected to game");
-    let commands = render::connect(&game, player_name, DisplayPreferences::default());
+    let commands = render::connect(&game, player_name, DisplayState::default());
     let client_data = ClientData {
         user_id: user.id,
         scene: SceneIdentifier::Game(game.id),
         modal_panel: None,
-        display_preferences: DisplayPreferences::default(),
+        display_state: DisplayState::default(),
     };
     Ok(GameResponse::new(client_data).commands(commands))
 }
@@ -71,6 +71,16 @@ pub fn handle_game_action(
         error!(?action, "Error running game action loop");
     }
     result
+}
+
+pub fn handle_update_fields(database: SqliteDatabase, data: ClientData) -> Value<GameResponse> {
+    let mut game = requests::fetch_game(
+        database.clone(),
+        data.game_id().with_error(|| "Expected current game ID")?,
+    )?;
+    let user_player_name = game.find_player_name(data.user_id)?;
+    let commands = render::render_updates(&game, user_player_name, data.display_state.clone());
+    Ok(GameResponse::new(data).commands(commands))
 }
 
 pub fn handle_game_action_internal(
@@ -107,7 +117,8 @@ pub fn handle_game_action_internal(
             }
         };
 
-        let user_result = render::render_updates(game, user_player_name, data.display_preferences);
+        let user_result =
+            render::render_updates(game, user_player_name, data.display_state.clone());
         result = result.commands(user_result);
 
         if halt {
