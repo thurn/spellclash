@@ -21,13 +21,17 @@ use data::game_states::combat_state::{CombatState, CombatStateKind};
 use data::game_states::game_state::{GameState, GameStatus};
 use data::printed_cards::printed_card::Face;
 
-use crate::legality::{can_pay_mana_cost, legal_combat_actions};
+use crate::legality::{can_pay_mana_cost, legal_combat_actions, legal_prompt_actions};
 use crate::play_cards::{pick_face_to_play, play_card};
 
 /// List of all legal actions the named player can take in the
 /// current game state.
 pub fn compute(game: &GameState, player: PlayerName) -> Vec<GameAction> {
     let mut result = vec![];
+    if let Some(p) = &game.prompts.current_prompt {
+        return legal_prompt_actions::compute(game, player, p);
+    }
+
     if next_to_act(game) != player {
         return result;
     }
@@ -67,6 +71,10 @@ pub fn can_take_action(
 /// has ended, this will be the player who held priority at the end of the
 /// game.
 pub fn next_to_act(game: &GameState) -> PlayerName {
+    if let Some(p) = &game.prompts.current_prompt {
+        return p.player;
+    }
+
     match game.combat.as_ref() {
         Some(CombatState::ProposingAttackers(_)) => game.turn.active_player,
         Some(CombatState::ConfirmedAttackers(_)) => game.priority,

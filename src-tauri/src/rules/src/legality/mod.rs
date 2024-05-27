@@ -15,3 +15,4 @@
 pub mod can_pay_mana_cost;
 pub mod legal_actions;
 pub mod legal_combat_actions;
+pub mod legal_prompt_actions;

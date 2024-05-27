@@ -116,8 +116,8 @@ impl PromptManager {
 
     fn send(&mut self, prompt: Prompt) -> Value<&PromptResponse> {
         let index = self.response_index;
-        self.response_index += 1;
-        if let Some(response) = self.responses.get(index) {
+        if let Some(response) = self.responses.get(self.response_index) {
+            self.response_index += 1;
             Ok(response)
         } else {
             self.current_prompt = Some(prompt);

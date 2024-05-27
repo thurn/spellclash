@@ -40,13 +40,13 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction
             *game = *previous;
         }
         DebugGameAction::SetLifeTotal(target) => {
-            debug!(?target, "(Debug) Setting life total");
             let amount =
                 game.prompts.pick_number(player, Text::SelectNumber, PickNumberPrompt {
                     minimum: 0,
                     maximum: 20,
                 })?;
-            players::set_life_total(game, Source::Game, player, amount as LifeValue);
+            debug!(?target, ?amount, "(Debug) Setting life total");
+            players::set_life_total(game, Source::Game, target, amount as LifeValue);
         }
     }
     outcome::OK

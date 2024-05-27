@@ -39,6 +39,7 @@ pub fn execute(
     Ok(match action {
         PromptAction::PickNumber(n) => {
             game.prompts.responses.push(PromptResponse::PickNumber(n));
+            game.prompts.current_prompt = None;
             Some(initial_action)
         }
     })
