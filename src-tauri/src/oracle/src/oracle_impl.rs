@@ -22,6 +22,7 @@ use data::printed_cards::printed_card::PrintedCard;
 use data::printed_cards::printed_card_id::PrintedCardId;
 use database::sqlite_database::SqliteDatabase;
 use once_cell::sync::Lazy;
+use utils::fail;
 use utils::outcome::Value;
 
 use crate::card_parser;
@@ -45,7 +46,12 @@ impl Oracle for OracleImpl {
             Ok(CardReference { identifier: id, printed_card_reference: printed.value().clone() })
         } else {
             let faces = self.database.fetch_printed_faces(id)?;
-            let parsed = card_parser::parse(faces)?;
+            let parsed = match card_parser::parse(faces) {
+                Ok(p) => p,
+                Err(e) => {
+                    fail!("Error parsing {:?}: {:?}", id, e);
+                }
+            };
             let reference = Arc::new(parsed);
             CARDS.insert(id, reference.clone());
             Ok(CardReference { identifier: id, printed_card_reference: reference })

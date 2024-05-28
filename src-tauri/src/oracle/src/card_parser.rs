@@ -98,7 +98,9 @@ fn parse_face(face: &DatabaseCardFace, face_identifier: Face) -> Value<PrintedCa
 }
 
 fn split(s: &Option<String>) -> Vec<&str> {
-    s.as_ref().map_or(vec![], |s| s.split(',').filter(|s| !s.trim().is_empty()).collect::<Vec<_>>())
+    s.as_ref().map_or(vec![], |s| {
+        s.split(',').map(|s| s.trim()).filter(|s| !s.is_empty()).collect::<Vec<_>>()
+    })
 }
 
 fn supertypes(types: Vec<&str>) -> Value<EnumSet<CardSupertype>> {
@@ -114,7 +116,7 @@ fn types(types: Vec<&str>) -> Value<EnumSet<CardType>> {
     types
         .iter()
         .map(|s| {
-            s.parse::<CardType>().with_error(|| format!("Error deserializing supertype '{s}'"))
+            s.parse::<CardType>().with_error(|| format!("Error deserializing card type '{s}'"))
         })
         .collect()
 }
