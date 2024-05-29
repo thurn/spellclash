@@ -21,7 +21,7 @@ pub fn flags() -> &'static CommandLine {
     FLAGS.get().expect("Flags not initialized")
 }
 
-#[derive(Clone, Copy, Debug, ValueEnum)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, ValueEnum)]
 pub enum TracingStyle {
     AggregateTime,
     Forest,

@@ -26,6 +26,8 @@ use petgraph::prelude::{EdgeRef, NodeIndex};
 use petgraph::{Direction, Graph};
 use rand::prelude::IteratorRandom;
 use tracing::{info, instrument};
+use utils::command_line;
+use utils::command_line::TracingStyle;
 
 use crate::core::agent::AgentConfig;
 use crate::core::game_state_node::{GameStateNode, GameStatus};
@@ -137,8 +139,7 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> SelectionAlgorithm
     {
         self.run_search(
             |i| {
-                (i % 100 == 0 && config.deadline < Instant::now())
-                    || self.max_iterations.map_or(false, |max| i > max)
+                config.deadline < Instant::now() || self.max_iterations.map_or(false, |max| i > max)
             },
             node,
             evaluator,
@@ -188,6 +189,9 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> 
         root: NodeIndex,
     ) {
         info!("Search completed in {} iterations", count);
+        if command_line::flags().tracing_style == TracingStyle::AggregateTime {
+            println!(">>> Search completed in {} iterations\n", count);
+        }
         let parent_visits = graph[root].visit_count;
         let mut edges = graph
             .edges(root)

@@ -41,7 +41,7 @@ show-version:
   npm run tauri dev -- -- -- --version
 
 aggregate-time:
-  npm run tauri dev -- -- -- --tracing-style aggregate-time
+  npm run tauri dev -- --release -- -- --tracing-style aggregate-time
 
 # Reformats code. Requires nightly because several useful options (e.g. imports_granularity) are
 # nightly-only
