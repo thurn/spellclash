@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod core;
-pub mod game;
-pub mod monte_carlo;
-pub mod nim;
-pub mod testing;
-pub mod tree_search;
+use ai::testing::run_matchup;
+use ai::testing::run_matchup::MatchupArgs;
+use clap::Parser;
+
+pub fn main() {
+    let args = MatchupArgs::parse();
+    run_matchup::run_with_args(&args)
+}

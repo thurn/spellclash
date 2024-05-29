@@ -19,7 +19,7 @@ use crate::actions::user_action::UserAction;
 use crate::core::numerics::LifeValue;
 use crate::core::primitives::PlayerName;
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
 pub enum DebugGameAction {
     Undo,
     SetLifeTotal(PlayerName),

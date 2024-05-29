@@ -18,7 +18,7 @@ use crate::actions::game_action::GameAction;
 use crate::actions::user_action::UserAction;
 
 /// Action to respond to a prompt within an ongoing game
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
 pub enum PromptAction {
     PickNumber(u32),
 }

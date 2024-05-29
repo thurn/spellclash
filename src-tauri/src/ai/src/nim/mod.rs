@@ -1,4 +1,4 @@
-// Copyright © spellclash 2024-present
+// Copyright © Dungeon of the Diamond Queen 2024-present
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,9 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod core;
-pub mod game;
-pub mod monte_carlo;
-pub mod nim;
-pub mod testing;
-pub mod tree_search;
+pub mod nim_agents;
+pub mod nim_game;

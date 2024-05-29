@@ -21,7 +21,7 @@ use crate::card_states::card_reference::CardReference;
 use crate::printed_cards::printed_card_id::PrintedCardId;
 
 /// Trait representing access to the Oracle card database.
-pub trait Oracle: Debug + DynClone {
+pub trait Oracle: Debug + DynClone + Send {
     /// Looks up card information based on its [PrintedCardId]
     ///
     /// Returns an error if this card does not exist in the database or an error
