@@ -12,18 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::time::{Duration, Instant};
+
 use data::actions::game_action::GameAction;
 use data::core::primitives::PlayerName;
 use data::game_states::game_state::GameState;
-use rand::prelude::IteratorRandom;
 use rules::legality::legal_actions;
+use tracing::{subscriber, Level};
 use utils::outcome::Value;
-use utils::with_error::WithError;
+use utils::verify;
+
+use crate::core::agent::AgentConfig;
+use crate::game::agents;
+use crate::game::agents::AgentName;
 
 /// Select a game action for the [PlayerName] in the given [GameState].
 pub fn select(game: &GameState, player: PlayerName) -> Value<GameAction> {
-    legal_actions::compute(game, player)
-        .into_iter()
-        .choose(&mut rand::thread_rng())
-        .with_error(|| "No legal actions available")
+    verify!(legal_actions::next_to_act(game) == player, "Not {:?}'s turn", player);
+    let legal = legal_actions::compute(game, player);
+    verify!(!legal.is_empty(), "No legal actions available");
+    if legal.len() == 1 {
+        return Ok(legal[0]);
+    }
+
+    let agent = agents::get_agent(AgentName::Uct1);
+    let info_subscriber = tracing_subscriber::fmt().with_max_level(Level::INFO).finish();
+    subscriber::with_default(info_subscriber, || {
+        Ok(agent.pick_action(
+            AgentConfig {
+                deadline: Instant::now() + Duration::from_secs(10),
+                panic_on_search_timeout: true,
+            },
+            game,
+        ))
+    })
 }

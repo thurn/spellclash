@@ -1,4 +1,4 @@
-// Copyright © Dungeon of the Diamond Queen 2024-present
+// Copyright © spellclash 2024-present
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@ where
             predictor: state_predictor::omniscient,
             selector,
             evaluator,
-            combiner: state_combiner::worst_case,
+            combiner: state_combiner::first,
         }
     }
 }

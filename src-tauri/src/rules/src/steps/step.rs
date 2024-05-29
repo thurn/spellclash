@@ -189,7 +189,7 @@ fn combat_damage(game: &mut GameState) -> Outcome {
         if blockers.blocked_attackers.contains_key(attacker) {
             let blockers = &blockers.blocked_attackers[attacker];
             if blockers.len() != 1 {
-                todo!("Implement support for multiple blockers");
+                // TODO: Implement support for multiple blockers
             }
             let Some(blocker_id) = game.card_entity(blockers[0]).map(|c| c.id) else {
                 continue;

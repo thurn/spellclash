@@ -28,15 +28,15 @@ use crate::play_cards::{pick_face_to_play, play_card};
 /// current game state.
 pub fn compute(game: &GameState, player: PlayerName) -> Vec<GameAction> {
     let mut result = vec![];
+    if game.status != GameStatus::Playing {
+        return result;
+    }
+
     if let Some(p) = &game.prompts.current_prompt {
         return legal_prompt_actions::compute(game, player, p);
     }
 
     if next_to_act(game) != player {
-        return result;
-    }
-
-    if game.status != GameStatus::Playing {
         return result;
     }
 

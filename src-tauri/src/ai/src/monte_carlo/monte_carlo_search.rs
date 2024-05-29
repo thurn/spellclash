@@ -1,4 +1,4 @@
-// Copyright © Dungeon of the Diamond Queen 2024-present
+// Copyright © spellclash 2024-present
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ use std::time::Instant;
 use petgraph::prelude::{EdgeRef, NodeIndex};
 use petgraph::{Direction, Graph};
 use rand::prelude::IteratorRandom;
-use tracing::debug;
+use tracing::info;
 
 use crate::core::agent::AgentConfig;
 use crate::core::game_state_node::{GameStateNode, GameStatus};
@@ -171,17 +171,19 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> 
             SelectionMode::Best,
         );
 
-        self.log_results(node, player, &graph, root);
+        self.log_results(i, node, player, &graph, root);
         action
     }
 
     fn log_results<TStateNode: GameStateNode>(
         &self,
+        count: u32,
         node: &TStateNode,
         player: TStateNode::PlayerName,
         graph: &SearchGraph<TStateNode>,
         root: NodeIndex,
     ) {
+        info!("Search completed in {} iterations", count);
         let parent_visits = graph[root].visit_count;
         let mut edges = graph
             .edges(root)
@@ -203,7 +205,7 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> 
         edges.reverse();
 
         for (child, weight) in edges.iter().map(|(edge, weight)| (edge.weight().action, *weight)) {
-            debug!("Action: {:?} at {:?}", weight, child);
+            info!("Action: {:?} at {:?}", weight, child);
         }
     }
 

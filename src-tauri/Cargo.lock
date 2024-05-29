@@ -78,6 +78,7 @@ dependencies = [
  "rules",
  "tokio",
  "tracing",
+ "tracing-subscriber",
  "utils",
  "uuid",
 ]

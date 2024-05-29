@@ -1,4 +1,4 @@
-// Copyright © Dungeon of the Diamond Queen 2024-present
+// Copyright © spellclash 2024-present
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -48,4 +48,17 @@ where
     }
 
     worst_state.expect("No state found")
+}
+
+/// A [StateCombiner] which returns the first-available state prediction.
+pub fn first<TEvaluator, TNode>(
+    node: &TNode,
+    predictor: StatePredictor<TNode>,
+    _: &TEvaluator,
+) -> TNode
+where
+    TEvaluator: StateEvaluator<TNode>,
+    TNode: GameStateNode,
+{
+    predictor(node).next().expect("No state found")
 }

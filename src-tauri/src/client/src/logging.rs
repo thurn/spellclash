@@ -72,6 +72,7 @@ fn tag_parser(event: &Event) -> Option<Tag> {
         _ if target.contains("rules") => '🎴',
         _ if target.contains("game") => '💻',
         _ if target.contains("spellclash") => '🌐',
+        _ if target.contains("ai") => '🤖',
         _ => match level {
             Level::TRACE => '📍',
             Level::DEBUG => '📝',

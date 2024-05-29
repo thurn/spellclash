@@ -20,39 +20,34 @@ use data::game_states::game_state::GameState;
 use crate::core::agent::{Agent, AgentData};
 use crate::core::first_available_action::FirstAvailableActionAlgorithm;
 use crate::core::win_loss_evaluator::WinLossEvaluator;
+use crate::game::evaluators::LifeTotalEvaluator;
 use crate::monte_carlo::monte_carlo_search::{MonteCarloAlgorithm, RandomPlayoutEvaluator};
 use crate::monte_carlo::uct1::Uct1;
 use crate::tree_search::alpha_beta::AlphaBetaAlgorithm;
 
 #[derive(ValueEnum, Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub enum AgentName {
-    AlphaBetaDepth10,
-    AlphaBetaDepth13,
+    AlphaBetaDepth3,
+    AlphaBetaDepth4,
     Uct1,
-    Uct1MaxTricks,
     Uct1Iterations250,
     FirstAvailableAction,
 }
 
 pub fn get_agent(name: AgentName) -> Box<dyn Agent<GameState>> {
     match name {
-        AgentName::AlphaBetaDepth10 => Box::new(AgentData::omniscient(
-            "ALPHA_BETA_10",
-            AlphaBetaAlgorithm { search_depth: 10 },
-            WinLossEvaluator,
+        AgentName::AlphaBetaDepth3 => Box::new(AgentData::omniscient(
+            "ALPHA_BETA_3",
+            AlphaBetaAlgorithm { search_depth: 3 },
+            LifeTotalEvaluator,
         )),
-        AgentName::AlphaBetaDepth13 => Box::new(AgentData::omniscient(
-            "ALPHA_BETA_13",
-            AlphaBetaAlgorithm { search_depth: 13 },
-            WinLossEvaluator,
+        AgentName::AlphaBetaDepth4 => Box::new(AgentData::omniscient(
+            "ALPHA_BETA_4",
+            AlphaBetaAlgorithm { search_depth: 4 },
+            LifeTotalEvaluator,
         )),
         AgentName::Uct1 => Box::new(AgentData::omniscient(
             "UCT1",
-            MonteCarloAlgorithm { child_score_algorithm: Uct1 {}, max_iterations: None },
-            RandomPlayoutEvaluator { evaluator: WinLossEvaluator, phantom_data: PhantomData },
-        )),
-        AgentName::Uct1MaxTricks => Box::new(AgentData::omniscient(
-            "UCT1_MAX_TRICKS",
             MonteCarloAlgorithm { child_score_algorithm: Uct1 {}, max_iterations: None },
             RandomPlayoutEvaluator { evaluator: WinLossEvaluator, phantom_data: PhantomData },
         )),

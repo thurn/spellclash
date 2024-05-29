@@ -14,6 +14,10 @@ build:
 run *args='':
     npm run tauri dev
 
+# Requires 'dev' as well
+run-release:
+  cd src-tauri && cargo run --release --no-default-features --bin client
+
 # To run under a rust debugger, *first* use this command and then start the rust binary
 dev:
   npm run dev
