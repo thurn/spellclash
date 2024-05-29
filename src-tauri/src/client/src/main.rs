@@ -27,14 +27,15 @@ use game::server;
 use game::server_data::{ClientData, GameResponse};
 use once_cell::sync::Lazy;
 use tracing::{error, info};
-use utils::outcome;
+use utils::command_line::TracingStyle;
 use utils::outcome::Outcome;
 use utils::with_error::WithError;
+use utils::{command_line, outcome};
 use uuid::Uuid;
 
-use crate::cli::{Cli, ARGS};
+use crate::command_line_parser::CommandLineParser;
 
-mod cli;
+mod command_line_parser;
 mod initialize;
 mod logging;
 
@@ -72,12 +73,21 @@ fn client_update_field(
 }
 
 fn main() -> Outcome {
-    logging::initialize()?;
+    let args = CommandLineParser::parse().build();
+    command_line::FLAGS.set(args).expect("Flags should not be set multiple times");
+
+    match command_line::flags().tracing_style {
+        TracingStyle::AggregateTime => {
+            tracing_span_tree::span_tree().aggregate(true).enable();
+        }
+        TracingStyle::Forest => {
+            logging::initialize()?;
+        }
+    }
+
     if env::var("DISABLE_PANIC_HANDLER").is_err() {
         initialize::initialize_panic_handler()?;
     }
-    let args = Cli::parse();
-    ARGS.set(args).expect("Args should not be set multiple times");
     card_list::initialize();
 
     let commit = env!("VERGEN_GIT_SHA");

@@ -32,7 +32,16 @@ logs:
   tail -f "$HOME/Library/Application Support/com.spellclash.spellclash/spellclash.log"
 
 clippy:
-    cargo clippy --manifest-path src-tauri/Cargo.toml --workspace -- -D warnings -D clippy::all
+  cargo clippy --manifest-path src-tauri/Cargo.toml --workspace -- -D warnings -D clippy::all
+
+show-help:
+  npm run tauri dev -- -- -- --help
+
+show-version:
+  npm run tauri dev -- -- -- --version
+
+aggregate-time:
+  npm run tauri dev -- -- -- --tracing-style aggregate-time
 
 # Reformats code. Requires nightly because several useful options (e.g. imports_granularity) are
 # nightly-only

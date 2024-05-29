@@ -25,7 +25,7 @@ use std::time::Instant;
 use petgraph::prelude::{EdgeRef, NodeIndex};
 use petgraph::{Direction, Graph};
 use rand::prelude::IteratorRandom;
-use tracing::info;
+use tracing::{info, instrument};
 
 use crate::core::agent::AgentConfig;
 use crate::core::game_state_node::{GameStateNode, GameStatus};
@@ -53,6 +53,7 @@ pub struct RandomPlayoutEvaluator<TState: GameStateNode + Send, TEvaluator: Stat
 impl<TState: GameStateNode + Send, TEvaluator: StateEvaluator<TState>> StateEvaluator<TState>
     for RandomPlayoutEvaluator<TState, TEvaluator>
 {
+    #[instrument(level = "debug", skip_all)]
     fn evaluate(&self, input: &TState, player: TState::PlayerName) -> i32 {
         let mut game = input.make_copy();
         loop {
@@ -122,6 +123,7 @@ pub struct MonteCarloAlgorithm<TScoreAlgorithm: ChildScoreAlgorithm> {
 impl<TScoreAlgorithm: ChildScoreAlgorithm> SelectionAlgorithm
     for MonteCarloAlgorithm<TScoreAlgorithm>
 {
+    #[instrument(level = "debug", skip_all)]
     fn pick_action<TStateNode, TEvaluator>(
         &self,
         config: AgentConfig,
@@ -146,6 +148,7 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> SelectionAlgorithm
 }
 
 impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> {
+    #[instrument(level = "debug", skip_all)]
     pub fn run_search<TStateNode: GameStateNode, TEvaluator: StateEvaluator<TStateNode>>(
         &self,
         should_halt: impl Fn(u32) -> bool,
@@ -175,6 +178,7 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> 
         action
     }
 
+    #[instrument(level = "debug", skip_all)]
     fn log_results<TStateNode: GameStateNode>(
         &self,
         count: u32,
@@ -237,6 +241,7 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> 
     ///       v ← BESTCHILD(v, Cᵖ)
     ///   𝐫𝐞𝐭𝐮𝐫𝐧 v
     /// ```
+    #[instrument(level = "debug", skip_all)]
     fn tree_policy<TState: GameStateNode>(
         &self,
         graph: &mut SearchGraph<TState>,
@@ -273,6 +278,7 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> 
     ///     and 𝒂(v′) = 𝒂
     ///   𝐫𝐞𝐭𝐮𝐫𝐧 v′
     /// ```
+    #[instrument(level = "debug", skip_all)]
     fn expand<TState: GameStateNode>(
         graph: &mut SearchGraph<TState>,
         game: &mut TState,
@@ -301,6 +307,7 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> 
     ///     c * √ [ 2 * ln(N(v)) / N(v′) ]
     ///   )
     /// ```
+    #[instrument(level = "debug", skip_all)]
     fn best_child<TState: GameStateNode>(
         &self,
         graph: &SearchGraph<TState>,
@@ -346,6 +353,7 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> 
     ///     Q(v) ← Q(v) + ∆(v, p)
     ///     v ← parent of v
     /// ```
+    #[instrument(level = "debug", skip_all)]
     fn backup<TState: GameStateNode>(
         graph: &mut SearchGraph<TState>,
         maximizing_player: TState::PlayerName,

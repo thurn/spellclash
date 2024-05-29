@@ -12,6 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod command_line;
-pub mod outcome;
-pub mod with_error;
+use clap::ValueEnum;
+use once_cell::sync::OnceCell;
+
+pub static FLAGS: OnceCell<CommandLine> = OnceCell::new();
+
+pub fn flags() -> &'static CommandLine {
+    FLAGS.get().expect("Flags not initialized")
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+pub enum TracingStyle {
+    AggregateTime,
+    Forest,
+}
+
+#[derive(Clone, Debug)]
+pub struct CommandLine {
+    pub tracing_style: TracingStyle,
+}

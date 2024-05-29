@@ -19,15 +19,17 @@ use data::core::primitives::PlayerName;
 use data::game_states::animation_tracker::AnimationState;
 use data::game_states::game_state::GameState;
 use rules::legality::legal_actions;
-use tracing::{subscriber, Level};
+use tracing::{instrument, subscriber, Level};
+use utils::command_line::TracingStyle;
 use utils::outcome::Value;
-use utils::verify;
+use utils::{command_line, verify};
 
 use crate::core::agent::AgentConfig;
 use crate::game::agents;
 use crate::game::agents::AgentName;
 
 /// Select a game action for the [PlayerName] in the given [GameState].
+#[instrument(level = "debug", skip_all)]
 pub fn select(input_game: &GameState, player: PlayerName) -> Value<GameAction> {
     verify!(legal_actions::next_to_act(input_game) == player, "Not {:?}'s turn", player);
     let legal = legal_actions::compute(input_game, player);
@@ -43,14 +45,25 @@ pub fn select(input_game: &GameState, player: PlayerName) -> Value<GameAction> {
     game.animations.steps.clear();
 
     let agent = agents::get_agent(AgentName::Uct1);
-    let info_subscriber = tracing_subscriber::fmt().with_max_level(Level::INFO).finish();
-    subscriber::with_default(info_subscriber, || {
-        Ok(agent.pick_action(
+    match command_line::flags().tracing_style {
+        TracingStyle::AggregateTime => Ok(agent.pick_action(
             AgentConfig {
                 deadline: Instant::now() + Duration::from_secs(10),
                 panic_on_search_timeout: true,
             },
             &game,
-        ))
-    })
+        )),
+        TracingStyle::Forest => {
+            let info_subscriber = tracing_subscriber::fmt().with_max_level(Level::INFO).finish();
+            subscriber::with_default(info_subscriber, || {
+                Ok(agent.pick_action(
+                    AgentConfig {
+                        deadline: Instant::now() + Duration::from_secs(10),
+                        panic_on_search_timeout: true,
+                    },
+                    &game,
+                ))
+            })
+        }
+    }
 }

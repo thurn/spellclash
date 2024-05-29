@@ -29,7 +29,7 @@ use utils::with_error::WithError;
 /// that triggered the prompt, which should now be executed again with the
 /// updated prompt state. Returns None if the current prompt is not complete and
 /// we should wait for further user input.
-#[instrument(level = "debug", skip(game))]
+#[instrument(name = "prompt_actions_execute", level = "debug", skip(game))]
 pub fn execute(
     game: &mut GameState,
     player: PlayerName,

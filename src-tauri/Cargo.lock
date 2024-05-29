@@ -625,6 +625,7 @@ dependencies = [
  "tracing",
  "tracing-error",
  "tracing-forest",
+ "tracing-span-tree",
  "tracing-subscriber",
  "typed-builder",
  "utils",
@@ -5475,6 +5476,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "tracing-span-tree"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c3809cda0328d505548af1ca24fac329f41c0c213d0a1e78908922d0b43e5c43"
+dependencies = [
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "tracing-subscriber"
 version = "0.3.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5681,7 +5692,9 @@ checksum = "711b9620af191e0cdc7468a8d14e709c3dcdb115b36f838e601583af800a370a"
 name = "utils"
 version = "0.0.0"
 dependencies = [
+ "clap",
  "color-eyre",
+ "once_cell",
 ]
 
 [[package]]

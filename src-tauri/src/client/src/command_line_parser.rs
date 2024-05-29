@@ -13,15 +13,23 @@
 // limitations under the License.
 
 use clap::Parser;
-use once_cell::sync::OnceCell;
+use utils::command_line::{CommandLine, TracingStyle};
 
 use crate::initialize::version;
 
-pub static ARGS: OnceCell<Cli> = OnceCell::new();
-
 #[derive(Parser, Debug)]
 #[command(version = version(), about)]
-pub struct Cli {
-    #[clap(long, action, help = "Prevent the client from fetching images")]
-    pub text_only: bool,
+pub struct CommandLineParser {
+    #[arg(
+        long,
+        value_enum,
+        default_value_t = TracingStyle::Forest,
+        help = "Configuration for capturing program traces")]
+    pub tracing_style: TracingStyle,
+}
+
+impl CommandLineParser {
+    pub fn build(self) -> CommandLine {
+        CommandLine { tracing_style: self.tracing_style }
+    }
 }

@@ -20,12 +20,14 @@ use data::core::primitives::{CardId, PlayerName, Source};
 use data::game_states::combat_state::{CombatState, CombatStateKind};
 use data::game_states::game_state::{GameState, GameStatus};
 use data::printed_cards::printed_card::Face;
+use tracing::instrument;
 
 use crate::legality::{can_pay_mana_cost, legal_combat_actions, legal_prompt_actions};
 use crate::play_cards::{pick_face_to_play, play_card};
 
 /// List of all legal actions the named player can take in the
 /// current game state.
+#[instrument(name = "legal_actions_compute", level = "trace", skip(game))]
 pub fn compute(game: &GameState, player: PlayerName) -> Vec<GameAction> {
     let mut result = vec![];
     if game.status != GameStatus::Playing {
@@ -56,6 +58,7 @@ pub fn compute(game: &GameState, player: PlayerName) -> Vec<GameAction> {
 
 /// Returns true if the [PlayerName] player can currently legally take the
 /// provided [GameAction].
+#[instrument(level = "trace", skip(game, game_action))]
 pub fn can_take_action(
     game: &GameState,
     player: PlayerName,

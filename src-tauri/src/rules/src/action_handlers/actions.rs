@@ -37,7 +37,7 @@ pub enum PlayerType {
     Agent,
 }
 
-#[instrument(level = "debug", skip(game))]
+#[instrument(name = "actions_execute", level = "debug", skip(game))]
 pub fn execute(
     game: &mut GameState,
     player: PlayerName,

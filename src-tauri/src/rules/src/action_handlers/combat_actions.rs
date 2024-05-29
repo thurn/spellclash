@@ -32,7 +32,7 @@ use utils::{fail, outcome, verify};
 use crate::mutations::permanents;
 use crate::queries::{card_queries, combat_queries, player_queries};
 
-#[instrument(level = "debug", skip(game))]
+#[instrument(name = "combat_actions_execute", level = "debug", skip(game))]
 pub fn execute(game: &mut GameState, player: PlayerName, action: CombatAction) -> Outcome {
     match action {
         CombatAction::AddSelectedAttacker(card_id) => {
