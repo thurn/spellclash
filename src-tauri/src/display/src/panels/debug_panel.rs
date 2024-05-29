@@ -26,7 +26,10 @@ pub fn render(_game: &GameState, _player: PlayerName) -> ModalPanel {
         title: Some("Debug".to_string()),
         on_close: UserAction::ClosePanel,
         data: PanelData::Debug(DebugPanel {
-            buttons: vec![button("P2 Life", DebugGameAction::SetLifeTotal(PlayerName::Two))],
+            buttons: vec![
+                button("P2 Life", DebugGameAction::SetLifeTotal(PlayerName::Two)),
+                button("Reveal P2 Hand", DebugGameAction::RevealHand(PlayerName::Two)),
+            ],
         }),
     }
 }

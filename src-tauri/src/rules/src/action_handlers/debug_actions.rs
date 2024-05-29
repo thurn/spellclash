@@ -14,6 +14,7 @@
 
 use data::actions::debug_action::DebugGameAction;
 use data::actions::game_action::GameAction;
+use data::card_states::zones::ZoneQueries;
 use data::core::numerics::LifeValue;
 use data::core::primitives::{PlayerName, Source};
 use data::game_states::game_state::GameState;
@@ -47,6 +48,11 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction
                 })?;
             debug!(?target, ?amount, "(Debug) Setting life total");
             players::set_life_total(game, Source::Game, target, amount as LifeValue);
+        }
+        DebugGameAction::RevealHand(target) => {
+            for card_id in game.hand(target).clone() {
+                game.card_mut(card_id).revealed_to.insert(player);
+            }
         }
     }
     outcome::OK

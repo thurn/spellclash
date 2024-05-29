@@ -44,7 +44,7 @@ pub fn select(input_game: &GameState, player: PlayerName) -> Value<GameAction> {
     game.animations.state = AnimationState::Ignore;
     game.animations.steps.clear();
 
-    let agent = agents::get_agent(AgentName::Uct1);
+    let agent = agents::get_agent(AgentName::AlphaBetaDepth25);
     match command_line::flags().tracing_style {
         TracingStyle::AggregateTime => Ok(agent.pick_action(
             AgentConfig {

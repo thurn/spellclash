@@ -23,6 +23,7 @@ use crate::core::primitives::PlayerName;
 pub enum DebugGameAction {
     Undo,
     SetLifeTotal(PlayerName),
+    RevealHand(PlayerName),
 }
 
 impl From<DebugGameAction> for GameAction {

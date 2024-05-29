@@ -15,7 +15,9 @@
 use std::cmp;
 use std::time::Instant;
 
-use tracing::debug;
+use tracing::{debug, info};
+use utils::command_line;
+use utils::command_line::TracingStyle;
 
 use crate::core::agent::AgentConfig;
 use crate::core::game_state_node::{GameStateNode, GameStatus};
@@ -81,7 +83,10 @@ where
                     run_internal(config, &child, evaluator, depth - 1, player, alpha, beta, false)
                         .score();
                 if top_level {
-                    debug!("Score {:?} for action {:?}", score, action);
+                    info!("Score {:?} for action {:?}", score, action);
+                    if command_line::flags().tracing_style == TracingStyle::AggregateTime {
+                        println!(">>> Score {:?} for action {:?}", score, action);
+                    }
                 }
                 alpha = cmp::max(alpha, score);
                 result.insert_max(action, score);

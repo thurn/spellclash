@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use data::card_states::zones::ZoneQueries;
 use data::core::primitives;
 use data::game_states::game_state::{GameState, GameStatus};
 use data::player_states::player_state::PlayerQueries;
@@ -19,15 +20,21 @@ use rules::queries::player_queries;
 
 use crate::core::state_evaluator::StateEvaluator;
 
-pub struct LifeTotalEvaluator;
+pub struct CustomHeuristicEvaluator;
 
-impl StateEvaluator<GameState> for LifeTotalEvaluator {
+impl StateEvaluator<GameState> for CustomHeuristicEvaluator {
     fn evaluate(&self, game: &GameState, player: primitives::PlayerName) -> i32 {
         match game.status {
             GameStatus::Playing => {
-                (game.player(player).life
+                let life = (game.player(player).life
                     - game.player(player_queries::next_player_after(game, player)).life)
-                    as i32
+                    as i32;
+                if life != 0 {
+                    return life;
+                }
+
+                game.battlefield(player).len() as i32
+                    - game.battlefield(player_queries::next_player_after(game, player)).len() as i32
             }
             GameStatus::GameOver { winners } => {
                 if winners.contains(player) {
