@@ -19,7 +19,7 @@ use crate::actions::game_action::GameAction;
 use crate::actions::new_game_action::NewGameAction;
 use crate::core::panel_address::PanelAddress;
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub enum UserAction {
     NewGameAction(NewGameAction),
     GameAction(GameAction),
@@ -45,7 +45,7 @@ impl Type for UserAction {
 ///
 /// Closes the currently displayed game panel, if any, then optionally performs
 /// a [GameAction] and/or opens a new panel.
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub struct PanelTransition {
     /// Optionally, a [GameAction] to perform when performing this transition.
     pub action: Option<GameAction>,

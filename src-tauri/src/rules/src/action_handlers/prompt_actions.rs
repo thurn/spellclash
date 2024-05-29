@@ -30,17 +30,18 @@ use utils::with_error::WithError;
 /// updated prompt state. Returns None if the current prompt is not complete and
 /// we should wait for further user input.
 #[instrument(name = "prompt_actions_execute", level = "debug", skip(game))]
-pub fn execute(
+pub fn execute<'a>(
     game: &mut GameState,
     player: PlayerName,
-    action: PromptAction,
+    action: &PromptAction,
 ) -> Value<Option<GameAction>> {
-    let initial_action = game.prompts.action.with_error(|| "Expected initial prompt action")?;
+    let initial_action =
+        game.prompts.action.as_ref().with_error(|| "Expected initial prompt action")?;
     Ok(match action {
         PromptAction::PickNumber(n) => {
-            game.prompts.responses.push(PromptResponse::PickNumber(n));
+            game.prompts.responses.push(PromptResponse::PickNumber(*n));
             game.prompts.current_prompt = None;
-            Some(initial_action)
+            Some(initial_action.clone())
         }
     })
 }

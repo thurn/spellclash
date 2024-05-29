@@ -97,7 +97,7 @@ impl From<CombatAction> for UserAction {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
 pub enum GameAction {
     /// Debugging action.
     DebugAction(DebugGameAction),

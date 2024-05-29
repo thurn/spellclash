@@ -28,7 +28,7 @@ use utils::{fail, outcome};
 use crate::mutations::players;
 
 #[instrument(level = "debug", skip(game))]
-pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction) -> Outcome {
+pub fn execute(game: &mut GameState, player: PlayerName, action: &DebugGameAction) -> Outcome {
     match action {
         DebugGameAction::Undo => {
             debug!(?player, "(Debug) Undoing last action");
@@ -47,10 +47,10 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction
                     maximum: 20,
                 })?;
             debug!(?target, ?amount, "(Debug) Setting life total");
-            players::set_life_total(game, Source::Game, target, amount as LifeValue);
+            players::set_life_total(game, Source::Game, *target, amount as LifeValue);
         }
         DebugGameAction::RevealHand(target) => {
-            for card_id in game.hand(target).clone() {
+            for card_id in game.hand(*target).clone() {
                 game.card_mut(card_id).revealed_to.insert(player);
             }
         }

@@ -59,13 +59,8 @@ pub fn compute(game: &GameState, player: PlayerName) -> Vec<GameAction> {
 /// Returns true if the [PlayerName] player can currently legally take the
 /// provided [GameAction].
 #[instrument(level = "trace", skip(game, game_action))]
-pub fn can_take_action(
-    game: &GameState,
-    player: PlayerName,
-    game_action: impl Into<GameAction>,
-) -> bool {
-    let game_action = game_action.into();
-    compute(game, player).iter().any(|&action| action == game_action)
+pub fn can_take_action(game: &GameState, player: PlayerName, game_action: &GameAction) -> bool {
+    compute(game, player).iter().any(|action| action == game_action)
 }
 
 /// Returns the name of the player who is currently allowed to take an action.

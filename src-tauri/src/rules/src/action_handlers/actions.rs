@@ -45,7 +45,7 @@ pub fn execute(
     automatic: bool,
 ) -> Outcome {
     verify!(
-        legal_actions::can_take_action(game, player, action) || action.is_debug_action(),
+        legal_actions::can_take_action(game, player, &action) || action.is_debug_action(),
         "Illegal game action {:?} for player {:?}",
         action,
         player
@@ -62,14 +62,14 @@ pub fn execute(
     }
 
     if !action.is_prompt_action() {
-        game.prompts.reset_with_action(action);
+        game.prompts.reset_with_action(&action);
     }
 
     loop {
-        match action {
+        match &action {
             GameAction::DebugAction(a) => debug_actions::execute(game, player, a),
             GameAction::PassPriority => handle_pass_priority(game, player),
-            GameAction::ProposePlayingCard(id) => handle_play_card(game, Source::Game, player, id),
+            GameAction::ProposePlayingCard(id) => handle_play_card(game, Source::Game, player, *id),
             GameAction::CombatAction(a) => combat_actions::execute(game, player, a),
             GameAction::PromptAction(a) => {
                 // Store the prompt selection and then re-simulate the previous action using

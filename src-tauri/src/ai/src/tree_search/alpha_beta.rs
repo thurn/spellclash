@@ -78,7 +78,7 @@ where
                     return result.with_fallback_action(action);
                 }
                 let mut child = node.make_copy();
-                child.execute_action(current_turn, action);
+                child.execute_action(current_turn, action.clone());
                 let score =
                     run_internal(config, &child, evaluator, depth - 1, player, alpha, beta, false)
                         .score();
@@ -103,7 +103,7 @@ where
                     return result.with_fallback_action(action);
                 }
                 let mut child = node.make_copy();
-                child.execute_action(current_turn, action);
+                child.execute_action(current_turn, action.clone());
                 let score =
                     run_internal(config, &child, evaluator, depth - 1, player, alpha, beta, false)
                         .score();

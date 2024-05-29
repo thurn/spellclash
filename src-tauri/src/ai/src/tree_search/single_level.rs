@@ -38,7 +38,7 @@ impl SelectionAlgorithm for SingleLevel {
 
         for action in node.legal_actions(player) {
             let mut child = node.make_copy();
-            child.execute_action(player, action);
+            child.execute_action(player, action.clone());
             let score = evaluator.evaluate(&child, player);
             if score > best_score {
                 best_score = score;

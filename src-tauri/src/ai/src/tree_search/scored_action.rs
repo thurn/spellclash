@@ -19,10 +19,7 @@ pub struct ScoredAction<T> {
     action: Option<T>,
 }
 
-impl<T> ScoredAction<T>
-where
-    T: Copy,
-{
+impl<T: Clone> ScoredAction<T> {
     pub fn new(score: i32) -> Self {
         Self { score, action: None }
     }
@@ -32,7 +29,7 @@ where
     }
 
     pub fn action(&self) -> T {
-        self.action.expect("No action found for ScoredAction")
+        self.action.as_ref().expect("No action found for ScoredAction").clone()
     }
 
     pub fn score(&self) -> i32 {

@@ -108,7 +108,7 @@ fn bottom_game_controls(
     }
 
     let mut result = vec![];
-    if legal_actions::can_take_action(game, player, GameAction::PassPriority) {
+    if legal_actions::can_take_action(game, player, &GameAction::PassPriority) {
         if game.stack().is_empty() {
             let next = match game.step {
                 GamePhaseStep::Upkeep => "To Draw",
@@ -129,7 +129,11 @@ fn bottom_game_controls(
             result.push(GameButtonView::new_primary("Resolve", GameAction::PassPriority));
         }
     }
-    if legal_actions::can_take_action(game, player, CombatAction::ConfirmAttackers) {
+    if legal_actions::can_take_action(
+        game,
+        player,
+        &GameAction::CombatAction(CombatAction::ConfirmAttackers),
+    ) {
         if let Some(CombatState::ProposingAttackers(attackers)) = &game.combat {
             let count = attackers.proposed_attacks.len();
             result.push(GameButtonView::new_primary(
@@ -138,7 +142,11 @@ fn bottom_game_controls(
             ));
         }
     }
-    if legal_actions::can_take_action(game, player, CombatAction::ConfirmBlockers) {
+    if legal_actions::can_take_action(
+        game,
+        player,
+        &GameAction::CombatAction(CombatAction::ConfirmBlockers),
+    ) {
         if let Some(CombatState::ProposingBlockers(blockers)) = &game.combat {
             let count = blockers.proposed_blocks.len();
             result.push(GameButtonView::new_primary(
@@ -147,7 +155,11 @@ fn bottom_game_controls(
             ));
         }
     }
-    if legal_actions::can_take_action(game, player, CombatAction::ConfirmBlockerOrder) {
+    if legal_actions::can_take_action(
+        game,
+        player,
+        &GameAction::CombatAction(CombatAction::ConfirmBlockerOrder),
+    ) {
         result
             .push(GameButtonView::new_primary("Confirm Order", CombatAction::ConfirmBlockerOrder));
     }

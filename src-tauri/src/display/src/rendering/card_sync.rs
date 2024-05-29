@@ -123,31 +123,31 @@ fn card_action(player: PlayerName, game: &GameState, card: &CardState) -> Option
     } else if legal_actions::can_take_action(
         game,
         player,
-        CombatAction::AddSelectedAttacker(card.entity_id),
+        &GameAction::CombatAction(CombatAction::AddSelectedAttacker(card.entity_id)),
     ) {
         Some(CombatAction::AddSelectedAttacker(card.entity_id).into())
     } else if legal_actions::can_take_action(
         game,
         player,
-        CombatAction::RemoveAttacker(card.entity_id),
+        &GameAction::CombatAction(CombatAction::RemoveAttacker(card.entity_id)),
     ) {
         Some(CombatAction::RemoveAttacker(card.entity_id).into())
     } else if legal_actions::can_take_action(
         game,
         player,
-        CombatAction::AddSelectedBlocker(card.entity_id),
+        &GameAction::CombatAction(CombatAction::AddSelectedBlocker(card.entity_id)),
     ) {
         Some(CombatAction::AddSelectedBlocker(card.entity_id).into())
     } else if legal_actions::can_take_action(
         game,
         player,
-        CombatAction::RemoveBlocker(card.entity_id),
+        &GameAction::CombatAction(CombatAction::RemoveBlocker(card.entity_id)),
     ) {
         Some(CombatAction::RemoveBlocker(card.entity_id).into())
     } else if legal_actions::can_take_action(
         game,
         player,
-        CombatAction::SetSelectedBlockersTarget(card.entity_id),
+        &GameAction::CombatAction(CombatAction::SetSelectedBlockersTarget(card.entity_id)),
     ) {
         Some(CombatAction::SetSelectedBlockersTarget(card.entity_id).into())
     } else {

@@ -212,7 +212,9 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> 
         edges.sort_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap());
         edges.reverse();
 
-        for (child, weight) in edges.iter().map(|(edge, weight)| (edge.weight().action, *weight)) {
+        for (child, weight) in
+            edges.iter().map(|(edge, weight)| (edge.weight().action.clone(), *weight))
+        {
             info!("Action: {:?} at {:?}", weight, child);
         }
     }
@@ -254,10 +256,11 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> 
     ) -> NodeIndex {
         while let GameStatus::InProgress { current_turn } = game.status() {
             let actions = game.legal_actions(current_turn).collect::<HashSet<_>>();
-            let explored = graph.edges(node).map(|e| e.weight().action).collect::<HashSet<_>>();
+            let explored =
+                graph.edges(node).map(|e| e.weight().action.clone()).collect::<HashSet<_>>();
             if let Some(action) = actions.iter().find(|a| !explored.contains(a)) {
                 // An action exists which has not yet been tried
-                return Self::expand(graph, game, current_turn, node, *action);
+                return Self::expand(graph, game, current_turn, node, action.clone());
             } else {
                 // All actions have been tried, recursively search the best candidate
                 let (action, best) =
@@ -290,7 +293,7 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> 
         source: NodeIndex,
         action: TState::Action,
     ) -> NodeIndex {
-        game.execute_action(player, action);
+        game.execute_action(player, action.clone());
         let target = graph.add_node(SearchNode { player, total_reward: 0.0, visit_count: 0 });
         graph.add_edge(source, target, SearchEdge { action });
         target
@@ -342,7 +345,7 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> 
             })
             .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
             .expect("No children found");
-        (edge.weight().action, edge.target())
+        (edge.weight().action.clone(), edge.target())
     }
 
     /// Once a playout is completed, the backpropagation step walks back up the

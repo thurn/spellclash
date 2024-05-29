@@ -66,9 +66,10 @@ pub fn handle_game_action(
         database.clone(),
         data.game_id().with_error(|| "Expected current game ID")?,
     )?;
+    let executed_action = action.clone();
     let result = handle_game_action_internal(database, &data, action, &mut game);
     if result.is_err() {
-        error!(?action, "Error running game action loop");
+        error!(?executed_action, "Error running game action loop");
     }
     result
 }
@@ -201,21 +202,31 @@ pub fn auto_pass_action(game: &GameState, player: PlayerName) -> Option<GameActi
         }
     }
 
-    if legal_actions::can_take_action(game, player, CombatAction::ConfirmAttackers)
-        && combat_queries::legal_attackers(game, player).next().is_none()
+    if legal_actions::can_take_action(
+        game,
+        player,
+        &GameAction::CombatAction(CombatAction::ConfirmAttackers),
+    ) && combat_queries::legal_attackers(game, player).next().is_none()
     {
         // No attacks available
         return Some(GameAction::CombatAction(CombatAction::ConfirmAttackers));
     }
 
-    if legal_actions::can_take_action(game, player, CombatAction::ConfirmBlockers)
-        && (combat_queries::legal_blockers(game, player).next().is_none() || empty_combat)
+    if legal_actions::can_take_action(
+        game,
+        player,
+        &GameAction::CombatAction(CombatAction::ConfirmBlockers),
+    ) && (combat_queries::legal_blockers(game, player).next().is_none() || empty_combat)
     {
         // No blocks available
         return Some(GameAction::CombatAction(CombatAction::ConfirmBlockers));
     }
 
-    if legal_actions::can_take_action(game, player, CombatAction::ConfirmBlockerOrder) {
+    if legal_actions::can_take_action(
+        game,
+        player,
+        &GameAction::CombatAction(CombatAction::ConfirmBlockerOrder),
+    ) {
         // No blockers require ordering
         return Some(GameAction::CombatAction(CombatAction::ConfirmBlockerOrder));
     }
