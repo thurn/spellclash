@@ -16,6 +16,7 @@ use std::time::{Duration, Instant};
 
 use data::actions::game_action::GameAction;
 use data::core::primitives::PlayerName;
+use data::game_states::animation_tracker::AnimationState;
 use data::game_states::game_state::GameState;
 use rules::legality::legal_actions;
 use tracing::{subscriber, Level};
@@ -27,13 +28,19 @@ use crate::game::agents;
 use crate::game::agents::AgentName;
 
 /// Select a game action for the [PlayerName] in the given [GameState].
-pub fn select(game: &GameState, player: PlayerName) -> Value<GameAction> {
-    verify!(legal_actions::next_to_act(game) == player, "Not {:?}'s turn", player);
-    let legal = legal_actions::compute(game, player);
+pub fn select(input_game: &GameState, player: PlayerName) -> Value<GameAction> {
+    verify!(legal_actions::next_to_act(input_game) == player, "Not {:?}'s turn", player);
+    let legal = legal_actions::compute(input_game, player);
     verify!(!legal.is_empty(), "No legal actions available");
     if legal.len() == 1 {
         return Ok(legal[0]);
     }
+
+    let mut game = input_game.clone();
+    game.undo_tracker.enabled = false;
+    game.undo_tracker.undo.clear();
+    game.animations.state = AnimationState::Ignore;
+    game.animations.steps.clear();
 
     let agent = agents::get_agent(AgentName::Uct1);
     let info_subscriber = tracing_subscriber::fmt().with_max_level(Level::INFO).finish();
@@ -43,7 +50,7 @@ pub fn select(game: &GameState, player: PlayerName) -> Value<GameAction> {
                 deadline: Instant::now() + Duration::from_secs(10),
                 panic_on_search_timeout: true,
             },
-            game,
+            &game,
         ))
     })
 }
