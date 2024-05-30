@@ -12,65 +12,96 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ReactNode } from 'react';
+import { Dispatch, ReactNode, SetStateAction, createContext, useState } from 'react';
 import { CardView, GameView, Position } from '../generated_types';
 import { LinearCardDisplay } from './LinearCardDisplay';
 import { StackCardDisplay } from './StackCardDisplay';
+import { Popover, PopoverContent, PopoverTrigger } from '@nextui-org/react';
 
 export type PositionKey = string;
 
+export interface CardPreviewImageContext {
+  readonly previewImage: string;
+  readonly setPreviewImage?: Dispatch<SetStateAction<string>>;
+}
+export const CardPreviewImage: React.Context<CardPreviewImageContext> = createContext({
+  previewImage: '',
+});
+
 export function PlayArea({ view }: { view: GameView }): ReactNode {
   const map = cardPositions(view);
+  const previewHeight = 40;
+  const [previewImage, setPreviewImage] = useState('');
+  const cardPreview = (
+    <Popover isOpen={previewImage !== ''}>
+      <PopoverTrigger> </PopoverTrigger>
+      <PopoverContent>
+        <img
+          src={previewImage}
+          style={{
+            height: `${previewHeight}vh`,
+            width: `${previewHeight * (5 / 7)}vh`,
+          }}
+        />
+      </PopoverContent>
+    </Popover>
+  );
+
   return (
-    <div className="flex flex-row">
-      <div className="w-11/12">
-        <LinearCardDisplay
-          key="oh"
-          name="Opponent Hand"
-          cards={getPosition(map, keyForPosition({ hand: 'opponent' }))}
-        />
-        <LinearCardDisplay
-          key="om"
-          name="Opponent Mana"
-          cards={getPosition(map, keyForPosition({ battlefield: ['opponent', 'mana'] }))}
-        />
-        <LinearCardDisplay
-          key="op"
-          name="Opponent Permanents"
-          cards={getPosition(map, keyForPosition({ battlefield: ['opponent', 'permanents'] }))}
-        />
-        <LinearCardDisplay
-          key="st"
-          name="Stack"
-          cards={getPosition(map, keyForPosition('stack'))}
-        />
-        <LinearCardDisplay
-          key="vp"
-          name="Viewer Permanents"
-          cards={getPosition(map, keyForPosition({ battlefield: ['viewer', 'permanents'] }))}
-        />
-        <LinearCardDisplay
-          key="vm"
-          name="Viewer Mana"
-          cards={getPosition(map, keyForPosition({ battlefield: ['viewer', 'mana'] }))}
-        />
-        <LinearCardDisplay
-          key="vh"
-          name="Viewer Hand"
-          cards={getPosition(map, keyForPosition({ hand: 'viewer' }))}
-        />
+    <CardPreviewImage.Provider
+      value={{ previewImage: previewImage, setPreviewImage: setPreviewImage }}
+    >
+      <div className="flex flex-row">
+        {cardPreview}
+        <div className="w-11/12">
+          <LinearCardDisplay
+            key="oh"
+            name="Opponent Hand"
+            cards={getPosition(map, keyForPosition({ hand: 'opponent' }))}
+          />
+          <LinearCardDisplay
+            key="om"
+            name="Opponent Mana"
+            cards={getPosition(map, keyForPosition({ battlefield: ['opponent', 'mana'] }))}
+          />
+          <LinearCardDisplay
+            key="op"
+            name="Opponent Permanents"
+            cards={getPosition(map, keyForPosition({ battlefield: ['opponent', 'permanents'] }))}
+          />
+          <LinearCardDisplay
+            key="st"
+            name="Stack"
+            cards={getPosition(map, keyForPosition('stack'))}
+          />
+          <LinearCardDisplay
+            key="vp"
+            name="Viewer Permanents"
+            cards={getPosition(map, keyForPosition({ battlefield: ['viewer', 'permanents'] }))}
+          />
+          <LinearCardDisplay
+            key="vm"
+            name="Viewer Mana"
+            cards={getPosition(map, keyForPosition({ battlefield: ['viewer', 'mana'] }))}
+          />
+          <LinearCardDisplay
+            key="vh"
+            name="Viewer Hand"
+            cards={getPosition(map, keyForPosition({ hand: 'viewer' }))}
+          />
+        </div>
+        <div className="w-1/12 flex flex-col justify-between">
+          <StackCardDisplay
+            key="og"
+            cards={getPosition(map, keyForPosition({ discardPile: 'opponent' }))}
+          />
+          <StackCardDisplay
+            key="vg"
+            cards={getPosition(map, keyForPosition({ discardPile: 'viewer' }))}
+          />
+        </div>
       </div>
-      <div className="w-1/12 flex flex-col justify-between">
-        <StackCardDisplay
-          key="og"
-          cards={getPosition(map, keyForPosition({ discardPile: 'opponent' }))}
-        />
-        <StackCardDisplay
-          key="vg"
-          cards={getPosition(map, keyForPosition({ discardPile: 'viewer' }))}
-        />
-      </div>
-    </div>
+    </CardPreviewImage.Provider>
   );
 }
 
