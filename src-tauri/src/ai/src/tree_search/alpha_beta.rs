@@ -15,9 +15,7 @@
 use std::cmp;
 use std::time::Instant;
 
-use tracing::{debug, info};
-use utils::command_line;
-use utils::command_line::TracingStyle;
+use tracing::debug;
 
 use crate::core::agent::AgentConfig;
 use crate::core::game_state_node::{GameStateNode, GameStatus};
@@ -35,6 +33,9 @@ pub struct AlphaBetaAlgorithm {
     pub search_depth: u32,
 }
 
+#[derive(Debug)]
+pub struct DeadlineExceededError;
+
 impl SelectionAlgorithm for AlphaBetaAlgorithm {
     fn pick_action<N, E>(
         &self,
@@ -49,12 +50,13 @@ impl SelectionAlgorithm for AlphaBetaAlgorithm {
     {
         assert!(matches!(node.status(), GameStatus::InProgress { .. }));
         run_internal(config, node, evaluator, self.search_depth, player, i32::MIN, i32::MAX, true)
+            .expect("Deadline exceeded")
             .action()
     }
 }
 
 #[allow(clippy::too_many_arguments)]
-fn run_internal<N, E>(
+pub fn run_internal<N, E>(
     config: AgentConfig,
     node: &N,
     evaluator: &E,
@@ -63,49 +65,43 @@ fn run_internal<N, E>(
     mut alpha: i32,
     mut beta: i32,
     top_level: bool,
-) -> ScoredAction<N::Action>
+) -> Result<ScoredAction<N::Action>, DeadlineExceededError>
 where
     N: GameStateNode,
     E: StateEvaluator<N>,
 {
     match node.status() {
-        _ if depth == 0 => ScoredAction::new(evaluator.evaluate(node, player)),
-        GameStatus::Completed { .. } => ScoredAction::new(evaluator.evaluate(node, player)),
+        _ if depth == 0 => Ok(ScoredAction::new(evaluator.evaluate(node, player))),
+        GameStatus::Completed { .. } => Ok(ScoredAction::new(evaluator.evaluate(node, player))),
         GameStatus::InProgress { current_turn } if current_turn == player => {
             let mut result = ScoredAction::new(i32::MIN);
             for action in node.legal_actions(current_turn) {
                 if deadline_exceeded(config, depth) {
-                    return result.with_fallback_action(action);
+                    return Err(DeadlineExceededError);
                 }
                 let mut child = node.make_copy();
                 child.execute_action(current_turn, action.clone());
                 let score =
-                    run_internal(config, &child, evaluator, depth - 1, player, alpha, beta, false)
+                    run_internal(config, &child, evaluator, depth - 1, player, alpha, beta, false)?
                         .score();
-                if top_level {
-                    info!("Score {:?} for action {:?}", score, action);
-                    if command_line::flags().tracing_style == TracingStyle::AggregateTime {
-                        println!(">>> Score {:?} for action {:?}", score, action);
-                    }
-                }
                 alpha = cmp::max(alpha, score);
                 result.insert_max(action, score);
                 if score >= beta {
                     break; // Beta cutoff
                 }
             }
-            result
+            Ok(result)
         }
         GameStatus::InProgress { current_turn } => {
             let mut result = ScoredAction::new(i32::MAX);
             for action in node.legal_actions(current_turn) {
                 if deadline_exceeded(config, depth) {
-                    return result.with_fallback_action(action);
+                    return Err(DeadlineExceededError);
                 }
                 let mut child = node.make_copy();
                 child.execute_action(current_turn, action.clone());
                 let score =
-                    run_internal(config, &child, evaluator, depth - 1, player, alpha, beta, false)
+                    run_internal(config, &child, evaluator, depth - 1, player, alpha, beta, false)?
                         .score();
                 if top_level {
                     debug!("Score {:?} for action {:?}", score, action);
@@ -117,17 +113,12 @@ where
                 }
             }
             assert!(result.has_action());
-            result
+            Ok(result)
         }
     }
 }
 
-/// Check whether `deadline` has been exceeded. Only checks deadlines for higher
-/// parts of the tree to avoid excessive calls to Instant::now().
+/// Check whether `deadline` has been exceeded.
 fn deadline_exceeded(config: AgentConfig, depth: u32) -> bool {
-    let exceeded = depth > 1 && config.deadline < Instant::now();
-    if exceeded && config.panic_on_search_timeout {
-        panic!("Search deadline exceeded!");
-    }
-    exceeded
+    depth > 1 && config.deadline < Instant::now()
 }

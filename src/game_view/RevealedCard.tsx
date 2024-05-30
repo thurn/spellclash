@@ -26,7 +26,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ReactNode, useContext, useState } from 'react';
+import { ReactNode, useContext } from 'react';
 import { RevealedCardView } from '../generated_types';
 import { GlobalContext } from '../App';
 import { handleAction } from '../server';

@@ -47,25 +47,16 @@ pub fn select(input_game: &GameState, player: PlayerName) -> Value<GameAction> {
     game.animations.state = AnimationState::Ignore;
     game.animations.steps.clear();
 
-    let agent = agents::get_agent(AgentName::Uct1Iterations10_000);
+    let agent = agents::get_agent(AgentName::IterativeDeepening);
+    let deadline = Duration::from_secs(10);
     match command_line::flags().tracing_style {
-        TracingStyle::AggregateTime => Ok(agent.pick_action(
-            AgentConfig {
-                deadline: Instant::now() + Duration::from_secs(300),
-                panic_on_search_timeout: true,
-            },
-            &game,
-        )),
+        TracingStyle::AggregateTime => {
+            Ok(agent.pick_action(AgentConfig { deadline: Instant::now() + deadline }, &game))
+        }
         TracingStyle::Forest => {
             let info_subscriber = tracing_subscriber::fmt().with_max_level(Level::INFO).finish();
             subscriber::with_default(info_subscriber, || {
-                Ok(agent.pick_action(
-                    AgentConfig {
-                        deadline: Instant::now() + Duration::from_secs(300),
-                        panic_on_search_timeout: true,
-                    },
-                    &game,
-                ))
+                Ok(agent.pick_action(AgentConfig { deadline: Instant::now() + deadline }, &game))
             })
         }
     }

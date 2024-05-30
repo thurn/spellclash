@@ -25,17 +25,11 @@ use crate::core::{state_combiner, state_predictor};
 pub struct AgentConfig {
     /// Time at which the agent should complete its move selection.
     pub deadline: Instant,
-    /// If true, the agent should panic if it has not completed its search after
-    /// the deadline is exceeded
-    pub panic_on_search_timeout: bool,
 }
 
 impl AgentConfig {
     pub fn with_deadline(seconds: u64) -> Self {
-        Self {
-            deadline: Instant::now() + Duration::from_secs(seconds),
-            panic_on_search_timeout: false,
-        }
+        Self { deadline: Instant::now() + Duration::from_secs(seconds) }
     }
 }
 

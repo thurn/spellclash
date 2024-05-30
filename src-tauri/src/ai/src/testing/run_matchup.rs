@@ -46,9 +46,6 @@ pub struct MatchupArgs {
     /// How much log output to produce while running
     #[arg(long, value_enum, default_value_t = Verbosity::Matches)]
     pub verbosity: Verbosity,
-    /// Whether to crash the program if a search timeout is exceeded.
-    #[arg(long, default_value_t = false)]
-    pub panic_on_search_timeout: bool,
 }
 
 pub fn run_with_args(args: &MatchupArgs) {
@@ -60,14 +57,7 @@ pub fn run_with_args(args: &MatchupArgs) {
             println!(">>> Running match {} between {} and {}", i, user.name(), opponent.name());
         }
         let mut game = new_game();
-        run_match(
-            args.user,
-            args.opponent,
-            &mut game,
-            args.move_time_ms,
-            args.verbosity,
-            args.panic_on_search_timeout,
-        );
+        run_match(args.user, args.opponent, &mut game, args.move_time_ms, args.verbosity);
     }
 }
 
@@ -77,7 +67,6 @@ pub fn run_match(
     game: &mut GameState,
     move_time_ms: u64,
     verbosity: Verbosity,
-    panic_on_search_timeout: bool,
 ) -> AgentName {
     let user = agents::get_agent(user_agent);
     let opponent = agents::get_agent(opponent_agent);
@@ -89,10 +78,8 @@ pub fn run_match(
         match game.status() {
             GameStatus::InProgress { current_turn } => {
                 let agent = if current_turn == PlayerName::One { &user } else { &opponent };
-                let config = AgentConfig {
-                    panic_on_search_timeout,
-                    deadline: Instant::now() + Duration::from_millis(move_time_ms),
-                };
+                let config =
+                    AgentConfig { deadline: Instant::now() + Duration::from_millis(move_time_ms) };
                 let action = agent.pick_action(config, game);
                 game.execute_action(current_turn, action.clone());
                 clear_action_line(verbosity);

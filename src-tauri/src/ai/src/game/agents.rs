@@ -24,11 +24,13 @@ use crate::game::evaluators::CustomHeuristicEvaluator;
 use crate::monte_carlo::monte_carlo_search::{MonteCarloAlgorithm, RandomPlayoutEvaluator};
 use crate::monte_carlo::uct1::Uct1;
 use crate::tree_search::alpha_beta::AlphaBetaAlgorithm;
+use crate::tree_search::iterative_deepening_search::IterativeDeepeningSearch;
 
 #[derive(ValueEnum, Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub enum AgentName {
     AlphaBetaDepth5,
     AlphaBetaDepth25,
+    IterativeDeepening,
     Uct1,
     Uct1Iterations250,
     Uct1Iterations10_000,
@@ -45,6 +47,11 @@ pub fn get_agent(name: AgentName) -> Box<dyn Agent<GameState>> {
         AgentName::AlphaBetaDepth25 => Box::new(AgentData::omniscient(
             "ALPHA_BETA_25",
             AlphaBetaAlgorithm { search_depth: 25 },
+            CustomHeuristicEvaluator,
+        )),
+        AgentName::IterativeDeepening => Box::new(AgentData::omniscient(
+            "ITERATIVE_DEEPENING",
+            IterativeDeepeningSearch,
             CustomHeuristicEvaluator,
         )),
         AgentName::Uct1 => Box::new(AgentData::omniscient(
