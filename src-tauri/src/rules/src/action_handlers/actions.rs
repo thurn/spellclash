@@ -31,10 +31,13 @@ use crate::queries::player_queries;
 use crate::resolve_cards::resolve;
 use crate::steps::step;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum PlayerType {
-    User,
-    Agent,
+/// Options for executing a game action
+#[derive(Debug, Clone, Copy)]
+pub struct ExecuteAction {
+    /// True if this is an automatically applied action, e.g. auto-pass
+    pub automatic: bool,
+    /// True if this action should be checked for legality
+    pub validate: bool,
 }
 
 #[instrument(name = "actions_execute", level = "debug", skip(game))]
@@ -42,16 +45,18 @@ pub fn execute(
     game: &mut GameState,
     player: PlayerName,
     mut action: GameAction,
-    automatic: bool,
+    options: ExecuteAction,
 ) -> Outcome {
-    verify!(
-        legal_actions::can_take_action(game, player, &action) || action.is_debug_action(),
-        "Illegal game action {:?} for player {:?}",
-        action,
-        player
-    );
+    if options.validate {
+        verify!(
+            legal_actions::can_take_action(game, player, &action) || action.is_debug_action(),
+            "Illegal game action {:?} for player {:?}",
+            action,
+            player
+        );
+    }
 
-    if !automatic
+    if !options.automatic
         && game.undo_tracker.enabled
         && action != GameAction::DebugAction(DebugGameAction::Undo)
     {

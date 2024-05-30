@@ -19,6 +19,7 @@ use data::core::primitives::PlayerName;
 use data::game_states::animation_tracker::AnimationState;
 use data::game_states::game_state::GameState;
 use rules::legality::legal_actions;
+use rules::legality::legal_actions::LegalActions;
 use tracing::{instrument, subscriber, Level};
 use utils::command_line::TracingStyle;
 use utils::outcome::Value;
@@ -32,7 +33,9 @@ use crate::game::agents::AgentName;
 #[instrument(level = "debug", skip_all)]
 pub fn select(input_game: &GameState, player: PlayerName) -> Value<GameAction> {
     verify!(legal_actions::next_to_act(input_game) == player, "Not {:?}'s turn", player);
-    let legal = legal_actions::compute(input_game, player);
+    let legal = legal_actions::compute(input_game, player, LegalActions {
+        include_interface_actions: false,
+    });
     verify!(!legal.is_empty(), "No legal actions available");
     if legal.len() == 1 {
         return Ok(legal[0].clone());
@@ -44,11 +47,11 @@ pub fn select(input_game: &GameState, player: PlayerName) -> Value<GameAction> {
     game.animations.state = AnimationState::Ignore;
     game.animations.steps.clear();
 
-    let agent = agents::get_agent(AgentName::AlphaBetaDepth25);
+    let agent = agents::get_agent(AgentName::Uct1Iterations10_000);
     match command_line::flags().tracing_style {
         TracingStyle::AggregateTime => Ok(agent.pick_action(
             AgentConfig {
-                deadline: Instant::now() + Duration::from_secs(10),
+                deadline: Instant::now() + Duration::from_secs(300),
                 panic_on_search_timeout: true,
             },
             &game,
@@ -58,7 +61,7 @@ pub fn select(input_game: &GameState, player: PlayerName) -> Value<GameAction> {
             subscriber::with_default(info_subscriber, || {
                 Ok(agent.pick_action(
                     AgentConfig {
-                        deadline: Instant::now() + Duration::from_secs(10),
+                        deadline: Instant::now() + Duration::from_secs(300),
                         panic_on_search_timeout: true,
                     },
                     &game,

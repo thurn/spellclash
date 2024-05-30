@@ -20,6 +20,7 @@ use data::core::primitives::{CardId, ManaColor, Source};
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandSubtype;
 use data::printed_cards::mana_cost::ManaCostItem;
+use tracing::instrument;
 use utils::outcome::{Outcome, Value};
 use utils::{fail, outcome};
 
@@ -39,6 +40,7 @@ type LandAbilityMap = HashMap<ManaColor, Vec<(CardId, SubtypeCount)>>;
 ///
 /// None is returned if the planner failed to find a legal combination of
 /// choices which would result in this card's mana cost being paid.
+#[instrument(level = "trace", skip_all)]
 pub fn mana_payment(
     game: &GameState,
     _source: Source,

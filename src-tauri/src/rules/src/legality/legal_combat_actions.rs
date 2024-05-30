@@ -20,6 +20,7 @@ use data::game_states::game_state::GameState;
 
 #[allow(unused)] // Used in docs
 use crate::legality::legal_actions;
+use crate::legality::legal_actions::LegalActions;
 use crate::queries::combat_queries;
 
 /// Appends all legal combat actions for the named player to the provided
@@ -29,7 +30,12 @@ use crate::queries::combat_queries;
 /// [legal_actions::next_to_act], i.e. we can assume this is the attacking
 /// player during 'declare attacks' and the defending player during 'declare
 /// blocks'.
-pub fn append(game: &GameState, player: PlayerName, actions: &mut Vec<GameAction>) {
+pub fn append(
+    game: &GameState,
+    player: PlayerName,
+    actions: &mut Vec<GameAction>,
+    options: LegalActions,
+) {
     match &game.combat {
         None => {}
         Some(CombatState::ProposingAttackers(ProposedAttackers {
@@ -52,14 +58,16 @@ pub fn append(game: &GameState, player: PlayerName, actions: &mut Vec<GameAction
                         .map(CombatAction::SetSelectedAttackersTarget),
                 );
             }
-            extend_actions(
-                actions,
-                selected_attackers
-                    .iter()
-                    .copied()
-                    .chain(proposed_attacks.all())
-                    .map(CombatAction::RemoveAttacker),
-            );
+            if options.include_interface_actions {
+                extend_actions(
+                    actions,
+                    selected_attackers
+                        .iter()
+                        .copied()
+                        .chain(proposed_attacks.all())
+                        .map(CombatAction::RemoveAttacker),
+                );
+            }
             actions.push(CombatAction::ConfirmAttackers.into());
         }
         Some(CombatState::ConfirmedAttackers(attackers)) => {}
@@ -79,15 +87,17 @@ pub fn append(game: &GameState, player: PlayerName, actions: &mut Vec<GameAction
                     blockers.attackers.all().map(CombatAction::SetSelectedBlockersTarget),
                 );
             }
-            extend_actions(
-                actions,
-                blockers
-                    .selected_blockers
-                    .iter()
-                    .chain(blockers.proposed_blocks.keys())
-                    .copied()
-                    .map(CombatAction::RemoveBlocker),
-            );
+            if options.include_interface_actions {
+                extend_actions(
+                    actions,
+                    blockers
+                        .selected_blockers
+                        .iter()
+                        .chain(blockers.proposed_blocks.keys())
+                        .copied()
+                        .map(CombatAction::RemoveBlocker),
+                );
+            }
             actions.push(CombatAction::ConfirmBlockers.into());
         }
         Some(CombatState::OrderingBlockers(blockers)) => {

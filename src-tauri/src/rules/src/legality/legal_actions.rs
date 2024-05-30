@@ -25,10 +25,19 @@ use tracing::instrument;
 use crate::legality::{can_pay_mana_cost, legal_combat_actions, legal_prompt_actions};
 use crate::play_cards::{pick_face_to_play, play_card};
 
+#[derive(Debug, Clone, Copy)]
+pub struct LegalActions {
+    /// Include 'interface only' actions in the response which do not progress
+    /// game state, e.g. removing a declared attacker.
+    ///
+    /// These are normally excluded from AI agent options.
+    pub include_interface_actions: bool,
+}
+
 /// List of all legal actions the named player can take in the
 /// current game state.
-#[instrument(name = "legal_actions_compute", level = "trace", skip(game))]
-pub fn compute(game: &GameState, player: PlayerName) -> Vec<GameAction> {
+#[instrument(name = "legal_actions_compute", level = "trace", skip(game, options))]
+pub fn compute(game: &GameState, player: PlayerName, options: LegalActions) -> Vec<GameAction> {
     let mut result = vec![];
     if game.status != GameStatus::Playing {
         return result;
@@ -52,7 +61,7 @@ pub fn compute(game: &GameState, player: PlayerName) -> Vec<GameAction> {
         }
     }
 
-    legal_combat_actions::append(game, player, &mut result);
+    legal_combat_actions::append(game, player, &mut result, options);
     result
 }
 
@@ -60,7 +69,9 @@ pub fn compute(game: &GameState, player: PlayerName) -> Vec<GameAction> {
 /// provided [GameAction].
 #[instrument(level = "trace", skip(game, game_action))]
 pub fn can_take_action(game: &GameState, player: PlayerName, game_action: &GameAction) -> bool {
-    compute(game, player).iter().any(|action| action == game_action)
+    compute(game, player, LegalActions { include_interface_actions: true })
+        .iter()
+        .any(|action| action == game_action)
 }
 
 /// Returns the name of the player who is currently allowed to take an action.

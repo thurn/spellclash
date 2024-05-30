@@ -161,6 +161,9 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> 
         let root = graph.add_node(SearchNode { total_reward: 0.0, visit_count: 1, player });
         let mut i = 0;
         while !should_halt(i) {
+            if i > 0 && i % 1000 == 0 {
+                println!("Iteration {}", i);
+            }
             let mut game = node.make_copy();
             let node = self.tree_policy(&mut graph, &mut game, root);
             let reward = f64::from(evaluator.evaluate(&game, player));

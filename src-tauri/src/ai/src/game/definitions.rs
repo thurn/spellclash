@@ -17,7 +17,9 @@ use data::core::primitives;
 use data::game_states::game_state;
 use data::game_states::game_state::GameState;
 use rules::action_handlers::actions;
+use rules::action_handlers::actions::ExecuteAction;
 use rules::legality::legal_actions;
+use rules::legality::legal_actions::LegalActions;
 use utils::outcome::StopCondition;
 
 use crate::core::game_state_node::{GameStateNode, GameStatus};
@@ -41,11 +43,17 @@ impl GameStateNode for GameState {
         &'a self,
         player: primitives::PlayerName,
     ) -> Box<dyn Iterator<Item = GameAction> + 'a> {
-        Box::new(legal_actions::compute(self, player).into_iter())
+        Box::new(
+            legal_actions::compute(self, player, LegalActions { include_interface_actions: false })
+                .into_iter(),
+        )
     }
 
     fn execute_action(&mut self, player: primitives::PlayerName, action: GameAction) {
-        let result = actions::execute(self, player, action, false);
+        let result = actions::execute(self, player, action, ExecuteAction {
+            automatic: false,
+            validate: false,
+        });
         if let Err(StopCondition::Error(r)) = result {
             panic!("Error executing game action: {:?}", r);
         }

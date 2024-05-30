@@ -28,8 +28,9 @@ use display::commands::scene_identifier::SceneIdentifier;
 use display::rendering::render;
 use enumset::{enum_set, EnumSet};
 use rules::action_handlers::actions;
-use rules::action_handlers::actions::PlayerType;
+use rules::action_handlers::actions::ExecuteAction;
 use rules::legality::legal_actions;
+use rules::legality::legal_actions::LegalActions;
 use rules::queries::combat_queries;
 use tracing::{debug, error, info, instrument};
 use utils::outcome::{StopCondition, Value};
@@ -105,12 +106,10 @@ pub fn handle_game_action_internal(
     let mut result = GameResponse::new(data.clone());
 
     loop {
-        let halt = match actions::execute(
-            game,
-            current_player,
-            current_action,
-            current_action_is_automatic,
-        ) {
+        let halt = match actions::execute(game, current_player, current_action, ExecuteAction {
+            automatic: current_action_is_automatic,
+            validate: true,
+        }) {
             Ok(_) => false,
             Err(StopCondition::Prompt) | Err(StopCondition::GameOver) => true,
             error @ Err(..) => {
@@ -186,7 +185,11 @@ pub fn auto_pass_action(game: &GameState, player: PlayerName) -> Option<GameActi
             }
 
             if game.player(player).options.auto_pass
-                && legal_actions::compute(game, player).len() <= 1
+                && legal_actions::compute(game, player, LegalActions {
+                    include_interface_actions: true,
+                })
+                .len()
+                    <= 1
                 && !(is_active_player && ALWAYS_STOP_ACTIVE.contains(game.step)
                     || !is_active_player && ALWAYS_STOP_INACTIVE.contains(game.step))
             {
@@ -195,7 +198,11 @@ pub fn auto_pass_action(game: &GameState, player: PlayerName) -> Option<GameActi
                 return Some(GameAction::PassPriority);
             }
         } else if game.player(player).options.auto_pass
-            && legal_actions::compute(game, player).len() <= 1
+            && legal_actions::compute(game, player, LegalActions {
+                include_interface_actions: true,
+            })
+            .len()
+                <= 1
         {
             // No response available to item on stack, automatically pass
             return Some(GameAction::PassPriority);

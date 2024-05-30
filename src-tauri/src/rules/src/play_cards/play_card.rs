@@ -19,6 +19,7 @@ use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, PlayerName, Source, Zone};
 use data::game_states::game_state::GameState;
 use enum_iterator::Sequence;
+use tracing::instrument;
 use utils::outcome::{Outcome, Value};
 use utils::{fail, outcome};
 
@@ -48,6 +49,7 @@ pub fn execute(
 /// (or if some other ability is allowing them to play it) and if they can make
 /// a legal choice for each of the required choices which are part of playing
 /// this card (targeting, paying mana).
+#[instrument(level = "trace", skip_all)]
 pub fn can_play_card(
     game: &GameState,
     player: PlayerName,
