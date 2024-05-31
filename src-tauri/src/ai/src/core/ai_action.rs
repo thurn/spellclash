@@ -47,8 +47,8 @@ pub fn select(input_game: &GameState, player: PlayerName) -> Value<GameAction> {
     game.animations.state = AnimationState::Ignore;
     game.animations.steps.clear();
 
-    let agent = agents::get_agent(AgentName::IterativeDeepening);
-    let deadline = Duration::from_secs(10);
+    let agent = agents::get_agent(AgentName::Uct1Iterations10_000);
+    let deadline = Duration::from_secs(100);
     match command_line::flags().tracing_style {
         TracingStyle::AggregateTime => {
             Ok(agent.pick_action(AgentConfig { deadline: Instant::now() + deadline }, &game))

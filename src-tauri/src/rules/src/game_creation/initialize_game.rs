@@ -12,27 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::sync::Arc;
-
-use data::core::primitives::{GameId, UserId};
 use data::game_states::animation_tracker::{AnimationState, AnimationTracker};
 use data::game_states::game_state::GameState;
-use data::users::user_state::UserState;
 use database::sqlite_database::SqliteDatabase;
 use oracle::card_database;
-use rules::game_creation::initialize_game;
-use utils::outcome::{Outcome, Value};
-use utils::with_error::WithError;
+use utils::outcome::Outcome;
 
-/// Looks up a user by ID in the database.
-pub fn fetch_user(database: SqliteDatabase, user_id: UserId) -> Value<UserState> {
-    database.fetch_user(user_id)?.with_error(|| format!("User not found {user_id:?}"))
-}
+pub fn run(database: SqliteDatabase, game: &mut GameState) -> Outcome {
+    for previous in game.undo_tracker.undo.iter_mut() {
+        run(database.clone(), previous.as_mut())?;
+    }
 
-/// Looks up a game by ID in the database.
-pub fn fetch_game(database: SqliteDatabase, game_id: GameId) -> Value<GameState> {
-    let mut game =
-        database.fetch_game(game_id)?.with_error(|| format!("Game not found {game_id:?}"))?;
-    initialize_game::run(database, &mut game)?;
-    Ok(game)
+    game.animations = AnimationTracker::new(if game.configuration.simulation {
+        AnimationState::Ignore
+    } else {
+        AnimationState::Track
+    });
+    card_database::populate(database, game)
 }

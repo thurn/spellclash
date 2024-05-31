@@ -12,15 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![allow(unused)]
-
-pub mod action_handlers;
-pub mod core;
-pub mod game_creation;
-pub mod legality;
-pub mod mutations;
-pub mod planner;
-pub mod play_cards;
-pub mod queries;
-pub mod resolve_cards;
-pub mod steps;
+pub mod initialize_game;
+pub mod new_game;

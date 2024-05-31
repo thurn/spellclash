@@ -11,6 +11,7 @@ bench = false
 [dependencies]
 data = { path = "../data", version = "0.0.0" }
 database = { path = "../database", version = "0.0.0" }
+oracle = { path = "../oracle", version = "0.0.0" }
 utils = { path = "../utils", version = "0.0.0" }
 
 color-eyre = "0.6.2"
@@ -18,6 +19,7 @@ either = "1.11.0"
 enum-iterator = "2.0.0"
 enumset = "1.1.3"
 itertools = "0.12.1"
+maplit = "1.0.2"
 once_cell = "1.19.0"
 rand = "0.8.5"
 rand_xoshiro = { version = "0.6.0", features = ["serde1"] }

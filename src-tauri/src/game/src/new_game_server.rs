@@ -46,6 +46,7 @@ use maplit::hashmap;
 use oracle::oracle_impl::OracleImpl;
 use rand_xoshiro::rand_core::SeedableRng;
 use rand_xoshiro::Xoshiro256StarStar;
+use rules::game_creation::new_game;
 use rules::mutations::library;
 use rules::steps::step;
 use tracing::info;
@@ -63,34 +64,21 @@ pub fn create(
 ) -> Value<GameResponse> {
     let mut user = requests::fetch_user(database.clone(), data.user_id)?;
 
-    let user_deck = find_deck(action.deck)?;
-    let opponent_deck = find_deck(action.opponent_deck)?;
-
     let game_id = if let Some(id) = action.debug_options.override_game_id {
         id
     } else {
         GameId(Uuid::new_v4())
     };
-    let oracle = Box::new(OracleImpl::new(database.clone()));
     info!(?game_id, "Creating new game");
-    let mut game = create_game(
-        oracle,
+    let mut game = new_game::create(
+        database.clone(),
         game_id,
         user.id,
-        user_deck,
+        action.deck,
         action.debug_options.configuration.act_as_player.map(|p| p.id).or(action.opponent_id),
-        opponent_deck,
+        action.opponent_deck,
         action.debug_options.configuration,
     )?;
-    requests::initialize_game(database.clone(), &mut game)?;
-
-    game.shuffle_library(PlayerName::One)?;
-    library::draw_cards(&mut game, Source::Game, PlayerName::One, 7)?;
-    game.shuffle_library(PlayerName::Two)?;
-    library::draw_cards(&mut game, Source::Game, PlayerName::Two, 7)?;
-    // TODO: Resolve mulligans
-    game.status = GameStatus::Playing;
-    step::advance(&mut game)?;
     if let Some(action) = game_action_server::auto_pass_action(&game, PlayerName::One) {
         // Pass priority until the first configured stop.
         game_action_server::handle_game_action_internal(
@@ -124,112 +112,4 @@ pub fn create(
     }
 
     Ok(result)
-}
-
-fn create_game(
-    oracle: Box<dyn Oracle>,
-    game_id: GameId,
-    user_id: UserId,
-    user_deck: Deck,
-    opponent_id: Option<UserId>,
-    opponent_deck: Deck,
-    debug: DebugConfiguration,
-) -> Value<GameState> {
-    let user_player_name = PlayerName::One;
-    let (p1, p1_deck, p2, p2_deck) = match user_player_name {
-        PlayerName::One => (Some(user_id), user_deck, opponent_id, opponent_deck),
-        PlayerName::Two => (opponent_id, opponent_deck, Some(user_id), user_deck),
-        _ => todo!("Not implemented"),
-    };
-
-    let mut zones = Zones::default();
-    let turn = TurnData { active_player: PlayerName::One, turn_number: 0 };
-    create_cards_in_deck(oracle.as_ref(), &mut zones, p1_deck, PlayerName::One, turn)?;
-    create_cards_in_deck(oracle.as_ref(), &mut zones, p2_deck, PlayerName::Two, turn)?;
-
-    Ok(GameState {
-        id: game_id,
-        status: GameStatus::Setup,
-        step: GamePhaseStep::Untap,
-        turn,
-        priority: PlayerName::One,
-        passed: EnumSet::empty(),
-        configuration: GameConfiguration::new(PlayerName::One | PlayerName::Two, debug),
-        state_machines: StateMachines::default(),
-        players: Players::new(p1, p2, 20),
-        zones,
-        prompts: PromptManager::default(),
-        combat: None,
-        animations: AnimationTracker { state: AnimationState::Track, steps: vec![] },
-        history: GameHistory::default(),
-        rng: Xoshiro256StarStar::seed_from_u64(3141592653589793),
-        undo_tracker: UndoTracker { enabled: true, undo: vec![] },
-        delegates: GameDelegates::default(),
-        state_based_events: Some(vec![]),
-        oracle_reference: Some(oracle),
-    })
-}
-
-fn create_cards_in_deck(
-    oracle: &dyn Oracle,
-    zones: &mut Zones,
-    deck: Deck,
-    owner: PlayerName,
-    turn: TurnData,
-) -> Outcome {
-    for (&id, &quantity) in &deck.cards {
-        for _ in 0..quantity {
-            zones.create_card_in_library(oracle.card(id)?, CardKind::Normal, owner, turn);
-        }
-    }
-    outcome::OK
-}
-
-fn find_deck(name: DeckName) -> Value<Deck> {
-    Ok(match name {
-        deck_name::ALL_GRIZZLY_BEARS => Deck {
-            colors: EnumSet::only(Color::Green),
-            cards: hashmap! {
-                printed_card_id::FOREST => 35,
-                printed_card_id::GRIZZLY_BEARS => 1,
-                printed_card_id::GIGANTOSAURUS => 1,
-                printed_card_id::ALPINE_GRIZZLY => 1,
-                printed_card_id::LEATHERBACK_BALOTH => 1,
-                printed_card_id::KALONIAN_TUSKER => 1,
-                printed_card_id::ANCIENT_BRONOTODON => 1,
-                printed_card_id::GARRUKS_GOREHORN => 1,
-                printed_card_id::GOLDEN_BEAR => 1,
-                printed_card_id::PRIMORDIAL_WURM => 1,
-                printed_card_id::VORSTCLAW => 1,
-                printed_card_id::TERRAIN_ELEMENTAL => 1,
-                printed_card_id::ORAZCA_FRILLBACK => 1,
-                printed_card_id::SWORDWISE_CENTAUR => 1,
-                printed_card_id::QUILLED_SLAGWURM => 1,
-                printed_card_id::ELVISH_WARRIOR => 1,
-                printed_card_id::NYXBORN_COLOSSUS => 1,
-                printed_card_id::RUMBLING_BALOTH => 1,
-                printed_card_id::GRIZZLED_OUTRIDER => 1,
-                printed_card_id::CENTAUR_COURSER => 1,
-                printed_card_id::GORILLA_WARRIOR => 1,
-                printed_card_id::SILVERBACK_APE => 1,
-                printed_card_id::PANTHER_WARRIORS => 1,
-                printed_card_id::FEROCIOUS_ZHENG => 1,
-                printed_card_id::ELVISH_RANGER => 1,
-                printed_card_id::ENORMOUS_BALOTH => 1,
-                printed_card_id::CRAW_WURM => 1,
-                printed_card_id::BROODHUNTER_WURM => 1,
-                printed_card_id::AXEBANE_STAG => 1,
-                printed_card_id::SPINED_WURM => 1,
-                printed_card_id::SCALED_WURM => 1,
-                printed_card_id::ALPHA_TYRRANAX => 1,
-                printed_card_id::WHIPTAIL_WURM => 1,
-                printed_card_id::CANOPY_GORGER => 1,
-                printed_card_id::VASTWOOD_GORGER => 1,
-                printed_card_id::PHERES_BAND_CENTAURS => 1
-            },
-        },
-        _ => {
-            fail!("Unknown deck {name:?}");
-        }
-    })
 }
