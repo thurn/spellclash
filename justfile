@@ -33,8 +33,8 @@ logs:
 clippy:
   cargo clippy --manifest-path src-tauri/Cargo.toml --workspace -- -D warnings -D clippy::all
 
-benchmark:
-  cargo criterion --manifest-path src-tauri/Cargo.toml
+benchmark *args='':
+  cargo criterion --manifest-path src-tauri/Cargo.toml "$@"
 
 show-help:
   npm run tauri dev -- -- -- --help

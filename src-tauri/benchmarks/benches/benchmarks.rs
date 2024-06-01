@@ -12,30 +12,137 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::marker::PhantomData;
+use std::time::{Duration, Instant};
+
+use ai::core::agent::AgentConfig;
+use ai::core::state_evaluator::StateEvaluator;
+use ai::core::win_loss_evaluator::WinLossEvaluator;
+use ai::game::agents;
+use ai::game::agents::AgentName;
+use ai::monte_carlo::monte_carlo_search::RandomPlayoutEvaluator;
 use ai::testing::test_games;
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use data::actions::game_action::GameAction;
+use data::card_definitions::card_name;
+use data::card_states::zones::ZoneQueries;
 use data::core::primitives::PlayerName;
-use data::game_states::game_state::GameState;
+use rules::action_handlers::actions;
+use rules::action_handlers::actions::ExecuteAction;
 use rules::legality::legal_actions;
 use rules::legality::legal_actions::LegalActions;
+use tracing::{subscriber, Level};
+use utils::command_line;
+use utils::command_line::CommandLine;
 
 criterion_main!(benches);
-criterion_group!(benches, legal_actions);
+criterion_group!(benches, green_vanilla, uct1, alpha_beta, random_playout_evaluator);
 
-pub fn legal_actions(c: &mut Criterion) {
-    fn benchmark(game: &GameState) -> Vec<GameAction> {
-        legal_actions::compute(&game, PlayerName::One, LegalActions {
-            include_interface_actions: false,
-        })
-    }
+pub fn green_vanilla(c: &mut Criterion) {
+    let mut group = c.benchmark_group("green_vanilla");
+    command_line::FLAGS.set(CommandLine::default()).ok();
 
-    let mut group = c.benchmark_group("legal_actions");
     let game = test_games::vanilla_game_scenario();
-    assert_eq!(benchmark(&game).len(), 4);
     group.bench_function("legal_actions", |b| {
         b.iter(|| {
-            benchmark(&game);
+            legal_actions::compute(&game, PlayerName::One, LegalActions {
+                include_interface_actions: false,
+            })
+        })
+    });
+
+    group.bench_function("play_creature", |b| {
+        b.iter_batched(
+            || {
+                let game = test_games::vanilla_game_scenario();
+                let creature_id = *game
+                    .hand(PlayerName::One)
+                    .iter()
+                    .find(|&card_id| game.card(*card_id).card_name == card_name::KALONIAN_TUSKER)
+                    .expect("Creature not found");
+                (game, creature_id)
+            },
+            |(mut game, creature_id)| {
+                actions::execute(
+                    &mut game,
+                    PlayerName::One,
+                    GameAction::ProposePlayingCard(creature_id),
+                    ExecuteAction { automatic: false, validate: false },
+                )
+            },
+            BatchSize::LargeInput,
+        )
+    });
+
+    group.bench_function("play_land", |b| {
+        b.iter_batched(
+            || {
+                let game = test_games::vanilla_game_scenario();
+                let creature_id = *game
+                    .hand(PlayerName::One)
+                    .iter()
+                    .find(|&card_id| game.card(*card_id).card_name == card_name::FOREST)
+                    .expect("Land not found");
+                (game, creature_id)
+            },
+            |(mut game, creature_id)| {
+                actions::execute(
+                    &mut game,
+                    PlayerName::One,
+                    GameAction::ProposePlayingCard(creature_id),
+                    ExecuteAction { automatic: false, validate: false },
+                )
+            },
+            BatchSize::LargeInput,
+        )
+    });
+}
+
+pub fn uct1(c: &mut Criterion) {
+    command_line::FLAGS.set(CommandLine::default()).ok();
+    let mut group = c.benchmark_group("uct1");
+    let game = test_games::vanilla_game_scenario();
+
+    let error_subscriber = tracing_subscriber::fmt().with_max_level(Level::ERROR).finish();
+    subscriber::with_default(error_subscriber, || {
+        group.bench_function("uct1", |b| {
+            b.iter(|| {
+                let agent = agents::get_agent(AgentName::Uct1Iterations1);
+                agent.pick_action(
+                    AgentConfig { deadline: Instant::now() + Duration::from_secs(100) },
+                    &game,
+                )
+            })
+        });
+    });
+}
+
+pub fn random_playout_evaluator(c: &mut Criterion) {
+    command_line::FLAGS.set(CommandLine::default()).ok();
+    let mut group = c.benchmark_group("random_playout_evaluator");
+    let game = test_games::vanilla_game_scenario();
+    let evaluator =
+        RandomPlayoutEvaluator { evaluator: WinLossEvaluator, phantom_data: PhantomData };
+    let error_subscriber = tracing_subscriber::fmt().with_max_level(Level::ERROR).finish();
+    subscriber::with_default(error_subscriber, || {
+        group.bench_function("random_playout_evaluator", |b| {
+            b.iter(|| evaluator.evaluate(&game, PlayerName::One))
+        });
+    });
+}
+
+pub fn alpha_beta(c: &mut Criterion) {
+    command_line::FLAGS.set(CommandLine::default()).ok();
+    let mut group = c.benchmark_group("alpha_beta");
+    let game = test_games::vanilla_game_scenario();
+
+    group.bench_function("alpha_beta", |b| {
+        b.iter(|| {
+            let agent = agents::get_agent(AgentName::AlphaBetaDepth5);
+            agent.pick_action(
+                AgentConfig { deadline: Instant::now() + Duration::from_secs(100) },
+                &game,
+            )
         })
     });
 }

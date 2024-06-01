@@ -15,6 +15,8 @@ rules = { path = "../src/rules", version = "0.0.0" }
 utils = { path = "../src/utils", version = "0.0.0" }
 
 uuid = { version = "1.8.0", features = ["v4"] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.17", features = ["env-filter", "serde"] }
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }

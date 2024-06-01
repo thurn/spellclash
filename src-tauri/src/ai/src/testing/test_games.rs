@@ -16,19 +16,18 @@ use data::card_definitions::card_name;
 use data::core::primitives::GameId;
 use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
+use data::game_states::animation_tracker::AnimationState;
 use data::game_states::game_state::{DebugConfiguration, GameState, GameStatus};
 use data::game_states::game_step::GamePhaseStep;
 use database::sqlite_database::SqliteDatabase;
 use rules::game_creation::new_game;
-use utils::command_line::CommandLine;
-use utils::{command_line, paths};
+use utils::paths;
 use uuid::Uuid;
 
 use crate::testing::test_game_builder::{TestGame, TestPlayer};
 
 /// Create a new [GameState] for use in benchmarking & AI testing
 pub fn create(deck_name: DeckName) -> GameState {
-    command_line::FLAGS.set(CommandLine::default()).expect("Error setting command line flags");
     let database = SqliteDatabase::new(paths::get_data_dir()).unwrap();
     let mut game = new_game::create(
         database,
@@ -41,6 +40,10 @@ pub fn create(deck_name: DeckName) -> GameState {
     )
     .expect("Error creating game");
     game.status = GameStatus::Playing;
+    game.undo_tracker.enabled = false;
+    game.undo_tracker.undo.clear();
+    game.animations.state = AnimationState::Ignore;
+    game.animations.steps.clear();
     game
 }
 

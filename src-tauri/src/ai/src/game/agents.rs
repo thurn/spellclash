@@ -32,6 +32,7 @@ pub enum AgentName {
     AlphaBetaDepth25,
     IterativeDeepening,
     Uct1,
+    Uct1Iterations1,
     Uct1Iterations250,
     Uct1Iterations10_000,
     FirstAvailableAction,
@@ -57,6 +58,11 @@ pub fn get_agent(name: AgentName) -> Box<dyn Agent<GameState>> {
         AgentName::Uct1 => Box::new(AgentData::omniscient(
             "UCT1",
             MonteCarloAlgorithm { child_score_algorithm: Uct1 {}, max_iterations: None },
+            RandomPlayoutEvaluator { evaluator: WinLossEvaluator, phantom_data: PhantomData },
+        )),
+        AgentName::Uct1Iterations1 => Box::new(AgentData::omniscient(
+            "UCT1_1",
+            MonteCarloAlgorithm { child_score_algorithm: Uct1 {}, max_iterations: Some(1) },
             RandomPlayoutEvaluator { evaluator: WinLossEvaluator, phantom_data: PhantomData },
         )),
         AgentName::Uct1Iterations250 => Box::new(AgentData::omniscient(
