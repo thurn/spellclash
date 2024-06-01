@@ -30,7 +30,7 @@ use tracing::{error, info};
 use utils::command_line::TracingStyle;
 use utils::outcome::Outcome;
 use utils::with_error::WithError;
-use utils::{command_line, outcome};
+use utils::{command_line, outcome, paths};
 use uuid::Uuid;
 
 use crate::command_line_parser::CommandLineParser;
@@ -40,7 +40,7 @@ mod initialize;
 mod logging;
 
 static DATABASE: Lazy<SqliteDatabase> =
-    Lazy::new(|| SqliteDatabase::new(initialize::get_data_dir()).unwrap());
+    Lazy::new(|| SqliteDatabase::new(paths::get_data_dir()).unwrap());
 
 #[tauri::command]
 #[specta::specta]
@@ -83,6 +83,7 @@ fn main() -> Outcome {
         TracingStyle::Forest => {
             logging::initialize()?;
         }
+        TracingStyle::None => {}
     }
 
     if env::var("DISABLE_PANIC_HANDLER").is_err() {

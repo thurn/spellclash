@@ -45,32 +45,24 @@ use crate::game_creation::initialize_game;
 use crate::mutations::library;
 use crate::steps::step;
 
-/// Creates a new game using the provided Game ID, User IDs and decks.
+/// Creates a new game using the provided Game ID, User IDs and decks and draws
+/// opening hands.
 ///
 /// A [SqliteDatabase] is required in order to populate the oracle information
 /// for cards in this game. Nothing is written to the database as a part of
 /// executing this function.
-pub fn create(
+pub fn create_and_start(
     database: SqliteDatabase,
     game_id: GameId,
-    user_id: UserId,
-    user_deck: DeckName,
-    opponent_id: Option<UserId>,
-    opponent_deck: DeckName,
+    p1_id: Option<UserId>,
+    p1_deck_name: DeckName,
+    p2_id: Option<UserId>,
+    p2_deck_name: DeckName,
     debug: DebugConfiguration,
 ) -> Value<GameState> {
     info!(?game_id, "Creating new game");
-    let oracle = Box::new(OracleImpl::new(database.clone()));
-    let user_deck = find_deck(user_deck)?;
-    let opponent_deck = find_deck(opponent_deck)?;
-
-    let mut game =
-        create_game(oracle, game_id, user_id, user_deck, opponent_id, opponent_deck, debug)?;
-    initialize_game::run(database.clone(), &mut game)?;
-
-    game.shuffle_library(PlayerName::One)?;
+    let mut game = create(database, game_id, p1_id, p1_deck_name, p2_id, p2_deck_name, debug)?;
     library::draw_cards(&mut game, Source::Game, PlayerName::One, 7)?;
-    game.shuffle_library(PlayerName::Two)?;
     library::draw_cards(&mut game, Source::Game, PlayerName::Two, 7)?;
     // TODO: Resolve mulligans
     game.status = GameStatus::Playing;
@@ -78,22 +70,39 @@ pub fn create(
     Ok(game)
 }
 
+/// Creates a new game using the provided Game ID, User IDs and decks but does
+/// not transition the game to the 'playing' state and does not e.g. draw
+/// opening hands.
+pub fn create(
+    database: SqliteDatabase,
+    game_id: GameId,
+    p1_id: Option<UserId>,
+    p1_deck_name: DeckName,
+    p2_id: Option<UserId>,
+    p2_deck_name: DeckName,
+    debug: DebugConfiguration,
+) -> Value<GameState> {
+    let oracle = Box::new(OracleImpl::new(database.clone()));
+    let p1_deck = find_deck(p1_deck_name)?;
+    let p2_deck = find_deck(p2_deck_name)?;
+
+    let mut game = create_game(oracle, game_id, p1_id, p1_deck, p2_id, p2_deck, debug)?;
+    initialize_game::run(database.clone(), &mut game)?;
+
+    game.shuffle_library(PlayerName::One)?;
+    game.shuffle_library(PlayerName::Two)?;
+    Ok(game)
+}
+
 fn create_game(
     oracle: Box<dyn Oracle>,
     game_id: GameId,
-    user_id: UserId,
-    user_deck: Deck,
-    opponent_id: Option<UserId>,
-    opponent_deck: Deck,
+    p1_id: Option<UserId>,
+    p1_deck: Deck,
+    p2_id: Option<UserId>,
+    p2_deck: Deck,
     debug: DebugConfiguration,
 ) -> Value<GameState> {
-    let user_player_name = PlayerName::One;
-    let (p1, p1_deck, p2, p2_deck) = match user_player_name {
-        PlayerName::One => (Some(user_id), user_deck, opponent_id, opponent_deck),
-        PlayerName::Two => (opponent_id, opponent_deck, Some(user_id), user_deck),
-        _ => todo!("Not implemented"),
-    };
-
     let mut zones = Zones::default();
     let turn = TurnData { active_player: PlayerName::One, turn_number: 0 };
     create_cards_in_deck(oracle.as_ref(), &mut zones, p1_deck, PlayerName::One, turn)?;
@@ -108,7 +117,7 @@ fn create_game(
         passed: EnumSet::empty(),
         configuration: GameConfiguration::new(PlayerName::One | PlayerName::Two, debug),
         state_machines: StateMachines::default(),
-        players: Players::new(p1, p2, 20),
+        players: Players::new(p1_id, p2_id, 20),
         zones,
         prompts: PromptManager::default(),
         combat: None,
@@ -139,7 +148,7 @@ fn create_cards_in_deck(
 
 fn find_deck(name: DeckName) -> Value<Deck> {
     Ok(match name {
-        deck_name::ALL_GRIZZLY_BEARS => Deck {
+        deck_name::GREEN_VANILLA => Deck {
             colors: EnumSet::only(Color::Green),
             cards: hashmap! {
                 printed_card_id::FOREST => 35,

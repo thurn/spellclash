@@ -40,14 +40,17 @@ pub fn connect(_: SqliteDatabase, user: &UserState) -> Value<GameResponse> {
 
 pub fn main_menu_view() -> MainMenuView {
     let new_game = UserAction::NewGameAction(NewGameAction {
-        deck: deck_name::ALL_GRIZZLY_BEARS,
-        opponent_deck: deck_name::ALL_GRIZZLY_BEARS,
+        deck: deck_name::GREEN_VANILLA,
+        opponent_deck: deck_name::GREEN_VANILLA,
         opponent_id: None,
-        debug_options: NewGameDebugOptions::default(),
+        debug_options: NewGameDebugOptions {
+            override_game_id: None,
+            configuration: DebugConfiguration { reveal_all_cards: true, act_as_player: None },
+        },
     });
     let new_debug_game = UserAction::NewGameAction(NewGameAction {
-        deck: deck_name::ALL_GRIZZLY_BEARS,
-        opponent_deck: deck_name::ALL_GRIZZLY_BEARS,
+        deck: deck_name::GREEN_VANILLA,
+        opponent_deck: deck_name::GREEN_VANILLA,
         opponent_id: None,
         debug_options: NewGameDebugOptions {
             override_game_id: None,

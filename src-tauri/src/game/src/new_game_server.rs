@@ -69,11 +69,12 @@ pub fn create(
     } else {
         GameId(Uuid::new_v4())
     };
-    info!(?game_id, "Creating new game");
-    let mut game = new_game::create(
+
+    // TODO: Determine start player at random
+    let mut game = new_game::create_and_start(
         database.clone(),
         game_id,
-        user.id,
+        Some(user.id),
         action.deck,
         action.debug_options.configuration.act_as_player.map(|p| p.id).or(action.opponent_id),
         action.opponent_deck,

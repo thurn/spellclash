@@ -50,7 +50,7 @@ pub fn select(input_game: &GameState, player: PlayerName) -> Value<GameAction> {
     let agent = agents::get_agent(AgentName::Uct1Iterations10_000);
     let deadline = Duration::from_secs(100);
     match command_line::flags().tracing_style {
-        TracingStyle::AggregateTime => {
+        TracingStyle::AggregateTime | TracingStyle::None => {
             Ok(agent.pick_action(AgentConfig { deadline: Instant::now() + deadline }, &game))
         }
         TracingStyle::Forest => {

@@ -21,11 +21,10 @@ use tracing_forest::{ForestLayer, PrettyPrinter, Tag};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{EnvFilter, Layer};
-use utils::outcome;
 use utils::outcome::Outcome;
+use utils::paths::{LOG_ENV, LOG_FILE};
 use utils::with_error::WithError;
-
-use crate::initialize::{get_data_dir, LOG_ENV, LOG_FILE};
+use utils::{outcome, paths};
 
 /// Initializes global logging behavior for the 'tracing' crate.
 pub fn initialize() -> Outcome {
@@ -43,7 +42,7 @@ pub fn initialize() -> Outcome {
     };
     let forest_layer = ForestLayer::new(PrettyPrinter::new(), tag_parser).with_filter(env_filter);
 
-    let directory = get_data_dir();
+    let directory = paths::get_data_dir();
     fs::create_dir_all(directory.clone()).with_error(|| "Error creating log dir")?;
     let log_path = directory.join(LOG_FILE.clone());
     let log_file = File::create(log_path).with_error(|| "Error creating log file")?;

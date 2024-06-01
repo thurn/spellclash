@@ -14,23 +14,13 @@
 
 use std::panic;
 use std::panic::PanicInfo;
-use std::path::PathBuf;
 
 use color_eyre::config::{HookBuilder, PanicHook};
 use color_eyre::eyre;
-use directories::ProjectDirs;
-use lazy_static::lazy_static;
-use utils::outcome;
 use utils::outcome::Outcome;
+use utils::paths::LOG_FILE;
 use utils::with_error::WithError;
-
-lazy_static! {
-    pub static ref PROJECT_NAME: String = env!("CARGO_CRATE_NAME").to_uppercase().to_string();
-    pub static ref DATA_FOLDER: Option<PathBuf> =
-        std::env::var(format!("{}_DATA", PROJECT_NAME.clone())).ok().map(PathBuf::from);
-    pub static ref LOG_ENV: String = format!("{}_LOGLEVEL", PROJECT_NAME.clone());
-    pub static ref LOG_FILE: String = format!("{}.log", env!("CARGO_PKG_NAME"));
-}
+use utils::{outcome, paths};
 
 pub fn initialize_panic_handler() -> Outcome {
     let (panic_hook, eyre_hook) = HookBuilder::default()
@@ -88,24 +78,13 @@ fn on_panic(panic_hook: &PanicHook, panic_info: &PanicInfo) {
     std::process::exit(libc::EXIT_FAILURE);
 }
 
-pub fn get_data_dir() -> PathBuf {
-    let directory = if let Some(s) = DATA_FOLDER.clone() {
-        s
-    } else if let Some(proj_dirs) = project_directory() {
-        proj_dirs.data_local_dir().to_path_buf()
-    } else {
-        PathBuf::from(".").join(".data")
-    };
-    directory
-}
-
 pub fn version() -> String {
     let version = env!("CARGO_PKG_VERSION");
     let build_date = env!("VERGEN_BUILD_DATE");
     let sha = env!("VERGEN_GIT_SHA");
-    let log_file = get_data_dir().join(LOG_FILE.clone());
+    let log_file = paths::get_data_dir().join(LOG_FILE.clone());
     let log_file_string = log_file.display();
-    let data_dir_path = get_data_dir().display().to_string();
+    let data_dir_path = paths::get_data_dir().display().to_string();
 
     format!(
         "\
@@ -115,8 +94,4 @@ Commit: {sha}
 Log file: {log_file_string}
 Data directory: {data_dir_path}"
     )
-}
-
-fn project_directory() -> Option<ProjectDirs> {
-    ProjectDirs::from("com", "spellclash", "spellclash")
 }

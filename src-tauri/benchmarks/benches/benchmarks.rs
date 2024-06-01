@@ -12,33 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::time::Duration;
-
-use ai::game::agents::AgentName;
-use ai::testing::run_matchup;
-use ai::testing::run_matchup::{MatchupArgs, Verbosity};
-use criterion::measurement::WallTime;
-use criterion::{criterion_group, criterion_main, BenchmarkGroup, Criterion};
+use ai::testing::test_games;
+use criterion::{criterion_group, criterion_main, Criterion};
+use data::actions::game_action::GameAction;
+use data::core::primitives::PlayerName;
+use data::game_states::game_state::GameState;
+use rules::legality::legal_actions;
+use rules::legality::legal_actions::LegalActions;
 
 criterion_main!(benches);
-criterion_group!(benches, uct1);
+criterion_group!(benches, legal_actions);
 
-pub fn uct1(c: &mut Criterion) {
-    let mut group = start(c, "uct1");
-    group.measurement_time(Duration::from_secs(30));
-    group.bench_function("UCT1", |b| {
+pub fn legal_actions(c: &mut Criterion) {
+    fn benchmark(game: &GameState) -> Vec<GameAction> {
+        legal_actions::compute(&game, PlayerName::One, LegalActions {
+            include_interface_actions: false,
+        })
+    }
+
+    let mut group = c.benchmark_group("legal_actions");
+    let game = test_games::vanilla_game_scenario();
+    assert_eq!(benchmark(&game).len(), 4);
+    group.bench_function("legal_actions", |b| {
         b.iter(|| {
-            run_matchup::run_with_args(&MatchupArgs {
-                user: AgentName::Uct1Iterations250,
-                opponent: AgentName::Uct1Iterations250,
-                move_time_ms: 1000,
-                matches: 1,
-                verbosity: Verbosity::None,
-            })
+            benchmark(&game);
         })
     });
-}
-
-fn start<'a>(c: &'a mut Criterion, s: &'static str) -> BenchmarkGroup<'a, WallTime> {
-    c.benchmark_group(s)
 }

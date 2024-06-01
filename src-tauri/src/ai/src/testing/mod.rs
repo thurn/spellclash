@@ -13,3 +13,5 @@
 // limitations under the License.
 
 pub mod run_matchup;
+pub mod test_game_builder;
+pub mod test_games;

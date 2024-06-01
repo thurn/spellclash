@@ -14,4 +14,5 @@
 
 pub mod command_line;
 pub mod outcome;
+pub mod paths;
 pub mod with_error;

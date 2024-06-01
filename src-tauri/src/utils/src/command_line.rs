@@ -23,6 +23,7 @@ pub fn flags() -> &'static CommandLine {
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, ValueEnum)]
 pub enum TracingStyle {
+    None,
     AggregateTime,
     Forest,
 }
@@ -30,4 +31,10 @@ pub enum TracingStyle {
 #[derive(Clone, Debug)]
 pub struct CommandLine {
     pub tracing_style: TracingStyle,
+}
+
+impl Default for CommandLine {
+    fn default() -> Self {
+        Self { tracing_style: TracingStyle::None }
+    }
 }

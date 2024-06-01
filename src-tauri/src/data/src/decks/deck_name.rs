@@ -19,4 +19,4 @@ use uuid::{uuid, Uuid};
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct DeckName(pub Uuid);
 
-pub const ALL_GRIZZLY_BEARS: DeckName = DeckName(uuid!("9eefebd4-25c0-4f46-91ab-6b3efff302e4"));
+pub const GREEN_VANILLA: DeckName = DeckName(uuid!("9eefebd4-25c0-4f46-91ab-6b3efff302e4"));

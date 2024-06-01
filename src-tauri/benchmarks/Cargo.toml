@@ -10,6 +10,11 @@ harness = false
 [dependencies]
 ai = { path = "../src/ai", version = "0.0.0" }
 data = { path = "../src/data", version = "0.0.0" }
+database = { path = "../src/database", version = "0.0.0" }
+rules = { path = "../src/rules", version = "0.0.0" }
+utils = { path = "../src/utils", version = "0.0.0" }
+
+uuid = { version = "1.8.0", features = ["v4"] }
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }

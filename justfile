@@ -33,6 +33,9 @@ logs:
 clippy:
   cargo clippy --manifest-path src-tauri/Cargo.toml --workspace -- -D warnings -D clippy::all
 
+benchmark:
+  cargo criterion --manifest-path src-tauri/Cargo.toml
+
 show-help:
   npm run tauri dev -- -- -- --help
 
@@ -47,15 +50,6 @@ aggregate-time:
 # Manifest path seems to not work?
 fmt: fix-ts-format
     cd src-tauri && cargo +nightly fmt
-
-nim *args='':
-    cargo run --manifest-path src-tauri/Cargo.toml --bin nim -- "$@"
-
-run_matchup *args='':
-    cargo run --manifest-path src-tauri/Cargo.toml --bin run_matchup -- "$@"
-
-run_tournament *args='':
-    cargo run --manifest-path src-tauri/Cargo.toml --bin run_tournament -- "$@"
 
 check-format:
     # Manifest path seems to not work?
@@ -93,12 +87,23 @@ remove-unused-deps: machete
     xattr -w com.dropbox.ignored 1 src-tauri/target
     xattr -w com.dropbox.ignored 1 node_modules
 
-internal_clean:
+internal-clean:
   rm -rf src-tauri/target/debug
   rm -rf src-tauri/target/release
   rm -rf src-tauri/target/tmp
 
-clean: internal_clean dropbox
+clean: internal-clean dropbox
 
 version:
   cargo run --manifest-path src-tauri/Cargo.toml --bin client -- --version
+
+nim *args='':
+    cargo run --manifest-path src-tauri/Cargo.toml --bin nim -- "$@"
+
+run-matchup *args='':
+    cargo run --manifest-path src-tauri/Cargo.toml --bin run_matchup -- "$@"
+
+run-tournament *args='':
+    cargo run --manifest-path src-tauri/Cargo.toml --bin run_tournament -- "$@"
+
+

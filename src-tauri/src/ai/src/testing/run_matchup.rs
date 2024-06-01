@@ -16,12 +16,14 @@ use std::time::{Duration, Instant};
 
 use clap::{Parser, ValueEnum};
 use data::core::primitives::PlayerName;
+use data::decks::deck_name;
 use data::game_states::game_state::GameState;
 
 use crate::core::agent::AgentConfig;
 use crate::core::game_state_node::{GameStateNode, GameStatus};
 use crate::game::agents;
 use crate::game::agents::AgentName;
+use crate::testing::test_games;
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum Verbosity {
@@ -38,7 +40,7 @@ pub struct MatchupArgs {
     #[arg(value_enum)]
     pub opponent: AgentName,
     /// Maximum time in milliseconds for each agent to use for moves.
-    #[arg(long, default_value_t = 1)]
+    #[arg(long, default_value_t = 1000)]
     pub move_time_ms: u64,
     /// Number of matches to run between these two named players
     #[arg(long, default_value_t = 1)]
@@ -56,7 +58,7 @@ pub fn run_with_args(args: &MatchupArgs) {
         if args.verbosity >= Verbosity::Matches {
             println!(">>> Running match {} between {} and {}", i, user.name(), opponent.name());
         }
-        let mut game = new_game();
+        let mut game = test_games::create(deck_name::GREEN_VANILLA);
         run_match(args.user, args.opponent, &mut game, args.move_time_ms, args.verbosity);
     }
 }
@@ -96,10 +98,6 @@ pub fn run_match(
             }
         }
     }
-}
-
-fn new_game() -> GameState {
-    todo!("")
 }
 
 fn clear_action_line(verbosity: Verbosity) {

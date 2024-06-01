@@ -95,8 +95,8 @@ fn print_optimal_action(state: &NimState, player_name: &str) {
 }
 
 fn check_game_over(game: &NimState) {
-    if let GameStatus::Completed { scores } = game.status() {
-        println!("Game Over. Scores: {:?}", scores);
+    if let GameStatus::Completed { winners } = game.status() {
+        println!("Game Over. Winner: {:?}", winners);
         std::process::exit(0)
     }
 }
