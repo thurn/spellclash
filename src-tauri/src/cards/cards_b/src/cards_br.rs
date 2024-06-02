@@ -12,25 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use abilities::prompt_helpers::prompts;
 use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::card_states::zones::ZoneQueries;
-use data::prompts::card_selection_prompt::CardSelectionPrompt;
+use data::prompts::card_selection_prompt::Quantity;
 use data::text_strings::Text;
 use rules::mutations::library;
 
 pub fn brainstorm() -> CardDefinition {
     CardDefinition::new(card_name::BRAINSTORM).ability(SpellAbility::new().effects(|g, s| {
         library::draw_cards(g, s, s.controller, 3)?;
-        let card_ids = g.prompts.select_cards(
-            s.controller,
-            Text::ReturnToTopOfDeck(2),
-            CardSelectionPrompt {
-                choices: g.hand(s.controller).iter().copied().collect(),
-                can_reorder: true,
-            },
-        )?;
+        let card_ids =
+            prompts::select_in_hand(g, s, Quantity::Count(2), Text::ReturnToTopOfDeck(2))?;
         library::move_all_to_top(g, s, card_ids.iter())
     }))
 }

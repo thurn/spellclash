@@ -20,7 +20,20 @@ use crate::actions::user_action::UserAction;
 /// Action to respond to a prompt within an ongoing game
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
 pub enum PromptAction {
+    /// Pick an integer for a number selection prompt
     PickNumber(u32),
+
+    /// Move a card from the provided 'source' index in a card selection prompt
+    /// to the 'target' index in the selected card list, or to the end of the
+    /// selected card list if no target is provided.
+    SelectCard { source: usize, target: Option<usize> },
+
+    /// Moves one of the selected cards in a card selection prompt from the
+    /// 'source' index in the selected card list to the 'target' index.
+    SetSelectionOrder { source: usize, target: usize },
+
+    /// Confirm selected card choices on a card selection prompt
+    SubmitCardSelection,
 }
 
 impl From<PromptAction> for UserAction {

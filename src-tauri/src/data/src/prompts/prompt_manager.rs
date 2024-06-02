@@ -59,6 +59,16 @@ impl PromptManager {
         self.response_index = 0;
     }
 
+    /// Returns the [PromptType] of the current prompt, if any.
+    pub fn current_prompt_type(&self) -> Option<&PromptType> {
+        self.current_prompt.as_ref().map(|p| &p.prompt_type)
+    }
+
+    /// Mutable equivalent of [Self::current_prompt_type].
+    pub fn current_prompt_type_mut(&mut self) -> Option<&mut PromptType> {
+        self.current_prompt.as_mut().map(|p| &mut p.prompt_type)
+    }
+
     pub fn choose_entity(
         &mut self,
         player: PlayerName,

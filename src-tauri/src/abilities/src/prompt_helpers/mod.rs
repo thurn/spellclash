@@ -12,5 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod mana;
-pub mod prompt_helpers;
+pub mod prompts;
