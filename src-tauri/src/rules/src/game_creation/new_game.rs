@@ -189,6 +189,13 @@ fn find_deck(name: DeckName) -> Value<Deck> {
                 printed_card_id::PHERES_BAND_CENTAURS => 1
             },
         },
+        deck_name::DANDAN => Deck {
+            colors: EnumSet::only(Color::Blue),
+            cards: hashmap! {
+                printed_card_id::ISLAND => 30,
+                printed_card_id::BRAINSTORM => 30,
+            },
+        },
         _ => {
             fail!("Unknown deck {name:?}");
         }

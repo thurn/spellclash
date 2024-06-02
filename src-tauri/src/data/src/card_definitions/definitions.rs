@@ -29,8 +29,8 @@ static CARDS: Lazy<HashMap<CardName, CardDefinition>> = Lazy::new(|| {
     let mut map = HashMap::new();
     for card_fn in DEFINITIONS.iter() {
         let card = card_fn();
-        assert!(!map.contains_key(&card.name), "Duplicate card name found");
-        map.insert(card.name, card);
+        assert!(!map.contains_key(&card.card_name()), "Duplicate card name found");
+        map.insert(card.card_name(), card);
     }
     map
 });

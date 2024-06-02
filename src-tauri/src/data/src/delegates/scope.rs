@@ -18,19 +18,19 @@ use crate::core::primitives::{AbilityNumber, CardId, HasCardId, HasSource, Playe
 
 /// Identifies an ability of a card within a game
 #[derive(Copy, Clone, Debug, Serialize, Deserialize)]
-pub struct AbilityId {
+pub struct Scope {
     pub controller: PlayerName,
     pub number: AbilityNumber,
     pub card_id: CardId,
 }
 
-impl HasCardId for AbilityId {
+impl HasCardId for Scope {
     fn card_id(&self) -> CardId {
         self.card_id
     }
 }
 
-impl HasSource for AbilityId {
+impl HasSource for Scope {
     fn source(&self) -> Source {
         Source::Ability {
             controller: self.controller,

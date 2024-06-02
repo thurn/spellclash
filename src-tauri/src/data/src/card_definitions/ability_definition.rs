@@ -21,14 +21,14 @@ use crate::core::primitives::Zone;
 use crate::costs::cost::Cost;
 #[allow(unused)] // Used in docs
 use crate::delegates::game_delegates::{Delegate, DelegateFn, GameDelegates};
-use crate::delegates::scope::AbilityId;
+use crate::delegates::scope::Scope;
 use crate::game_states::game_state::GameState;
 
 /// A function to produce a list of requested mutations to [GameState].
-pub type EffectFn = fn(&mut GameState, AbilityId) -> Outcome;
+pub type EffectFn = fn(&mut GameState, Scope) -> Outcome;
 
 /// A predicate to apply to a delegate activation.
-pub type RequirementFn = fn(&GameState, AbilityId) -> bool;
+pub type RequirementFn = fn(&GameState, Scope) -> bool;
 
 /// Defines the game rules for an ability.
 ///
@@ -41,13 +41,16 @@ pub type RequirementFn = fn(&GameState, AbilityId) -> bool;
 pub struct AbilityDefinition {
     /// Type of ability
     pub ability_type: AbilityType,
-    /// Effect of this ability when it is resolved from the stack
+    /// Effect of this ability when it is resolved.
+    ///
+    /// Note that static abilities do not resolve via the stack and thus have no
+    /// effects.
     pub effects: Option<EffectFn>,
     /// Event listeners for this ability
     pub delegates: Vec<Delegate>,
-    /// Costs to activate this ability, if any
+    /// Costs to activate an activated ability
     pub costs: Vec<Cost>,
-    /// Requirements to trigger this ability, if any
+    /// Requirements for a triggered ability to trigger
     pub requirements: Vec<AbilityRequirement>,
 }
 

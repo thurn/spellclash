@@ -14,6 +14,7 @@
 
 use crate::card_definitions::ability_definition::{AbilityBuilder, AbilityDefinition};
 use crate::card_definitions::card_name::CardName;
+use crate::core::primitives::AbilityNumber;
 #[allow(unused)] // Used in docs
 use crate::printed_cards::printed_card::PrintedCard;
 
@@ -25,15 +26,19 @@ use crate::printed_cards::printed_card::PrintedCard;
 pub struct CardDefinition {
     /// Name of this card, used to connect the card to its [PrintedCard]
     /// equivalent.
-    pub name: CardName,
+    name: CardName,
     /// Abilities of this card, which describe how it modifies game rules & game
     /// state.
-    pub abilities: Vec<AbilityDefinition>,
+    abilities: Vec<AbilityDefinition>,
 }
 
 impl CardDefinition {
     pub fn new(name: CardName) -> Self {
         Self { name, abilities: vec![] }
+    }
+
+    pub fn card_name(&self) -> CardName {
+        self.name
     }
 
     /// Adds a new ability to this card definition
@@ -43,5 +48,10 @@ impl CardDefinition {
     pub fn ability(mut self, builder: impl AbilityBuilder) -> Self {
         self.abilities.push(builder.build());
         self
+    }
+
+    /// Iterates over all abilities of this card with their [AbilityNumber]s.
+    pub fn abilities(&self) -> impl Iterator<Item = (AbilityNumber, &AbilityDefinition)> {
+        self.abilities.iter().enumerate().map(|(i, a)| (AbilityNumber(i), a))
     }
 }

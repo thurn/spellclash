@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use data::card_definitions::definitions;
 use data::card_states::card_kind::CardKind;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{Source, StackItemId, Zone};
+use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use enumset::EnumSet;
 use utils::outcome::Outcome;
@@ -34,6 +36,18 @@ pub fn resolve_top_of_stack(game: &mut GameState) -> Outcome {
     let Some(StackItemId::Card(card_id)) = game.stack().last().copied() else {
         return outcome::OK;
     };
+
+    let definition = definitions::get(game.card(card_id).card_name);
+    for (ability_number, ability) in definition.abilities() {
+        if let Some(effect) = ability.effects {
+            let scope = Scope {
+                controller: game.card(card_id).controller,
+                number: ability_number,
+                card_id,
+            };
+            effect(game, scope)?;
+        }
+    }
 
     let card = game.card(card_id);
     if (CardKind::Normal | CardKind::CardCopyOnStack).contains(card.kind) &&

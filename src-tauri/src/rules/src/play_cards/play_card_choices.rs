@@ -14,7 +14,7 @@
 
 use data::card_states::play_card_plan::{ManaPaymentPlan, ModalChoice, PlayCardPlan};
 use data::core::primitives::{CardId, EntityId, Source};
-use data::delegates::scope::AbilityId;
+use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use data::printed_cards::printed_card::Face;
 use enumset::EnumSet;
@@ -39,14 +39,14 @@ pub enum PlayCardChoicePrompt {
     Mode { valid_modes: EnumSet<ModalChoice> },
 
     /// Pick an alternate cost for playing this card
-    AlternateCost { valid_costs: Vec<AbilityId> },
+    AlternateCost { valid_costs: Vec<Scope> },
 
     /// Pick an *optional* additional costs for playing a card (e.g. for
     /// mechanics like Kicker) for a card, produced by the given ability.
     ///
     /// This does not include *required* additional costs like "as an additional
     /// cost to cast this spell, sacrifice an artifact".
-    OptionalCost { ability: AbilityId },
+    OptionalCost { ability: Scope },
 
     /// Pick a card in hand to splice with this card as it is being played
     Splice { cards: Vec<CardId> },
@@ -80,7 +80,7 @@ pub enum PlayCardChoicePrompt {
     /// required, this prompt will be displayed more than once.
     ///
     /// Costs which don't require a choice (e.g. life payment) are not included.
-    AdditionalCost { ability: AbilityId },
+    AdditionalCost { ability: Scope },
 }
 
 /// Represents a possible choice a player can make in the process of playing a

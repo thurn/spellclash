@@ -19,13 +19,13 @@ use crate::card_states::zones::Zones;
 use crate::core::primitives::{
     CardId, EntityId, HasCardId, HasController, HasEntityId, HasPlayerName, PlayerName,
 };
-use crate::delegates::scope::AbilityId;
+use crate::delegates::scope::Scope;
 
 /// Represents the state of a triggered or activated ability on the stack.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StackAbilityState {
     /// ID of this ability.
-    pub ability_id: AbilityId,
+    pub ability_id: Scope,
 
     /// Entity ID for this ability.
     ///

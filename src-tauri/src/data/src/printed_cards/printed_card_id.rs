@@ -29,6 +29,7 @@ pub struct PrintedCardId(pub Uuid);
 pub const GRIZZLY_BEARS: PrintedCardId =
     PrintedCardId(uuid!("409f9b88-f03e-40b6-9883-68c14c37c0de"));
 pub const FOREST: PrintedCardId = PrintedCardId(uuid!("8c13cafb-3078-4856-a5b0-c38aace8a34a"));
+pub const ISLAND: PrintedCardId = PrintedCardId(uuid!("64daf0ac-678b-4683-9351-a6daf9c9f849"));
 pub const GIGANTOSAURUS: PrintedCardId =
     PrintedCardId(uuid!("c1db84d8-d426-4c0d-b44e-5be7b0f5f5bf"));
 pub const ALPINE_GRIZZLY: PrintedCardId =
@@ -92,3 +93,4 @@ pub const VASTWOOD_GORGER: PrintedCardId =
     PrintedCardId(uuid!("72f53dc9-5397-49e1-97d4-3b0b6858f2b2"));
 pub const PHERES_BAND_CENTAURS: PrintedCardId =
     PrintedCardId(uuid!("2168fcf4-cf87-4ab8-9710-6ec672750a9a"));
+pub const BRAINSTORM: PrintedCardId = PrintedCardId(uuid!("84479779-d570-4eee-9982-f6e918b4d75b"));
