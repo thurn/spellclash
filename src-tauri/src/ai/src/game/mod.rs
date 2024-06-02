@@ -13,5 +13,5 @@
 // limitations under the License.
 
 pub mod agents;
-pub mod definitions;
+pub mod ai_definitions;
 mod evaluators;

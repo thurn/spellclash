@@ -37,17 +37,17 @@ pub fn resolve_top_of_stack(game: &mut GameState) -> Outcome {
         return outcome::OK;
     };
 
-    let definition = definitions::get(game.card(card_id).card_name);
-    for (ability_number, ability) in definition.abilities() {
-        if let Some(effect) = ability.effects {
-            let scope = Scope {
-                controller: game.card(card_id).controller,
-                number: ability_number,
-                card_id,
-            };
-            effect(game, scope)?;
-        }
-    }
+    // let definition = definitions::get(game.card(card_id).card_name);
+    // for (ability_number, ability) in definition.abilities() {
+    //     if let Some(effect) = ability.effects {
+    //         let scope = Scope {
+    //             controller: game.card(card_id).controller,
+    //             number: ability_number,
+    //             card_id,
+    //         };
+    //         effect(game, scope)?;
+    //     }
+    // }
 
     let card = game.card(card_id);
     if (CardKind::Normal | CardKind::CardCopyOnStack).contains(card.kind) &&

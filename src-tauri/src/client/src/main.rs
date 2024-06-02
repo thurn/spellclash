@@ -44,7 +44,7 @@ static DATABASE: Lazy<SqliteDatabase> =
 
 #[tauri::command]
 #[specta::specta]
-fn client_connect() -> Result<GameResponse, ()> {
+async fn client_connect() -> Result<GameResponse, ()> {
     info!("Got connect request");
     server::connect(DATABASE.clone(), UserId(Uuid::default())).map_err(|err| {
         error!("Error on connect: {:?}", err);
@@ -53,7 +53,10 @@ fn client_connect() -> Result<GameResponse, ()> {
 
 #[tauri::command]
 #[specta::specta]
-fn client_handle_action(client_data: ClientData, action: UserAction) -> Result<GameResponse, ()> {
+async fn client_handle_action(
+    client_data: ClientData,
+    action: UserAction,
+) -> Result<GameResponse, ()> {
     info!(?action, ?client_data, "Got handle_action request");
     server::handle_action(DATABASE.clone(), client_data, action).map_err(|err| {
         error!("Error on handle_action: {:?}", err);
@@ -62,7 +65,7 @@ fn client_handle_action(client_data: ClientData, action: UserAction) -> Result<G
 
 #[tauri::command]
 #[specta::specta]
-fn client_update_field(
+async fn client_update_field(
     client_data: ClientData,
     key: FieldKey,
     value: FieldValue,
