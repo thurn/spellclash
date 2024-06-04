@@ -83,7 +83,7 @@ pub fn run_match(
                 let config =
                     AgentConfig { deadline: Instant::now() + Duration::from_millis(move_time_ms) };
                 let action = agent.pick_action(config, game);
-                game.execute_action(current_turn, action.clone());
+                game.execute_action(current_turn, action);
                 clear_action_line(verbosity);
                 if verbosity > Verbosity::None {
                     println!("{} performs action {:?}", agent.name(), action);

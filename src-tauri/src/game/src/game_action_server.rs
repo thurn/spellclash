@@ -67,10 +67,9 @@ pub fn handle_game_action(
         database.clone(),
         data.game_id().with_error(|| "Expected current game ID")?,
     )?;
-    let executed_action = action.clone();
     let result = handle_game_action_internal(database, &data, action, &mut game);
     if result.is_err() {
-        error!(?executed_action, "Error running game action loop");
+        error!(?action, "Error running game action loop");
     }
     result
 }

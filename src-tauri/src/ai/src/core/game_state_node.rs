@@ -33,7 +33,7 @@ pub enum GameStatus<TPlayer: EnumSetType + Debug> {
 /// doing broadly correct things.
 pub trait GameStateNode {
     /// A game action to transition the game to a new state.
-    type Action: Eq + Hash + Debug + Clone;
+    type Action: Eq + Hash + Debug + Copy;
 
     /// A player in the game.
     type PlayerName: EnumSetType + Debug;

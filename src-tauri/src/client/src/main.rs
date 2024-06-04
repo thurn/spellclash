@@ -57,13 +57,12 @@ async fn client_connect() -> Result<GameResponse, ()> {
 #[specta::specta]
 async fn client_handle_action(client_data: ClientData, action: UserAction, app: AppHandle) {
     info!(?action, ?client_data, "Got handle_action request");
-    let handled_action = action.clone();
     let (sender, mut receiver) = mpsc::unbounded_channel();
     let response = server::handle_action(DATABASE.clone(), client_data, action)
         .map_err(|err| {
             error!("Error on handle_action: {:?}", err);
         })
-        .unwrap_or_else(|e| panic!("Error handling {handled_action:?}. Error: {e:?}"));
+        .unwrap_or_else(|e| panic!("Error handling {action:?}. Error: {e:?}"));
     sender.send(response).unwrap();
     while let Some(response) = receiver.recv().await {
         app.emit_to(EventTarget::app(), "game_response", response).unwrap();

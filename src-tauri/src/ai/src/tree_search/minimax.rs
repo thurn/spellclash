@@ -67,7 +67,7 @@ where
                     return result.with_fallback_action(action);
                 }
                 let mut child = node.make_copy();
-                child.execute_action(current_turn, action.clone());
+                child.execute_action(current_turn, action);
                 result.insert_max(
                     action,
                     run_internal(config, &child, evaluator, depth - 1, player).score(),
@@ -82,7 +82,7 @@ where
                     return result.with_fallback_action(action);
                 }
                 let mut child = node.make_copy();
-                child.execute_action(current_turn, action.clone());
+                child.execute_action(current_turn, action);
                 result.insert_min(
                     action,
                     run_internal(config, &child, evaluator, depth - 1, player).score(),

@@ -53,7 +53,7 @@ impl PromptManager {
     /// Clears all stored prompts and sets the provided action as the
     /// currently-processing game action.
     pub fn reset_with_action(&mut self, action: &GameAction) {
-        self.action = Some(action.clone());
+        self.action = Some(*action);
         self.current_prompt = None;
         self.responses.clear();
         self.response_index = 0;

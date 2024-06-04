@@ -80,7 +80,7 @@ where
                     return Err(DeadlineExceededError);
                 }
                 let mut child = node.make_copy();
-                child.execute_action(current_turn, action.clone());
+                child.execute_action(current_turn, action);
                 let score =
                     run_internal(config, &child, evaluator, depth - 1, player, alpha, beta, false)?
                         .score();
@@ -99,7 +99,7 @@ where
                     return Err(DeadlineExceededError);
                 }
                 let mut child = node.make_copy();
-                child.execute_action(current_turn, action.clone());
+                child.execute_action(current_turn, action);
                 let score =
                     run_internal(config, &child, evaluator, depth - 1, player, alpha, beta, false)?
                         .score();

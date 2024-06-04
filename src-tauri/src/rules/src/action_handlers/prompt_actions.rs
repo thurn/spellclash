@@ -38,7 +38,7 @@ pub fn execute<'a>(
     action: &PromptAction,
 ) -> Value<Option<GameAction>> {
     let initial_action =
-        game.prompts.action.as_ref().with_error(|| "Expected initial prompt action")?.clone();
+        *game.prompts.action.as_ref().with_error(|| "Expected initial prompt action")?;
     match action {
         PromptAction::PickNumber(n) => pick_number(game, initial_action, n),
         PromptAction::SelectCard { source, target } => select_card(game, *source, *target),

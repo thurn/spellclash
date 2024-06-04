@@ -38,7 +38,7 @@ pub fn select(input_game: &GameState, player: PlayerName) -> Value<GameAction> {
     });
     verify!(!legal.is_empty(), "No legal actions available");
     if legal.len() == 1 {
-        return Ok(legal[0].clone());
+        return Ok(legal[0]);
     }
 
     let mut game = input_game.clone();
