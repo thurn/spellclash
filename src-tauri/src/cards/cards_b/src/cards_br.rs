@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use abilities::prompt_helpers::prompts;
 use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 use data::prompts::card_selection_prompt::Quantity;
 use data::text_strings::Text;
 use rules::mutations::library;
+use rules::prompt_helpers::prompts;
 
 pub fn brainstorm() -> CardDefinition {
     CardDefinition::new(card_name::BRAINSTORM).ability(SpellAbility::new().effects(|g, s| {

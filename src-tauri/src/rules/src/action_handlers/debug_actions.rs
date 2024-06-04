@@ -26,6 +26,7 @@ use utils::outcome::Outcome;
 use utils::{fail, outcome};
 
 use crate::mutations::players;
+use crate::prompt_helpers::prompts;
 
 #[instrument(level = "debug", skip(game))]
 pub fn execute(game: &mut GameState, player: PlayerName, action: &DebugGameAction) -> Outcome {
@@ -42,7 +43,7 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: &DebugGameActio
         }
         DebugGameAction::SetLifeTotal(target) => {
             let amount =
-                game.prompts.pick_number(player, Text::SelectNumber, PickNumberPrompt {
+                prompts::pick_number(game, player, Text::SelectNumber, PickNumberPrompt {
                     minimum: 0,
                     maximum: 20,
                 })?;

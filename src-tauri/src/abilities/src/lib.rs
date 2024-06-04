@@ -13,4 +13,3 @@
 // limitations under the License.
 
 pub mod mana;
-pub mod prompt_helpers;

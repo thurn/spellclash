@@ -20,6 +20,7 @@ use utils::outcome::{StopCondition, Value};
 
 use crate::actions::game_action::GameAction;
 use crate::core::primitives::{CardId, EntityId, PlayerName};
+use crate::game_states::game_state::GameState;
 use crate::prompts::card_selection_prompt::CardSelectionPrompt;
 use crate::prompts::choice_prompt::{Choice, ChoicePrompt};
 use crate::prompts::pick_number_prompt::PickNumberPrompt;
@@ -67,71 +68,5 @@ impl PromptManager {
     /// Mutable equivalent of [Self::current_prompt_type].
     pub fn current_prompt_type_mut(&mut self) -> Option<&mut PromptType> {
         self.current_prompt.as_mut().map(|p| &mut p.prompt_type)
-    }
-
-    pub fn choose_entity(
-        &mut self,
-        player: PlayerName,
-        description: Text,
-        choices: Vec<Choice<EntityId>>,
-    ) -> Value<EntityId> {
-        let PromptResponse::EntityChoice(id) = self.send(Prompt {
-            player,
-            label: Some(description),
-            prompt_type: PromptType::EntityChoice(ChoicePrompt { optional: false, choices }),
-        })?
-        else {
-            fail!("Unexpected prompt response type!");
-        };
-
-        Ok(*id)
-    }
-
-    pub fn select_cards(
-        &mut self,
-        player: PlayerName,
-        description: Text,
-        prompt: CardSelectionPrompt,
-    ) -> Value<Vec<CardId>> {
-        let PromptResponse::SelectCards(ids) = self.send(Prompt {
-            player,
-            label: Some(description),
-            prompt_type: PromptType::SelectCards(prompt),
-        })?
-        else {
-            fail!("Unexpected prompt response type!");
-        };
-
-        Ok(ids.clone())
-    }
-
-    /// Show a [PickNumberPrompt].
-    pub fn pick_number(
-        &mut self,
-        player: PlayerName,
-        description: Text,
-        prompt: PickNumberPrompt,
-    ) -> Value<u32> {
-        let PromptResponse::PickNumber(number) = self.send(Prompt {
-            player,
-            label: Some(description),
-            prompt_type: PromptType::PickNumber(prompt),
-        })?
-        else {
-            fail!("Unexpected prompt response type!");
-        };
-
-        Ok(*number)
-    }
-
-    fn send(&mut self, prompt: Prompt) -> Value<&PromptResponse> {
-        let index = self.response_index;
-        if let Some(response) = self.responses.get(self.response_index) {
-            self.response_index += 1;
-            Ok(response)
-        } else {
-            self.current_prompt = Some(prompt);
-            Err(StopCondition::Prompt)
-        }
     }
 }
