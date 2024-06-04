@@ -51,8 +51,6 @@ use rules::mutations::library;
 use rules::steps::step;
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::info;
-use utils::outcome::{Outcome, Value};
-use utils::{fail, outcome};
 use uuid::Uuid;
 
 use crate::server_data::{ClientData, GameResponse};
@@ -64,8 +62,7 @@ pub fn create(
     action: NewGameAction,
     response_channel: &UnboundedSender<GameResponse>,
 ) {
-    let mut user =
-        requests::fetch_user(database.clone(), data.user_id).expect("Error fetching user");
+    let mut user = requests::fetch_user(database.clone(), data.user_id);
 
     let game_id = if let Some(id) = action.debug_options.override_game_id {
         id
@@ -82,12 +79,10 @@ pub fn create(
         action.debug_options.configuration.act_as_player.map(|p| p.id).or(action.opponent_id),
         action.opponent_deck,
         action.debug_options.configuration,
-    )
-    .expect("Error creating game");
+    );
     if let Some(action) = game_action_server::auto_pass_action(&game, PlayerName::One) {
         // Pass priority until the first configured stop.
-        game_action_server::handle_game_action_internal(database.clone(), &data, action, &mut game)
-            .expect("Error handling game action");
+        game_action_server::handle_game_action_internal(database.clone(), &data, action, &mut game);
     }
 
     user.activity = UserActivity::Playing(game.id);
@@ -98,19 +93,14 @@ pub fn create(
         modal_panel: None,
         display_state: DisplayState::default(),
     })
-    .commands(render::connect(
-        &game,
-        game.find_player_name(user.id).expect("Error finding player"),
-        DisplayState::default(),
-    ));
+    .commands(render::connect(&game, game.find_player_name(user.id), DisplayState::default()));
 
-    database.write_game(&game).expect("Error writing game");
-    database.write_user(&user).expect("Error writing user");
+    database.write_game(&game);
+    database.write_user(&user);
     if let Some(opponent_id) = action.opponent_id {
-        let mut opponent =
-            requests::fetch_user(database.clone(), opponent_id).expect("Error fetching user");
+        let mut opponent = requests::fetch_user(database.clone(), opponent_id);
         opponent.activity = UserActivity::Playing(game_id);
-        database.write_user(&opponent).expect("Error writing opponent");
+        database.write_user(&opponent);
     }
 
     response_channel.send(result);

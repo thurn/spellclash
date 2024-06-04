@@ -20,15 +20,13 @@ use data::game_states::state_based_event::StateBasedEvent;
 use data::player_states::player_state::PlayerQueries;
 use enumset::EnumSet;
 use tracing::instrument;
-use utils::outcome;
-use utils::outcome::Outcome;
 
 use crate::mutations::move_card;
 use crate::queries::{card_queries, player_queries};
 
 /// Checks for state-based actions to perform in the provided game state.
 #[instrument(name = "state_based_actions_run", level = "debug", skip(game))]
-pub fn run(game: &mut GameState) -> Outcome {
+pub fn run(game: &mut GameState) {
     // > 704.3. Whenever a player would get priority (see rule 117, "Timing and
     // > Priority"), the game checks for any of the listed conditions for
     // > state-based actions, then performs all applicable state-based actions
@@ -63,16 +61,16 @@ pub fn run(game: &mut GameState) -> Outcome {
                 StateBasedEvent::CopyLeftStackOrBattlefield(_) => {}
                 StateBasedEvent::CreatureToughnessChanged(card_id) => {
                     if card_queries::toughness(game, card_id) <= 0 {
-                        move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
+                        move_card::run(game, Source::Game, card_id, Zone::Graveyard);
                     }
                 }
                 StateBasedEvent::CreatureDamaged(card_id) => {
                     if game.card(card_id).damage as i64 >= card_queries::toughness(game, card_id) {
-                        move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
+                        move_card::run(game, Source::Game, card_id, Zone::Graveyard);
                     }
                 }
                 StateBasedEvent::CreatureDamagedByDeathtouch(card_id) => {
-                    move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
+                    move_card::run(game, Source::Game, card_id, Zone::Graveyard);
                 }
                 StateBasedEvent::PlaneswalkerLostLoyalty(_) => {}
                 StateBasedEvent::LegendaryPermanentEntered(_) => {}
@@ -83,8 +81,5 @@ pub fn run(game: &mut GameState) -> Outcome {
     if !lost.is_empty() {
         game.status =
             GameStatus::GameOver { winners: player_queries::all_players(game).difference(lost) };
-        outcome::GAME_OVER
-    } else {
-        outcome::OK
     }
 }

@@ -28,11 +28,9 @@ use game::server_data::{ClientData, GameResponse};
 use once_cell::sync::Lazy;
 use tauri::{AppHandle, EventTarget, Manager};
 use tokio::sync::mpsc;
-use tracing::{error, info};
+use tracing::info;
 use utils::command_line::TracingStyle;
-use utils::outcome::Outcome;
-use utils::with_error::WithError;
-use utils::{command_line, outcome, paths};
+use utils::{command_line, paths};
 use uuid::Uuid;
 
 use crate::command_line_parser::CommandLineParser;
@@ -41,16 +39,13 @@ mod command_line_parser;
 mod initialize;
 mod logging;
 
-static DATABASE: Lazy<SqliteDatabase> =
-    Lazy::new(|| SqliteDatabase::new(paths::get_data_dir()).unwrap());
+static DATABASE: Lazy<SqliteDatabase> = Lazy::new(|| SqliteDatabase::new(paths::get_data_dir()));
 
 #[tauri::command]
 #[specta::specta]
-async fn client_connect() -> Result<GameResponse, ()> {
+async fn client_connect() -> GameResponse {
     info!("Got connect request");
-    server::connect(DATABASE.clone(), UserId(Uuid::default())).map_err(|err| {
-        error!("Error on connect: {:?}", err);
-    })
+    server::connect(DATABASE.clone(), UserId(Uuid::default()))
 }
 
 #[tauri::command]
@@ -70,13 +65,11 @@ async fn client_update_field(
     client_data: ClientData,
     key: FieldKey,
     value: FieldValue,
-) -> Result<GameResponse, ()> {
-    server::handle_update_field(DATABASE.clone(), client_data, key, value).map_err(|err| {
-        error!("Error on update_fields: {:?}", err);
-    })
+) -> GameResponse {
+    server::handle_update_field(DATABASE.clone(), client_data, key, value)
 }
 
-fn main() -> Outcome {
+fn main() {
     let args = CommandLineParser::parse().build();
     command_line::FLAGS.set(args).expect("Flags should not be set multiple times");
 
@@ -85,13 +78,13 @@ fn main() -> Outcome {
             tracing_span_tree::span_tree().aggregate(true).enable();
         }
         TracingStyle::Forest => {
-            logging::initialize()?;
+            logging::initialize();
         }
         TracingStyle::None => {}
     }
 
     if env::var("DISABLE_PANIC_HANDLER").is_err() {
-        initialize::initialize_panic_handler()?;
+        initialize::initialize_panic_handler();
     }
     card_list::initialize();
 
@@ -115,7 +108,5 @@ fn main() -> Outcome {
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(invoke_handler)
         .run(tauri::generate_context!())
-        .with_error(|| "Failed to start tauri")?;
-
-    outcome::OK
+        .expect("Failed to start tauri");
 }

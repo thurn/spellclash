@@ -16,8 +16,6 @@ use data::card_states::zones::ZoneQueries;
 use data::core::primitives::PlayerName;
 use data::game_states::game_state::GameState;
 use tracing::{debug, instrument};
-use utils::outcome::Outcome;
-use utils::{outcome, verify};
 
 use crate::queries::player_queries;
 use crate::resolve_cards::resolve;
@@ -25,10 +23,10 @@ use crate::steps::step;
 
 /// Passes priority for the [PlayerName] player.
 ///
-/// Returns an error if this player does not have priority.
-#[instrument(err, level = "debug", skip(game))]
-pub fn pass(game: &mut GameState, player: PlayerName) -> Outcome {
-    verify!(game.priority == player, "Player {player:?} does not have priority");
+/// Panics if this player does not have priority.
+#[instrument(level = "debug", skip(game))]
+pub fn pass(game: &mut GameState, player: PlayerName) {
+    assert_eq!(game.priority, player, "Player {player:?} does not have priority");
     debug!(?player, ?game.step, "Passing priority");
     game.passed.insert(player);
     if game.passed.len() == game.configuration.all_players.len() {
@@ -40,6 +38,5 @@ pub fn pass(game: &mut GameState, player: PlayerName) -> Outcome {
         }
     } else {
         game.priority = player_queries::next_player_after(game, game.priority);
-        outcome::OK
     }
 }

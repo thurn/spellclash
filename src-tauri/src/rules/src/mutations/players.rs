@@ -18,29 +18,15 @@ use data::game_states::game_state::GameState;
 use data::game_states::state_based_event::StateBasedEvent;
 use data::player_states::player_state::PlayerQueries;
 use tracing::debug;
-use utils::outcome;
-use utils::outcome::Outcome;
 
-pub fn deal_damage(
-    game: &mut GameState,
-    _source: Source,
-    player: PlayerName,
-    damage: Damage,
-) -> Outcome {
+pub fn deal_damage(game: &mut GameState, _source: Source, player: PlayerName, damage: Damage) {
     debug!("Dealing {damage:?} damage to {player:?}");
     game.player_mut(player).life -= damage as i64;
     game.add_state_based_event(StateBasedEvent::LifeTotalDecrease(player));
-    outcome::OK
 }
 
-pub fn set_life_total(
-    game: &mut GameState,
-    _source: Source,
-    player: PlayerName,
-    value: LifeValue,
-) -> Outcome {
+pub fn set_life_total(game: &mut GameState, _source: Source, player: PlayerName, value: LifeValue) {
     debug!("Setting life total to {value:?} for {player:?}");
     game.player_mut(player).life = value;
     game.add_state_based_event(StateBasedEvent::LifeTotalDecrease(player));
-    outcome::OK
 }

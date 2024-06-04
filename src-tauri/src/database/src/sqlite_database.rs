@@ -22,9 +22,6 @@ use data::printed_cards::printed_card_id::PrintedCardId;
 use data::users::user_state::UserState;
 use rusqlite::{Connection, Error, OptionalExtension};
 use serde_json::{de, ser};
-use utils::outcome::{Outcome, Value};
-use utils::with_error::WithError;
-use utils::{fail, outcome};
 
 /// SQLite database connection.
 ///
@@ -37,25 +34,25 @@ pub struct SqliteDatabase {
 }
 
 impl SqliteDatabase {
-    pub fn new(directory: PathBuf) -> Value<Self> {
+    pub fn new(directory: PathBuf) -> Self {
         let connection = match Connection::open(directory.join("game.sqlite")) {
             Ok(connection) => connection,
             Err(Error::SqliteFailure(_, s)) => {
-                fail!("Error opening database connection: {:?}", s);
+                panic!("Error opening database connection: {:?}", s);
             }
             Err(err) => {
-                fail!("Error opening database connection: {:?}", err);
+                panic!("Error opening database connection: {:?}", err);
             }
         };
 
         connection
             .pragma_update(None, "foreign_keys", true)
-            .with_error(|| "Error setting foreign keys pragma")?;
+            .expect("Error setting foreign keys pragma");
         let attach_printings = format!(
             "ATTACH '{}' as oracle;",
             directory.join("AllPrintings.sqlite").to_str().unwrap()
         );
-        connection.execute(&attach_printings, ()).with_error(|| "Error attaching table")?;
+        connection.execute(&attach_printings, ()).expect("Error attaching table");
         connection
             .execute(
                 "CREATE TABLE IF NOT EXISTS games (
@@ -64,7 +61,7 @@ impl SqliteDatabase {
                 ) STRICT;",
                 (),
             )
-            .with_error(|| "Error creating table")?;
+            .expect("Error creating table");
         connection
             .execute(
                 "CREATE TABLE IF NOT EXISTS users (
@@ -73,95 +70,91 @@ impl SqliteDatabase {
                 ) STRICT;",
                 (),
             )
-            .with_error(|| "Error creating table")?;
+            .expect("Error creating table");
 
-        Ok(Self { connection: Arc::new(Mutex::new(connection)) })
+        Self { connection: Arc::new(Mutex::new(connection)) }
     }
 
-    pub fn fetch_game(&self, id: GameId) -> Value<Option<GameState>> {
+    pub fn fetch_game(&self, id: GameId) -> Option<GameState> {
         let data = self
-            .db()?
+            .db()
             .query_row("SELECT data FROM games WHERE id = ?1", [&id.0], |row| {
                 let data: Vec<u8> = row.get(0)?;
                 Ok(data)
             })
             .optional()
-            .with_error(|| format!("Error fetching game {id:?}"))?;
+            .unwrap_or_else(|e| panic!("Error fetching game {id:?} {e:?}"));
 
         data.map(|data| {
             de::from_slice::<GameState>(&data)
-                .with_error(|| format!("Error deserializing game {id:?}"))
+                .unwrap_or_else(|e| panic!("Error deserializing game {id:?} {e:?}"))
         })
-        .transpose()
     }
 
-    pub fn write_game(&self, game: &GameState) -> Outcome {
-        let data =
-            ser::to_vec(game).with_error(|| format!("Error serializing game {:?}", game.id))?;
-        self.db()?
+    pub fn write_game(&self, game: &GameState) {
+        let data = ser::to_vec(game)
+            .unwrap_or_else(|e| panic!("Error serializing game {:?} {e:?}", game.id));
+        self.db()
             .execute(
                 "INSERT INTO games (id, data)
                  VALUES (?1, ?2)
                  ON CONFLICT(id) DO UPDATE SET data = ?2",
                 (&game.id.0, &data),
             )
-            .with_error(|| format!("Error writing game to sqlite {:?}", game.id))?;
-        outcome::OK
+            .unwrap_or_else(|e| panic!("Error writing game to sqlite {:?} {e:?}", game.id));
     }
 
-    pub fn fetch_user(&self, id: UserId) -> Value<Option<UserState>> {
+    pub fn fetch_user(&self, id: UserId) -> Option<UserState> {
         let data = self
-            .db()?
+            .db()
             .query_row("SELECT data FROM users WHERE id = ?1", [&id.0], |row| {
                 let data: Vec<u8> = row.get(0)?;
                 Ok(data)
             })
             .optional()
-            .with_error(|| format!("Error fetching user {id:?}"))?;
+            .unwrap_or_else(|e| panic!("Error fetching user {id:?} {e:?}"));
 
         data.map(|data| {
             de::from_slice::<UserState>(&data)
-                .with_error(|| format!("Error deserializing user {id:?}"))
+                .unwrap_or_else(|e| panic!("Error deserializing user {id:?} {e:?}"))
         })
-        .transpose()
     }
 
-    pub fn write_user(&self, user: &UserState) -> Outcome {
-        let data =
-            ser::to_vec(user).with_error(|| format!("Error serializing user {:?}", user.id))?;
-        self.db()?
+    pub fn write_user(&self, user: &UserState) {
+        let data = ser::to_vec(user)
+            .unwrap_or_else(|e| panic!("Error serializing user {:?} {e:?}", user.id));
+        self.db()
             .execute(
                 "INSERT INTO users (id, data)
                 VALUES (?1, ?2)
                 ON CONFLICT(id) DO UPDATE SET data = ?2",
                 (&user.id.0, &data),
             )
-            .with_error(|| format!("Error writing user to sqlite {:?}", user.id))?;
-        outcome::OK
+            .unwrap_or_else(|e| panic!("Error writing user to sqlite {:?} {e:?}", user.id));
     }
 
     /// Fetch the [DatabaseCardFace]s of a given [PrintedCardId].
-    pub fn fetch_printed_faces(&self, id: PrintedCardId) -> Value<Vec<DatabaseCardFace>> {
-        let connection = self.db()?;
+    pub fn fetch_printed_faces(&self, id: PrintedCardId) -> Vec<DatabaseCardFace> {
+        let connection = self.db();
         let mut statement = connection
             .prepare(
                 "SELECT *
                  FROM oracle.cards NATURAL JOIN oracle.cardIdentifiers
                  WHERE scryfallId = ?1",
             )
-            .with_error(|| "Error preparing query")?;
+            .expect("Error preparing query");
 
         // Note: database stores UUIDs as literal strings, not blobs.
-        let rows = statement.query([id.0.to_string()]).with_error(|| "Error querying database")?;
+        let rows = statement.query([id.0.to_string()]).expect("Error querying database");
         let cards = serde_rusqlite::from_rows::<DatabaseCardFace>(rows);
-        cards.collect::<Result<_, _>>().with_error(|| "Error fetching card")
+        cards.collect::<Result<_, _>>().expect("Error fetching card")
     }
 
-    fn db(&self) -> Value<MutexGuard<Connection>> {
+    fn db(&self) -> MutexGuard<Connection> {
         match self.connection.lock() {
-            Ok(guard) => Ok(guard),
+            Ok(guard) => guard,
             Err(er) => {
-                fail!("Error getting database lock, did a writer panic? {:?}", er);
+                panic!("Error getting database lock, did a writer panic? {:?}", er);
             }
         }
     }

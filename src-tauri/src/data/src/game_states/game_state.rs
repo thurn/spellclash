@@ -17,8 +17,6 @@ use std::collections::{HashSet, VecDeque};
 use enumset::EnumSet;
 use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};
-use utils::fail;
-use utils::outcome::{Outcome, Value};
 
 use crate::card_states::card_state::CardState;
 use crate::card_states::stack_ability_state::StackAbilityState;
@@ -144,13 +142,13 @@ impl GameState {
 
     /// Changes the controller for a card.
     ///
-    /// Returns an error if this card was not found on the battlefield.
+    /// Panics if this card was not found on the battlefield.
     pub fn change_controller(
         &mut self,
         source: impl HasSource,
         id: impl HasCardId,
         controller: PlayerName,
-    ) -> Outcome {
+    ) {
         self.zones.change_controller(source, id, controller, self.turn)
     }
 
@@ -174,20 +172,20 @@ impl GameState {
     }
 
     /// Shuffles the order of cards in a player's library
-    pub fn shuffle_library(&mut self, player: PlayerName) -> Outcome {
+    pub fn shuffle_library(&mut self, player: PlayerName) {
         self.zones.shuffle_library(player, &mut self.rng)
     }
 
     /// Finds the name of the player with the given user ID
     ///
-    /// Returns an error this user is not a player in this game.
-    pub fn find_player_name(&self, user_id: UserId) -> Value<PlayerName> {
+    /// Panics if this user is not a player in this game.
+    pub fn find_player_name(&self, user_id: UserId) -> PlayerName {
         for name in enum_iterator::all::<PlayerName>() {
             if self.player(name).user_id == Some(user_id) {
-                return Ok(name);
+                return name;
             }
         }
-        fail!("User {user_id:?} is not a player in game {:?}", self.id);
+        panic!("User {user_id:?} is not a player in game {:?}", self.id);
     }
 
     /// Returns true if this player is currently the active player (the player

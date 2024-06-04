@@ -21,8 +21,6 @@ use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandSubtype;
 use data::printed_cards::mana_cost::ManaCostItem;
 use tracing::instrument;
-use utils::outcome::{Outcome, Value};
-use utils::{fail, outcome};
 
 use crate::queries::card_queries;
 
@@ -59,7 +57,7 @@ pub fn mana_payment(
     }
     lands.values_mut().for_each(|v| v.sort_by_key(|(_, subtypes)| *subtypes));
 
-    let cost = card_queries::mana_cost_for_casting_card(game, card_id, choices).ok()?;
+    let cost = card_queries::mana_cost_for_casting_card(game, card_id, choices);
     let mut result = ManaPaymentPlan::default();
     for item in cost.items {
         add_land_for_item(&mut result, &mut lands, item)?;

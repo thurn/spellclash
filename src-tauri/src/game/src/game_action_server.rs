@@ -34,8 +34,6 @@ use rules::legality::legal_actions::LegalActions;
 use rules::queries::combat_queries;
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::{debug, error, info, instrument};
-use utils::outcome::{StopCondition, Value};
-use utils::with_error::WithError;
 
 use crate::requests;
 use crate::server_data::{ClientData, GameResponse};
@@ -43,9 +41,9 @@ use crate::server_data::{ClientData, GameResponse};
 /// Connects to an ongoing game scene, returning a [GameResponse] which renders
 /// its current visual state.
 #[instrument(level = "debug", skip(database))]
-pub fn connect(database: SqliteDatabase, user: &UserState, game_id: GameId) -> Value<GameResponse> {
-    let game = requests::fetch_game(database, game_id)?;
-    let player_name = game.find_player_name(user.id)?;
+pub fn connect(database: SqliteDatabase, user: &UserState, game_id: GameId) -> GameResponse {
+    let game = requests::fetch_game(database, game_id);
+    let player_name = game.find_player_name(user.id);
 
     info!(?user.id, ?game.id, "Connected to game");
     let commands = render::connect(&game, player_name, DisplayState::default());
@@ -55,7 +53,7 @@ pub fn connect(database: SqliteDatabase, user: &UserState, game_id: GameId) -> V
         modal_panel: None,
         display_state: DisplayState::default(),
     };
-    Ok(GameResponse::new(client_data).commands(commands))
+    GameResponse::new(client_data).commands(commands)
 }
 
 #[instrument(level = "debug", skip(database))]
@@ -65,22 +63,16 @@ pub async fn handle_game_action(
     action: GameAction,
     response_channel: &UnboundedSender<GameResponse>,
 ) {
-    let mut game =
-        requests::fetch_game(database.clone(), data.game_id().expect("Expected current game ID"))
-            .expect("Error fetching game");
-    let result = handle_game_action_internal(database, data, action, &mut game)
-        .unwrap_or_else(|_| panic!("Error handling game action {action:?}"));
-    response_channel.send(result).expect("Error sending game response");
+    let mut game = requests::fetch_game(database.clone(), data.game_id());
+    let result = handle_game_action_internal(database, data, action, &mut game);
+    response_channel.send(result).expect("Receiver has been dropped");
 }
 
-pub fn handle_update_fields(database: SqliteDatabase, data: ClientData) -> Value<GameResponse> {
-    let mut game = requests::fetch_game(
-        database.clone(),
-        data.game_id().with_error(|| "Expected current game ID")?,
-    )?;
-    let user_player_name = game.find_player_name(data.user_id)?;
+pub fn handle_update_fields(database: SqliteDatabase, data: ClientData) -> GameResponse {
+    let mut game = requests::fetch_game(database.clone(), data.game_id());
+    let user_player_name = game.find_player_name(data.user_id);
     let commands = render::render_updates(&game, user_player_name, data.display_state.clone());
-    Ok(GameResponse::new(data).commands(commands))
+    GameResponse::new(data).commands(commands)
 }
 
 pub fn handle_game_action_internal(
@@ -88,8 +80,8 @@ pub fn handle_game_action_internal(
     data: &ClientData,
     action: GameAction,
     game: &mut GameState,
-) -> Value<GameResponse> {
-    let user_player_name = game.find_player_name(data.user_id)?;
+) -> GameResponse {
+    let user_player_name = game.find_player_name(data.user_id);
     let mut current_player = user_player_name;
 
     if let Some(act_as) = game.configuration.debug.act_as_player {
@@ -104,25 +96,13 @@ pub fn handle_game_action_internal(
     let mut result = GameResponse::new(data.clone());
 
     loop {
-        let halt = match actions::execute(game, current_player, current_action, ExecuteAction {
+        actions::execute(game, current_player, current_action, ExecuteAction {
             automatic: current_action_is_automatic,
             validate: true,
-        }) {
-            Ok(_) => false,
-            Err(StopCondition::Prompt) | Err(StopCondition::GameOver) => true,
-            error @ Err(..) => {
-                return error.map(|_| result);
-            }
-        };
-
+        });
         let user_result =
             render::render_updates(game, user_player_name, data.display_state.clone());
         result = result.commands(user_result);
-
-        if halt {
-            database.write_game(game)?;
-            return Ok(result);
-        }
 
         let next_player = legal_actions::next_to_act(game);
         if let Some(action) = auto_pass_action(game, next_player) {
@@ -131,12 +111,12 @@ pub fn handle_game_action_internal(
             current_action = action;
             current_action_is_automatic = true;
         } else if game.player(next_player).user_id.is_some() {
-            database.write_game(game)?;
-            return Ok(result);
+            database.write_game(game);
+            return result;
         } else {
             debug!(?next_player, "Searching for AI action");
             current_player = next_player;
-            current_action = ai_action::select(game, next_player)?;
+            current_action = ai_action::select(game, next_player);
             current_action_is_automatic = true;
             debug!(?next_player, ?current_action, "AI action selected");
         }

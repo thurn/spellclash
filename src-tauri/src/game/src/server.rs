@@ -22,7 +22,6 @@ use database::sqlite_database::SqliteDatabase;
 use display::commands::field_state::{FieldKey, FieldValue};
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::{debug_span, info, Instrument};
-use utils::outcome::Value;
 
 use crate::server_data::{ClientData, GameResponse};
 use crate::{
@@ -33,8 +32,8 @@ use crate::{
 ///
 /// This returns commands to load & render the current game state. It's expected
 /// that this will be invoked on application start and on scene change.
-pub fn connect(database: SqliteDatabase, user_id: UserId) -> Value<GameResponse> {
-    let user = fetch_or_create_user(database.clone(), user_id)?;
+pub fn connect(database: SqliteDatabase, user_id: UserId) -> GameResponse {
+    let user = fetch_or_create_user(database.clone(), user_id);
     let _span = debug_span!("connect", ?user_id);
     match user.activity {
         UserActivity::Menu => main_menu_server::connect(database, &user),
@@ -53,14 +52,15 @@ pub async fn handle_action(
     action: UserAction,
     response_channel: &UnboundedSender<GameResponse>,
 ) {
-    let game_id = data.game_id();
-    let _span = debug_span!("handle_action", ?data.user_id, ?game_id);
+    let span = debug_span!("handle_action", ?action);
     match action {
         UserAction::NewGameAction(action) => {
             new_game_server::create(database, data, action, response_channel)
         }
         UserAction::GameAction(action) => {
-            game_action_server::handle_game_action(database, &data, action, response_channel).await
+            game_action_server::handle_game_action(database, &data, action, response_channel)
+                .instrument(span)
+                .await;
         }
         UserAction::LeaveGameAction => leave_game_server::leave(database, data, response_channel),
         UserAction::QuitGameAction => {
@@ -72,7 +72,8 @@ pub async fn handle_action(
         UserAction::ClosePanel => panel_server::handle_close_panel(data, response_channel),
         UserAction::PanelTransition(transition) => {
             panel_server::handle_panel_transition(database, data, transition, response_channel)
-                .await
+                .instrument(span)
+                .await;
         }
     }
 }
@@ -82,18 +83,18 @@ pub fn handle_update_field(
     mut data: ClientData,
     key: FieldKey,
     value: FieldValue,
-) -> Value<GameResponse> {
+) -> GameResponse {
     data.display_state.fields.insert(key, value);
     game_action_server::handle_update_fields(database, data)
 }
 
-fn fetch_or_create_user(database: SqliteDatabase, user_id: UserId) -> Value<UserState> {
-    Ok(if let Some(player) = database.fetch_user(user_id)? {
+fn fetch_or_create_user(database: SqliteDatabase, user_id: UserId) -> UserState {
+    if let Some(player) = database.fetch_user(user_id) {
         player
     } else {
         let user = UserState { id: user_id, activity: UserActivity::Menu };
-        database.write_user(&user)?;
+        database.write_user(&user);
         info!(?user_id, "Created new user");
         user
-    })
+    }
 }

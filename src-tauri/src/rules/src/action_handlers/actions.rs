@@ -19,9 +19,6 @@ use data::core::primitives::{CardId, PlayerName, Source, Zone};
 use data::game_states::game_state::{GameState, GameStatus};
 use data::printed_cards::printed_card::Face;
 use tracing::{debug, info, instrument};
-use utils::outcome::{Outcome, StopCondition};
-use utils::with_error::WithError;
-use utils::{fail, outcome, verify};
 
 use crate::action_handlers::{combat_actions, debug_actions, prompt_actions};
 use crate::legality::legal_actions;
@@ -46,9 +43,9 @@ pub fn execute(
     player: PlayerName,
     mut action: GameAction,
     options: ExecuteAction,
-) -> Outcome {
+) {
     if options.validate {
-        verify!(
+        assert!(
             legal_actions::can_take_action(game, player, &action) || action.is_debug_action(),
             "Illegal game action {:?} for player {:?}",
             action,
@@ -79,38 +76,29 @@ pub fn execute(
             GameAction::PromptAction(a) => {
                 // Store the prompt selection and then re-simulate the previous action using
                 // this prompt response if needed.
-                if let Some(run_action) = prompt_actions::execute(game, player, a)? {
+                if let Some(run_action) = prompt_actions::execute(game, player, a) {
                     action = run_action;
                     continue;
-                } else {
-                    outcome::OK
                 }
             }
-        }?;
+        };
         break;
     }
 
     if legal_actions::can_any_player_pass_priority(game) {
         // If any player has priority as a result of this game action, check state-based
         // actions.
-        state_based_actions::run(game)?;
+        state_based_actions::run(game);
     }
-
-    outcome::OK
 }
 
 #[instrument(level = "debug", skip(game))]
-fn handle_pass_priority(game: &mut GameState, player: PlayerName) -> Outcome {
+fn handle_pass_priority(game: &mut GameState, player: PlayerName) {
     priority::pass(game, player)
 }
 
 #[instrument(level = "debug", skip(game))]
-fn handle_play_card(
-    game: &mut GameState,
-    source: Source,
-    player: PlayerName,
-    card_id: CardId,
-) -> Outcome {
+fn handle_play_card(game: &mut GameState, source: Source, player: PlayerName, card_id: CardId) {
     debug!(?player, ?card_id, "Playing card");
     play_card::execute(game, player, Source::Game, card_id)
 }

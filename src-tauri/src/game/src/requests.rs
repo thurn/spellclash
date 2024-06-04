@@ -21,18 +21,18 @@ use data::users::user_state::UserState;
 use database::sqlite_database::SqliteDatabase;
 use oracle::card_database;
 use rules::game_creation::initialize_game;
-use utils::outcome::{Outcome, Value};
-use utils::with_error::WithError;
 
 /// Looks up a user by ID in the database.
-pub fn fetch_user(database: SqliteDatabase, user_id: UserId) -> Value<UserState> {
-    database.fetch_user(user_id)?.with_error(|| format!("User not found {user_id:?}"))
+pub fn fetch_user(database: SqliteDatabase, user_id: UserId) -> UserState {
+    database.fetch_user(user_id).unwrap_or_else(|| {
+        panic!("User not found: {user_id:?}");
+    })
 }
 
 /// Looks up a game by ID in the database.
-pub fn fetch_game(database: SqliteDatabase, game_id: GameId) -> Value<GameState> {
+pub fn fetch_game(database: SqliteDatabase, game_id: GameId) -> GameState {
     let mut game =
-        database.fetch_game(game_id)?.with_error(|| format!("Game not found {game_id:?}"))?;
-    initialize_game::run(database, &mut game)?;
-    Ok(game)
+        database.fetch_game(game_id).unwrap_or_else(|| panic!("Game not found: {game_id:?}"));
+    initialize_game::run(database, &mut game);
+    game
 }

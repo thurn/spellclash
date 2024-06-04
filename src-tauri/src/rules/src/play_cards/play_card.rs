@@ -20,8 +20,6 @@ use data::core::primitives::{CardId, PlayerName, Source, Zone};
 use data::game_states::game_state::GameState;
 use enum_iterator::Sequence;
 use tracing::instrument;
-use utils::outcome::{Outcome, Value};
-use utils::{fail, outcome};
 
 use crate::play_cards::play_card_choices::{PlayCardChoice, PlayCardChoicePrompt};
 use crate::play_cards::{play_card_choices, play_card_executor};
@@ -32,13 +30,8 @@ use crate::play_cards::{play_card_choices, play_card_executor};
 /// then put it into play. An error is returned if the player makes a choice
 /// which results in this card being illegal to play (e.g. selecting a target
 /// which increases the cost of a spell beyond their ability to play).
-pub fn execute(
-    game: &mut GameState,
-    player: PlayerName,
-    source: Source,
-    card_id: CardId,
-) -> Outcome {
-    let plan = prompt_for_play_card_plan(game, source, card_id)?;
+pub fn execute(game: &mut GameState, player: PlayerName, source: Source, card_id: CardId) {
+    let plan = prompt_for_play_card_plan(game, source, card_id);
     play_card_executor::execute_plan(game, player, card_id, source, plan)
 }
 
@@ -99,13 +92,9 @@ pub enum PlayCardStep {
 /// Show a series of prompts to the player trying to play a card in order to
 /// construct a valid [PlayCardPlan] to play this card.
 ///
-/// Returns an error if the user makes choices which result in no legal way to
+/// Panics if the user makes choices which result in no legal way to
 /// play this card.
-fn prompt_for_play_card_plan(
-    game: &GameState,
-    source: Source,
-    card_id: CardId,
-) -> Value<PlayCardPlan> {
+fn prompt_for_play_card_plan(game: &GameState, source: Source, card_id: CardId) -> PlayCardPlan {
     let mut plan = PlayCardPlan::default();
     for step in enum_iterator::all::<PlayCardStep>() {
         loop {
@@ -116,18 +105,16 @@ fn prompt_for_play_card_plan(
                     break;
                 }
                 PlayCardChoice::Invalid => {
-                    fail!("Cannot legally play {card_id:?} in step {step:?}");
+                    panic!("Cannot legally play {card_id:?} in step {step:?}");
                 }
                 PlayCardChoice::Prompt { optional, prompt } => {
-                    show_prompt_and_add_to_plan(
-                        game, card_id, source, optional, prompt, &mut plan,
-                    )?;
+                    show_prompt_and_add_to_plan(game, card_id, source, optional, prompt, &mut plan);
                 }
             }
         }
     }
 
-    Ok(plan)
+    plan
 }
 
 /// Show the player a [PlayCardChoicePrompt] and record the choice made in the
@@ -139,8 +126,7 @@ fn show_prompt_and_add_to_plan(
     _optional: bool,
     prompt: PlayCardChoicePrompt,
     plan: &mut PlayCardPlan,
-) -> Outcome {
-    outcome::OK
+) {
 }
 
 /// Recursively performs a depth-first search of all possible [PlayCardPlan]s

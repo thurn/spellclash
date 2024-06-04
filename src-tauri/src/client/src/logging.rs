@@ -21,13 +21,11 @@ use tracing_forest::{ForestLayer, PrettyPrinter, Tag};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{EnvFilter, Layer};
-use utils::outcome::Outcome;
+use utils::paths;
 use utils::paths::{LOG_ENV, LOG_FILE};
-use utils::with_error::WithError;
-use utils::{outcome, paths};
 
 /// Initializes global logging behavior for the 'tracing' crate.
-pub fn initialize() -> Outcome {
+pub fn initialize() {
     env::set_var(
         "RUST_LOG",
         env::var("RUST_LOG")
@@ -43,9 +41,9 @@ pub fn initialize() -> Outcome {
     let forest_layer = ForestLayer::new(PrettyPrinter::new(), tag_parser).with_filter(env_filter);
 
     let directory = paths::get_data_dir();
-    fs::create_dir_all(directory.clone()).with_error(|| "Error creating log dir")?;
+    fs::create_dir_all(directory.clone()).expect("Error creating log dir");
     let log_path = directory.join(LOG_FILE.clone());
-    let log_file = File::create(log_path).with_error(|| "Error creating log file")?;
+    let log_file = File::create(log_path).expect("Error creating log file");
     let file_subscriber = tracing_subscriber::fmt::layer()
         .with_file(true)
         .with_line_number(true)
@@ -59,7 +57,6 @@ pub fn initialize() -> Outcome {
         .with(file_subscriber)
         .with(ErrorLayer::default())
         .init();
-    outcome::OK
 }
 
 fn tag_parser(event: &Event) -> Option<Tag> {

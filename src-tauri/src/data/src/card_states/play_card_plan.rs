@@ -14,8 +14,6 @@
 
 use enumset::{EnumSet, EnumSetType};
 use serde::{Deserialize, Serialize};
-use utils::fail;
-use utils::outcome::Value;
 
 use crate::core::numerics::ManaValue;
 use crate::core::primitives::{CardId, EntityId};
@@ -69,12 +67,10 @@ pub struct PlayAs {
 }
 
 impl PlayAs {
-    pub fn single_face(&self) -> Value<Face> {
-        if self.faces.len() == 1 {
-            Ok(self.faces.iter().next().unwrap())
-        } else {
-            fail!("Expected only a single face!");
-        }
+    /// Returns the single face being played, or panics if more than one face is
+    /// being played.
+    pub fn single_face(&self) -> Face {
+        self.faces.iter().next().expect("Expected exactly one face")
     }
 }
 

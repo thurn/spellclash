@@ -17,12 +17,10 @@ use std::panic::PanicInfo;
 
 use color_eyre::config::{HookBuilder, PanicHook};
 use color_eyre::eyre;
-use utils::outcome::Outcome;
+use utils::paths;
 use utils::paths::LOG_FILE;
-use utils::with_error::WithError;
-use utils::{outcome, paths};
 
-pub fn initialize_panic_handler() -> Outcome {
+pub fn initialize_panic_handler() {
     let (panic_hook, eyre_hook) = HookBuilder::default()
         .panic_section(format!(
             "This is a bug. Consider reporting it at {}",
@@ -36,12 +34,10 @@ pub fn initialize_panic_handler() -> Outcome {
     // convert from a color_eyre EyreHook to a eyre ErrorHook
     let eyre_hook = eyre_hook.into_eyre_hook();
     eyre::set_hook(Box::new(move |error: &(dyn std::error::Error + 'static)| eyre_hook(error)))
-        .with_error(|| "Error setting eyre_hook")?;
+        .expect("Error setting eyre_hook");
     panic::set_hook(Box::new(move |panic_info| {
         on_panic(&panic_hook, panic_info);
     }));
-
-    outcome::OK
 }
 
 fn on_panic(panic_hook: &PanicHook, panic_info: &PanicInfo) {

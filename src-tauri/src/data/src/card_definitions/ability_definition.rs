@@ -15,7 +15,6 @@
 use std::marker::PhantomData;
 
 use enumset::EnumSet;
-use utils::outcome::Outcome;
 
 use crate::core::primitives::Zone;
 use crate::costs::cost::Cost;
@@ -25,7 +24,7 @@ use crate::delegates::scope::Scope;
 use crate::game_states::game_state::GameState;
 
 /// A function to produce a list of requested mutations to [GameState].
-pub type EffectFn = fn(&mut GameState, Scope) -> Outcome;
+pub type EffectFn = fn(&mut GameState, Scope);
 
 /// A predicate to apply to a delegate activation.
 pub type RequirementFn = fn(&GameState, Scope) -> bool;

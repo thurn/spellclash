@@ -74,10 +74,10 @@ impl ClientData {
         Self { user_id, scene, modal_panel: None, display_state: DisplayState::default() }
     }
 
-    pub fn game_id(&self) -> Option<GameId> {
+    pub fn game_id(&self) -> GameId {
         match self.scene {
-            SceneIdentifier::Game(id) => Some(id),
-            _ => None,
+            SceneIdentifier::Game(id) => id,
+            _ => panic!("No GameId provided"),
         }
     }
 }

@@ -91,7 +91,6 @@ impl TestPlayer {
             .iter()
             .find(|&id| game.card(id).card_name == name)
             .unwrap_or_else(|| panic!("Card {name:?} not found in library"));
-        move_card::run(game, Source::Game, id, zone)
-            .unwrap_or_else(|_| panic!("Error moving {name:?} to {zone:?}"));
+        move_card::run(game, Source::Game, id, zone);
     }
 }

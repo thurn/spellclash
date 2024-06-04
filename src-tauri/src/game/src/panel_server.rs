@@ -23,8 +23,6 @@ use display::panels::modal_panel::ModalPanel;
 use display::panels::panel;
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::instrument;
-use utils::outcome::Value;
-use utils::with_error::WithError;
 
 use crate::server_data::{ClientData, GameResponse};
 use crate::{game_action_server, requests};
@@ -36,7 +34,7 @@ pub fn handle_open_panel(
     panel: PanelAddress,
     response_channel: &UnboundedSender<GameResponse>,
 ) {
-    data.modal_panel = Some(open_panel(database, &data, panel).expect("Error opening panel"));
+    data.modal_panel = Some(open_panel(database, &data, panel));
     response_channel.send(GameResponse::new(data));
 }
 
@@ -60,25 +58,20 @@ pub async fn handle_panel_transition(
     }
 
     if let Some(next_panel) = transition.open {
-        data.modal_panel =
-            Some(open_panel(database, &data, next_panel).expect("Error opening panel"));
+        data.modal_panel = Some(open_panel(database, &data, next_panel));
     }
 
     response_channel.send(GameResponse::new(data)).expect("Error sending response");
 }
 
-fn open_panel(
-    database: SqliteDatabase,
-    data: &ClientData,
-    panel: PanelAddress,
-) -> Value<ModalPanel> {
-    Ok(match panel {
+fn open_panel(database: SqliteDatabase, data: &ClientData, panel: PanelAddress) -> ModalPanel {
+    match panel {
         PanelAddress::GamePanel(game_panel) => {
-            let game_id = data.game_id().with_error(|| "Expected current game ID")?;
-            let game = requests::fetch_game(database, game_id)?;
-            let player_name = game.find_player_name(data.user_id)?;
+            let game_id = data.game_id();
+            let game = requests::fetch_game(database, game_id);
+            let player_name = game.find_player_name(data.user_id);
             panel::build_game_panel(&game, player_name, game_panel)
         }
         PanelAddress::UserPanel(player_panel) => match player_panel {},
-    })
+    }
 }

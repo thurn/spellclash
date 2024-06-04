@@ -16,11 +16,10 @@ use data::game_states::animation_tracker::{AnimationState, AnimationTracker};
 use data::game_states::game_state::GameState;
 use database::sqlite_database::SqliteDatabase;
 use oracle::card_database;
-use utils::outcome::Outcome;
 
-pub fn run(database: SqliteDatabase, game: &mut GameState) -> Outcome {
+pub fn run(database: SqliteDatabase, game: &mut GameState) {
     for previous in game.undo_tracker.undo.iter_mut() {
-        run(database.clone(), previous.as_mut())?;
+        run(database.clone(), previous.as_mut());
     }
 
     game.animations = AnimationTracker::new(if game.configuration.simulation {

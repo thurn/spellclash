@@ -19,26 +19,18 @@ use data::core::numerics::Damage;
 use data::core::primitives::{CardId, EntityId, HasCardId, HasSource, Zone, ALL_POSSIBLE_PLAYERS};
 use data::game_states::game_state::{GameState, TurnData};
 use data::game_states::state_based_event::StateBasedEvent;
-use utils::outcome;
-use utils::outcome::Outcome;
 
 /// Moves a card to a new zone, updates indices, assigns a new
 /// [EntityId] to it, and fires all relevant events.
 ///
 /// The card is added as the top card of the target zone if it is ordered.
 ///
-/// Returns an error if this card was not found in its previous zone.
-pub fn run(
-    game: &mut GameState,
-    _source: impl HasSource,
-    id: impl HasCardId,
-    zone: Zone,
-) -> Outcome {
+/// Panics if this card was not found in its previous zone.
+pub fn run(game: &mut GameState, _source: impl HasSource, id: impl HasCardId, zone: Zone) {
     let id = id.card_id();
     on_leave_zone(game, id, game.card(id.card_id()).zone);
-    game.zones.move_card(id, zone)?;
+    game.zones.move_card(id, zone);
     on_enter_zone(game, id, zone);
-    outcome::OK
 }
 
 fn on_leave_zone(game: &mut GameState, card_id: CardId, zone: Zone) {

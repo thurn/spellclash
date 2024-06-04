@@ -38,8 +38,6 @@ use oracle::oracle_impl::OracleImpl;
 use rand::SeedableRng;
 use rand_xoshiro::Xoshiro256StarStar;
 use tracing::info;
-use utils::outcome::{Outcome, Value};
-use utils::{fail, outcome};
 
 use crate::game_creation::initialize_game;
 use crate::mutations::library;
@@ -59,15 +57,15 @@ pub fn create_and_start(
     p2_id: Option<UserId>,
     p2_deck_name: DeckName,
     debug: DebugConfiguration,
-) -> Value<GameState> {
+) -> GameState {
     info!(?game_id, "Creating new game");
-    let mut game = create(database, game_id, p1_id, p1_deck_name, p2_id, p2_deck_name, debug)?;
-    library::draw_cards(&mut game, Source::Game, PlayerName::One, 7)?;
-    library::draw_cards(&mut game, Source::Game, PlayerName::Two, 7)?;
+    let mut game = create(database, game_id, p1_id, p1_deck_name, p2_id, p2_deck_name, debug);
+    library::draw_cards(&mut game, Source::Game, PlayerName::One, 7);
+    library::draw_cards(&mut game, Source::Game, PlayerName::Two, 7);
     // TODO: Resolve mulligans
     game.status = GameStatus::Playing;
-    step::advance(&mut game)?;
-    Ok(game)
+    step::advance(&mut game);
+    game
 }
 
 /// Creates a new game using the provided Game ID, User IDs and decks but does
@@ -81,17 +79,17 @@ pub fn create(
     p2_id: Option<UserId>,
     p2_deck_name: DeckName,
     debug: DebugConfiguration,
-) -> Value<GameState> {
+) -> GameState {
     let oracle = Box::new(OracleImpl::new(database.clone()));
-    let p1_deck = find_deck(p1_deck_name)?;
-    let p2_deck = find_deck(p2_deck_name)?;
+    let p1_deck = find_deck(p1_deck_name);
+    let p2_deck = find_deck(p2_deck_name);
 
-    let mut game = create_game(oracle, game_id, p1_id, p1_deck, p2_id, p2_deck, debug)?;
-    initialize_game::run(database.clone(), &mut game)?;
+    let mut game = create_game(oracle, game_id, p1_id, p1_deck, p2_id, p2_deck, debug);
+    initialize_game::run(database.clone(), &mut game);
 
-    game.shuffle_library(PlayerName::One)?;
-    game.shuffle_library(PlayerName::Two)?;
-    Ok(game)
+    game.shuffle_library(PlayerName::One);
+    game.shuffle_library(PlayerName::Two);
+    game
 }
 
 fn create_game(
@@ -102,13 +100,13 @@ fn create_game(
     p2_id: Option<UserId>,
     p2_deck: Deck,
     debug: DebugConfiguration,
-) -> Value<GameState> {
+) -> GameState {
     let mut zones = Zones::default();
     let turn = TurnData { active_player: PlayerName::One, turn_number: 0 };
-    create_cards_in_deck(oracle.as_ref(), &mut zones, p1_deck, PlayerName::One, turn)?;
-    create_cards_in_deck(oracle.as_ref(), &mut zones, p2_deck, PlayerName::Two, turn)?;
+    create_cards_in_deck(oracle.as_ref(), &mut zones, p1_deck, PlayerName::One, turn);
+    create_cards_in_deck(oracle.as_ref(), &mut zones, p2_deck, PlayerName::Two, turn);
 
-    Ok(GameState {
+    GameState {
         id: game_id,
         status: GameStatus::Setup,
         step: GamePhaseStep::Untap,
@@ -128,7 +126,7 @@ fn create_game(
         delegates: GameDelegates::default(),
         state_based_events: Some(vec![]),
         oracle_reference: Some(oracle),
-    })
+    }
 }
 
 fn create_cards_in_deck(
@@ -137,17 +135,16 @@ fn create_cards_in_deck(
     deck: Deck,
     owner: PlayerName,
     turn: TurnData,
-) -> Outcome {
+) {
     for (&id, &quantity) in &deck.cards {
         for _ in 0..quantity {
-            zones.create_card_in_library(oracle.card(id)?, CardKind::Normal, owner, turn);
+            zones.create_card_in_library(oracle.card(id), CardKind::Normal, owner, turn);
         }
     }
-    outcome::OK
 }
 
-fn find_deck(name: DeckName) -> Value<Deck> {
-    Ok(match name {
+fn find_deck(name: DeckName) -> Deck {
+    match name {
         deck_name::GREEN_VANILLA => Deck {
             colors: EnumSet::only(Color::Green),
             cards: hashmap! {
@@ -197,7 +194,7 @@ fn find_deck(name: DeckName) -> Value<Deck> {
             },
         },
         _ => {
-            fail!("Unknown deck {name:?}");
+            panic!("Unknown deck {name:?}");
         }
-    })
+    }
 }

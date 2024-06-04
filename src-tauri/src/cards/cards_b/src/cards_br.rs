@@ -22,9 +22,9 @@ use rules::prompt_helpers::prompts;
 
 pub fn brainstorm() -> CardDefinition {
     CardDefinition::new(card_name::BRAINSTORM).ability(SpellAbility::new().effects(|g, s| {
-        library::draw_cards(g, s, s.controller, 3)?;
+        library::draw_cards(g, s, s.controller, 3);
         let card_ids =
-            prompts::select_in_hand(g, s, Quantity::Count(2), Text::ReturnToTopOfDeck(2))?;
+            prompts::select_in_hand(g, s, Quantity::Count(2), Text::ReturnToTopOfDeck(2));
         library::move_all_to_top(g, s, card_ids.iter())
     }))
 }

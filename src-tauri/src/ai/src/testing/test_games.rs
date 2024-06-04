@@ -28,7 +28,7 @@ use crate::testing::test_game_builder::{TestGame, TestPlayer};
 
 /// Create a new [GameState] for use in benchmarking & AI testing
 pub fn create(deck_name: DeckName) -> GameState {
-    let database = SqliteDatabase::new(paths::get_data_dir()).unwrap();
+    let database = SqliteDatabase::new(paths::get_data_dir());
     let mut game = new_game::create(
         database,
         GameId(Uuid::new_v4()),
@@ -37,8 +37,7 @@ pub fn create(deck_name: DeckName) -> GameState {
         None,
         deck_name,
         DebugConfiguration::default(),
-    )
-    .expect("Error creating game");
+    );
     game.status = GameStatus::Playing;
     game.undo_tracker.enabled = false;
     game.undo_tracker.undo.clear();

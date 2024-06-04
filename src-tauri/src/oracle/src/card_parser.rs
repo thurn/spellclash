@@ -31,24 +31,21 @@ use data::printed_cards::printed_primitives::{
 };
 use enumset::EnumSet;
 use regex::Regex;
-use utils::fail;
-use utils::outcome::Value;
-use utils::with_error::WithError;
 
 /// Turns a [DatabaseCardFace] list into a [PrintedCard].
 ///
 /// This translates the raw data coming from MTGJSON into a more useful rust
 /// data structure.
 ///
-/// Returns an error if the card doesn't follow the expected format.
-pub fn parse(faces: Vec<DatabaseCardFace>) -> Value<PrintedCard> {
+/// Panics if the card doesn't follow the expected format.
+pub fn parse(faces: Vec<DatabaseCardFace>) -> PrintedCard {
     let (primary, secondary) = if faces.is_empty() || faces.len() > 2 {
-        fail!("Expected 1 or 2 card faces, got {}", faces.len());
+        panic!("Expected 1 or 2 card faces, got {}", faces.len());
     } else if faces.len() == 1 {
         (&faces[0], None)
     } else {
         let (Some(one), Some(two)) = (&faces[0].side, &faces[1].side) else {
-            fail!("Expected 'side' designation on card face");
+            panic!("Expected 'side' designation on card face");
         };
 
         if one == "a" {
@@ -56,12 +53,12 @@ pub fn parse(faces: Vec<DatabaseCardFace>) -> Value<PrintedCard> {
         } else if two == "a" {
             (&faces[1], Some(&faces[0]))
         } else {
-            fail!("Expected at least one face to be designated side 'a'");
+            panic!("Expected at least one face to be designated side 'a'");
         }
     };
 
     let name = CardName(primary.scryfall_oracle_id);
-    let primary_layout = layout(&primary.layout)?;
+    let primary_layout = layout(&primary.layout);
     let card_layout = match primary_layout {
         FaceLayout::Adventure => CardLayout::Adventure,
         FaceLayout::Aftermath => CardLayout::Aftermath,
@@ -73,28 +70,28 @@ pub fn parse(faces: Vec<DatabaseCardFace>) -> Value<PrintedCard> {
         _ => CardLayout::Normal,
     };
 
-    Ok(PrintedCard {
+    PrintedCard {
         name,
         layout: card_layout,
-        face: parse_face(primary, Face::Primary)?,
-        face_b: secondary.map(|face| parse_face(face, Face::FaceB)).transpose()?,
-    })
+        face: parse_face(primary, Face::Primary),
+        face_b: secondary.map(|face| parse_face(face, Face::FaceB)),
+    }
 }
 
-fn parse_face(face: &DatabaseCardFace, face_identifier: Face) -> Value<PrintedCardFace> {
-    Ok(PrintedCardFace {
+fn parse_face(face: &DatabaseCardFace, face_identifier: Face) -> PrintedCardFace {
+    PrintedCardFace {
         displayed_name: face.face_name.clone().unwrap_or_else(|| face.name.clone()),
         face_identifier,
-        supertypes: supertypes(split(&face.supertypes))?,
-        card_types: types(split(&face.types))?,
-        subtypes: subtypes(split(&face.subtypes))?,
+        supertypes: supertypes(split(&face.supertypes)),
+        card_types: types(split(&face.types)),
+        subtypes: subtypes(split(&face.subtypes)),
         oracle_text: face.text.clone(),
-        mana_cost: mana_cost(&face.mana_cost)?,
+        mana_cost: mana_cost(&face.mana_cost),
         mana_value: face.mana_value.round() as u64,
-        power: power(face.power.as_ref())?,
-        toughness: toughness(face.toughness.as_ref())?,
-        layout: layout(&face.layout)?,
-    })
+        power: power(face.power.as_ref()),
+        toughness: toughness(face.toughness.as_ref()),
+        layout: layout(&face.layout),
+    }
 }
 
 fn split(s: &Option<String>) -> Vec<&str> {
@@ -103,25 +100,27 @@ fn split(s: &Option<String>) -> Vec<&str> {
     })
 }
 
-fn supertypes(types: Vec<&str>) -> Value<EnumSet<CardSupertype>> {
+fn supertypes(types: Vec<&str>) -> EnumSet<CardSupertype> {
     types
         .iter()
         .map(|s| {
-            s.parse::<CardSupertype>().with_error(|| format!("Error deserializing supertype '{s}'"))
+            s.parse::<CardSupertype>()
+                .unwrap_or_else(|e| panic!("Error deserializing supertype '{s}' {e:?}"))
         })
         .collect()
 }
 
-fn types(types: Vec<&str>) -> Value<EnumSet<CardType>> {
+fn types(types: Vec<&str>) -> EnumSet<CardType> {
     types
         .iter()
         .map(|s| {
-            s.parse::<CardType>().with_error(|| format!("Error deserializing card type '{s}'"))
+            s.parse::<CardType>()
+                .unwrap_or_else(|e| panic!("Error deserializing card type '{s}' {e:?}"))
         })
         .collect()
 }
 
-fn subtypes(types: Vec<&str>) -> Value<CardSubtypes> {
+fn subtypes(types: Vec<&str>) -> CardSubtypes {
     let mut result = CardSubtypes::default();
     for subtype in types {
         if let Ok(s) = subtype.parse::<ArtifactSubtype>() {
@@ -152,64 +151,59 @@ fn subtypes(types: Vec<&str>) -> Value<CardSubtypes> {
             result.battle.insert(s);
         }
     }
-    Ok(result)
+    result
 }
 
-fn mana_cost(cost: &Option<String>) -> Value<ManaCost> {
+fn mana_cost(cost: &Option<String>) -> ManaCost {
     let Some(cost) = cost else {
-        return Ok(ManaCost::default());
+        return ManaCost::default();
     };
-    let re = Regex::new(r"\{(.*?)}").with_error(|| "Invalid regex")?;
+    let re = Regex::new(r"\{(.*?)}").expect("Invalid regex");
     let mut result = ManaCost::default();
     for capture in re.captures_iter(cost) {
-        result
-            .items
-            .extend(to_mana_item(capture.get(1).with_error(|| "Expected mana symbol")?.as_str())?);
+        result.items.extend(to_mana_item(capture.get(1).expect("Expected mana symbol").as_str()));
     }
-
-    Ok(result)
+    result
 }
 
-fn to_mana_item(symbol: &str) -> Value<Vec<ManaCostItem>> {
-    Ok(vec![match symbol {
+fn to_mana_item(symbol: &str) -> Vec<ManaCostItem> {
+    vec![match symbol {
         "W" => ManaCostItem::Colored(ManaColor::White),
         "U" => ManaCostItem::Colored(ManaColor::Blue),
         "B" => ManaCostItem::Colored(ManaColor::Black),
         "R" => ManaCostItem::Colored(ManaColor::Red),
         "G" => ManaCostItem::Colored(ManaColor::Green),
         _ => match symbol.parse::<usize>() {
-            Ok(value) => return Ok(iter::repeat(ManaCostItem::Generic).take(value).collect()),
+            Ok(value) => return iter::repeat(ManaCostItem::Generic).take(value).collect(),
             Err(_) => {
-                fail!("Unrecognized mana symbol {:?}", symbol);
+                panic!("Unrecognized mana symbol {:?}", symbol);
             }
         },
-    }])
+    }]
 }
 
-fn power(power: Option<&String>) -> Value<Option<PrintedPower>> {
-    power
-        .map(|p| {
-            if let Ok(value) = p.parse::<i64>() {
-                Ok(PrintedPower::Number(value))
-            } else {
-                fail!("TODO: Implement support for non-numeric power");
-            }
-        })
-        .transpose()
+fn power(power: Option<&String>) -> Option<PrintedPower> {
+    power.map(|p| {
+        if let Ok(value) = p.parse::<i64>() {
+            PrintedPower::Number(value)
+        } else {
+            todo!("Implement support for non-numeric power");
+        }
+    })
 }
 
-fn toughness(toughness: Option<&String>) -> Value<Option<PrintedToughness>> {
-    toughness
-        .map(|t| {
-            if let Ok(value) = t.parse::<i64>() {
-                Ok(PrintedToughness::Number(value))
-            } else {
-                fail!("TODO: Implement support for non-numeric toughness");
-            }
-        })
-        .transpose()
+fn toughness(toughness: Option<&String>) -> Option<PrintedToughness> {
+    toughness.map(|t| {
+        if let Ok(value) = t.parse::<i64>() {
+            PrintedToughness::Number(value)
+        } else {
+            todo!("Implement support for non-numeric toughness");
+        }
+    })
 }
 
-fn layout(string: &str) -> Value<FaceLayout> {
-    string.parse::<FaceLayout>().with_error(|| format!("Unknown card layout: {:?}", string))
+fn layout(string: &str) -> FaceLayout {
+    string
+        .parse::<FaceLayout>()
+        .unwrap_or_else(|e| panic!("Unknown card layout: {:?} {e:?}", string))
 }

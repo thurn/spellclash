@@ -27,8 +27,6 @@ use data::printed_cards::printed_card::{Face, PrintedCardFace};
 use data::printed_cards::printed_primitives::{PrintedPower, PrintedToughness};
 use either::Either;
 use enumset::EnumSet;
-use utils::fail;
-use utils::outcome::Value;
 
 /// Returns the list of [PrintedCardFace]s for a card which currently define its
 /// characteristics.
@@ -120,17 +118,17 @@ pub fn land_subtypes(game: &GameState, card_id: CardId) -> EnumSet<LandSubtype> 
 /// the provided [CastSpellChoices]. Cost items are sorted in [ManaCostItem]
 /// order.
 ///
-/// Returns an error if invalid choices are selected, e.g. if the selected card
+/// Panics if invalid choices are selected, e.g. if the selected card
 /// face does not exist.
 pub fn mana_cost_for_casting_card(
     game: &GameState,
     card_id: CardId,
     choices: &CastSpellChoices,
-) -> Value<ManaCost> {
+) -> ManaCost {
     let mut cost =
-        game.card(card_id).printed().face(choices.play_as.single_face()?).mana_cost.clone();
+        game.card(card_id).printed().face(choices.play_as.single_face()).mana_cost.clone();
     cost.items.sort();
-    Ok(cost)
+    cost
 }
 
 /// Computes the power on card's characteristic faces.

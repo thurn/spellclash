@@ -15,8 +15,6 @@
 use std::collections::VecDeque;
 
 use serde::{Deserialize, Serialize};
-use utils::fail;
-use utils::outcome::{StopCondition, Value};
 
 use crate::actions::game_action::GameAction;
 use crate::core::primitives::{CardId, EntityId, PlayerName};

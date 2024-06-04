@@ -21,19 +21,16 @@ use data::prompts::choice_prompt::{Choice, ChoicePrompt};
 use data::prompts::pick_number_prompt::PickNumberPrompt;
 use data::prompts::prompt::{Prompt, PromptResponse, PromptType};
 use data::text_strings::Text;
-use utils::fail;
-use utils::outcome::{StopCondition, Value};
 
 /// Sends a new [Prompt] to the player and blocks until they respond with a
 /// [PromptResponse].
-pub fn send(game: &mut GameState, prompt: Prompt) -> Value<&PromptResponse> {
+pub fn send(game: &mut GameState, prompt: Prompt) -> &PromptResponse {
     let index = game.prompts.response_index;
     if let Some(response) = game.prompts.responses.get(game.prompts.response_index) {
         game.prompts.response_index += 1;
-        Ok(response)
+        response
     } else {
-        game.prompts.current_prompt = Some(prompt);
-        Err(StopCondition::Prompt)
+        todo!("Implement prompt responses")
     }
 }
 
@@ -42,17 +39,15 @@ pub fn choose_entity(
     player: PlayerName,
     description: Text,
     choices: Vec<Choice<EntityId>>,
-) -> Value<EntityId> {
+) -> EntityId {
     let PromptResponse::EntityChoice(id) = send(game, Prompt {
         player,
         label: Some(description),
         prompt_type: PromptType::EntityChoice(ChoicePrompt { optional: false, choices }),
-    })?
-    else {
-        fail!("Unexpected prompt response type!");
+    }) else {
+        panic!("Unexpected prompt response type!");
     };
-
-    Ok(*id)
+    *id
 }
 
 pub fn select_cards(
@@ -60,17 +55,16 @@ pub fn select_cards(
     player: PlayerName,
     description: Text,
     prompt: CardSelectionPrompt,
-) -> Value<Vec<CardId>> {
+) -> Vec<CardId> {
     let PromptResponse::SelectCards(ids) = send(game, Prompt {
         player,
         label: Some(description),
         prompt_type: PromptType::SelectCards(prompt),
-    })?
-    else {
-        fail!("Unexpected prompt response type!");
+    }) else {
+        panic!("Unexpected prompt response type!");
     };
 
-    Ok(ids.clone())
+    ids.clone()
 }
 
 /// Show a [PickNumberPrompt].
@@ -79,17 +73,15 @@ pub fn pick_number(
     player: PlayerName,
     description: Text,
     prompt: PickNumberPrompt,
-) -> Value<u32> {
+) -> u32 {
     let PromptResponse::PickNumber(number) = send(game, Prompt {
         player,
         label: Some(description),
         prompt_type: PromptType::PickNumber(prompt),
-    })?
-    else {
-        fail!("Unexpected prompt response type!");
+    }) else {
+        panic!("Unexpected prompt response type!");
     };
-
-    Ok(*number)
+    *number
 }
 
 /// Prompt to select a quantity of cards from controller's hand.
@@ -100,7 +92,7 @@ pub fn select_in_hand(
     scope: Scope,
     quantity: Quantity,
     text: Text,
-) -> Value<Vec<CardId>> {
+) -> Vec<CardId> {
     select_cards(
         game,
         scope.controller,

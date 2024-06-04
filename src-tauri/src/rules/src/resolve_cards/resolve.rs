@@ -19,8 +19,6 @@ use data::core::primitives::{Source, StackItemId, Zone};
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use enumset::EnumSet;
-use utils::outcome::Outcome;
-use utils::{fail, outcome};
 
 use crate::mutations::{move_card, permanents};
 use crate::queries::card_queries;
@@ -32,9 +30,9 @@ use crate::queries::card_queries;
 /// > top of the stack resolves.
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R608>
-pub fn resolve_top_of_stack(game: &mut GameState) -> Outcome {
+pub fn resolve_top_of_stack(game: &mut GameState) {
     let Some(StackItemId::Card(card_id)) = game.stack().last().copied() else {
-        return outcome::OK;
+        return;
     };
 
     // let definition = definitions::get(game.card(card_id).card_name);
@@ -64,16 +62,12 @@ pub fn resolve_top_of_stack(game: &mut GameState) -> Outcome {
             let face = if card.cast_as.len() == 1 {
                 card.cast_as.iter().next().unwrap()
             } else {
-                fail!("Expected only a single face!");
+                panic!("Expected only a single face!");
             };
-            permanents::turn_face_up(game, Source::Game, card_id, face)?;
-            move_card::run(game, Source::Game, card_id, Zone::Battlefield)?;
+            permanents::turn_face_up(game, Source::Game, card_id, face);
+            move_card::run(game, Source::Game, card_id, Zone::Battlefield);
         } else {
             todo!("Implement targeting for permanents");
         }
-    } else {
-        todo!("Implement instant/sorcery/ability resolution")
     }
-
-    outcome::OK
 }

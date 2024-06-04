@@ -19,9 +19,6 @@ use rand::prelude::SliceRandom;
 use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};
 use slotmap::SlotMap;
-use utils::outcome::Outcome;
-use utils::with_error::WithError;
-use utils::{fail, outcome};
 
 use crate::card_definitions::card_name::CardName;
 use crate::card_states::card_kind::CardKind;
@@ -288,23 +285,22 @@ impl Zones {
     ///
     /// The card is added as the top card of the target zone if it is ordered.
     ///
-    /// Returns an error if this card was not found in its previous zone.
-    pub fn move_card(&mut self, id: impl HasCardId, zone: Zone) -> Outcome {
+    /// Panics if this card was not found in its previous zone.
+    pub fn move_card(&mut self, id: impl HasCardId, zone: Zone) {
         let card_id = id.card_id();
         let old_zone = self.card_mut(card_id).zone;
         let owner = self.card_mut(card_id).owner;
-        self.remove_from_zone(owner, card_id, old_zone)?;
+        self.remove_from_zone(owner, card_id, old_zone);
         self.add_to_zone(owner, card_id, zone);
         let entity_id = self.new_entity_id(card_id);
         let card = self.card_mut(card_id);
         card.zone = zone;
         card.entity_id = entity_id;
-        outcome::OK
     }
 
     /// Changes the controller for a card.
     ///
-    /// Returns an error if this card was not found in the
+    /// Panics if this card was not found in the
     /// 'battlefield_controlled' set.
     pub fn change_controller(
         &mut self,
@@ -312,55 +308,47 @@ impl Zones {
         id: impl HasCardId,
         controller: PlayerName,
         current_turn: TurnData,
-    ) -> Outcome {
+    ) {
         let card_id = id.card_id();
         let card = self.card_mut(card_id);
         card.last_changed_control = current_turn;
         let old_controller = card.controller;
         card.controller = controller;
         if card.zone == Zone::Battlefield && old_controller != controller {
-            self.battlefield_controlled.remove(card_id, old_controller)?;
+            self.battlefield_controlled.remove(card_id, old_controller);
             self.battlefield_controlled.cards_mut(controller).insert(card_id);
         }
-        outcome::OK
     }
 
     /// Shuffles the order of cards in a player's library
-    pub fn shuffle_library(
-        &mut self,
-        player: impl HasPlayerName,
-        rng: &mut Xoshiro256StarStar,
-    ) -> Outcome {
+    pub fn shuffle_library(&mut self, player: impl HasPlayerName, rng: &mut Xoshiro256StarStar) {
         self.libraries.cards_mut(player.player_name()).make_contiguous().shuffle(rng);
-        outcome::OK
     }
 
-    fn remove_from_zone(&mut self, owner: PlayerName, card_id: CardId, zone: Zone) -> Outcome {
+    fn remove_from_zone(&mut self, owner: PlayerName, card_id: CardId, zone: Zone) {
         match zone {
             Zone::Hand => self.hands.remove(card_id, owner),
             Zone::Graveyard => self.graveyards.remove(card_id, owner),
             Zone::Library => self.libraries.remove(card_id, owner),
             Zone::Battlefield => {
-                self.battlefield_owned.remove(card_id, owner)?;
+                self.battlefield_owned.remove(card_id, owner);
                 if !self.battlefield_controlled.cards_mut(owner).remove(&card_id) {
                     let mut removed = false;
                     for player in enum_iterator::all::<PlayerName>() {
                         removed |= self.battlefield_controlled.cards_mut(player).remove(&card_id);
                     }
                     if !removed {
-                        fail!("Card not found {card_id:?} in controller set");
+                        panic!("Card not found {card_id:?} in controller set");
                     }
                 }
-                outcome::OK
             }
             Zone::Stack => {
                 if let Some(p) =
                     self.stack.iter().rev().position(|&id| id.card_id() == Some(card_id))
                 {
                     self.stack.remove(p);
-                    outcome::OK
                 } else {
-                    fail!("Card not found {card_id:?}");
+                    panic!("Card not found {card_id:?}");
                 }
             }
             Zone::Exiled => self.exile.remove(card_id, owner),
@@ -426,12 +414,11 @@ impl UnorderedZone {
     /// Removes a card from this zone.
     ///
     /// Panics if this card is not present in this zone owned by `owner`.
-    pub fn remove(&mut self, card_id: CardId, owner: PlayerName) -> Outcome {
+    pub fn remove(&mut self, card_id: CardId, owner: PlayerName) {
         let removed = self.cards_mut(owner).remove(&card_id);
         if !removed {
-            fail!("Card {card_id:?} not found");
+            panic!("Card {card_id:?} not found");
         }
-        outcome::OK
     }
 }
 
@@ -462,14 +449,13 @@ impl OrderedZone {
     ///
     /// The search is started from the top card in the zone. Panics if this
     /// card is not present in this zone owned by `owner`.
-    pub fn remove(&mut self, card_id: CardId, owner: PlayerName) -> Outcome {
+    pub fn remove(&mut self, card_id: CardId, owner: PlayerName) {
         if let Some((i, _)) =
             self.cards_mut(owner).iter().enumerate().rev().find(|(_, &id)| id == card_id)
         {
-            self.cards_mut(owner).remove(i).with_error(|| format!("{i} not found"))?;
-            outcome::OK
+            self.cards_mut(owner).remove(i).expect("Index {i:?} not found");
         } else {
-            fail!("Card not found {card_id:?}");
+            panic!("Card not found {card_id:?}");
         }
     }
 }

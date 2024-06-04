@@ -22,31 +22,28 @@ use data::player_states::player_state::PlayerQueries;
 use data::prompts::pick_number_prompt::PickNumberPrompt;
 use data::text_strings::Text;
 use tracing::{debug, instrument};
-use utils::outcome::Outcome;
-use utils::{fail, outcome};
 
 use crate::mutations::players;
 use crate::prompt_helpers::prompts;
 
 #[instrument(level = "debug", skip(game))]
-pub fn execute(game: &mut GameState, player: PlayerName, action: &DebugGameAction) -> Outcome {
+pub fn execute(game: &mut GameState, player: PlayerName, action: &DebugGameAction) {
     match action {
         DebugGameAction::Undo => {
             debug!(?player, "(Debug) Undoing last action");
             let mut undo_list = game.undo_tracker.undo.clone();
             let Some(mut previous) = undo_list.pop() else {
-                fail!("No undo state available");
+                panic!("No undo state available");
             };
             previous.undo_tracker.enabled = true;
             previous.undo_tracker.undo = undo_list;
             *game = *previous;
         }
         DebugGameAction::SetLifeTotal(target) => {
-            let amount =
-                prompts::pick_number(game, player, Text::SelectNumber, PickNumberPrompt {
-                    minimum: 0,
-                    maximum: 20,
-                })?;
+            let amount = prompts::pick_number(game, player, Text::SelectNumber, PickNumberPrompt {
+                minimum: 0,
+                maximum: 20,
+            });
             debug!(?target, ?amount, "(Debug) Setting life total");
             players::set_life_total(game, Source::Game, *target, amount as LifeValue);
         }
@@ -56,5 +53,4 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: &DebugGameActio
             }
         }
     }
-    outcome::OK
 }

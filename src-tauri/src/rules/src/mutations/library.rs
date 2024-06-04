@@ -16,8 +16,6 @@ use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, HasCardId, HasPlayerName, HasSource, Zone};
 use data::game_states::game_state::GameState;
 use data::game_states::state_based_event::StateBasedEvent;
-use utils::outcome;
-use utils::outcome::Outcome;
 
 use crate::mutations::move_card;
 
@@ -25,11 +23,11 @@ use crate::mutations::move_card;
 ///
 /// Marks the card as revealed to its owner. Returns `outcome::GAME_OVER` if
 /// this causes the game to end due to drawing from an empty library.
-pub fn draw(game: &mut GameState, source: impl HasSource, player: impl HasPlayerName) -> Outcome {
+pub fn draw(game: &mut GameState, source: impl HasSource, player: impl HasPlayerName) {
     let player = player.player_name();
     let Some(&id) = game.library(player).back() else {
         game.add_state_based_event(StateBasedEvent::DrawFromEmptyLibrary(player));
-        return outcome::OK;
+        return;
     };
     let card = game.card_mut(id);
     move_card::run(game, source, id, Zone::Hand)
@@ -45,20 +43,15 @@ pub fn draw_cards(
     source: impl HasSource,
     player: impl HasPlayerName,
     count: usize,
-) -> Outcome {
+) {
     let player = player.player_name();
     let source = source.source();
     for _ in 0..count {
-        draw(game, source, player)?;
+        draw(game, source, player);
     }
-    outcome::OK
 }
 
-pub fn move_to_top(
-    game: &mut GameState,
-    source: impl HasSource,
-    card_id: impl HasCardId,
-) -> Outcome {
+pub fn move_to_top(game: &mut GameState, source: impl HasSource, card_id: impl HasCardId) {
     move_card::run(game, source, card_id.card_id(), Zone::Library)
 }
 
@@ -66,10 +59,9 @@ pub fn move_all_to_top<'a>(
     game: &mut GameState,
     source: impl HasSource,
     cards: impl Iterator<Item = &'a CardId>,
-) -> Outcome {
+) {
     let source = source.source();
     for card_id in cards {
-        move_to_top(game, source, card_id)?;
+        move_to_top(game, source, card_id);
     }
-    outcome::OK
 }

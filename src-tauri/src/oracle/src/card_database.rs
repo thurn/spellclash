@@ -15,21 +15,17 @@
 use data::game_states::game_state::GameState;
 use data::game_states::oracle::Oracle;
 use database::sqlite_database::SqliteDatabase;
-use utils::outcome::Outcome;
-use utils::with_error::WithError;
-use utils::{fail, outcome};
 
 use crate::oracle_impl::OracleImpl;
 
 /// Update the printed card references and oracle reference for this game,
 /// loading oracle card definitions from the database as needed.
-pub fn populate(database: SqliteDatabase, game: &mut GameState) -> Outcome {
+pub fn populate(database: SqliteDatabase, game: &mut GameState) {
     let oracle = OracleImpl::new(database.clone());
     for card in game.zones.all_cards_mut() {
         card.printed_card_reference =
-            Some(oracle.card(card.printed_card_id)?.printed_card_reference);
+            Some(oracle.card(card.printed_card_id).printed_card_reference);
     }
 
     game.oracle_reference = Some(Box::new(oracle));
-    outcome::OK
 }

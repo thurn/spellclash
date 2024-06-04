@@ -20,7 +20,6 @@ use rules::action_handlers::actions;
 use rules::action_handlers::actions::ExecuteAction;
 use rules::legality::legal_actions;
 use rules::legality::legal_actions::LegalActions;
-use utils::outcome::StopCondition;
 
 use crate::core::game_state_node::{GameStateNode, GameStatus};
 
@@ -50,12 +49,6 @@ impl GameStateNode for GameState {
     }
 
     fn execute_action(&mut self, player: primitives::PlayerName, action: GameAction) {
-        let result = actions::execute(self, player, action, ExecuteAction {
-            automatic: false,
-            validate: false,
-        });
-        if let Err(StopCondition::Error(r)) = result {
-            panic!("Error executing game action: {:?}", r);
-        }
+        actions::execute(self, player, action, ExecuteAction { automatic: false, validate: false });
     }
 }
