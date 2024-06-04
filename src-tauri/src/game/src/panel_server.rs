@@ -21,6 +21,7 @@ use database::sqlite_database::SqliteDatabase;
 use display::commands::scene_identifier::SceneIdentifier;
 use display::panels::modal_panel::ModalPanel;
 use display::panels::panel;
+use tokio::sync::mpsc::UnboundedSender;
 use tracing::instrument;
 use utils::outcome::Value;
 use utils::with_error::WithError;
@@ -33,36 +34,37 @@ pub fn handle_open_panel(
     database: SqliteDatabase,
     mut data: ClientData,
     panel: PanelAddress,
-) -> Value<GameResponse> {
-    data.modal_panel = Some(open_panel(database, &data, panel)?);
-    Ok(GameResponse::new(data))
+    response_channel: &UnboundedSender<GameResponse>,
+) {
+    data.modal_panel = Some(open_panel(database, &data, panel).expect("Error opening panel"));
+    response_channel.send(GameResponse::new(data));
 }
 
 #[instrument(level = "debug")]
-pub fn handle_close_panel(mut data: ClientData) -> Value<GameResponse> {
+pub fn handle_close_panel(mut data: ClientData, response_channel: &UnboundedSender<GameResponse>) {
     data.modal_panel = None;
-    Ok(GameResponse::new(data))
+    response_channel.send(GameResponse::new(data));
 }
 
 #[instrument(level = "debug")]
-pub fn handle_panel_transition(
+pub async fn handle_panel_transition(
     database: SqliteDatabase,
     mut data: ClientData,
     transition: PanelTransition,
-) -> Value<GameResponse> {
+    response_channel: &UnboundedSender<GameResponse>,
+) {
     data.modal_panel = None;
-    let mut result = if let Some(action) = transition.action {
-        game_action_server::handle_game_action(database.clone(), data, action)?
-    } else {
-        GameResponse::new(data)
-    };
-
-    if let Some(next_panel) = transition.open {
-        result.client_data.modal_panel =
-            Some(open_panel(database, &result.client_data, next_panel)?);
+    if let Some(action) = transition.action {
+        game_action_server::handle_game_action(database.clone(), &data, action, response_channel)
+            .await;
     }
 
-    Ok(result)
+    if let Some(next_panel) = transition.open {
+        data.modal_panel =
+            Some(open_panel(database, &data, next_panel).expect("Error opening panel"));
+    }
+
+    response_channel.send(GameResponse::new(data)).expect("Error sending response");
 }
 
 fn open_panel(

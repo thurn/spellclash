@@ -18,16 +18,25 @@ use data::users::user_state::UserActivity;
 use database::sqlite_database::SqliteDatabase;
 use display::commands::command::Command;
 use display::commands::scene_identifier::SceneIdentifier;
+use tokio::sync::mpsc::UnboundedSender;
 use utils::outcome::Value;
 
 use crate::server_data::{ClientData, GameResponse};
 use crate::{main_menu_server, requests};
 
-pub fn leave(database: SqliteDatabase, mut data: ClientData) -> Value<GameResponse> {
-    let mut user = requests::fetch_user(database.clone(), data.user_id)?;
+pub fn leave(
+    database: SqliteDatabase,
+    mut data: ClientData,
+    response_channel: &UnboundedSender<GameResponse>,
+) {
+    let id = data.user_id;
+    let mut user = requests::fetch_user(database.clone(), id)
+        .unwrap_or_else(|e| panic!("Error fetching user {id:?}: {e:?}"));
     user.activity = UserActivity::Menu;
-    database.write_user(&user)?;
+    database.write_user(&user).unwrap_or_else(|e| panic!("Error writing user {id:?}: {e:?}"));
     data.scene = SceneIdentifier::MainMenu;
-    Ok(GameResponse::new(data)
-        .command(Command::UpdateMainMenuView(main_menu_server::main_menu_view())))
+    response_channel.send(
+        GameResponse::new(data)
+            .command(Command::UpdateMainMenuView(main_menu_server::main_menu_view())),
+    );
 }

@@ -31,7 +31,6 @@ export async function handleAction(lastResponse: GameResponse, action?: unknown)
   if (action == null) {
     return;
   }
-
   console.log('Handling action...');
   console.dir(action);
   await commands.clientHandleAction(lastResponse.clientData, action);

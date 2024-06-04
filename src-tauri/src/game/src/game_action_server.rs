@@ -32,6 +32,7 @@ use rules::action_handlers::actions::ExecuteAction;
 use rules::legality::legal_actions;
 use rules::legality::legal_actions::LegalActions;
 use rules::queries::combat_queries;
+use tokio::sync::mpsc::UnboundedSender;
 use tracing::{debug, error, info, instrument};
 use utils::outcome::{StopCondition, Value};
 use utils::with_error::WithError;
@@ -58,20 +59,18 @@ pub fn connect(database: SqliteDatabase, user: &UserState, game_id: GameId) -> V
 }
 
 #[instrument(level = "debug", skip(database))]
-pub fn handle_game_action(
+pub async fn handle_game_action(
     database: SqliteDatabase,
-    data: ClientData,
+    data: &ClientData,
     action: GameAction,
-) -> Value<GameResponse> {
-    let mut game = requests::fetch_game(
-        database.clone(),
-        data.game_id().with_error(|| "Expected current game ID")?,
-    )?;
-    let result = handle_game_action_internal(database, &data, action, &mut game);
-    if result.is_err() {
-        error!(?action, "Error running game action loop");
-    }
-    result
+    response_channel: &UnboundedSender<GameResponse>,
+) {
+    let mut game =
+        requests::fetch_game(database.clone(), data.game_id().expect("Expected current game ID"))
+            .expect("Error fetching game");
+    let result = handle_game_action_internal(database, data, action, &mut game)
+        .unwrap_or_else(|_| panic!("Error handling game action {action:?}"));
+    response_channel.send(result).expect("Error sending game response");
 }
 
 pub fn handle_update_fields(database: SqliteDatabase, data: ClientData) -> Value<GameResponse> {

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::sync::mpsc::Sender;
 use std::sync::Arc;
 
 use data::actions::user_action::UserAction;
@@ -19,6 +20,7 @@ use data::core::primitives::UserId;
 use data::users::user_state::{UserActivity, UserState};
 use database::sqlite_database::SqliteDatabase;
 use display::commands::field_state::{FieldKey, FieldValue};
+use tokio::sync::mpsc::UnboundedSender;
 use tracing::{debug_span, info, Instrument};
 use utils::outcome::Value;
 
@@ -40,32 +42,37 @@ pub fn connect(database: SqliteDatabase, user_id: UserId) -> Value<GameResponse>
     }
 }
 
-/// Handles a [UserAction] from the client and returns a [GameResponse].
+/// Handles a [UserAction] from the client. Sends incremental game state updates
+/// to the provided `Sender` as [GameResponse] snapshots.
 ///
 /// The most recently-returned [ClientData] (from a call to this function or
 /// [connect]) must be provided to this call.
-pub fn handle_action(
+pub async fn handle_action(
     database: SqliteDatabase,
     data: ClientData,
     action: UserAction,
-) -> Value<GameResponse> {
+    response_channel: &UnboundedSender<GameResponse>,
+) {
     let game_id = data.game_id();
     let _span = debug_span!("handle_action", ?data.user_id, ?game_id);
     match action {
-        UserAction::NewGameAction(action) => new_game_server::create(database, data, action),
-        UserAction::GameAction(action) => {
-            game_action_server::handle_game_action(database, data, action)
+        UserAction::NewGameAction(action) => {
+            new_game_server::create(database, data, action, response_channel)
         }
-        UserAction::LeaveGameAction => leave_game_server::leave(database, data),
+        UserAction::GameAction(action) => {
+            game_action_server::handle_game_action(database, &data, action, response_channel).await
+        }
+        UserAction::LeaveGameAction => leave_game_server::leave(database, data, response_channel),
         UserAction::QuitGameAction => {
             std::process::exit(0);
         }
         UserAction::OpenPanel(panel_address) => {
-            panel_server::handle_open_panel(database, data, panel_address)
+            panel_server::handle_open_panel(database, data, panel_address, response_channel)
         }
-        UserAction::ClosePanel => panel_server::handle_close_panel(data),
+        UserAction::ClosePanel => panel_server::handle_close_panel(data, response_channel),
         UserAction::PanelTransition(transition) => {
-            panel_server::handle_panel_transition(database, data, transition)
+            panel_server::handle_panel_transition(database, data, transition, response_channel)
+                .await
         }
     }
 }

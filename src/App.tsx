@@ -52,8 +52,10 @@ export function App(): ReactNode {
   }, []);
   useEffect(() => {
     const unlisten = listen('game_response', (e: Event<GameResponse>) => {
-      console.log('Got game response');
-      setGlobalState(e.payload);
+      const state = e.payload;
+      if (state.commands.length !== 0) {
+        setGlobalState(state);
+      }
     });
     return () => {
       unlisten.then((f) => f());
