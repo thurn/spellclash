@@ -19,16 +19,20 @@ use specta::Type;
 use crate::core::game_message::GameMessage;
 use crate::core::game_view::GameView;
 use crate::core::main_menu_view::MainMenuView;
+use crate::panels::modal_panel::ModalPanel;
 
 /// Represents an instruction to the client to perform some visual update.
 #[derive(Clone, Debug, EnumKind, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 #[enum_kind(CommandKind)]
 pub enum Command {
-    UpdateGameView(UpdateGameViewCommand),
+    /// Update the primary visual state of the game.
+    UpdateScene(SceneView),
 
-    UpdateMainMenuView(MainMenuView),
+    /// Hide or show a modal panel on top of the scene view.
+    SetModalPanel(Option<ModalPanel>),
 
+    /// Display a message to the player.
     DisplayGameMessage(DisplayGameMessageCommand),
 }
 
@@ -40,12 +44,10 @@ impl Command {
 
 #[derive(Clone, Debug, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdateGameViewCommand {
-    /// New visual game state
-    pub view: GameView,
-
-    /// Whether to animate updates to this state
-    pub animate: bool,
+pub enum SceneView {
+    Loading,
+    GameView(GameView),
+    MainMenuView(MainMenuView),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Type)]

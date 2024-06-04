@@ -12,38 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Dispatch, SetStateAction } from 'react';
-import { FieldKey, FieldValue, GameResponse, commands } from './generated_types';
+import { ClientData, FieldKey, FieldValue, commands } from './generated_types';
 
-export async function connect(setter: Dispatch<SetStateAction<GameResponse>>): Promise<void> {
+export async function connect(): Promise<void> {
   console.log('Connecting...');
-  const result: GameResponse = await commands.clientConnect();
-  console.log('Connected!');
-  console.dir(result);
-  setter(result);
+  await commands.clientConnect();
 }
 
-export async function handleAction(lastResponse: GameResponse, action?: unknown): Promise<void> {
+export async function handleAction(clientData: ClientData, action?: unknown): Promise<void> {
   if (action == null) {
     return;
   }
   console.log('Handling action...');
   console.dir(action);
-  await commands.clientHandleAction(lastResponse.clientData, action);
+  await commands.clientHandleAction(clientData, action);
 }
 
 export async function updateField(
-  setter: Dispatch<SetStateAction<GameResponse>>,
-  lastResponse: GameResponse,
+  clientData: ClientData,
   key: FieldKey,
   value: FieldValue,
 ): Promise<void> {
-  let data: GameResponse = await commands.clientUpdateField(lastResponse.clientData, key, value);
-  if (data.commands.length === 0) {
-    data = {
-      commands: lastResponse.commands,
-      clientData: data.clientData,
-    };
-  }
-  setter(data);
+  await commands.clientUpdateField(clientData, key, value);
 }

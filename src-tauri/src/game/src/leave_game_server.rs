@@ -16,25 +16,18 @@ use std::sync::Arc;
 
 use data::users::user_state::UserActivity;
 use database::sqlite_database::SqliteDatabase;
-use display::commands::command::Command;
+use display::commands::command::{Command, SceneView};
 use display::commands::scene_identifier::SceneIdentifier;
 use tokio::sync::mpsc::UnboundedSender;
 
-use crate::server_data::{ClientData, GameResponse};
+use crate::server_data::{Client, ClientData, GameResponse};
 use crate::{main_menu_server, requests};
 
-pub fn leave(
-    database: SqliteDatabase,
-    mut data: ClientData,
-    response_channel: &UnboundedSender<GameResponse>,
-) {
-    let id = data.user_id;
+pub fn leave(database: SqliteDatabase, client: &mut Client) {
+    let id = client.data.user_id;
     let mut user = requests::fetch_user(database.clone(), id);
     user.activity = UserActivity::Menu;
     database.write_user(&user);
-    data.scene = SceneIdentifier::MainMenu;
-    response_channel.send(
-        GameResponse::new(data)
-            .command(Command::UpdateMainMenuView(main_menu_server::main_menu_view())),
-    );
+    client.data.scene = SceneIdentifier::MainMenu;
+    client.send(Command::UpdateScene(SceneView::MainMenuView(main_menu_server::main_menu_view())));
 }

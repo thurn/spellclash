@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Dispatch, ReactNode, SetStateAction, createContext, useEffect, useState } from 'react';
-import { GameResponse } from './generated_types';
+import { ReactNode, createContext, useEffect, useState } from 'react';
+import { ClientData, GameMessage, GameResponse, ModalPanel, SceneView } from './generated_types';
 import MainMenu from './MainMenu';
 import { Game } from './game_view/Game';
 import { connect, handleAction } from './server';
@@ -21,40 +21,32 @@ import { DebugPanelContent } from './panels/DebugPanelContent';
 import { Modal, ModalBody, ModalContent, ModalHeader, useDisclosure } from '@nextui-org/react';
 import { Event, listen } from '@tauri-apps/api/event';
 
-function defaultGameResponse(): GameResponse {
-  return {
-    commands: [],
-    clientData: {
-      userId: '',
-      scene: 'loading',
-      modalPanel: null,
-      displayState: {},
-    },
-  };
-}
-
-function defaultGlobalContext(): GlobalContextType {
-  return {} as GlobalContextType;
-}
-
-export interface GlobalContextType {
-  readonly response: GameResponse;
-  readonly setState: Dispatch<SetStateAction<GameResponse>>;
-}
-
-export const GlobalContext: React.Context<GlobalContextType> =
-  createContext(defaultGlobalContext());
+export const GlobalContext: React.Context<ClientData> = createContext({
+  userId: '',
+  scene: 'loading',
+  displayState: {},
+} as ClientData);
 
 export function App(): ReactNode {
-  const [globalState, setGlobalState] = useState(defaultGameResponse());
+  const [clientData, setClientData] = useState({} as ClientData);
+  const [sceneView, setSceneView] = useState('loading' as SceneView);
+  const [modalPanel, setModalPanel] = useState(null as ModalPanel | null);
+  const [gameMessage, setGameMessage] = useState(null as GameMessage | null);
+
   useEffect(() => {
-    connect(setGlobalState);
+    connect();
   }, []);
+
   useEffect(() => {
     const unlisten = listen('game_response', (e: Event<GameResponse>) => {
       const state = e.payload;
-      if (state.commands.length !== 0) {
-        setGlobalState(state);
+      setClientData(state.clientData);
+      if ('updateScene' in state.command) {
+        setSceneView(state.command.updateScene);
+      } else if ('setModalPanel' in state.command) {
+        setModalPanel(state.command.setModalPanel);
+      } else if ('displayGameMessage' in state.command) {
+        setGameMessage(state.command.displayGameMessage.message);
       }
     });
     return () => {
@@ -62,31 +54,32 @@ export function App(): ReactNode {
     };
   }, []);
 
-  let scene = <h1>Loading...</h1>;
-  let gameMessage = null;
-  for (const command of globalState.commands) {
-    if ('updateMainMenuView' in command) {
-      scene = <MainMenu view={command.updateMainMenuView} />;
-    } else if ('updateGameView' in command) {
-      scene = <Game view={command.updateGameView!.view} />;
-    } else if ('displayGameMessage' in command) {
-      const text = {
-        yourTurn: 'Your Turn',
-        opponentTurn: 'Opponent Turn',
-        victory: 'Victory!',
-        defeat: 'Defeat',
-      };
-      gameMessage = (
-        <Modal isOpen={true} hideCloseButton={true}>
-          <ModalContent>
-            <ModalBody>{text[command.displayGameMessage.message]}</ModalBody>
-          </ModalContent>
-        </Modal>
-      );
-    }
+  let scene;
+  if (sceneView === 'loading') {
+    scene = <h1>Loading...</h1>;
+  } else if ('gameView' in sceneView) {
+    scene = <Game view={sceneView.gameView} />;
+  } else if ('mainMenuView' in sceneView) {
+    scene = <MainMenu view={sceneView.mainMenuView} />;
   }
 
-  const modalPanel = globalState.clientData.modalPanel;
+  let message;
+  if (gameMessage != null) {
+    const text = {
+      yourTurn: 'Your Turn',
+      opponentTurn: 'Opponent Turn',
+      victory: 'Victory!',
+      defeat: 'Defeat',
+    };
+    message = (
+      <Modal isOpen={true} hideCloseButton={true}>
+        <ModalContent>
+          <ModalBody>{text[gameMessage]}</ModalBody>
+        </ModalContent>
+      </Modal>
+    );
+  }
+
   const { isOpen, onOpenChange } = useDisclosure({ isOpen: modalPanel != null });
   let modal;
   if (modalPanel != null) {
@@ -101,7 +94,7 @@ export function App(): ReactNode {
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         onClose={() => {
-          handleAction(globalState, onCloseModal);
+          handleAction(clientData, onCloseModal);
         }}
       >
         <ModalContent>
@@ -113,12 +106,7 @@ export function App(): ReactNode {
   }
 
   return (
-    <GlobalContext.Provider
-      value={{
-        response: globalState,
-        setState: setGlobalState,
-      }}
-    >
+    <GlobalContext.Provider value={clientData}>
       {scene}
       {modal}
       {gameMessage}

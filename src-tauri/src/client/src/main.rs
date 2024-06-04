@@ -24,9 +24,12 @@ use data::core::primitives::UserId;
 use database::sqlite_database::SqliteDatabase;
 use display::commands::field_state::{FieldKey, FieldValue};
 use game::server;
-use game::server_data::{ClientData, GameResponse};
+use game::server_data::{Client, ClientData, GameResponse};
 use once_cell::sync::Lazy;
+use serde::{Deserialize, Serialize};
+use specta::Type;
 use tauri::{AppHandle, EventTarget, Manager};
+use tauri_specta::Event;
 use tokio::sync::mpsc;
 use tracing::info;
 use utils::command_line::TracingStyle;
@@ -41,11 +44,18 @@ mod logging;
 
 static DATABASE: Lazy<SqliteDatabase> = Lazy::new(|| SqliteDatabase::new(paths::get_data_dir()));
 
+#[derive(Debug, Clone, Serialize, Deserialize, Type, Event)]
+pub struct GameResponseEvent(GameResponse);
+
 #[tauri::command]
 #[specta::specta]
-async fn client_connect() -> GameResponse {
+async fn client_connect(app: AppHandle) {
     info!("Got connect request");
-    server::connect(DATABASE.clone(), UserId(Uuid::default()))
+    let (sender, mut receiver) = mpsc::unbounded_channel();
+    server::connect(DATABASE.clone(), sender, UserId(Uuid::default()));
+    while let Some(response) = receiver.recv().await {
+        app.emit_to(EventTarget::app(), "game_response", response).unwrap();
+    }
 }
 
 #[tauri::command]
@@ -53,7 +63,8 @@ async fn client_connect() -> GameResponse {
 async fn client_handle_action(client_data: ClientData, action: UserAction, app: AppHandle) {
     info!(?action, "Got handle_action request");
     let (sender, mut receiver) = mpsc::unbounded_channel();
-    server::handle_action(DATABASE.clone(), client_data, action, &sender).await;
+    let mut client = Client { data: client_data, channel: sender };
+    server::handle_action(DATABASE.clone(), &mut client, action).await;
     while let Some(response) = receiver.recv().await {
         app.emit_to(EventTarget::app(), "game_response", response).unwrap();
     }
@@ -65,8 +76,14 @@ async fn client_update_field(
     client_data: ClientData,
     key: FieldKey,
     value: FieldValue,
-) -> GameResponse {
-    server::handle_update_field(DATABASE.clone(), client_data, key, value)
+    app: AppHandle,
+) {
+    let (sender, mut receiver) = mpsc::unbounded_channel();
+    let mut client = Client { data: client_data, channel: sender };
+    server::handle_update_field(DATABASE.clone(), &mut client, key, value);
+    while let Some(response) = receiver.recv().await {
+        app.emit_to(EventTarget::app(), "game_response", response).unwrap();
+    }
 }
 
 fn main() {
@@ -91,12 +108,14 @@ fn main() {
     let commit = env!("VERGEN_GIT_SHA");
     info!(commit, "Starting game");
 
-    let invoke_handler = {
-        let builder = tauri_specta::ts::builder().commands(tauri_specta::collect_commands![
-            client_connect,
-            client_handle_action,
-            client_update_field
-        ]);
+    let (invoke_handler, register_events) = {
+        let builder = tauri_specta::ts::builder()
+            .commands(tauri_specta::collect_commands![
+                client_connect,
+                client_handle_action,
+                client_update_field
+            ])
+            .events(tauri_specta::collect_events![GameResponseEvent]);
 
         #[cfg(debug_assertions)] // <- Only export on non-release builds
         let builder = builder.path("../../../src/generated_types.ts");
@@ -107,6 +126,10 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(invoke_handler)
+        .setup(|app| {
+            register_events(app);
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("Failed to start tauri");
 }

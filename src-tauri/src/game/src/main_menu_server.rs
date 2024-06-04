@@ -21,20 +21,24 @@ use data::decks::deck_name;
 use data::game_states::game_state::{DebugActAsPlayer, DebugConfiguration};
 use data::users::user_state::UserState;
 use database::sqlite_database::SqliteDatabase;
-use display::commands::command::Command;
+use display::commands::command::{Command, SceneView};
 use display::commands::scene_identifier::SceneIdentifier;
 use display::core::game_view::GameButtonView;
 use display::core::main_menu_view::MainMenuView;
+use tokio::sync::mpsc::UnboundedSender;
 use tracing::info;
 use uuid::uuid;
 
-use crate::server_data::{ClientData, GameResponse};
+use crate::server_data::{Client, ClientData, GameResponse};
 
 /// Connect to the main menu scene
-pub fn connect(_: SqliteDatabase, user: &UserState) -> GameResponse {
+pub fn connect(response_channel: UnboundedSender<GameResponse>, user: &UserState) {
     info!(?user.id, "Connected");
-    let client_data = ClientData::new(user.id, SceneIdentifier::MainMenu);
-    GameResponse::new(client_data).command(Command::UpdateMainMenuView(main_menu_view()))
+    let client = Client {
+        data: ClientData::new(user.id, SceneIdentifier::MainMenu),
+        channel: response_channel,
+    };
+    client.send(Command::UpdateScene(SceneView::MainMenuView(main_menu_view())));
 }
 
 pub fn main_menu_view() -> MainMenuView {

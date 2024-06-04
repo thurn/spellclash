@@ -18,7 +18,7 @@ use data::core::primitives::PlayerName;
 use data::game_states::game_state::{DebugActAsPlayer, GameState};
 use rules::legality::legal_actions;
 
-use crate::commands::command::{Command, UpdateGameViewCommand};
+use crate::commands::command::{Command, SceneView};
 use crate::commands::display_state::DisplayState;
 use crate::core::card_view::ClientCardId;
 use crate::core::game_view::{DisplayPlayer, GameView};
@@ -86,10 +86,7 @@ impl ResponseBuilder {
             self.last_snapshot_positions.insert(card.id.clone(), card.position.clone());
         }
 
-        self.commands.push(Command::UpdateGameView(UpdateGameViewCommand {
-            view: game,
-            animate: self.response_state.animate,
-        }));
+        self.commands.push(Command::UpdateScene(SceneView::GameView(game)));
     }
 
     /// Converts a [PlayerName] into a [DisplayPlayer].

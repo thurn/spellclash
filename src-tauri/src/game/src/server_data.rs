@@ -19,6 +19,26 @@ use display::commands::scene_identifier::SceneIdentifier;
 use display::panels::modal_panel::{ModalPanel, PanelData};
 use serde::{Deserialize, Serialize};
 use specta::Type;
+use tokio::sync::mpsc::UnboundedSender;
+
+pub struct Client {
+    pub data: ClientData,
+    pub channel: UnboundedSender<GameResponse>,
+}
+
+impl Client {
+    pub fn send(&self, command: impl Into<Command>) {
+        self.channel
+            .send(GameResponse { client_data: self.data.clone(), command: command.into() })
+            .expect("Failed to send command, receiver has dropped");
+    }
+
+    pub fn send_all(&self, commands: Vec<Command>) {
+        for command in commands {
+            self.send(command);
+        }
+    }
+}
 
 /// A response to a user request.
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
@@ -27,43 +47,19 @@ pub struct GameResponse {
     /// Current context, must be returned to server with all future requests
     pub client_data: ClientData,
 
-    /// Animated updates to game state
-    pub commands: Vec<Command>,
-}
-
-impl GameResponse {
-    pub fn new(client_data: ClientData) -> Self {
-        Self { client_data, commands: vec![] }
-    }
-
-    pub fn command(mut self, command: impl Into<Command>) -> Self {
-        self.commands.push(command.into());
-        self
-    }
-
-    pub fn insert_command(&mut self, index: usize, command: impl Into<Command>) {
-        self.commands.insert(index, command.into())
-    }
-
-    pub fn push_command(&mut self, command: impl Into<Command>) {
-        self.commands.push(command.into());
-    }
-
-    pub fn commands(mut self, mut commands: Vec<Command>) -> Self {
-        self.commands.append(&mut commands);
-        self
-    }
+    /// Update to visual game state
+    pub command: Command,
 }
 
 /// Standard parameters for a client request & response
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct ClientData {
+    /// User who is currently connected
     pub user_id: UserId,
-    pub scene: SceneIdentifier,
 
-    /// Optionally, a panel to display on top of the primary scene content
-    pub modal_panel: Option<ModalPanel>,
+    /// Currently-displayed top level screen
+    pub scene: SceneIdentifier,
 
     /// Options for how the game state should be visually rendered
     pub display_state: DisplayState,
@@ -71,7 +67,7 @@ pub struct ClientData {
 
 impl ClientData {
     pub fn new(user_id: UserId, scene: SceneIdentifier) -> Self {
-        Self { user_id, scene, modal_panel: None, display_state: DisplayState::default() }
+        Self { user_id, scene, display_state: DisplayState::default() }
     }
 
     pub fn game_id(&self) -> GameId {

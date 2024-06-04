@@ -49,20 +49,14 @@ use rand_xoshiro::Xoshiro256StarStar;
 use rules::game_creation::new_game;
 use rules::mutations::library;
 use rules::steps::step;
-use tokio::sync::mpsc::UnboundedSender;
 use tracing::info;
 use uuid::Uuid;
 
-use crate::server_data::{ClientData, GameResponse};
+use crate::server_data::{Client, ClientData, GameResponse};
 use crate::{game_action_server, requests};
 
-pub fn create(
-    database: SqliteDatabase,
-    data: ClientData,
-    action: NewGameAction,
-    response_channel: &UnboundedSender<GameResponse>,
-) {
-    let mut user = requests::fetch_user(database.clone(), data.user_id);
+pub fn create(database: SqliteDatabase, client: &mut Client, action: NewGameAction) {
+    let mut user = requests::fetch_user(database.clone(), client.data.user_id);
 
     let game_id = if let Some(id) = action.debug_options.override_game_id {
         id
@@ -82,18 +76,17 @@ pub fn create(
     );
     if let Some(action) = game_action_server::auto_pass_action(&game, PlayerName::One) {
         // Pass priority until the first configured stop.
-        game_action_server::handle_game_action_internal(database.clone(), &data, action, &mut game);
+        game_action_server::handle_game_action_internal(
+            database.clone(),
+            client,
+            action,
+            &mut game,
+        );
     }
 
     user.activity = UserActivity::Playing(game.id);
-
-    let result = GameResponse::new(ClientData {
-        user_id: user.id,
-        scene: SceneIdentifier::Game(game.id),
-        modal_panel: None,
-        display_state: DisplayState::default(),
-    })
-    .commands(render::connect(&game, game.find_player_name(user.id), DisplayState::default()));
+    client.data.scene = SceneIdentifier::Game(game.id);
+    let commands = render::connect(&game, game.find_player_name(user.id), DisplayState::default());
 
     database.write_game(&game);
     database.write_user(&user);
@@ -103,5 +96,5 @@ pub fn create(
         database.write_user(&opponent);
     }
 
-    response_channel.send(result);
+    client.send_all(commands);
 }
