@@ -27,36 +27,14 @@ export async function connect(setter: Dispatch<SetStateAction<GameResponse>>): P
   }
 }
 
-export async function handleAction(
-  setter: Dispatch<SetStateAction<GameResponse>>,
-  lastResponse: GameResponse,
-  action?: unknown,
-): Promise<void> {
+export async function handleAction(lastResponse: GameResponse, action?: unknown): Promise<void> {
   if (action == null) {
     return;
   }
 
   console.log('Handling action...');
   console.dir(action);
-  const result: Result<GameResponse, null> = await commands.clientHandleAction(
-    lastResponse.clientData,
-    action,
-  );
-  if (result.status === 'ok') {
-    let data = result.data;
-    if (data.commands.length === 0) {
-      // Propagate previous command state if no UI update provided
-      data = {
-        commands: lastResponse.commands,
-        clientData: data.clientData,
-      };
-    }
-    console.log('Got action response');
-    console.dir(data);
-    setter(data);
-  } else {
-    console.error('Error handling action!', action);
-  }
+  await commands.clientHandleAction(lastResponse.clientData, action);
 }
 
 export async function updateField(

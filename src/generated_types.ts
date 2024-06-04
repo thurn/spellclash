@@ -9,19 +9,8 @@ export const commands = {
       else return { status: 'error', error: e as any };
     }
   },
-  async clientHandleAction(
-    clientData: ClientData,
-    action: unknown,
-  ): Promise<Result<GameResponse, null>> {
-    try {
-      return {
-        status: 'ok',
-        data: await TAURI_INVOKE('client_handle_action', { clientData, action }),
-      };
-    } catch (e) {
-      if (e instanceof Error) throw e;
-      else return { status: 'error', error: e as any };
-    }
+  async clientHandleAction(clientData: ClientData, action: unknown): Promise<void> {
+    await TAURI_INVOKE('client_handle_action', { clientData, action });
   },
   async clientUpdateField(
     clientData: ClientData,

@@ -25,7 +25,7 @@ export function GameButton({
   button: GameButtonView;
   className?: string;
 }): ReactNode {
-  const { response, setState } = useContext(GlobalContext);
+  const { response } = useContext(GlobalContext);
   let color: ButtonProps['color'];
   switch (button.kind) {
     case 'primary':
@@ -40,7 +40,7 @@ export function GameButton({
     <Button
       className={className}
       color={color}
-      onClick={() => handleAction(setState, response, button.action)}
+      onClick={() => handleAction(response, button.action)}
     >
       {button.label}
     </Button>

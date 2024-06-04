@@ -33,7 +33,7 @@ import { handleAction } from '../server';
 import { CardPreviewImage } from './PlayArea';
 
 export function RevealedCard({ revealed }: { revealed: RevealedCardView }): ReactNode {
-  const { response, setState } = useContext(GlobalContext);
+  const { response } = useContext(GlobalContext);
   const { setPreviewImage } = useContext(CardPreviewImage);
 
   let borderClass = 'border-2 border-black';
@@ -51,7 +51,7 @@ export function RevealedCard({ revealed }: { revealed: RevealedCardView }): Reac
   return (
     <div
       className={borderClass}
-      onClick={() => handleAction(setState, response, revealed.clickAction)}
+      onClick={() => handleAction(response, revealed.clickAction)}
       onMouseEnter={() => {
         if (setPreviewImage != null) {
           setPreviewImage(revealed.image);

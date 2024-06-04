@@ -19,6 +19,7 @@ import { Game } from './game_view/Game';
 import { connect, handleAction } from './server';
 import { DebugPanelContent } from './panels/DebugPanelContent';
 import { Modal, ModalBody, ModalContent, ModalHeader, useDisclosure } from '@nextui-org/react';
+import { Event, listen } from '@tauri-apps/api/event';
 
 function defaultGameResponse(): GameResponse {
   return {
@@ -49,8 +50,15 @@ export function App(): ReactNode {
   useEffect(() => {
     connect(setGlobalState);
   }, []);
-  const sceneIdentifier = globalState.clientData.scene;
-  console.log('Global state scene is ' + sceneIdentifier);
+  useEffect(() => {
+    const unlisten = listen('game_response', (e: Event<GameResponse>) => {
+      console.log('Got game response');
+      setGlobalState(e.payload);
+    });
+    return () => {
+      unlisten.then((f) => f());
+    };
+  }, []);
 
   let scene = <h1>Loading...</h1>;
   let gameMessage = null;
@@ -91,7 +99,7 @@ export function App(): ReactNode {
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         onClose={() => {
-          handleAction(setGlobalState, globalState, onCloseModal);
+          handleAction(globalState, onCloseModal);
         }}
       >
         <ModalContent>
