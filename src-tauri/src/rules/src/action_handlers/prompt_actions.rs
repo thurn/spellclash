@@ -21,18 +21,22 @@ use tracing::instrument;
 
 use crate::game_creation::initialize_game;
 
-/// Updates the state of a game's prompt manager based on the selected option in
-/// [PromptAction]. This does not validate the legality of the chosen action.
+/// Updates the state of a [Prompt] based on a [PromptAction].
 ///
-/// If this selection completes the prompt, returns the initial [GameAction]
-/// that triggered the prompt, which should now be executed again with the
-/// updated prompt state. Returns None if the current prompt is not complete and
-/// we should wait for further user input.
-#[instrument(name = "prompt_actions_execute", level = "debug", skip(game))]
-pub fn execute(game: &mut GameState, player: PlayerName, action: PromptAction) {
+/// There are two types of possible actions in response to a prompt:
+///
+/// 1) For intermediate updates as part of selecting a response (e.g. moving
+///    around or reordering cards in a card selector), this function is expected
+///    to mutate the provided [Prompt] and return None
+/// 2) For 'final' actions (e.g. submitting the list of selected cards in a card
+///    selector), this function is expected to return a [PromptResponse] which
+///    will be used to unblock the thread which requested a choice. Changes to
+///    the provided [Prompt] will be ignored in this case.
+#[instrument(name = "prompt_actions_execute", level = "debug")]
+pub fn execute(prompt: &mut Prompt, action: PromptAction) -> Option<PromptResponse> {
     if let PromptAction::PickNumber(n) = action {
-        pick_number(game, n)
+        Some(PromptResponse::PickNumber(n))
+    } else {
+        None
     }
 }
-
-fn pick_number(game: &mut GameState, n: u32) {}

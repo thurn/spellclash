@@ -36,8 +36,8 @@ use data::printed_cards::printed_card_id;
 use data::state_machines::state_machine_data::StateMachines;
 use data::users::user_state::UserActivity;
 use database::sqlite_database::SqliteDatabase;
-use display::commands::display_state::DisplayState;
 use display::commands::scene_identifier::SceneIdentifier;
+use display::core::display_state::DisplayState;
 use display::rendering::render;
 use enumset::EnumSet;
 use maplit::hashmap;
@@ -84,7 +84,8 @@ pub fn create(database: SqliteDatabase, client: &mut Client, action: NewGameActi
 
     user.activity = UserActivity::Playing(game.id);
     client.data.scene = SceneIdentifier::Game(game.id);
-    let commands = render::connect(&game, game.find_player_name(user.id), DisplayState::default());
+    let state = DisplayState::default();
+    let commands = render::connect(&game, game.find_player_name(user.id), &state);
 
     database.write_game(&game);
     database.write_user(&user);

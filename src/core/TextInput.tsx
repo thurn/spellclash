@@ -26,11 +26,11 @@ export function TextInput({
   input: TextInputView;
   className?: string;
 }): ReactNode {
-  const { response, setState } = useContext(GlobalContext);
+  const clientData = useContext(GlobalContext);
   return (
     <Input
       className={className}
-      onValueChange={(val) => updateField(setState, response, input.key, { string: val })}
+      onValueChange={(val) => updateField(clientData, input.key, { string: val })}
     />
   );
 }

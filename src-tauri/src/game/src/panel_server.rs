@@ -23,7 +23,7 @@ use display::commands::scene_identifier::SceneIdentifier;
 use display::panels::modal_panel::ModalPanel;
 use display::panels::panel;
 use tokio::sync::mpsc::UnboundedSender;
-use tracing::instrument;
+use tracing::{debug, instrument};
 
 use crate::server_data::{Client, ClientData, GameResponse};
 use crate::{game_action_server, requests};
@@ -45,6 +45,7 @@ pub async fn handle_panel_transition(
     transition: PanelTransition,
 ) {
     client.send(Command::SetModalPanel(None));
+
     if let Some(action) = transition.action {
         game_action_server::handle_game_action(database.clone(), client, action).await;
     }

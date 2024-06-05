@@ -15,4 +15,4 @@
 pub mod actions;
 pub mod combat_actions;
 pub mod debug_actions;
-mod prompt_actions;
+pub mod prompt_actions;

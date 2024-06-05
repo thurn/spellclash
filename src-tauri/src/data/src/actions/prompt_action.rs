@@ -38,6 +38,6 @@ pub enum PromptAction {
 
 impl From<PromptAction> for UserAction {
     fn from(value: PromptAction) -> Self {
-        GameAction::PromptAction(value).into()
+        UserAction::PromptAction(value)
     }
 }

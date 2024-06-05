@@ -93,9 +93,6 @@ pub struct GameState {
     /// game zone they are in.
     pub zones: Zones,
 
-    /// Current prompt to display to a named player, if any.
-    pub current_prompt: Option<Prompt>,
-
     /// Channel on which to send game updates.
     ///
     /// If no channel is provided here, game mutations will be applied silently

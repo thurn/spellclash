@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::sync::Arc;
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
 use ai::core::ai_action;
 use data::actions::game_action::{CombatAction, GameAction};
+use data::actions::prompt_action::PromptAction;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{GameId, PlayerName};
 use data::game_states::game_state::GameState;
@@ -23,12 +25,14 @@ use data::game_states::game_step::GamePhaseStep;
 use data::player_states::player_state::PlayerQueries;
 use data::users::user_state::UserState;
 use database::sqlite_database::SqliteDatabase;
-use display::commands::display_state::DisplayState;
+use display::commands::field_state::{FieldKey, FieldValue};
 use display::commands::scene_identifier::SceneIdentifier;
+use display::core::display_state::DisplayState;
 use display::rendering::render;
 use enumset::{enum_set, EnumSet};
-use rules::action_handlers::actions;
+use once_cell::sync::Lazy;
 use rules::action_handlers::actions::ExecuteAction;
+use rules::action_handlers::{actions, prompt_actions};
 use rules::legality::legal_actions;
 use rules::legality::legal_actions::LegalActions;
 use rules::queries::combat_queries;
@@ -40,9 +44,11 @@ use tracing::{debug, error, info, instrument};
 use crate::requests;
 use crate::server_data::{Client, ClientData, GameResponse};
 
+static DISPLAY_STATE: Lazy<Mutex<DisplayState>> = Lazy::new(|| Mutex::new(DisplayState::default()));
+
 /// Connects to an ongoing game scene, returning a [GameResponse] which renders
 /// its current visual state.
-#[instrument(level = "debug", skip(database))]
+#[instrument(level = "debug", skip_all)]
 pub fn connect(
     database: SqliteDatabase,
     response_channel: UnboundedSender<GameResponse>,
@@ -53,13 +59,10 @@ pub fn connect(
     let player_name = game.find_player_name(user.id);
 
     info!(?user.id, ?game.id, "Connected to game");
-    let commands = render::connect(&game, player_name, DisplayState::default());
+    let display_state = DISPLAY_STATE.lock().expect("Mutex is poisoned");
+    let commands = render::connect(&game, player_name, &display_state);
     let client = Client {
-        data: ClientData {
-            user_id: user.id,
-            scene: SceneIdentifier::Game(game.id),
-            display_state: DisplayState::default(),
-        },
+        data: ClientData { user_id: user.id, scene: SceneIdentifier::Game(game.id) },
         channel: response_channel,
     };
     client.send_all(commands);
@@ -77,22 +80,34 @@ pub async fn handle_game_action(database: SqliteDatabase, client: &mut Client, a
     });
 
     while let Some(update) = receiver.recv().await {
-        let user_player_name = update.game.find_player_name(client.data.user_id);
-        let commands = render::render_updates(
-            &update.game,
-            user_player_name,
-            client.data.display_state.clone(),
-        );
-        client.send_all(commands);
+        let mut display_state = DISPLAY_STATE.lock().expect("Mutex is poisoned");
+        display_state.prompt = update.prompt;
+        display_state.prompt_channel = update.response_channel;
+        send_updates(&update.game, client, &display_state);
     }
 }
 
-pub fn sync_game_state(database: SqliteDatabase, client: &mut Client) {
+#[instrument(level = "debug", skip(client))]
+pub fn handle_prompt_action(client: &mut Client, action: PromptAction) {
+    let mut display_state = DISPLAY_STATE.lock().expect("Mutex is poisoned");
+    let mut prompt = display_state.prompt.as_mut().expect("No active prompt");
+    if let Some(response) = prompt_actions::execute(prompt, action) {
+        let channel = display_state.prompt_channel.take().expect("No active prompt channel");
+        display_state.prompt = None;
+        channel.send(response).expect("Failed to send prompt response");
+    }
+}
+
+pub fn handle_update_field(
+    database: SqliteDatabase,
+    client: &mut Client,
+    key: FieldKey,
+    value: FieldValue,
+) {
+    let mut display_state = DISPLAY_STATE.lock().expect("Mutex is poisoned");
+    display_state.fields.insert(key, value);
     let mut game = requests::fetch_game(database.clone(), client.data.game_id(), None);
-    let user_player_name = game.find_player_name(client.data.user_id);
-    let commands =
-        render::render_updates(&game, user_player_name, client.data.display_state.clone());
-    client.send_all(commands);
+    send_updates(&game, client, &display_state);
 }
 
 pub fn handle_game_action_internal(
@@ -101,8 +116,7 @@ pub fn handle_game_action_internal(
     action: GameAction,
     game: &mut GameState,
 ) {
-    let user_player_name = game.find_player_name(client.data.user_id);
-    let mut current_player = user_player_name;
+    let mut current_player = game.find_player_name(client.data.user_id);
 
     if let Some(act_as) = game.configuration.debug.act_as_player {
         // Override player we are acting as for debugging purposes
@@ -119,9 +133,8 @@ pub fn handle_game_action_internal(
             automatic: current_action_is_automatic,
             validate: true,
         });
-        let user_result =
-            render::render_updates(game, user_player_name, client.data.display_state.clone());
-        client.send_all(user_result);
+        let display_state = DISPLAY_STATE.lock().expect("Mutex is poisoned");
+        send_updates(game, client, &display_state);
 
         let next_player = legal_actions::next_to_act(game);
         if let Some(action) = auto_pass_action(game, next_player) {
@@ -140,6 +153,12 @@ pub fn handle_game_action_internal(
             debug!(?next_player, ?current_action, "AI action selected");
         }
     }
+}
+
+fn send_updates(game: &GameState, client: &mut Client, display_state: &DisplayState) {
+    let user_player_name = game.find_player_name(client.data.user_id);
+    let commands = render::render_updates(game, user_player_name, display_state);
+    client.send_all(commands);
 }
 
 const ALWAYS_STOP_ACTIVE: EnumSet<GamePhaseStep> =

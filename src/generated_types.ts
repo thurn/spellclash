@@ -123,10 +123,6 @@ export type ClientData = {
    * Currently-displayed top level screen
    */
   scene: SceneIdentifier;
-  /**
-   * Options for how the game state should be visually rendered
-   */
-  displayState: unknown;
 };
 /**
  * Represents an instruction to the client to perform some visual update.

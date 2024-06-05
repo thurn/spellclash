@@ -13,6 +13,5 @@
 // limitations under the License.
 
 pub mod command;
-pub mod display_state;
 pub mod field_state;
 pub mod scene_identifier;

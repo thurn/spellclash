@@ -68,7 +68,6 @@ pub fn execute(
         GameAction::PassPriority => handle_pass_priority(game, player),
         GameAction::ProposePlayingCard(id) => handle_play_card(game, Source::Game, player, id),
         GameAction::CombatAction(a) => combat_actions::execute(game, player, a),
-        GameAction::PromptAction(a) => prompt_actions::execute(game, player, a),
     };
 
     if legal_actions::can_any_player_pass_priority(game) {

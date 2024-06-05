@@ -109,7 +109,7 @@ export function App(): ReactNode {
     <GlobalContext.Provider value={clientData}>
       {scene}
       {modal}
-      {gameMessage}
+      {message}
     </GlobalContext.Provider>
   );
 }

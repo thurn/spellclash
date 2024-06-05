@@ -18,7 +18,7 @@ use data::card_definitions::card_name;
 use data::prompts::card_selection_prompt::Quantity;
 use data::text_strings::Text;
 use rules::mutations::library;
-use rules::prompt_helpers::prompts;
+use rules::prompt_handling::prompts;
 
 pub fn brainstorm() -> CardDefinition {
     CardDefinition::new(card_name::BRAINSTORM).ability(SpellAbility::new().effects(|g, s| {

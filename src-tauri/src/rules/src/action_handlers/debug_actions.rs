@@ -24,7 +24,7 @@ use data::text_strings::Text;
 use tracing::{debug, instrument};
 
 use crate::mutations::players;
-use crate::prompt_helpers::prompts;
+use crate::prompt_handling::prompts;
 
 #[instrument(level = "debug", skip(game))]
 pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction) {

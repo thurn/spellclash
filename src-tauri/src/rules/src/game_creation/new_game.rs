@@ -116,7 +116,6 @@ fn create_game(
         players: Players::new(p1_id, p2_id, 20),
         zones,
         updates: None,
-        current_prompt: None,
         combat: None,
         history: GameHistory::default(),
         rng: Xoshiro256StarStar::seed_from_u64(3141592653589793),

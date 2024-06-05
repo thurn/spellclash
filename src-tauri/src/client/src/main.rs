@@ -52,7 +52,9 @@ pub struct GameResponseEvent(GameResponse);
 async fn client_connect(app: AppHandle) {
     info!("Got connect request");
     let (sender, mut receiver) = mpsc::unbounded_channel();
-    server::connect(DATABASE.clone(), sender, UserId(Uuid::default()));
+    tokio::spawn(async move {
+        server::connect(DATABASE.clone(), sender, UserId(Uuid::default()));
+    });
     while let Some(response) = receiver.recv().await {
         app.emit_to(EventTarget::app(), "game_response", response).unwrap();
     }
@@ -63,8 +65,10 @@ async fn client_connect(app: AppHandle) {
 async fn client_handle_action(client_data: ClientData, action: UserAction, app: AppHandle) {
     info!(?action, "Got handle_action request");
     let (sender, mut receiver) = mpsc::unbounded_channel();
-    let mut client = Client { data: client_data, channel: sender };
-    server::handle_action(DATABASE.clone(), &mut client, action).await;
+    tokio::spawn(async move {
+        let mut client = Client { data: client_data, channel: sender };
+        server::handle_action(DATABASE.clone(), &mut client, action).await;
+    });
     while let Some(response) = receiver.recv().await {
         app.emit_to(EventTarget::app(), "game_response", response).unwrap();
     }
@@ -79,8 +83,10 @@ async fn client_update_field(
     app: AppHandle,
 ) {
     let (sender, mut receiver) = mpsc::unbounded_channel();
-    let mut client = Client { data: client_data, channel: sender };
-    server::handle_update_field(DATABASE.clone(), &mut client, key, value);
+    tokio::spawn(async move {
+        let mut client = Client { data: client_data, channel: sender };
+        server::handle_update_field(DATABASE.clone(), &mut client, key, value);
+    });
     while let Some(response) = receiver.recv().await {
         app.emit_to(EventTarget::app(), "game_response", response).unwrap();
     }

@@ -102,9 +102,6 @@ pub enum GameAction {
     /// Debugging action.
     DebugAction(DebugGameAction),
 
-    /// Action to respond to an active prompt
-    PromptAction(PromptAction),
-
     /// Pass priority on the current stack item or game step.
     ///
     /// > If all players pass in succession (that is, if all players pass
@@ -133,10 +130,6 @@ pub enum GameAction {
 impl GameAction {
     pub fn is_debug_action(&self) -> bool {
         matches!(self, GameAction::DebugAction(..))
-    }
-
-    pub fn is_prompt_action(&self) -> bool {
-        matches!(self, GameAction::PromptAction(..))
     }
 }
 

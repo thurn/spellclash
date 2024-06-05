@@ -15,16 +15,29 @@
 use std::collections::HashMap;
 
 use data::actions::user_action::UserAction;
+use data::prompts::prompt::{Prompt, PromptResponse};
 use serde::{Deserialize, Serialize};
 use specta::{DataType, Generics, Type, TypeMap};
+use tokio::sync::oneshot;
 
 use crate::commands::field_state::{FieldKey, FieldValue};
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+/// Contains user interface state information which is persisted in memory
+/// during gameplay, but which is not serialized to the database.
+///
+/// Don't store anything here which can't be easily reconstructed if the client
+/// exits.
+#[derive(Debug, Default)]
 pub struct DisplayState {
     /// States of displayed input fields.
     pub fields: HashMap<FieldKey, FieldValue>,
+
+    /// A prompt currently being shown to some player.
+    pub prompt: Option<Prompt>,
+
+    /// A channel on which to send a [PromptResponse] to select an option to
+    /// respond to the prompt in [Self::prompt].
+    pub prompt_channel: Option<oneshot::Sender<PromptResponse>>,
 }
 
 impl Type for DisplayState {

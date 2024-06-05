@@ -14,7 +14,6 @@
 
 use data::core::primitives::{GameId, UserId};
 use display::commands::command::Command;
-use display::commands::display_state::DisplayState;
 use display::commands::scene_identifier::SceneIdentifier;
 use display::panels::modal_panel::{ModalPanel, PanelData};
 use serde::{Deserialize, Serialize};
@@ -61,14 +60,11 @@ pub struct ClientData {
 
     /// Currently-displayed top level screen
     pub scene: SceneIdentifier,
-
-    /// Options for how the game state should be visually rendered
-    pub display_state: DisplayState,
 }
 
 impl ClientData {
     pub fn new(user_id: UserId, scene: SceneIdentifier) -> Self {
-        Self { user_id, scene, display_state: DisplayState::default() }
+        Self { user_id, scene }
     }
 
     pub fn game_id(&self) -> GameId {

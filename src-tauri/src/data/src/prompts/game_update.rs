@@ -37,11 +37,14 @@ pub struct GameUpdate {
     /// Snapshot of the game state at the time of the update.
     pub game: GameState,
 
-    /// Optionally, an animation to perform after displaying this game state
+    /// An animation to perform after displaying this game state
     /// snapshot.
     pub animation: Option<GameAnimation>,
 
-    /// Optionally, a channel on which a [PromptResponse] can be sent to make
+    /// A prompt to display to a named player.
+    pub prompt: Option<Prompt>,
+
+    /// A channel on which a [PromptResponse] can be sent to make
     /// some choice for this game state.
     ///
     /// If this is None, no response is expected.
@@ -50,11 +53,21 @@ pub struct GameUpdate {
 
 impl GameUpdate {
     pub fn new(game: &GameState) -> Self {
-        Self { game: game.clone_for_display(), animation: None, response_channel: None }
+        Self {
+            game: game.clone_for_display(),
+            prompt: None,
+            animation: None,
+            response_channel: None,
+        }
     }
 
     pub fn animation(mut self, animation: GameAnimation) -> Self {
         self.animation = Some(animation);
+        self
+    }
+
+    pub fn prompt(mut self, prompt: Prompt) -> Self {
+        self.prompt = Some(prompt);
         self
     }
 

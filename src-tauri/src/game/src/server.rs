@@ -59,6 +59,9 @@ pub async fn handle_action(database: SqliteDatabase, client: &mut Client, action
         UserAction::GameAction(action) => {
             game_action_server::handle_game_action(database, client, action).instrument(span).await;
         }
+        UserAction::PromptAction(action) => {
+            game_action_server::handle_prompt_action(client, action)
+        }
         UserAction::LeaveGameAction => leave_game_server::leave(database, client),
         UserAction::QuitGameAction => {
             std::process::exit(0);
@@ -81,8 +84,7 @@ pub fn handle_update_field(
     key: FieldKey,
     value: FieldValue,
 ) {
-    client.data.display_state.fields.insert(key, value);
-    game_action_server::sync_game_state(database, client)
+    game_action_server::handle_update_field(database, client, key, value);
 }
 
 fn fetch_or_create_user(database: SqliteDatabase, user_id: UserId) -> UserState {

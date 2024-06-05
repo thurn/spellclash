@@ -16,14 +16,14 @@ use data::core::primitives::PlayerName;
 use data::game_states::game_state::{GameState, GameStatus};
 
 use crate::commands::command::{Command, DisplayGameMessageCommand};
-use crate::commands::display_state::DisplayState;
+use crate::core::display_state::DisplayState;
 use crate::core::game_message::GameMessage;
 use crate::core::response_builder::{ResponseBuilder, ResponseState};
 use crate::rendering::{animations, sync};
 
 /// Returns a series of [Command]s which fully describe the current state of the
 /// provided game
-pub fn connect(game: &GameState, player: PlayerName, display_state: DisplayState) -> Vec<Command> {
+pub fn connect(game: &GameState, player: PlayerName, display_state: &DisplayState) -> Vec<Command> {
     let mut builder = ResponseBuilder::new(player, ResponseState {
         animate: false,
         is_final_update: true,
@@ -51,7 +51,7 @@ pub fn connect(game: &GameState, player: PlayerName, display_state: DisplayState
 pub fn render_updates(
     game: &GameState,
     player: PlayerName,
-    display_state: DisplayState,
+    display_state: &DisplayState,
 ) -> Vec<Command> {
     let mut builder = ResponseBuilder::new(player, ResponseState {
         animate: true,

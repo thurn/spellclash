@@ -21,7 +21,7 @@ pub mod legality;
 pub mod mutations;
 pub mod planner;
 pub mod play_cards;
-pub mod prompt_helpers;
+pub mod prompt_handling;
 pub mod queries;
 pub mod resolve_cards;
 pub mod steps;

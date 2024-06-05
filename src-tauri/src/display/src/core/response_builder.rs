@@ -13,18 +13,19 @@
 // limitations under the License.
 
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use data::core::primitives::PlayerName;
 use data::game_states::game_state::{DebugActAsPlayer, GameState};
 use rules::legality::legal_actions;
 
 use crate::commands::command::{Command, SceneView};
-use crate::commands::display_state::DisplayState;
 use crate::core::card_view::ClientCardId;
+use crate::core::display_state::DisplayState;
 use crate::core::game_view::{DisplayPlayer, GameView};
 use crate::core::object_position::ObjectPosition;
 
-pub struct ResponseState {
+pub struct ResponseState<'a> {
     /// Whether to play animations as part of this update
     pub animate: bool,
 
@@ -33,7 +34,7 @@ pub struct ResponseState {
     pub is_final_update: bool,
 
     /// User configuration for how this response should be rendered.
-    pub display_state: DisplayState,
+    pub display_state: &'a DisplayState,
 
     /// True if all cards should be revealed
     pub reveal_all_cards: bool,
@@ -46,12 +47,12 @@ pub struct ResponseState {
 ///
 /// Tracks a list of [Command]s to update the game client along with things like
 /// which [PlayerName] we are rendering for.
-pub struct ResponseBuilder {
+pub struct ResponseBuilder<'a> {
     /// Player for whom we are building a UI update
     player: PlayerName,
 
     /// Response configuration
-    pub response_state: ResponseState,
+    pub response_state: ResponseState<'a>,
 
     /// Commands to send to this client
     pub commands: Vec<Command>,
@@ -65,8 +66,8 @@ pub struct ResponseBuilder {
     pub last_snapshot_positions: HashMap<ClientCardId, ObjectPosition>,
 }
 
-impl ResponseBuilder {
-    pub fn new(player: PlayerName, state: ResponseState) -> Self {
+impl<'a> ResponseBuilder<'a> {
+    pub fn new(player: PlayerName, state: ResponseState<'a>) -> Self {
         Self {
             player,
             response_state: state,

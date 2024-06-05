@@ -28,8 +28,8 @@ use data::prompts::prompt::{Prompt, PromptType};
 use log::info;
 use rules::legality::legal_actions;
 
-use crate::commands::display_state::DisplayState;
 use crate::commands::field_state::FieldKey;
+use crate::core::display_state::DisplayState;
 use crate::core::game_view::{
     GameButtonView, GameControlView, GameView, GameViewState, PlayerView, TextInputView,
 };
@@ -67,7 +67,7 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
         top_controls: top_game_controls(game, builder.act_as_player(game)),
         bottom_controls: bottom_game_controls(
             game,
-            &builder.response_state.display_state,
+            builder.response_state.display_state,
             builder.act_as_player(game),
         ),
     });
@@ -103,7 +103,7 @@ fn bottom_game_controls(
     state: &DisplayState,
     player: PlayerName,
 ) -> Vec<GameControlView> {
-    if let Some(current) = &game.current_prompt {
+    if let Some(current) = &state.prompt {
         return prompt_view(state, current);
     }
 
