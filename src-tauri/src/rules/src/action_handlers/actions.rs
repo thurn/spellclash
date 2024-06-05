@@ -63,27 +63,13 @@ pub fn execute(
         game.undo_tracker.undo.push(Box::new(clone));
     }
 
-    if !action.is_prompt_action() {
-        game.prompts.reset_with_action(&action);
-    }
-
-    loop {
-        match &action {
-            GameAction::DebugAction(a) => debug_actions::execute(game, player, a),
-            GameAction::PassPriority => handle_pass_priority(game, player),
-            GameAction::ProposePlayingCard(id) => handle_play_card(game, Source::Game, player, *id),
-            GameAction::CombatAction(a) => combat_actions::execute(game, player, a),
-            GameAction::PromptAction(a) => {
-                // Store the prompt selection and then re-simulate the previous action using
-                // this prompt response if needed.
-                if let Some(run_action) = prompt_actions::execute(game, player, a) {
-                    action = run_action;
-                    continue;
-                }
-            }
-        };
-        break;
-    }
+    match action {
+        GameAction::DebugAction(a) => debug_actions::execute(game, player, a),
+        GameAction::PassPriority => handle_pass_priority(game, player),
+        GameAction::ProposePlayingCard(id) => handle_play_card(game, Source::Game, player, id),
+        GameAction::CombatAction(a) => combat_actions::execute(game, player, a),
+        GameAction::PromptAction(a) => prompt_actions::execute(game, player, a),
+    };
 
     if legal_actions::can_any_player_pass_priority(game) {
         // If any player has priority as a result of this game action, check state-based

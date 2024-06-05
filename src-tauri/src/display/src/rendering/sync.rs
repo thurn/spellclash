@@ -103,7 +103,7 @@ fn bottom_game_controls(
     state: &DisplayState,
     player: PlayerName,
 ) -> Vec<GameControlView> {
-    if let Some(current) = &game.prompts.current_prompt {
+    if let Some(current) = &game.current_prompt {
         return prompt_view(state, current);
     }
 

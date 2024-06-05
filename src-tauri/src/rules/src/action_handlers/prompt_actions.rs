@@ -29,56 +29,10 @@ use crate::game_creation::initialize_game;
 /// updated prompt state. Returns None if the current prompt is not complete and
 /// we should wait for further user input.
 #[instrument(name = "prompt_actions_execute", level = "debug", skip(game))]
-pub fn execute<'a>(
-    game: &mut GameState,
-    player: PlayerName,
-    action: &PromptAction,
-) -> Option<GameAction> {
-    let initial_action = *game.prompts.action.as_ref().expect("Expected initial prompt action");
-    match action {
-        PromptAction::PickNumber(n) => pick_number(game, initial_action, n),
-        PromptAction::SelectCard { source, target } => select_card(game, *source, *target),
-        PromptAction::SetSelectionOrder { source, target } => {
-            set_selection_order(game, *source, *target)
-        }
-        PromptAction::SubmitCardSelection => submit_card_selection(game, initial_action),
+pub fn execute(game: &mut GameState, player: PlayerName, action: PromptAction) {
+    if let PromptAction::PickNumber(n) = action {
+        pick_number(game, n)
     }
 }
 
-fn pick_number(game: &mut GameState, initial_action: GameAction, n: &u32) -> Option<GameAction> {
-    push_response(game, initial_action, PromptResponse::PickNumber(*n))
-}
-
-fn select_card(game: &mut GameState, source: usize, target: Option<usize>) -> Option<GameAction> {
-    let Some(PromptType::SelectCards(card_selection)) = game.prompts.current_prompt_type_mut()
-    else {
-        panic!("Expected SelectCards prompt");
-    };
-
-    None
-}
-
-fn set_selection_order(game: &mut GameState, source: usize, target: usize) -> Option<GameAction> {
-    None
-}
-
-fn submit_card_selection(game: &mut GameState, initial_action: GameAction) -> Option<GameAction> {
-    let Some(PromptType::SelectCards(card_selection)) = game.prompts.current_prompt_type() else {
-        panic!("Expected SelectCards prompt");
-    };
-    push_response(
-        game,
-        initial_action,
-        PromptResponse::SelectCards(card_selection.selected.clone()),
-    )
-}
-
-fn push_response(
-    game: &mut GameState,
-    initial_action: GameAction,
-    response: PromptResponse,
-) -> Option<GameAction> {
-    game.prompts.responses.push(response);
-    game.prompts.current_prompt = None;
-    Some(initial_action)
-}
+fn pick_number(game: &mut GameState, n: u32) {}

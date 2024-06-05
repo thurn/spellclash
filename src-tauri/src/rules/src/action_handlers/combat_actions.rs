@@ -30,26 +30,26 @@ use crate::mutations::permanents;
 use crate::queries::{card_queries, combat_queries, player_queries};
 
 #[instrument(name = "combat_actions_execute", level = "debug", skip(game))]
-pub fn execute(game: &mut GameState, player: PlayerName, action: &CombatAction) {
+pub fn execute(game: &mut GameState, player: PlayerName, action: CombatAction) {
     match action {
         CombatAction::AddSelectedAttacker(card_id) => {
-            add_selected_attacker(game, Source::Game, *card_id)
+            add_selected_attacker(game, Source::Game, card_id)
         }
         CombatAction::SetSelectedAttackersTarget(target) => {
-            set_selected_attackers_target(game, Source::Game, *target)
+            set_selected_attackers_target(game, Source::Game, target)
         }
-        CombatAction::RemoveAttacker(card_id) => remove_attacker(game, Source::Game, *card_id),
+        CombatAction::RemoveAttacker(card_id) => remove_attacker(game, Source::Game, card_id),
         CombatAction::ConfirmAttackers => confirm_attackers(game, Source::Game),
         CombatAction::AddSelectedBlocker(card_id) => {
-            add_selected_blocker(game, Source::Game, *card_id)
+            add_selected_blocker(game, Source::Game, card_id)
         }
         CombatAction::SetSelectedBlockersTarget(attacker) => {
-            set_selected_blockers_target(game, Source::Game, *attacker)
+            set_selected_blockers_target(game, Source::Game, attacker)
         }
-        CombatAction::RemoveBlocker(card_id) => remove_blocker(game, Source::Game, *card_id),
+        CombatAction::RemoveBlocker(card_id) => remove_blocker(game, Source::Game, card_id),
         CombatAction::ConfirmBlockers => confirm_blockers(game, Source::Game),
         CombatAction::OrderBlocker { attacker_id, blocker_id, position } => {
-            order_blocker(game, Source::Game, *attacker_id, *blocker_id, *position)
+            order_blocker(game, Source::Game, attacker_id, blocker_id, position)
         }
         CombatAction::ConfirmBlockerOrder => confirm_blocker_order(game, Source::Game),
     }

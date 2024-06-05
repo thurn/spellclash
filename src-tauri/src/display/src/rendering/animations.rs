@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::game_states::animation_tracker::GameAnimation;
 use data::game_states::game_state::GameState;
+use data::prompts::game_update::GameAnimation;
 
 use crate::core::response_builder::ResponseBuilder;
 

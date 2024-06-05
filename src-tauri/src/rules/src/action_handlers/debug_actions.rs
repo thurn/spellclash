@@ -27,7 +27,7 @@ use crate::mutations::players;
 use crate::prompt_helpers::prompts;
 
 #[instrument(level = "debug", skip(game))]
-pub fn execute(game: &mut GameState, player: PlayerName, action: &DebugGameAction) {
+pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction) {
     match action {
         DebugGameAction::Undo => {
             debug!(?player, "(Debug) Undoing last action");
@@ -45,10 +45,10 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: &DebugGameActio
                 maximum: 20,
             });
             debug!(?target, ?amount, "(Debug) Setting life total");
-            players::set_life_total(game, Source::Game, *target, amount as LifeValue);
+            players::set_life_total(game, Source::Game, target, amount as LifeValue);
         }
         DebugGameAction::RevealHand(target) => {
-            for card_id in game.hand(*target).clone() {
+            for card_id in game.hand(target).clone() {
                 game.card_mut(card_id).revealed_to.insert(player);
             }
         }

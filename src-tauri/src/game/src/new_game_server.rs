@@ -24,7 +24,6 @@ use data::decks::deck::Deck;
 use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
 use data::delegates::game_delegates::GameDelegates;
-use data::game_states::animation_tracker::{AnimationState, AnimationTracker};
 use data::game_states::game_state::{
     DebugConfiguration, GameConfiguration, GameState, GameStatus, TurnData,
 };
@@ -34,7 +33,6 @@ use data::game_states::oracle::Oracle;
 use data::game_states::undo_tracker::UndoTracker;
 use data::player_states::player_state::Players;
 use data::printed_cards::printed_card_id;
-use data::prompts::prompt_manager::PromptManager;
 use data::state_machines::state_machine_data::StateMachines;
 use data::users::user_state::UserActivity;
 use database::sqlite_database::SqliteDatabase;

@@ -21,6 +21,7 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use tokio::sync::mpsc::UnboundedSender;
 
+#[derive(Debug, Clone)]
 pub struct Client {
     pub data: ClientData,
     pub channel: UnboundedSender<GameResponse>,

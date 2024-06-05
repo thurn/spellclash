@@ -43,7 +43,7 @@ pub fn compute(game: &GameState, player: PlayerName, options: LegalActions) -> V
         return result;
     }
 
-    if let Some(p) = &game.prompts.current_prompt {
+    if let Some(p) = &game.current_prompt {
         return legal_prompt_actions::compute(game, player, p);
     }
 
@@ -80,7 +80,7 @@ pub fn can_take_action(game: &GameState, player: PlayerName, game_action: &GameA
 /// has ended, this will be the player who held priority at the end of the
 /// game.
 pub fn next_to_act(game: &GameState) -> PlayerName {
-    if let Some(p) = &game.prompts.current_prompt {
+    if let Some(p) = &game.current_prompt {
         return p.player;
     }
 

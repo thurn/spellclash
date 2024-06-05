@@ -28,9 +28,6 @@ use crate::core::primitives::{
     StackItemId, UserId, Zone,
 };
 use crate::delegates::game_delegates::GameDelegates;
-use crate::game_states::animation_tracker::{
-    AnimationState, AnimationStep, AnimationTracker, GameAnimation,
-};
 use crate::game_states::combat_state::CombatState;
 use crate::game_states::game_step::GamePhaseStep;
 use crate::game_states::history_data::{GameHistory, HistoryCounters, HistoryEvent};
@@ -38,7 +35,8 @@ use crate::game_states::oracle::Oracle;
 use crate::game_states::state_based_event::StateBasedEvent;
 use crate::game_states::undo_tracker::UndoTracker;
 use crate::player_states::player_state::{PlayerQueries, PlayerState, Players};
-use crate::prompts::prompt_manager::PromptManager;
+use crate::prompts::game_update::UpdateChannel;
+use crate::prompts::prompt::Prompt;
 use crate::state_machines::state_machine_data::StateMachines;
 
 /// This is the state of a single ongoing game of Magic (i.e. one duel, not a
@@ -95,17 +93,19 @@ pub struct GameState {
     /// game zone they are in.
     pub zones: Zones,
 
-    /// Handles sending prompts for user actions to players in this game
-    pub prompts: PromptManager,
+    /// Current prompt to display to a named player, if any.
+    pub current_prompt: Option<Prompt>,
+
+    /// Channel on which to send game updates.
+    ///
+    /// If no channel is provided here, game mutations will be applied silently
+    /// without returning incremental updates.
+    #[serde(skip)]
+    pub updates: Option<UpdateChannel>,
 
     /// State of creatures participating in the currently active combat phase,
     /// if any.
     pub combat: Option<CombatState>,
-
-    /// Used to track changes to game state in order to update the client. See
-    /// [AnimationTracker] for more information.
-    #[serde(skip)]
-    pub animations: AnimationTracker,
 
     ///  History of events which have happened during this game. See
     /// [GameHistory].
@@ -152,17 +152,13 @@ impl GameState {
         self.zones.change_controller(source, id, controller, self.turn)
     }
 
-    pub fn add_animation(&mut self, update: impl FnOnce() -> GameAnimation) {
-        if self.animations.state == AnimationState::Track {
-            // Snapshot current game state, omit things that aren't important for
-            // animation logic.
-            let clone = Self {
-                animations: AnimationTracker::new(AnimationState::Ignore),
-                undo_tracker: UndoTracker { enabled: false, undo: vec![] },
-                ..self.clone()
-            };
-
-            self.animations.steps.push(AnimationStep { snapshot: clone, update: update() });
+    /// Makes a clone of this game state suitable suitable for use in display
+    /// logic, but which omits undo tracking information.
+    pub fn clone_for_display(&self) -> Self {
+        Self {
+            updates: None,
+            undo_tracker: UndoTracker { enabled: false, undo: vec![] },
+            ..self.clone()
         }
     }
 

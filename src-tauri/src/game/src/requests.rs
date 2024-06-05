@@ -15,8 +15,8 @@
 use std::sync::Arc;
 
 use data::core::primitives::{GameId, UserId};
-use data::game_states::animation_tracker::{AnimationState, AnimationTracker};
 use data::game_states::game_state::GameState;
+use data::prompts::game_update::UpdateChannel;
 use data::users::user_state::UserState;
 use database::sqlite_database::SqliteDatabase;
 use oracle::card_database;
@@ -30,9 +30,19 @@ pub fn fetch_user(database: SqliteDatabase, user_id: UserId) -> UserState {
 }
 
 /// Looks up a game by ID in the database.
-pub fn fetch_game(database: SqliteDatabase, game_id: GameId) -> GameState {
+///
+/// An [UpdateChannel] can be provided here in order to receive incremental
+/// updates and interface prompts. This should generally be included whenever
+/// you are fetching a game for the purpose of mutating it, as otherwise
+/// attempts to prompt the user for a choice will panic. It's safe to omit this
+/// field when simply reading the state of a game.
+pub fn fetch_game(
+    database: SqliteDatabase,
+    game_id: GameId,
+    update_channel: Option<UpdateChannel>,
+) -> GameState {
     let mut game =
         database.fetch_game(game_id).unwrap_or_else(|| panic!("Game not found: {game_id:?}"));
-    initialize_game::run(database, &mut game);
+    initialize_game::run(database, &mut game, update_channel);
     game
 }

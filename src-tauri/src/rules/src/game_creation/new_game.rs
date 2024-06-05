@@ -19,7 +19,6 @@ use data::decks::deck::Deck;
 use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
 use data::delegates::game_delegates::GameDelegates;
-use data::game_states::animation_tracker::{AnimationState, AnimationTracker};
 use data::game_states::game_state::{
     DebugConfiguration, GameConfiguration, GameState, GameStatus, TurnData,
 };
@@ -29,7 +28,6 @@ use data::game_states::oracle::Oracle;
 use data::game_states::undo_tracker::UndoTracker;
 use data::player_states::player_state::Players;
 use data::printed_cards::printed_card_id;
-use data::prompts::prompt_manager::PromptManager;
 use data::state_machines::state_machine_data::StateMachines;
 use database::sqlite_database::SqliteDatabase;
 use enumset::EnumSet;
@@ -85,7 +83,7 @@ pub fn create(
     let p2_deck = find_deck(p2_deck_name);
 
     let mut game = create_game(oracle, game_id, p1_id, p1_deck, p2_id, p2_deck, debug);
-    initialize_game::run(database.clone(), &mut game);
+    initialize_game::run(database.clone(), &mut game, None);
 
     game.shuffle_library(PlayerName::One);
     game.shuffle_library(PlayerName::Two);
@@ -117,9 +115,9 @@ fn create_game(
         state_machines: StateMachines::default(),
         players: Players::new(p1_id, p2_id, 20),
         zones,
-        prompts: PromptManager::default(),
+        updates: None,
+        current_prompt: None,
         combat: None,
-        animations: AnimationTracker { state: AnimationState::Track, steps: vec![] },
         history: GameHistory::default(),
         rng: Xoshiro256StarStar::seed_from_u64(3141592653589793),
         undo_tracker: UndoTracker { enabled: true, undo: vec![] },

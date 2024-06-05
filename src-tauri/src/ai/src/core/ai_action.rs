@@ -16,7 +16,6 @@ use std::time::{Duration, Instant};
 
 use data::actions::game_action::GameAction;
 use data::core::primitives::PlayerName;
-use data::game_states::animation_tracker::AnimationState;
 use data::game_states::game_state::GameState;
 use rules::legality::legal_actions;
 use rules::legality::legal_actions::LegalActions;
@@ -43,8 +42,7 @@ pub fn select(input_game: &GameState, player: PlayerName) -> GameAction {
     let mut game = input_game.clone();
     game.undo_tracker.enabled = false;
     game.undo_tracker.undo.clear();
-    game.animations.state = AnimationState::Ignore;
-    game.animations.steps.clear();
+    game.updates = None;
 
     let agent = agents::get_agent(AgentName::Uct1Iterations10_000);
     let deadline = Duration::from_secs(100);

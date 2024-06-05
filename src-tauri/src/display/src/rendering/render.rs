@@ -61,11 +61,6 @@ pub fn render_updates(
         act_as_player: game.configuration.debug.act_as_player,
     });
 
-    for step in &game.animations.steps {
-        sync::run(&mut builder, &step.snapshot);
-        animations::render(&mut builder, &step.update, &step.snapshot);
-    }
-
     builder.response_state.is_final_update = true;
     sync::run(&mut builder, game);
 

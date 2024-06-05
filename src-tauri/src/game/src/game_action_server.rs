@@ -32,7 +32,9 @@ use rules::action_handlers::actions::ExecuteAction;
 use rules::legality::legal_actions;
 use rules::legality::legal_actions::LegalActions;
 use rules::queries::combat_queries;
+use tokio::sync::mpsc;
 use tokio::sync::mpsc::UnboundedSender;
+use tokio::task;
 use tracing::{debug, error, info, instrument};
 
 use crate::requests;
@@ -47,7 +49,7 @@ pub fn connect(
     user: &UserState,
     game_id: GameId,
 ) {
-    let game = requests::fetch_game(database, game_id);
+    let game = requests::fetch_game(database, game_id, None);
     let player_name = game.find_player_name(user.id);
 
     info!(?user.id, ?game.id, "Connected to game");
@@ -65,12 +67,28 @@ pub fn connect(
 
 #[instrument(level = "debug", skip(database, client))]
 pub async fn handle_game_action(database: SqliteDatabase, client: &mut Client, action: GameAction) {
-    let mut game = requests::fetch_game(database.clone(), client.data.game_id());
-    handle_game_action_internal(database, client, action, &mut game);
+    let (sender, mut receiver) = mpsc::unbounded_channel();
+
+    let mut action_client = client.clone();
+    task::spawn_blocking(move || {
+        let mut game =
+            requests::fetch_game(database.clone(), action_client.data.game_id(), Some(sender));
+        handle_game_action_internal(database, &mut action_client, action, &mut game);
+    });
+
+    while let Some(update) = receiver.recv().await {
+        let user_player_name = update.game.find_player_name(client.data.user_id);
+        let commands = render::render_updates(
+            &update.game,
+            user_player_name,
+            client.data.display_state.clone(),
+        );
+        client.send_all(commands);
+    }
 }
 
 pub fn sync_game_state(database: SqliteDatabase, client: &mut Client) {
-    let mut game = requests::fetch_game(database.clone(), client.data.game_id());
+    let mut game = requests::fetch_game(database.clone(), client.data.game_id(), None);
     let user_player_name = game.find_player_name(client.data.user_id);
     let commands =
         render::render_updates(&game, user_player_name, client.data.display_state.clone());

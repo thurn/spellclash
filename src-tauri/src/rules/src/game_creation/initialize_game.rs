@@ -12,20 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::game_states::animation_tracker::{AnimationState, AnimationTracker};
 use data::game_states::game_state::GameState;
+use data::prompts::game_update::UpdateChannel;
 use database::sqlite_database::SqliteDatabase;
 use oracle::card_database;
 
-pub fn run(database: SqliteDatabase, game: &mut GameState) {
+pub fn run(database: SqliteDatabase, game: &mut GameState, update_channel: Option<UpdateChannel>) {
     for previous in game.undo_tracker.undo.iter_mut() {
-        run(database.clone(), previous.as_mut());
+        run(database.clone(), previous.as_mut(), None);
     }
-
-    game.animations = AnimationTracker::new(if game.configuration.simulation {
-        AnimationState::Ignore
-    } else {
-        AnimationState::Track
-    });
-    card_database::populate(database, game)
+    card_database::populate(database, game);
+    game.updates = update_channel;
 }

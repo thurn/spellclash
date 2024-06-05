@@ -16,7 +16,6 @@ use data::card_definitions::card_name;
 use data::core::primitives::GameId;
 use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
-use data::game_states::animation_tracker::AnimationState;
 use data::game_states::game_state::{DebugConfiguration, GameState, GameStatus};
 use data::game_states::game_step::GamePhaseStep;
 use database::sqlite_database::SqliteDatabase;
@@ -41,8 +40,7 @@ pub fn create(deck_name: DeckName) -> GameState {
     game.status = GameStatus::Playing;
     game.undo_tracker.enabled = false;
     game.undo_tracker.undo.clear();
-    game.animations.state = AnimationState::Ignore;
-    game.animations.steps.clear();
+    game.updates = None;
     game
 }
 

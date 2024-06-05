@@ -18,20 +18,21 @@ use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use data::prompts::card_selection_prompt::{CardSelectionPrompt, Quantity};
 use data::prompts::choice_prompt::{Choice, ChoicePrompt};
+use data::prompts::game_update::GameUpdate;
 use data::prompts::pick_number_prompt::PickNumberPrompt;
 use data::prompts::prompt::{Prompt, PromptResponse, PromptType};
 use data::text_strings::Text;
+use tokio::sync::oneshot;
 
 /// Sends a new [Prompt] to the player and blocks until they respond with a
 /// [PromptResponse].
-pub fn send(game: &mut GameState, prompt: Prompt) -> &PromptResponse {
-    let index = game.prompts.response_index;
-    if let Some(response) = game.prompts.responses.get(game.prompts.response_index) {
-        game.prompts.response_index += 1;
-        response
-    } else {
-        todo!("Implement prompt responses")
-    }
+pub fn send(game: &mut GameState, prompt: Prompt) -> PromptResponse {
+    let (sender, receiver) = oneshot::channel();
+    game.updates
+        .as_ref()
+        .expect("PromptChannel")
+        .send(GameUpdate::new(game).response_channel(sender));
+    receiver.blocking_recv().expect("Unable to receive prompt response, sender has dropped")
 }
 
 pub fn choose_entity(
@@ -47,7 +48,7 @@ pub fn choose_entity(
     }) else {
         panic!("Unexpected prompt response type!");
     };
-    *id
+    id
 }
 
 pub fn select_cards(
@@ -81,7 +82,7 @@ pub fn pick_number(
     }) else {
         panic!("Unexpected prompt response type!");
     };
-    *number
+    number
 }
 
 /// Prompt to select a quantity of cards from controller's hand.
