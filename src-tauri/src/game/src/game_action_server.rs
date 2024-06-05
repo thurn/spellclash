@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 
 use ai::core::ai_action;
 use data::actions::game_action::{CombatAction, GameAction};
@@ -59,8 +59,7 @@ pub fn connect(
     let player_name = game.find_player_name(user.id);
 
     info!(?user.id, ?game.id, "Connected to game");
-    let display_state = DISPLAY_STATE.lock().expect("Mutex is poisoned");
-    let commands = render::connect(&game, player_name, &display_state);
+    let commands = render::connect(&game, player_name, &get_display_state());
     let client = Client {
         data: ClientData { user_id: user.id, scene: SceneIdentifier::Game(game.id) },
         channel: response_channel,
@@ -71,6 +70,7 @@ pub fn connect(
 #[instrument(level = "debug", skip(database, client))]
 pub async fn handle_game_action(database: SqliteDatabase, client: &mut Client, action: GameAction) {
     let (sender, mut receiver) = mpsc::unbounded_channel();
+    assert!(get_display_state().prompt.is_none(), "Cannot handle action with an active prompt");
 
     let mut action_client = client.clone();
     task::spawn_blocking(move || {
@@ -80,7 +80,7 @@ pub async fn handle_game_action(database: SqliteDatabase, client: &mut Client, a
     });
 
     while let Some(update) = receiver.recv().await {
-        let mut display_state = DISPLAY_STATE.lock().expect("Mutex is poisoned");
+        let mut display_state = get_display_state();
         display_state.prompt = update.prompt;
         display_state.prompt_channel = update.response_channel;
         send_updates(&update.game, client, &display_state);
@@ -89,7 +89,7 @@ pub async fn handle_game_action(database: SqliteDatabase, client: &mut Client, a
 
 #[instrument(level = "debug", skip(client))]
 pub fn handle_prompt_action(client: &mut Client, action: PromptAction) {
-    let mut display_state = DISPLAY_STATE.lock().expect("Mutex is poisoned");
+    let mut display_state = get_display_state();
     let mut prompt = display_state.prompt.as_mut().expect("No active prompt");
     if let Some(response) = prompt_actions::execute(prompt, action) {
         let channel = display_state.prompt_channel.take().expect("No active prompt channel");
@@ -104,7 +104,7 @@ pub fn handle_update_field(
     key: FieldKey,
     value: FieldValue,
 ) {
-    let mut display_state = DISPLAY_STATE.lock().expect("Mutex is poisoned");
+    let mut display_state = get_display_state();
     display_state.fields.insert(key, value);
     let mut game = requests::fetch_game(database.clone(), client.data.game_id(), None);
     send_updates(&game, client, &display_state);
@@ -133,8 +133,7 @@ pub fn handle_game_action_internal(
             automatic: current_action_is_automatic,
             validate: true,
         });
-        let display_state = DISPLAY_STATE.lock().expect("Mutex is poisoned");
-        send_updates(game, client, &display_state);
+        send_updates(game, client, &get_display_state());
 
         let next_player = legal_actions::next_to_act(game);
         if let Some(action) = auto_pass_action(game, next_player) {
@@ -159,6 +158,10 @@ fn send_updates(game: &GameState, client: &mut Client, display_state: &DisplaySt
     let user_player_name = game.find_player_name(client.data.user_id);
     let commands = render::render_updates(game, user_player_name, display_state);
     client.send_all(commands);
+}
+
+fn get_display_state() -> MutexGuard<'static, DisplayState> {
+    DISPLAY_STATE.lock().expect("Mutex is poisoned")
 }
 
 const ALWAYS_STOP_ACTIVE: EnumSet<GamePhaseStep> =
