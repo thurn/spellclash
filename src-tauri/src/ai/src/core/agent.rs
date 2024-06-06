@@ -50,11 +50,6 @@ where
     /// state. Should attempt to return a result before the [AgentConfig]'s
     /// `deadline`.
     fn pick_action(&self, config: AgentConfig, node: &TNode) -> TNode::Action;
-
-    /// If true, this agent will not be queried for actions on their turn.
-    fn inactive(&self) -> bool {
-        false
-    }
 }
 
 /// A tuple of various pieces needed to perform agent action selection.

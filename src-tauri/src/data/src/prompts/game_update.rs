@@ -53,12 +53,7 @@ pub struct GameUpdate {
 
 impl GameUpdate {
     pub fn new(game: &GameState) -> Self {
-        Self {
-            game: game.clone_for_display(),
-            prompt: None,
-            animation: None,
-            response_channel: None,
-        }
+        Self { game: game.shallow_clone(), prompt: None, animation: None, response_channel: None }
     }
 
     pub fn animation(mut self, animation: GameAnimation) -> Self {

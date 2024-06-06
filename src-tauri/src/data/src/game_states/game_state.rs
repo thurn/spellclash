@@ -150,8 +150,9 @@ impl GameState {
     }
 
     /// Makes a clone of this game state suitable suitable for use in display
-    /// logic, but which omits undo tracking information.
-    pub fn clone_for_display(&self) -> Self {
+    /// or simulation logic, but which omits undo tracking information and the
+    /// ability to process incremental visual updates.
+    pub fn shallow_clone(&self) -> Self {
         Self {
             updates: None,
             undo_tracker: UndoTracker { enabled: false, undo: vec![] },

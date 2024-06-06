@@ -301,19 +301,6 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> 
 
     /// Picks the most promising child node to explore, returning its associated
     /// action and node identifier.
-    ///
-    /// This implementation is using the UCT1 algorithm, a standard approach for
-    /// selecting children and solution to the 'multi-armed bandit' problem.
-    ///
-    /// Pseudocode:
-    /// ```text
-    /// 𝐟𝐮𝐧𝐜𝐭𝐢𝐨𝐧 BESTCHILD(v,c)
-    ///   𝐫𝐞𝐭𝐮𝐫𝐧 argmax(
-    ///     v′ ∈ children of v:
-    ///     Q(v′) / N(v′) +
-    ///     c * √ [ 2 * ln(N(v)) / N(v′) ]
-    ///   )
-    /// ```
     #[instrument(level = "debug", skip_all)]
     fn best_child<TState: GameStateNode>(
         &self,

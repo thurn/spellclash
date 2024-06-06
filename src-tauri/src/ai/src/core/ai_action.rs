@@ -39,11 +39,7 @@ pub fn select(input_game: &GameState, player: PlayerName) -> GameAction {
         return legal[0];
     }
 
-    let mut game = input_game.clone();
-    game.undo_tracker.enabled = false;
-    game.undo_tracker.undo.clear();
-    game.updates = None;
-
+    let game = input_game.shallow_clone();
     let agent = agents::get_agent(AgentName::Uct1Iterations10_000);
     let deadline = Duration::from_secs(100);
     match command_line::flags().tracing_style {
