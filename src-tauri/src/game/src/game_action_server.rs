@@ -81,6 +81,10 @@ pub async fn handle_game_action(database: SqliteDatabase, client: &mut Client, a
 
     while let Some(update) = receiver.recv().await {
         let mut display_state = get_display_state();
+        if let Some(prompt) = update.prompt.as_ref() {
+            let kind = prompt.prompt_type.kind();
+            info!(immediate = true, ?kind, "Awaiting prompt response")
+        }
         display_state.prompt = update.prompt;
         display_state.prompt_channel = update.response_channel;
         send_updates(&update.game, client, &display_state);

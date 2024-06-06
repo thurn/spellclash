@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use serde::{Deserialize, Serialize};
+use strum::EnumDiscriminants;
 
 use crate::core::primitives::{CardId, EntityId, PlayerName};
 use crate::prompts::card_selection_prompt::CardSelectionPrompt;
@@ -35,7 +36,8 @@ pub struct Prompt {
 }
 
 /// Possible types of prompts
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, EnumDiscriminants)]
+#[strum_discriminants(name(PromptTypeKind))]
 pub enum PromptType {
     /// A blocking choice for a player to pick one of a list of entities before
     /// any other game action_handlers can occur.
@@ -50,6 +52,12 @@ pub enum PromptType {
 
     /// Pick an integer value
     PickNumber(PickNumberPrompt),
+}
+
+impl PromptType {
+    pub fn kind(&self) -> PromptTypeKind {
+        self.into()
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -43,8 +43,8 @@ pub fn connect(response_channel: UnboundedSender<GameResponse>, user: &UserState
 
 pub fn main_menu_view() -> MainMenuView {
     let new_game = UserAction::NewGameAction(NewGameAction {
-        deck: deck_name::GREEN_VANILLA,
-        opponent_deck: deck_name::GREEN_VANILLA,
+        deck: deck_name::DANDAN,
+        opponent_deck: deck_name::DANDAN,
         opponent_id: None,
         debug_options: NewGameDebugOptions {
             override_game_id: None,
@@ -52,8 +52,8 @@ pub fn main_menu_view() -> MainMenuView {
         },
     });
     let new_debug_game = UserAction::NewGameAction(NewGameAction {
-        deck: deck_name::GREEN_VANILLA,
-        opponent_deck: deck_name::GREEN_VANILLA,
+        deck: deck_name::DANDAN,
+        opponent_deck: deck_name::DANDAN,
         opponent_id: None,
         debug_options: NewGameDebugOptions {
             override_game_id: None,

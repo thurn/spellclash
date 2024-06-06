@@ -23,10 +23,13 @@ use data::prompts::pick_number_prompt::PickNumberPrompt;
 use data::prompts::prompt::{Prompt, PromptResponse, PromptType};
 use data::text_strings::Text;
 use tokio::sync::oneshot;
+use tracing::info;
 
 /// Sends a new [Prompt] to the player and blocks until they respond with a
 /// [PromptResponse].
 pub fn send(game: &mut GameState, prompt: Prompt) -> PromptResponse {
+    let kind = prompt.prompt_type.kind();
+    info!(immediate = true, ?kind, "Sending prompt");
     let (sender, receiver) = oneshot::channel();
     game.updates
         .as_ref()
@@ -88,7 +91,7 @@ pub fn pick_number(
 /// Prompt to select a quantity of cards from controller's hand.
 ///
 /// Allows reordering.
-pub fn select_in_hand(
+pub fn from_hand(
     game: &mut GameState,
     scope: Scope,
     quantity: Quantity,
