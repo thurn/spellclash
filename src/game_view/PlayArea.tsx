@@ -73,6 +73,19 @@ export function PlayArea({ view }: { view: GameView }): ReactNode {
             key="st"
             name="Stack"
             cards={getPosition(map, keyForPosition('stack'))}
+            omitIfEmpty={true}
+          />
+          <LinearCardDisplay
+            key="st"
+            name="Selection"
+            cards={getPosition(map, keyForPosition('cardSelectionChoices'))}
+            omitIfEmpty={true}
+          />
+          <LinearCardDisplay
+            key="st"
+            name="Top Of Library"
+            cards={getPosition(map, keyForPosition({ cardSelectionLocation: 'topOfLibrary' }))}
+            omitIfEmpty={!view.cardDragTargets.includes('topOfLibrary')}
           />
           <LinearCardDisplay
             key="vp"

@@ -12,16 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::collections::HashMap;
+
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, EntityId, PlayerName};
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
-use data::prompts::card_selection_prompt::{CardSelectionPrompt, Quantity};
+use data::prompts::card_select_and_order_prompt::{
+    CardOrderLocation, CardSelectAndOrderPrompt, Quantity,
+};
 use data::prompts::choice_prompt::{Choice, ChoicePrompt};
 use data::prompts::game_update::GameUpdate;
 use data::prompts::pick_number_prompt::PickNumberPrompt;
 use data::prompts::prompt::{Prompt, PromptResponse, PromptType};
 use data::text_strings::Text;
+use enumset::EnumSet;
 use tokio::sync::oneshot;
 use tracing::info;
 
@@ -54,21 +59,23 @@ pub fn choose_entity(
     id
 }
 
-pub fn select_cards(
+/// Prompt for the [PlayerName] player to select and reorder cards based on a
+/// [CardSelectAndOrderPrompt].
+pub fn select_and_order_cards(
     game: &mut GameState,
     player: PlayerName,
     description: Text,
-    prompt: CardSelectionPrompt,
-) -> Vec<CardId> {
-    let PromptResponse::SelectCards(ids) = send(game, Prompt {
+    prompt: CardSelectAndOrderPrompt,
+) -> HashMap<CardOrderLocation, Vec<CardId>> {
+    let PromptResponse::SelectAndOrder(ids) = send(game, Prompt {
         player,
         label: Some(description),
-        prompt_type: PromptType::SelectCards(prompt),
+        prompt_type: PromptType::SelectAndOrder(prompt),
     }) else {
         panic!("Unexpected prompt response type!");
     };
 
-    ids.clone()
+    ids
 }
 
 /// Show a [PickNumberPrompt].
@@ -88,21 +95,25 @@ pub fn pick_number(
     number
 }
 
-/// Prompt to select a quantity of cards from controller's hand.
-///
-/// Allows reordering.
-pub fn from_hand(
+/// Prompt to select a [Quantity] of cards from controller's hand and place them
+/// on top of the library in a chosen order. Returns the list of selected cards
+/// in order.
+pub fn hand_to_top_of_library(
     game: &mut GameState,
     scope: Scope,
     quantity: Quantity,
-    text: Text,
 ) -> Vec<CardId> {
-    select_cards(
+    select_and_order_cards(
         game,
         scope.controller,
-        text,
-        CardSelectionPrompt::new(game.hand(scope.controller).iter().copied().collect())
-            .can_reorder(true)
-            .quantity(quantity),
+        Text::HandToTopOfLibraryPrompt,
+        CardSelectAndOrderPrompt {
+            choices: game.hand(scope.controller).iter().copied().collect(),
+            locations: EnumSet::only(CardOrderLocation::TopOfLibrary),
+            ordered: HashMap::new(),
+            quantity,
+        },
     )
+    .remove(&CardOrderLocation::TopOfLibrary)
+    .unwrap_or_default()
 }

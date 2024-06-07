@@ -50,6 +50,10 @@ export type CardLayout =
   | 'split'
   | 'transform';
 /**
+ * Possible locations in which cards can be ordered.
+ */
+export type CardOrderLocation = 'topOfLibrary' | 'bottomOfLibrary' | 'graveyard';
+/**
  * Represents the visual state of a card or ability in a game
  */
 export type CardView = {
@@ -250,6 +254,13 @@ export type GameView = {
    */
   statusDescription: string;
   /**
+   * Locations to which cards can currently be dragged.
+   *
+   * Cards can be reordered within a drag location to pick their relative
+   * position.
+   */
+  cardDragTargets: CardOrderLocation[];
+  /**
    * High level visual game state
    */
   state: GameViewState;
@@ -380,6 +391,15 @@ export type Position =
    */
   | 'browser'
   /**
+   * Object is being displayed in a list of cards available to select in a
+   * card selector.
+   */
+  | 'cardSelectionChoices'
+  /**
+   * Object is being displayed in a location for picking its relative order
+   */
+  | { cardSelectionLocation: CardOrderLocation }
+  /**
    * Object has just been revealed to this viewer
    */
   | 'revealed'
@@ -413,7 +433,11 @@ export type RevealedCardFace = {
    */
   rulesText: string | null;
 };
-export type RevealedCardStatus = 'canPlay' | { attacking: string } | { blocking: string };
+export type RevealedCardStatus =
+  | 'selected'
+  | 'canPlay'
+  | { attacking: string }
+  | { blocking: string };
 /**
  * Visual state of a revealed card
  */
@@ -438,6 +462,13 @@ export type RevealedCardView = {
    * Action to take when this card is clicked, if any.
    */
   clickAction: unknown | null;
+  /**
+   * True if this card can be dragged by the player.
+   *
+   * The set of valid drag targets is set on the GameView. All draggable
+   * cards can be dragged to and reordered within any valid target.
+   */
+  canDrag: boolean;
   /**
    * Secondary or additional face of this card, if any
    */

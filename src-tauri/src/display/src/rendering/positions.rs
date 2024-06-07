@@ -13,14 +13,20 @@
 // limitations under the License.
 
 use data::card_states::card_state::CardState;
-use data::core::primitives::{CardType, EntityId, PlayerName, Zone};
+use data::core::primitives::{CardId, CardType, EntityId, PlayerName, Zone};
 use data::game_states::game_state::GameState;
+use data::prompts::card_select_and_order_prompt::{CardOrderLocation, CardSelectAndOrderPrompt};
+use data::prompts::prompt::PromptType;
 
 use crate::core::object_position::{BattlefieldPosition, ObjectPosition, Position};
 use crate::core::response_builder::ResponseBuilder;
 
 /// Calculates the game position in which the provided card should be displayed.
 pub fn calculate(builder: &ResponseBuilder, _game: &GameState, card: &CardState) -> ObjectPosition {
+    if let Some(position) = position_override(builder, card) {
+        return position;
+    }
+
     let owner = builder.to_display_player(card.owner);
     let position = match card.zone {
         Zone::Hand => Position::Hand(owner),
@@ -46,7 +52,7 @@ pub fn calculate(builder: &ResponseBuilder, _game: &GameState, card: &CardState)
 pub fn for_card(card: &CardState, position: Position) -> ObjectPosition {
     let sorting_key = match card.entity_id {
         EntityId::Player(..) => 0.0,
-        EntityId::Card(_, object_id) => object_id.as_approximate_f64(),
+        EntityId::Card(_, object_id) => object_id.as_sorting_key(),
         EntityId::StackAbility(..) => 0.0,
     };
 
@@ -63,4 +69,29 @@ pub fn hand(builder: &ResponseBuilder, player: PlayerName) -> Position {
 
 pub fn discard(builder: &ResponseBuilder, player: PlayerName) -> Position {
     Position::DiscardPile(builder.to_display_player(player))
+}
+
+fn position_override(builder: &ResponseBuilder, card: &CardState) -> Option<ObjectPosition> {
+    if let Some(prompt) = &builder.current_prompt() {
+        match &prompt.prompt_type {
+            PromptType::EntityChoice(_) => {}
+            PromptType::SelectAndOrder(data) => {
+                for location in enum_iterator::all::<CardOrderLocation>() {
+                    if let Some(i) = data.in_location(location).iter().position(|c| c == &card.id) {
+                        return Some(ObjectPosition {
+                            position: Position::CardSelectionLocation(location),
+                            sorting_key: i as f64,
+                            sorting_sub_key: 0.0,
+                        });
+                    }
+                }
+                if data.choices.contains(&card.id) {
+                    return Some(for_card(card, Position::CardSelectionChoices));
+                }
+            }
+            PromptType::PlayCards(_) => {}
+            PromptType::PickNumber(_) => {}
+        }
+    }
+    None
 }

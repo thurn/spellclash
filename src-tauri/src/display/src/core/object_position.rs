@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use data::core::primitives::CardId;
+use data::prompts::card_select_and_order_prompt::CardOrderLocation;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
@@ -91,6 +92,13 @@ pub enum Position {
     /// Object is being displayed in a card browser, e.g. to select from a list
     /// of cards
     Browser,
+
+    /// Object is being displayed in a list of cards available to select in a
+    /// card selector.
+    CardSelectionChoices,
+
+    /// Object is being displayed in a location for picking its relative order
+    CardSelectionLocation(CardOrderLocation),
 
     /// Object has just been revealed to this viewer
     Revealed,

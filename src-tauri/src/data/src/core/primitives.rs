@@ -214,7 +214,12 @@ impl EntityId {
 pub struct ObjectId(pub u64);
 
 impl ObjectId {
-    pub fn as_approximate_f64(&self) -> f64 {
+    /// Returns this ObjectId to a float, for use as a sorting key in the
+    /// display layer.
+    ///
+    /// It's fine that we lose some precision here since it's only a visual
+    /// effect.
+    pub fn as_sorting_key(&self) -> f64 {
         self.0 as f64
     }
 }

@@ -15,15 +15,14 @@
 use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::prompts::card_selection_prompt::Quantity;
-use data::text_strings::Text;
+use data::prompts::card_select_and_order_prompt::Quantity;
 use rules::mutations::library;
 use rules::prompt_handling::prompts;
 
 pub fn brainstorm() -> CardDefinition {
     CardDefinition::new(card_name::BRAINSTORM).ability(SpellAbility::new().effects(|g, s| {
         library::draw_cards(g, s, s.controller, 3);
-        let ids = prompts::from_hand(g, s, Quantity::Count(2), Text::ReturnToTopOfDeck(2));
+        let ids = prompts::hand_to_top_of_library(g, s, Quantity::Count(2));
         library::move_all_to_top(g, s, ids.iter())
     }))
 }

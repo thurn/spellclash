@@ -17,6 +17,7 @@ use data::card_states::card_state::{CardFacing, TappedState};
 use data::core::numerics::Damage;
 use data::core::primitives::{CardId, HasCardId};
 use data::printed_cards::layout::{CardLayout, FaceLayout};
+use data::prompts::card_select_and_order_prompt::CardOrderLocation;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
@@ -101,6 +102,12 @@ pub struct RevealedCardView {
     /// Action to take when this card is clicked, if any.
     pub click_action: Option<UserAction>,
 
+    /// True if this card can be dragged by the player.
+    ///
+    /// The set of valid drag targets is set on the GameView. All draggable
+    /// cards can be dragged to and reordered within any valid target.
+    pub can_drag: bool,
+
     /// Secondary or additional face of this card, if any
     pub face_b: Option<RevealedCardFace>,
 
@@ -111,6 +118,7 @@ pub struct RevealedCardView {
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub enum RevealedCardStatus {
+    Selected,
     CanPlay,
     Attacking(String),
     Blocking(String),

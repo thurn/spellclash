@@ -24,6 +24,7 @@ use data::game_states::combat_state::CombatState;
 use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
 use data::player_states::player_state::PlayerQueries;
+use data::prompts::card_select_and_order_prompt::CardOrderLocation;
 use data::prompts::prompt::{Prompt, PromptType};
 use log::info;
 use rules::legality::legal_actions;
@@ -59,6 +60,7 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
             "{:?}\nTurn {}\nPlayer {:?}",
             game.step, game.turn.turn_number, game.turn.active_player
         ),
+        card_drag_targets: card_drag_targets(builder, game),
         state: if game.combat.is_some() {
             GameViewState::CombatActive
         } else {
@@ -71,6 +73,18 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
             builder.act_as_player(game),
         ),
     });
+}
+
+fn card_drag_targets(
+    response_builder: &ResponseBuilder,
+    game: &GameState,
+) -> Vec<CardOrderLocation> {
+    if let Some(prompt) = &response_builder.response_state.display_state.prompt {
+        if let PromptType::SelectAndOrder(select_and_order) = &prompt.prompt_type {
+            return select_and_order.locations.iter().collect();
+        }
+    }
+    vec![]
 }
 
 fn player_view(game: &GameState, player: PlayerName) -> PlayerView {
@@ -170,7 +184,7 @@ fn bottom_game_controls(
 fn prompt_view(state: &DisplayState, prompt: &Prompt) -> Vec<GameControlView> {
     match &prompt.prompt_type {
         PromptType::EntityChoice(_) => {}
-        PromptType::SelectCards(_) => {}
+        PromptType::SelectAndOrder(_) => {}
         PromptType::PlayCards(_) => {}
         PromptType::PickNumber(pick_number) => {
             let input =

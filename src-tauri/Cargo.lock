@@ -1219,6 +1219,7 @@ name = "display"
 version = "0.0.0"
 dependencies = [
  "data",
+ "enum-iterator",
  "enum-kinds",
  "log",
  "rules",

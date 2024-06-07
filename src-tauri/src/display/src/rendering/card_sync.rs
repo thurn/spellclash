@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use data::actions::game_action::{CombatAction, GameAction};
+use data::actions::prompt_action::PromptAction;
 use data::actions::user_action::UserAction;
 use data::card_states::card_state::{CardFacing, CardState, TappedState};
 use data::card_states::zones::ZoneQueries;
@@ -20,6 +21,8 @@ use data::core::primitives::{PlayerName, Source};
 use data::game_states::game_state::GameState;
 use data::printed_cards::printed_card::{Face, PrintedCardFace};
 use data::printed_cards::printed_card_id::PrintedCardId;
+use data::prompts::card_select_and_order_prompt::CardOrderLocation;
+use data::prompts::prompt::PromptType;
 use rules::legality::legal_actions;
 use rules::play_cards::play_card;
 use rules::queries::combat_queries;
@@ -48,10 +51,9 @@ pub fn card_view(builder: &ResponseBuilder, context: &CardViewContext) -> CardVi
         revealed: is_revealed.then(|| RevealedCardView {
             image: card_image(context.printed_card_id(), context.image_face()),
             face: card_face(&context.printed().face),
-            status: context
-                .query_or(None, |game, card| card_status(builder.act_as_player(game), game, card)),
-            click_action: context
-                .query_or(None, |game, card| card_action(builder.act_as_player(game), game, card)),
+            status: context.query_or(None, |game, card| card_status(builder, game, card)),
+            click_action: context.query_or(None, |game, card| card_action(builder, game, card)),
+            can_drag: context.query_or(false, |game, card| can_drag(builder, game, card)),
             face_b: context.printed().face_b.as_ref().map(card_face),
             layout: context.printed().layout,
         }),
@@ -82,11 +84,11 @@ fn card_face(printed: &PrintedCardFace) -> RevealedCardFace {
 }
 
 fn card_status(
-    player: PlayerName,
+    builder: &ResponseBuilder,
     game: &GameState,
     card: &CardState,
 ) -> Option<RevealedCardStatus> {
-    if play_card::can_play_card(game, player, Source::Game, card.id) {
+    if play_card::can_play_card(game, builder.act_as_player(game), Source::Game, card.id) {
         Some(RevealedCardStatus::CanPlay)
     } else {
         match combat_queries::role(game, card.entity_id) {
@@ -117,7 +119,17 @@ fn card_status(
     }
 }
 
-fn card_action(player: PlayerName, game: &GameState, card: &CardState) -> Option<UserAction> {
+fn card_action(
+    builder: &ResponseBuilder,
+    game: &GameState,
+    card: &CardState,
+) -> Option<UserAction> {
+    let player = builder.act_as_player(game);
+
+    if let Some(prompt) = builder.current_prompt() {
+        return None;
+    }
+
     if play_card::can_play_card(game, player, Source::Game, card.id) {
         Some(GameAction::ProposePlayingCard(card.id).into())
     } else if legal_actions::can_take_action(
@@ -153,6 +165,16 @@ fn card_action(player: PlayerName, game: &GameState, card: &CardState) -> Option
     } else {
         None
     }
+}
+
+fn can_drag(builder: &ResponseBuilder, game: &GameState, card: &CardState) -> bool {
+    if let Some(prompt) = &builder.response_state.display_state.prompt {
+        if let PromptType::SelectAndOrder(select_and_order) = &prompt.prompt_type {
+            return select_and_order.choices.contains(&card.id);
+        }
+    }
+
+    false
 }
 
 fn card_image(card_id: PrintedCardId, face: Face) -> String {

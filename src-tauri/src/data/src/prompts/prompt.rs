@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 use strum::EnumDiscriminants;
 
 use crate::core::primitives::{CardId, EntityId, PlayerName};
-use crate::prompts::card_selection_prompt::CardSelectionPrompt;
+use crate::prompts::card_select_and_order_prompt::{CardOrderLocation, CardSelectAndOrderPrompt};
 use crate::prompts::choice_prompt::ChoicePrompt;
 use crate::prompts::pick_number_prompt::PickNumberPrompt;
 use crate::prompts::play_cards_prompt::PlayCardsPrompt;
@@ -43,9 +45,8 @@ pub enum PromptType {
     /// any other game action_handlers can occur.
     EntityChoice(ChoicePrompt<EntityId>),
 
-    /// A prompt for a player to select one or more cards from a set of cards to
-    /// apply some effect to.
-    SelectCards(CardSelectionPrompt),
+    /// A prompt for a player to select and/or reorder cards
+    SelectAndOrder(CardSelectAndOrderPrompt),
 
     /// A prompt for a player to play one or more cards from a set of cards.
     PlayCards(PlayCardsPrompt),
@@ -63,7 +64,7 @@ impl PromptType {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum PromptResponse {
     EntityChoice(EntityId),
-    SelectCards(Vec<CardId>),
+    SelectAndOrder(HashMap<CardOrderLocation, Vec<CardId>>),
     PlayCards(Vec<CardId>),
     PickNumber(u32),
 }

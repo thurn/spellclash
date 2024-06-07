@@ -14,6 +14,7 @@
 
 use data::actions::user_action::UserAction;
 use data::core::numerics::LifeValue;
+use data::prompts::card_select_and_order_prompt::CardOrderLocation;
 use serde::Deserialize;
 use serde_with::serde_derive::Serialize;
 use specta::Type;
@@ -36,6 +37,12 @@ pub struct GameView {
 
     /// Describes the status of the game, e.g. which phase & step the game is in
     pub status_description: String,
+
+    /// Locations to which cards can currently be dragged.
+    ///
+    /// Cards can be reordered within a drag location to pick their relative
+    /// position.
+    pub card_drag_targets: Vec<CardOrderLocation>,
 
     /// High level visual game state
     pub state: GameViewState,

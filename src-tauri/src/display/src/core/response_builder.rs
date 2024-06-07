@@ -17,6 +17,7 @@ use std::sync::Arc;
 
 use data::core::primitives::PlayerName;
 use data::game_states::game_state::{DebugActAsPlayer, GameState};
+use data::prompts::prompt::Prompt;
 use rules::legality::legal_actions;
 
 use crate::commands::command::{Command, SceneView};
@@ -97,6 +98,11 @@ impl<'a> ResponseBuilder<'a> {
         } else {
             DisplayPlayer::Opponent
         }
+    }
+
+    /// Returns the current [DisplayState] for this response.
+    pub fn current_prompt(&self) -> Option<&Prompt> {
+        self.response_state.display_state.prompt.as_ref()
     }
 
     /// Returns the [PlayerName] to use for top-level display & positioning

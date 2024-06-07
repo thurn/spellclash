@@ -20,7 +20,7 @@ use tokio::sync::{mpsc, oneshot};
 use crate::actions::game_action::GameAction;
 use crate::core::primitives::{CardId, EntityId, PlayerName};
 use crate::game_states::game_state::GameState;
-use crate::prompts::card_selection_prompt::CardSelectionPrompt;
+use crate::prompts::card_select_and_order_prompt::CardSelectAndOrderPrompt;
 use crate::prompts::choice_prompt::{Choice, ChoicePrompt};
 use crate::prompts::pick_number_prompt::PickNumberPrompt;
 use crate::prompts::prompt::{Prompt, PromptResponse, PromptType};

@@ -13,9 +13,12 @@
 // limitations under the License.
 
 use serde::{Deserialize, Serialize};
+use specta::Type;
 
 use crate::actions::game_action::GameAction;
 use crate::actions::user_action::UserAction;
+use crate::core::primitives::CardId;
+use crate::prompts::card_select_and_order_prompt::CardOrderLocation;
 
 /// Action to respond to a prompt within an ongoing game
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
@@ -23,14 +26,12 @@ pub enum PromptAction {
     /// Pick an integer for a number selection prompt
     PickNumber(u32),
 
-    /// Move a card from the provided 'source' index in a card selection prompt
-    /// to the 'target' index in the selected card list, or to the end of the
-    /// selected card list if no target is provided.
-    SelectCard { source: usize, target: Option<usize> },
-
-    /// Moves one of the selected cards in a card selection prompt from the
-    /// 'source' index in the selected card list to the 'target' index.
-    SetSelectionOrder { source: usize, target: usize },
+    /// Sets the order of a card in a card select & order prompt.
+    ///
+    /// The provided index is interpreted relative to other cards already in
+    /// this location. The card currently occupying this location will be pushed
+    /// towards the end of the list (right).
+    SelectAndSetOrder(CardOrderLocation, CardId, usize),
 
     /// Confirm selected card choices on a card selection prompt
     SubmitCardSelection,

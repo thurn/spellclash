@@ -16,7 +16,19 @@ import { ReactNode } from 'react';
 import { CardView } from '../generated_types';
 import { Card } from './Card';
 
-export function LinearCardDisplay({ name, cards }: { name: string; cards: CardView[] }): ReactNode {
+export function LinearCardDisplay({
+  name,
+  cards,
+  omitIfEmpty,
+}: {
+  name: string;
+  cards: CardView[];
+  omitIfEmpty?: boolean;
+}): ReactNode {
+  if (cards.length === 0 && omitIfEmpty) {
+    return null;
+  }
+
   const cardViews = cards.map((card, i) => <Card card={card} key={i} />);
   return (
     <div
