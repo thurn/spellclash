@@ -24,8 +24,8 @@ use data::game_states::combat_state::CombatState;
 use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
 use data::player_states::player_state::PlayerQueries;
-use data::prompts::card_select_and_order_prompt::CardOrderLocation;
 use data::prompts::prompt::{Prompt, PromptType};
+use data::prompts::select_order_prompt::CardOrderLocation;
 use log::info;
 use rules::legality::legal_actions;
 
@@ -81,7 +81,7 @@ fn card_drag_targets(
 ) -> Vec<CardOrderLocation> {
     if let Some(prompt) = &response_builder.response_state.display_state.prompt {
         if let PromptType::SelectOrder(select_and_order) = &prompt.prompt_type {
-            return select_and_order.locations.iter().collect();
+            return select_and_order.cards.keys().copied().collect();
         }
     }
     vec![]

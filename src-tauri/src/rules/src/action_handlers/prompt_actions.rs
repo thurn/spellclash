@@ -14,9 +14,10 @@
 
 use data::actions::game_action::{CombatAction, GameAction};
 use data::actions::prompt_action::PromptAction;
-use data::core::primitives::PlayerName;
+use data::core::primitives::{CardId, PlayerName};
 use data::game_states::game_state::GameState;
 use data::prompts::prompt::{Prompt, PromptResponse, PromptType};
+use data::prompts::select_order_prompt::CardOrderLocation;
 use tracing::instrument;
 
 use crate::game_creation::initialize_game;
@@ -34,9 +35,32 @@ use crate::game_creation::initialize_game;
 ///    the provided [Prompt] will be ignored in this case.
 #[instrument(name = "prompt_actions_execute", level = "debug")]
 pub fn execute(prompt: &mut Prompt, action: PromptAction) -> Option<PromptResponse> {
-    if let PromptAction::PickNumber(n) = action {
-        Some(PromptResponse::PickNumber(n))
-    } else {
-        None
+    match action {
+        PromptAction::PickNumber(n) => Some(PromptResponse::PickNumber(n)),
+        PromptAction::SelectAndSetOrder(card_id, location, index) => {
+            select_and_set_order(prompt, card_id, location, index);
+            None
+        }
+        PromptAction::SubmitCardSelection => None,
     }
+}
+
+fn select_and_set_order(
+    prompt: &mut Prompt,
+    card_id: CardId,
+    location: CardOrderLocation,
+    index: usize,
+) {
+    let PromptType::SelectOrder(prompt_data) = &mut prompt.prompt_type else {
+        panic!("Expected SelectOrder prompt type");
+    };
+
+    // Remove previous position
+    for order_location in enum_iterator::all::<CardOrderLocation>() {
+        if let Some(map) = prompt_data.cards.get_mut(&order_location) {
+            map.retain(|&id| id != card_id);
+        }
+    }
+
+    prompt_data.cards.entry(location).or_default().insert(index, card_id);
 }

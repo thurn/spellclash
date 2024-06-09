@@ -21,7 +21,7 @@ use all_cards::card_list;
 use clap::Parser;
 use data::actions::user_action::UserAction;
 use data::core::primitives::UserId;
-use data::prompts::card_select_and_order_prompt::CardOrderLocation;
+use data::prompts::select_order_prompt::CardOrderLocation;
 use database::sqlite_database::SqliteDatabase;
 use display::commands::field_state::{FieldKey, FieldValue};
 use display::core::card_view::ClientCardId;

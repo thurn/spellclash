@@ -18,7 +18,7 @@ use specta::Type;
 use crate::actions::game_action::GameAction;
 use crate::actions::user_action::UserAction;
 use crate::core::primitives::CardId;
-use crate::prompts::card_select_and_order_prompt::CardOrderLocation;
+use crate::prompts::select_order_prompt::CardOrderLocation;
 
 /// Action to respond to a prompt within an ongoing game
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
@@ -31,7 +31,7 @@ pub enum PromptAction {
     /// The provided index is interpreted relative to other cards already in
     /// this location. The card currently occupying this location will be pushed
     /// towards the end of the list (right).
-    SelectAndSetOrder(CardOrderLocation, CardId, usize),
+    SelectAndSetOrder(CardId, CardOrderLocation, usize),
 
     /// Confirm selected card choices on a card selection prompt
     SubmitCardSelection,

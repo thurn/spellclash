@@ -18,15 +18,14 @@ use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, EntityId, PlayerName};
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
-use data::prompts::card_select_and_order_prompt::{
-    CardOrderLocation, CardSelectOrderPrompt, Quantity,
-};
 use data::prompts::choice_prompt::{Choice, ChoicePrompt};
 use data::prompts::game_update::GameUpdate;
 use data::prompts::pick_number_prompt::PickNumberPrompt;
 use data::prompts::prompt::{Prompt, PromptResponse, PromptType};
+use data::prompts::select_order_prompt::{CardOrderLocation, Quantity, SelectOrderPrompt};
 use data::text_strings::Text;
 use enumset::EnumSet;
+use maplit::hashmap;
 use tokio::sync::oneshot;
 use tracing::info;
 
@@ -60,12 +59,12 @@ pub fn choose_entity(
 }
 
 /// Prompt for the [PlayerName] player to select and reorder cards based on a
-/// [CardSelectOrderPrompt].
+/// [SelectOrderPrompt].
 pub fn select_order(
     game: &mut GameState,
     player: PlayerName,
     description: Text,
-    prompt: CardSelectOrderPrompt,
+    prompt: SelectOrderPrompt,
 ) -> HashMap<CardOrderLocation, Vec<CardId>> {
     let PromptResponse::SelectOrder(ids) = send(game, Prompt {
         player,
@@ -103,10 +102,11 @@ pub fn hand_to_top_of_library(
     scope: Scope,
     quantity: Quantity,
 ) -> Vec<CardId> {
-    select_order(game, scope.controller, Text::HandToTopOfLibraryPrompt, CardSelectOrderPrompt {
-        choices: game.hand(scope.controller).iter().copied().collect(),
-        locations: EnumSet::only(CardOrderLocation::TopOfLibrary),
-        ordered: HashMap::new(),
+    select_order(game, scope.controller, Text::HandToTopOfLibraryPrompt, SelectOrderPrompt {
+        cards: hashmap! {
+            CardOrderLocation::Unordered => game.hand(scope.controller).iter().copied().collect(),
+            CardOrderLocation::TopOfLibrary => vec![]
+        },
         quantity,
     })
     .remove(&CardOrderLocation::TopOfLibrary)

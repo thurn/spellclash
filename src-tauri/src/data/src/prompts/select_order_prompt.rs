@@ -25,16 +25,14 @@ use crate::core::primitives::CardId;
 #[derive(Debug, Hash, EnumSetType, Serialize, Deserialize, Type, Sequence)]
 #[serde(rename_all = "camelCase")]
 pub enum CardOrderLocation {
+    /// Cards which have not yet been ordered
+    Unordered,
     TopOfLibrary,
     BottomOfLibrary,
     Graveyard,
 }
 
 /// Selection restrictions.
-///
-/// The counts used here are determined across all [CardOrderLocation]s. For
-/// example a 'Count' constraint will count the number of cards selected in all
-/// valid locations.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Quantity {
     /// No restrictions on number of cards selected.
@@ -48,36 +46,35 @@ pub enum Quantity {
 /// A prompt for a player to select one or more cards from a set of cards to
 /// reorder, used to implement scry/surveil type effects.
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct CardSelectOrderPrompt {
-    /// All cards which should be displayed in the browser.
-    pub choices: Vec<CardId>,
-
-    /// Locations to which the player can move cards and pick their order.
+pub struct SelectOrderPrompt {
+    /// Cards to order. If a location is valid for this prompt an entry *must*
+    /// be created in this map, even if it is empty.
     ///
-    /// For each location specified here, the player will be able to move cards
-    /// to these locations and pick their relative order.
-    pub locations: EnumSet<CardOrderLocation>,
-
-    /// Cards which have been ordered.
-    ///
-    /// This may initially be empty (if the player must select some cards to
-    /// order from a list of options, e.g. brainstorm) or may initially be
-    /// populated with choices (if the cards already exist in some target zone,
-    /// e.g. scry). Each vector indicates the order chosen for elements in
-    /// that selection set.
-    ///
-    /// Only [CardOrderLocation]s which are specified in [Self::locations]
-    /// are allowed as keys here.
-    pub ordered: HashMap<CardOrderLocation, Vec<CardId>>,
+    /// This may initially have cards in any number of locations, including the
+    /// 'unselected' location if cards need to be explicitly chosen to order.
+    /// Each vector indicates the order chosen for elements
+    /// in that selection location.
+    pub cards: HashMap<CardOrderLocation, Vec<CardId>>,
 
     /// Validation for the number of cards selected.
+    ///
+    /// The counts used here are determined across all [CardOrderLocation]s
+    /// *except* the 'Unordered' location. For example a 'Count' constraint
+    /// will count the number of cards selected in all target locations but will
+    /// not count unordered cards.
     pub quantity: Quantity,
 }
 
-impl CardSelectOrderPrompt {
+impl SelectOrderPrompt {
     /// Returns the list of selected cards in a given selection location.
     pub fn in_location(&self, selection_type: CardOrderLocation) -> &Vec<CardId> {
         static EMPTY: Vec<CardId> = vec![];
-        self.ordered.get(&selection_type).unwrap_or(&EMPTY)
+        self.cards.get(&selection_type).unwrap_or(&EMPTY)
+    }
+
+    /// Returns true if the provided [CardId] is present anywhere among the
+    /// cards for this prompt.
+    pub fn contains_card(&self, card_id: CardId) -> bool {
+        self.cards.values().any(|cards| cards.contains(&card_id))
     }
 }

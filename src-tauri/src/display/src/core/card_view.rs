@@ -17,7 +17,7 @@ use data::card_states::card_state::{CardFacing, TappedState};
 use data::core::numerics::Damage;
 use data::core::primitives::{CardId, HasCardId};
 use data::printed_cards::layout::{CardLayout, FaceLayout};
-use data::prompts::card_select_and_order_prompt::CardOrderLocation;
+use data::prompts::select_order_prompt::CardOrderLocation;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
@@ -79,6 +79,10 @@ pub struct ClientCardId(pub String);
 impl ClientCardId {
     pub fn new(card_id: CardId) -> Self {
         Self(card_id.to_ffi_value().to_string())
+    }
+
+    pub fn to_card_id(&self) -> CardId {
+        CardId::from_ffi_value(self.0.parse().expect("Invalid client card ID"))
     }
 }
 

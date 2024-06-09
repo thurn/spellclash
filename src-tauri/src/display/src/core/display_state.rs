@@ -15,6 +15,7 @@
 use std::collections::HashMap;
 
 use data::actions::user_action::UserAction;
+use data::game_states::game_state::GameState;
 use data::prompts::prompt::{Prompt, PromptResponse};
 use serde::{Deserialize, Serialize};
 use specta::{DataType, Generics, Type, TypeMap};
@@ -38,6 +39,8 @@ pub struct DisplayState {
     /// A channel on which to send a [PromptResponse] to select an option to
     /// respond to the prompt in [Self::prompt].
     pub prompt_channel: Option<oneshot::Sender<PromptResponse>>,
+
+    pub game_snapshot: Option<GameState>,
 }
 
 impl Type for DisplayState {

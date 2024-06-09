@@ -21,8 +21,8 @@ use data::core::primitives::{PlayerName, Source};
 use data::game_states::game_state::GameState;
 use data::printed_cards::printed_card::{Face, PrintedCardFace};
 use data::printed_cards::printed_card_id::PrintedCardId;
-use data::prompts::card_select_and_order_prompt::CardOrderLocation;
 use data::prompts::prompt::PromptType;
+use data::prompts::select_order_prompt::CardOrderLocation;
 use rules::legality::legal_actions;
 use rules::play_cards::play_card;
 use rules::queries::combat_queries;
@@ -170,7 +170,7 @@ fn card_action(
 fn can_drag(builder: &ResponseBuilder, game: &GameState, card: &CardState) -> bool {
     if let Some(prompt) = &builder.response_state.display_state.prompt {
         if let PromptType::SelectOrder(select_and_order) = &prompt.prompt_type {
-            return select_and_order.choices.contains(&card.id);
+            return select_and_order.contains_card(card.id);
         }
     }
 

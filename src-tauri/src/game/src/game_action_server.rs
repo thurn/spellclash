@@ -19,14 +19,16 @@ use ai::core::ai_action;
 use data::actions::game_action::{CombatAction, GameAction};
 use data::actions::prompt_action::PromptAction;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{GameId, PlayerName};
+use data::core::primitives::{CardId, GameId, PlayerName};
 use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
 use data::player_states::player_state::PlayerQueries;
+use data::prompts::select_order_prompt::CardOrderLocation;
 use data::users::user_state::UserState;
 use database::sqlite_database::SqliteDatabase;
 use display::commands::field_state::{FieldKey, FieldValue};
 use display::commands::scene_identifier::SceneIdentifier;
+use display::core::card_view::ClientCardId;
 use display::core::display_state::DisplayState;
 use display::rendering::render;
 use enumset::{enum_set, EnumSet};
@@ -91,6 +93,7 @@ pub async fn handle_game_action(database: SqliteDatabase, client: &mut Client, a
         display_state.prompt = update.prompt;
         display_state.prompt_channel = update.response_channel;
         send_updates(&update.game, client, &display_state);
+        display_state.game_snapshot = Some(update.game);
     }
 }
 
@@ -115,6 +118,24 @@ pub fn handle_update_field(
     display_state.fields.insert(key, value);
     let mut game = requests::fetch_game(database.clone(), client.data.game_id(), None);
     send_updates(&game, client, &display_state);
+}
+
+pub fn handle_drag_card(
+    database: SqliteDatabase,
+    client: &mut Client,
+    card_id: CardId,
+    location: CardOrderLocation,
+    index: u32,
+) {
+    info!(?card_id, ?location, "handle_drag_card");
+    let mut display_state = get_display_state();
+    let prompt = display_state.prompt.as_mut().expect("No active prompt");
+    prompt_actions::execute(
+        prompt,
+        PromptAction::SelectAndSetOrder(card_id, location, index as usize),
+    );
+    let game = display_state.game_snapshot.as_ref().expect("No game snapshot saved");
+    send_updates(game, client, &display_state);
 }
 
 pub fn handle_game_action_internal(

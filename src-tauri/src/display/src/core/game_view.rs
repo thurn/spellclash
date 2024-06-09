@@ -14,7 +14,7 @@
 
 use data::actions::user_action::UserAction;
 use data::core::numerics::LifeValue;
-use data::prompts::card_select_and_order_prompt::CardOrderLocation;
+use data::prompts::select_order_prompt::CardOrderLocation;
 use serde::Deserialize;
 use serde_with::serde_derive::Serialize;
 use specta::Type;

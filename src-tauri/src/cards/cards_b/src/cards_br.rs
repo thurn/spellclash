@@ -15,7 +15,7 @@
 use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::prompts::card_select_and_order_prompt::Quantity;
+use data::prompts::select_order_prompt::Quantity;
 use rules::mutations::library;
 use rules::prompt_handling::prompts;
 

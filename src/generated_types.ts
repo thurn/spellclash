@@ -60,7 +60,11 @@ export type CardLayout =
 /**
  * Possible locations in which cards can be ordered.
  */
-export type CardOrderLocation = 'topOfLibrary' | 'bottomOfLibrary' | 'graveyard';
+export type CardOrderLocation =
+  /**
+   * Cards which have not yet been ordered
+   */
+  'unordered' | 'topOfLibrary' | 'bottomOfLibrary' | 'graveyard';
 /**
  * Represents the visual state of a card or ability in a game
  */
@@ -406,7 +410,7 @@ export type Position =
   /**
    * Object is being displayed in a location for picking its relative order
    */
-  | { cardSelectionLocation: CardOrderLocation }
+  | { cardOrderLocation: CardOrderLocation }
   /**
    * Object has just been revealed to this viewer
    */

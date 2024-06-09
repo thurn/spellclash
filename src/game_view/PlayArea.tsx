@@ -107,9 +107,17 @@ export function PlayArea({ view }: Props): ReactNode {
               omitIfEmpty={true}
             />
             <LinearCardDisplay
+              key="unordered"
+              name="Unordered"
+              positionKey={keyForPosition({ cardOrderLocation: 'unordered' })}
+              positionMap={map}
+              omitIfEmpty={true}
+              dropTarget={view.cardDragTargets.includes('unordered') ? 'unordered' : undefined}
+            />
+            <LinearCardDisplay
               key="topOfLibrary"
               name="Top Of Library"
-              positionKey={keyForPosition({ cardSelectionLocation: 'topOfLibrary' })}
+              positionKey={keyForPosition({ cardOrderLocation: 'topOfLibrary' })}
               positionMap={map}
               omitIfEmpty={true}
               dropTarget={

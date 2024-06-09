@@ -18,10 +18,10 @@ use serde::{Deserialize, Serialize};
 use strum::EnumDiscriminants;
 
 use crate::core::primitives::{CardId, EntityId, PlayerName};
-use crate::prompts::card_select_and_order_prompt::{CardOrderLocation, CardSelectOrderPrompt};
 use crate::prompts::choice_prompt::ChoicePrompt;
 use crate::prompts::pick_number_prompt::PickNumberPrompt;
 use crate::prompts::play_cards_prompt::PlayCardsPrompt;
+use crate::prompts::select_order_prompt::{CardOrderLocation, SelectOrderPrompt};
 use crate::text_strings::Text;
 
 /// Data for showing a prompt to a player.
@@ -46,7 +46,7 @@ pub enum PromptType {
     EntityChoice(ChoicePrompt<EntityId>),
 
     /// A prompt for a player to select and/or reorder cards
-    SelectOrder(CardSelectOrderPrompt),
+    SelectOrder(SelectOrderPrompt),
 
     /// A prompt for a player to play one or more cards from a set of cards.
     PlayCards(PlayCardsPrompt),

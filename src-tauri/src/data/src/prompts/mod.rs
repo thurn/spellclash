@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod card_select_and_order_prompt;
 pub mod choice_prompt;
 pub mod game_update;
 pub mod pick_number_prompt;
 pub mod play_cards_prompt;
 pub mod prompt;
+pub mod select_order_prompt;
