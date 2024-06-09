@@ -19,7 +19,7 @@ use data::core::primitives::{CardId, EntityId, PlayerName};
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use data::prompts::card_select_and_order_prompt::{
-    CardOrderLocation, CardSelectAndOrderPrompt, Quantity,
+    CardOrderLocation, CardSelectOrderPrompt, Quantity,
 };
 use data::prompts::choice_prompt::{Choice, ChoicePrompt};
 use data::prompts::game_update::GameUpdate;
@@ -60,17 +60,17 @@ pub fn choose_entity(
 }
 
 /// Prompt for the [PlayerName] player to select and reorder cards based on a
-/// [CardSelectAndOrderPrompt].
-pub fn select_and_order_cards(
+/// [CardSelectOrderPrompt].
+pub fn select_order(
     game: &mut GameState,
     player: PlayerName,
     description: Text,
-    prompt: CardSelectAndOrderPrompt,
+    prompt: CardSelectOrderPrompt,
 ) -> HashMap<CardOrderLocation, Vec<CardId>> {
-    let PromptResponse::SelectAndOrder(ids) = send(game, Prompt {
+    let PromptResponse::SelectOrder(ids) = send(game, Prompt {
         player,
         label: Some(description),
-        prompt_type: PromptType::SelectAndOrder(prompt),
+        prompt_type: PromptType::SelectOrder(prompt),
     }) else {
         panic!("Unexpected prompt response type!");
     };
@@ -103,17 +103,12 @@ pub fn hand_to_top_of_library(
     scope: Scope,
     quantity: Quantity,
 ) -> Vec<CardId> {
-    select_and_order_cards(
-        game,
-        scope.controller,
-        Text::HandToTopOfLibraryPrompt,
-        CardSelectAndOrderPrompt {
-            choices: game.hand(scope.controller).iter().copied().collect(),
-            locations: EnumSet::only(CardOrderLocation::TopOfLibrary),
-            ordered: HashMap::new(),
-            quantity,
-        },
-    )
+    select_order(game, scope.controller, Text::HandToTopOfLibraryPrompt, CardSelectOrderPrompt {
+        choices: game.hand(scope.controller).iter().copied().collect(),
+        locations: EnumSet::only(CardOrderLocation::TopOfLibrary),
+        ordered: HashMap::new(),
+        quantity,
+    })
     .remove(&CardOrderLocation::TopOfLibrary)
     .unwrap_or_default()
 }

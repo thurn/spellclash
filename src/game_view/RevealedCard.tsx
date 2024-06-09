@@ -27,15 +27,29 @@
 // limitations under the License.
 
 import { ReactNode, useContext } from 'react';
-import { RevealedCardView } from '../generated_types';
+import { ClientCardId, RevealedCardView } from '../generated_types';
 import { GlobalContext } from '../App';
 import { handleAction } from '../server';
-import { CardPreviewImage } from './PlayArea';
+import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 
-export function RevealedCard({ revealed }: { revealed: RevealedCardView }): ReactNode {
+export interface Props {
+  readonly cardId: ClientCardId;
+  readonly revealed: RevealedCardView;
+}
+
+export function RevealedCard({ cardId, revealed }: Props): ReactNode {
   const clientData = useContext(GlobalContext);
-  const { setPreviewImage } = useContext(CardPreviewImage);
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: cardId,
+    data: { cardId },
+  });
 
+  const draggableStyle = transform
+    ? {
+        transform: CSS.Translate.toString(transform),
+      }
+    : undefined;
   let borderClass = 'border-2 border-black';
   let label = '';
   if (revealed.status === 'canPlay') {
@@ -50,29 +64,37 @@ export function RevealedCard({ revealed }: { revealed: RevealedCardView }): Reac
     label = revealed.status.blocking;
   }
 
-  return (
-    <div
-      className={borderClass}
-      onClick={() => handleAction(clientData, revealed.clickAction)}
-      onMouseEnter={() => {
-        if (setPreviewImage != null) {
-          setPreviewImage(revealed.image);
-        }
-      }}
-      onMouseLeave={() => {
-        if (setPreviewImage != null) {
-          setPreviewImage('');
-        }
-      }}
-    >
-      <img
-        src={revealed.image}
-        style={{
-          width: '100%',
-          height: '100%',
-        }}
-      />
-      <span className="absolute bg-slate-900 text-white text-xs">{label}</span>
-    </div>
-  );
+  if (revealed.canDrag) {
+    return (
+      <div
+        className={borderClass}
+        style={draggableStyle}
+        ref={setNodeRef}
+        {...listeners}
+        {...attributes}
+      >
+        <img
+          src={revealed.image}
+          style={{
+            width: '100%',
+            height: '100%',
+          }}
+        />
+        <span className="absolute bg-slate-900 text-white text-xs">{label}</span>
+      </div>
+    );
+  } else {
+    return (
+      <div className={borderClass} onClick={() => handleAction(clientData, revealed.clickAction)}>
+        <img
+          src={revealed.image}
+          style={{
+            width: '100%',
+            height: '100%',
+          }}
+        />
+        <span className="absolute bg-slate-900 text-white text-xs">{label}</span>
+      </div>
+    );
+  }
 }

@@ -17,9 +17,11 @@ use std::sync::Arc;
 
 use data::actions::user_action::UserAction;
 use data::core::primitives::UserId;
+use data::prompts::card_select_and_order_prompt::CardOrderLocation;
 use data::users::user_state::{UserActivity, UserState};
 use database::sqlite_database::SqliteDatabase;
 use display::commands::field_state::{FieldKey, FieldValue};
+use display::core::card_view::ClientCardId;
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::{debug_span, info, Instrument};
 
@@ -85,6 +87,16 @@ pub fn handle_update_field(
     value: FieldValue,
 ) {
     game_action_server::handle_update_field(database, client, key, value);
+}
+
+pub fn handle_drag_card(
+    database: SqliteDatabase,
+    client: &mut Client,
+    card_id: ClientCardId,
+    location: CardOrderLocation,
+    index: u32,
+) {
+    info!(?card_id, ?location, "handle_drag_card")
 }
 
 fn fetch_or_create_user(database: SqliteDatabase, user_id: UserId) -> UserState {

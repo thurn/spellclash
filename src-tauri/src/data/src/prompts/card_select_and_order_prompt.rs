@@ -48,7 +48,7 @@ pub enum Quantity {
 /// A prompt for a player to select one or more cards from a set of cards to
 /// reorder, used to implement scry/surveil type effects.
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct CardSelectAndOrderPrompt {
+pub struct CardSelectOrderPrompt {
     /// All cards which should be displayed in the browser.
     pub choices: Vec<CardId>,
 
@@ -74,7 +74,7 @@ pub struct CardSelectAndOrderPrompt {
     pub quantity: Quantity,
 }
 
-impl CardSelectAndOrderPrompt {
+impl CardSelectOrderPrompt {
     /// Returns the list of selected cards in a given selection location.
     pub fn in_location(&self, selection_type: CardOrderLocation) -> &Vec<CardId> {
         static EMPTY: Vec<CardId> = vec![];

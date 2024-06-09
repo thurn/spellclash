@@ -13,26 +13,53 @@
 // limitations under the License.
 
 import { ReactNode } from 'react';
-import { CardView } from '../generated_types';
+import { CardOrderLocation, CardView } from '../generated_types';
 import { Card } from './Card';
+import { useDroppable } from '@dnd-kit/core';
+import { PositionKey, PositionMap } from './PlayArea';
+
+export interface Props {
+  readonly name: string;
+  readonly positionKey: PositionKey;
+  readonly positionMap: PositionMap;
+  readonly dropTarget?: CardOrderLocation;
+  readonly omitIfEmpty?: boolean;
+}
 
 export function LinearCardDisplay({
   name,
-  cards,
-  omitIfEmpty,
-}: {
-  name: string;
-  cards: CardView[];
-  omitIfEmpty?: boolean;
-}): ReactNode {
-  if (cards.length === 0 && omitIfEmpty) {
+  positionKey,
+  positionMap,
+  dropTarget,
+  omitIfEmpty = false,
+}: Props): ReactNode {
+  const { isOver, setNodeRef } = useDroppable({
+    id: positionKey,
+    data: { dropTarget },
+  });
+  const cards = getPosition(positionMap, positionKey);
+  const isDropTarget = dropTarget != null;
+  const ref = isDropTarget ? setNodeRef : undefined;
+
+  let background;
+  if (isOver && isDropTarget) {
+    background = 'bg-green-300';
+  } else if (isDropTarget) {
+    background = 'bg-green-600';
+  } else {
+    background = 'bg-slate-300';
+  }
+
+  if (cards.length === 0 && omitIfEmpty && !isDropTarget) {
     return null;
   }
 
   const cardViews = cards.map((card, i) => <Card card={card} key={i} />);
+  const className = `${background} m-1 rounded flex flex-row items-center`;
   return (
     <div
-      className="bg-slate-300 m-1 rounded flex flex-row items-center"
+      ref={ref}
+      className={className}
       style={{
         height: '13.5vh',
       }}
@@ -41,4 +68,12 @@ export function LinearCardDisplay({
       <div className="w-32 text-center text-sm">{name}</div>
     </div>
   );
+}
+
+function getPosition(map: Map<PositionKey, CardView[]>, position: PositionKey): CardView[] {
+  if (map.has(position)) {
+    return map.get(position)!;
+  } else {
+    return [];
+  }
 }

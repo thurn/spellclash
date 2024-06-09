@@ -80,7 +80,7 @@ fn card_drag_targets(
     game: &GameState,
 ) -> Vec<CardOrderLocation> {
     if let Some(prompt) = &response_builder.response_state.display_state.prompt {
-        if let PromptType::SelectAndOrder(select_and_order) = &prompt.prompt_type {
+        if let PromptType::SelectOrder(select_and_order) = &prompt.prompt_type {
             return select_and_order.locations.iter().collect();
         }
     }
@@ -184,7 +184,7 @@ fn bottom_game_controls(
 fn prompt_view(state: &DisplayState, prompt: &Prompt) -> Vec<GameControlView> {
     match &prompt.prompt_type {
         PromptType::EntityChoice(_) => {}
-        PromptType::SelectAndOrder(_) => {}
+        PromptType::SelectOrder(_) => {}
         PromptType::PlayCards(_) => {}
         PromptType::PickNumber(pick_number) => {
             let input =

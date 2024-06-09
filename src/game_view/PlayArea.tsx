@@ -13,12 +13,17 @@
 // limitations under the License.
 
 import { Dispatch, ReactNode, SetStateAction, createContext, useState } from 'react';
-import { CardView, GameView, Position } from '../generated_types';
+import { CardOrderLocation, CardView, ClientCardId, GameView, Position } from '../generated_types';
 import { LinearCardDisplay } from './LinearCardDisplay';
 import { StackCardDisplay } from './StackCardDisplay';
 import { Popover, PopoverContent, PopoverTrigger } from '@nextui-org/react';
+import { DndContext } from '@dnd-kit/core';
+import { useContext } from 'react';
+import { GlobalContext } from '../App';
+import { dragCard } from '../server';
 
 export type PositionKey = string;
+export type PositionMap = Map<PositionKey, CardView[]>;
 
 export interface CardPreviewImageContext {
   readonly previewImage: string;
@@ -28,7 +33,12 @@ export const CardPreviewImage: React.Context<CardPreviewImageContext> = createCo
   previewImage: '',
 });
 
-export function PlayArea({ view }: { view: GameView }): ReactNode {
+export interface Props {
+  readonly view: GameView;
+}
+
+export function PlayArea({ view }: Props): ReactNode {
+  const clientData = useContext(GlobalContext);
   const map = cardPositions(view);
   const previewHeight = 40;
   const [previewImage, setPreviewImage] = useState('');
@@ -51,69 +61,92 @@ export function PlayArea({ view }: { view: GameView }): ReactNode {
     <CardPreviewImage.Provider
       value={{ previewImage: previewImage, setPreviewImage: setPreviewImage }}
     >
-      <div className="flex flex-row">
-        {cardPreview}
-        <div className="w-11/12">
-          <LinearCardDisplay
-            key="oh"
-            name="Opponent Hand"
-            cards={getPosition(map, keyForPosition({ hand: 'opponent' }))}
-          />
-          <LinearCardDisplay
-            key="om"
-            name="Opponent Mana"
-            cards={getPosition(map, keyForPosition({ battlefield: ['opponent', 'mana'] }))}
-          />
-          <LinearCardDisplay
-            key="op"
-            name="Opponent Permanents"
-            cards={getPosition(map, keyForPosition({ battlefield: ['opponent', 'permanents'] }))}
-          />
-          <LinearCardDisplay
-            key="st"
-            name="Stack"
-            cards={getPosition(map, keyForPosition('stack'))}
-            omitIfEmpty={true}
-          />
-          <LinearCardDisplay
-            key="st"
-            name="Selection"
-            cards={getPosition(map, keyForPosition('cardSelectionChoices'))}
-            omitIfEmpty={true}
-          />
-          <LinearCardDisplay
-            key="st"
-            name="Top Of Library"
-            cards={getPosition(map, keyForPosition({ cardSelectionLocation: 'topOfLibrary' }))}
-            omitIfEmpty={!view.cardDragTargets.includes('topOfLibrary')}
-          />
-          <LinearCardDisplay
-            key="vp"
-            name="Viewer Permanents"
-            cards={getPosition(map, keyForPosition({ battlefield: ['viewer', 'permanents'] }))}
-          />
-          <LinearCardDisplay
-            key="vm"
-            name="Viewer Mana"
-            cards={getPosition(map, keyForPosition({ battlefield: ['viewer', 'mana'] }))}
-          />
-          <LinearCardDisplay
-            key="vh"
-            name="Viewer Hand"
-            cards={getPosition(map, keyForPosition({ hand: 'viewer' }))}
-          />
+      <DndContext
+        onDragEnd={(e) => {
+          const cardId = e.active.data.current?.cardId as ClientCardId;
+          const location = e.over?.data?.current?.dropTarget as CardOrderLocation;
+          console.log('onDragEnd for card ' + cardId + ' to ' + location);
+          if (cardId != null && location != null) {
+            dragCard(clientData, cardId, location, 0);
+          }
+        }}
+      >
+        <div className="flex flex-row">
+          {cardPreview}
+          <div className="w-11/12">
+            <LinearCardDisplay
+              key="oh"
+              name="Opponent Hand"
+              positionKey={keyForPosition({ hand: 'opponent' })}
+              positionMap={map}
+            />
+            <LinearCardDisplay
+              key="om"
+              name="Opponent Mana"
+              positionKey={keyForPosition({ battlefield: ['opponent', 'mana'] })}
+              positionMap={map}
+            />
+            <LinearCardDisplay
+              key="op"
+              name="Opponent Permanents"
+              positionKey={keyForPosition({ battlefield: ['opponent', 'permanents'] })}
+              positionMap={map}
+            />
+            <LinearCardDisplay
+              key="stack"
+              name="Stack"
+              positionKey={keyForPosition('stack')}
+              positionMap={map}
+              omitIfEmpty={true}
+            />
+            <LinearCardDisplay
+              key="selection"
+              name="Selection"
+              positionKey={keyForPosition('cardSelectionChoices')}
+              positionMap={map}
+              omitIfEmpty={true}
+            />
+            <LinearCardDisplay
+              key="topOfLibrary"
+              name="Top Of Library"
+              positionKey={keyForPosition({ cardSelectionLocation: 'topOfLibrary' })}
+              positionMap={map}
+              omitIfEmpty={true}
+              dropTarget={
+                view.cardDragTargets.includes('topOfLibrary') ? 'topOfLibrary' : undefined
+              }
+            />
+            <LinearCardDisplay
+              key="vp"
+              name="Viewer Permanents"
+              positionKey={keyForPosition({ battlefield: ['viewer', 'permanents'] })}
+              positionMap={map}
+            />
+            <LinearCardDisplay
+              key="vm"
+              name="Viewer Mana"
+              positionKey={keyForPosition({ battlefield: ['viewer', 'mana'] })}
+              positionMap={map}
+            />
+            <LinearCardDisplay
+              key="vh"
+              name="Viewer Hand"
+              positionKey={keyForPosition({ hand: 'viewer' })}
+              positionMap={map}
+            />
+          </div>
+          <div className="w-1/12 flex flex-col justify-between">
+            <StackCardDisplay
+              key="og"
+              cards={getPosition(map, keyForPosition({ discardPile: 'opponent' }))}
+            />
+            <StackCardDisplay
+              key="vg"
+              cards={getPosition(map, keyForPosition({ discardPile: 'viewer' }))}
+            />
+          </div>
         </div>
-        <div className="w-1/12 flex flex-col justify-between">
-          <StackCardDisplay
-            key="og"
-            cards={getPosition(map, keyForPosition({ discardPile: 'opponent' }))}
-          />
-          <StackCardDisplay
-            key="vg"
-            cards={getPosition(map, keyForPosition({ discardPile: 'viewer' }))}
-          />
-        </div>
-      </div>
+      </DndContext>
     </CardPreviewImage.Provider>
   );
 }

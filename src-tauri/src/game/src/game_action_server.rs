@@ -70,7 +70,10 @@ pub fn connect(
 #[instrument(level = "debug", skip(database, client))]
 pub async fn handle_game_action(database: SqliteDatabase, client: &mut Client, action: GameAction) {
     let (sender, mut receiver) = mpsc::unbounded_channel();
-    assert!(get_display_state().prompt.is_none(), "Cannot handle action with an active prompt");
+    assert!(
+        get_display_state().prompt.is_none(),
+        "Cannot handle action {action:?} with an active prompt"
+    );
 
     let mut action_client = client.clone();
     task::spawn_blocking(move || {

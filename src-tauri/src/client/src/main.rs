@@ -21,8 +21,10 @@ use all_cards::card_list;
 use clap::Parser;
 use data::actions::user_action::UserAction;
 use data::core::primitives::UserId;
+use data::prompts::card_select_and_order_prompt::CardOrderLocation;
 use database::sqlite_database::SqliteDatabase;
 use display::commands::field_state::{FieldKey, FieldValue};
+use display::core::card_view::ClientCardId;
 use game::server;
 use game::server_data::{Client, ClientData, GameResponse};
 use once_cell::sync::Lazy;
@@ -49,7 +51,7 @@ pub struct GameResponseEvent(GameResponse);
 
 #[tauri::command]
 #[specta::specta]
-async fn client_connect(app: AppHandle) {
+async fn connect(app: AppHandle) {
     info!("Got connect request");
     let (sender, mut receiver) = mpsc::unbounded_channel();
     tokio::spawn(async move {
@@ -62,7 +64,7 @@ async fn client_connect(app: AppHandle) {
 
 #[tauri::command]
 #[specta::specta]
-async fn client_handle_action(client_data: ClientData, action: UserAction, app: AppHandle) {
+async fn handle_action(client_data: ClientData, action: UserAction, app: AppHandle) {
     info!(?action, "Got handle_action request");
     let (sender, mut receiver) = mpsc::unbounded_channel();
     tokio::spawn(async move {
@@ -76,16 +78,30 @@ async fn client_handle_action(client_data: ClientData, action: UserAction, app: 
 
 #[tauri::command]
 #[specta::specta]
-async fn client_update_field(
+async fn update_field(client_data: ClientData, key: FieldKey, value: FieldValue, app: AppHandle) {
+    let (sender, mut receiver) = mpsc::unbounded_channel();
+    tokio::spawn(async move {
+        let mut client = Client { data: client_data, channel: sender };
+        server::handle_update_field(DATABASE.clone(), &mut client, key, value);
+    });
+    while let Some(response) = receiver.recv().await {
+        app.emit_to(EventTarget::app(), "game_response", response).unwrap();
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn drag_card(
     client_data: ClientData,
-    key: FieldKey,
-    value: FieldValue,
+    card_id: ClientCardId,
+    location: CardOrderLocation,
+    index: u32,
     app: AppHandle,
 ) {
     let (sender, mut receiver) = mpsc::unbounded_channel();
     tokio::spawn(async move {
         let mut client = Client { data: client_data, channel: sender };
-        server::handle_update_field(DATABASE.clone(), &mut client, key, value);
+        server::handle_drag_card(DATABASE.clone(), &mut client, card_id, location, index);
     });
     while let Some(response) = receiver.recv().await {
         app.emit_to(EventTarget::app(), "game_response", response).unwrap();
@@ -117,9 +133,10 @@ fn main() {
     let (invoke_handler, register_events) = {
         let builder = tauri_specta::ts::builder()
             .commands(tauri_specta::collect_commands![
-                client_connect,
-                client_handle_action,
-                client_update_field
+                connect,
+                handle_action,
+                update_field,
+                drag_card
             ])
             .events(tauri_specta::collect_events![GameResponseEvent]);
 

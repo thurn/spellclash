@@ -21,7 +21,7 @@ export function Card({ card }: { card: CardView }): ReactNode {
   const height = 13.5;
   let body;
   if (card.revealed != null) {
-    body = <RevealedCard revealed={card.revealed} />;
+    body = <RevealedCard cardId={card.id} revealed={card.revealed} />;
   } else {
     body = <HiddenCard card={card} />;
   }

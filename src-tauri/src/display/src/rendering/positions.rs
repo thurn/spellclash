@@ -15,7 +15,7 @@
 use data::card_states::card_state::CardState;
 use data::core::primitives::{CardId, CardType, EntityId, PlayerName, Zone};
 use data::game_states::game_state::GameState;
-use data::prompts::card_select_and_order_prompt::{CardOrderLocation, CardSelectAndOrderPrompt};
+use data::prompts::card_select_and_order_prompt::{CardOrderLocation, CardSelectOrderPrompt};
 use data::prompts::prompt::PromptType;
 
 use crate::core::object_position::{BattlefieldPosition, ObjectPosition, Position};
@@ -75,7 +75,7 @@ fn position_override(builder: &ResponseBuilder, card: &CardState) -> Option<Obje
     if let Some(prompt) = &builder.current_prompt() {
         match &prompt.prompt_type {
             PromptType::EntityChoice(_) => {}
-            PromptType::SelectAndOrder(data) => {
+            PromptType::SelectOrder(data) => {
                 for location in enum_iterator::all::<CardOrderLocation>() {
                     if let Some(i) = data.in_location(location).iter().position(|c| c == &card.id) {
                         return Some(ObjectPosition {

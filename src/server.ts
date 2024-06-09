@@ -12,11 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ClientData, FieldKey, FieldValue, commands } from './generated_types';
+import {
+  CardOrderLocation,
+  ClientCardId,
+  ClientData,
+  FieldKey,
+  FieldValue,
+  commands,
+} from './generated_types';
 
 export async function connect(): Promise<void> {
   console.log('Connecting...');
-  await commands.clientConnect();
+  await commands.connect();
 }
 
 export async function handleAction(clientData: ClientData, action?: unknown): Promise<void> {
@@ -25,7 +32,7 @@ export async function handleAction(clientData: ClientData, action?: unknown): Pr
   }
   console.log('Handling action...');
   console.dir(action);
-  await commands.clientHandleAction(clientData, action);
+  await commands.handleAction(clientData, action);
 }
 
 export async function updateField(
@@ -33,5 +40,22 @@ export async function updateField(
   key: FieldKey,
   value: FieldValue,
 ): Promise<void> {
-  await commands.clientUpdateField(clientData, key, value);
+  await commands.updateField(clientData, key, value);
+}
+
+export async function dragCard(
+  clientData: ClientData,
+  cardId: ClientCardId,
+  location: CardOrderLocation,
+  index: number,
+): Promise<void> {
+  console.log(
+    'Handling drag card action for cardId:',
+    cardId,
+    'location:',
+    location,
+    'index:',
+    index,
+  );
+  await commands.dragCard(clientData, cardId, location, index);
 }

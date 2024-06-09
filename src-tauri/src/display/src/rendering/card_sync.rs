@@ -169,7 +169,7 @@ fn card_action(
 
 fn can_drag(builder: &ResponseBuilder, game: &GameState, card: &CardState) -> bool {
     if let Some(prompt) = &builder.response_state.display_state.prompt {
-        if let PromptType::SelectAndOrder(select_and_order) = &prompt.prompt_type {
+        if let PromptType::SelectOrder(select_and_order) = &prompt.prompt_type {
             return select_and_order.choices.contains(&card.id);
         }
     }
