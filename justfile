@@ -105,5 +105,3 @@ run-matchup *args='':
 
 run-tournament *args='':
     cargo run --manifest-path src-tauri/Cargo.toml --bin run_tournament -- "$@"
-
-
