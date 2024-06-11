@@ -30,8 +30,8 @@ import { ReactNode, useContext } from 'react';
 import { ClientCardId, RevealedCardView } from '../generated_types';
 import { GlobalContext } from '../App';
 import { handleAction } from '../server';
-import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
+import { useSortable } from '@dnd-kit/sortable';
 
 export interface Props {
   readonly cardId: ClientCardId;
@@ -40,14 +40,15 @@ export interface Props {
 
 export function RevealedCard({ cardId, revealed }: Props): ReactNode {
   const clientData = useContext(GlobalContext);
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: cardId,
     data: { cardId },
   });
 
   const draggableStyle = transform
     ? {
-        transform: CSS.Translate.toString(transform),
+        transform: CSS.Transform.toString(transform),
+        transition,
       }
     : undefined;
   let borderClass = 'border-2 border-black';

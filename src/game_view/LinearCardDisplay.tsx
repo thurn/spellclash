@@ -17,6 +17,7 @@ import { CardOrderLocation, CardView } from '../generated_types';
 import { Card } from './Card';
 import { useDroppable } from '@dnd-kit/core';
 import { PositionKey, PositionMap } from './PlayArea';
+import { horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 
 export interface Props {
   readonly name: string;
@@ -33,18 +34,18 @@ export function LinearCardDisplay({
   dropTarget,
   omitIfEmpty = false,
 }: Props): ReactNode {
-  const { isOver, setNodeRef } = useDroppable({
-    id: positionKey,
-    data: { dropTarget },
-  });
+  // const { isOver, setNodeRef } = useDroppable({
+  //   id: positionKey,
+  //   data: { dropTarget },
+  // });
   const cards = getPosition(positionMap, positionKey);
   const isDropTarget = dropTarget != null;
-  const ref = isDropTarget ? setNodeRef : undefined;
+  // const ref = isDropTarget ? setNodeRef : undefined;
 
   let background;
-  if (isOver && isDropTarget) {
+  /*if (isOver && isDropTarget) {
     background = 'bg-green-300';
-  } else if (isDropTarget) {
+  } else */ if (isDropTarget) {
     background = 'bg-green-600';
   } else {
     background = 'bg-slate-300';
@@ -56,9 +57,9 @@ export function LinearCardDisplay({
 
   const cardViews = cards.map((card, i) => <Card card={card} key={i} />);
   const className = `${background} m-1 rounded flex flex-row items-center`;
-  return (
+  const content = (
     <div
-      ref={ref}
+      // ref={ref}
       className={className}
       style={{
         height: '13.5vh',
@@ -68,6 +69,16 @@ export function LinearCardDisplay({
       <div className="w-32 text-center text-sm">{name}</div>
     </div>
   );
+
+  if (isDropTarget) {
+    return (
+      <SortableContext strategy={horizontalListSortingStrategy} items={cards.map((c) => c.id)}>
+        {content}
+      </SortableContext>
+    );
+  } else {
+    return content;
+  }
 }
 
 function getPosition(map: Map<PositionKey, CardView[]>, position: PositionKey): CardView[] {
