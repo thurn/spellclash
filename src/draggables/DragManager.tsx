@@ -49,13 +49,20 @@ export type Items = Record<UniqueIdentifier, UniqueIdentifier[]>;
 export const ItemsContext = createContext<Items>({});
 
 interface Props {
-  readonly initialItems: Items;
+  readonly items: Items;
   readonly children: ReactNode;
+
+  /**
+   * Given an item ID, render its contents.
+   *
+   * Used to implement the drag overlay.
+   */
+  renderItem(item: UniqueIdentifier): ReactNode;
 }
 
-export function DragManager({ initialItems, children }: Props) {
+export function DragManager({ items, children, renderItem }: Props) {
   const coordinateGetter = multipleContainersCoordinateGetter;
-  const [items, setItems] = useState<Items>(() => initialItems);
+  const [itemList, setItemlist] = useState<Items>(() => items);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
   const lastOverId = useRef<UniqueIdentifier | null>(null);
   const recentlyMovedToNewContainer = useRef(false);
@@ -70,11 +77,11 @@ export function DragManager({ initialItems, children }: Props) {
    */
   const collisionDetectionStrategy: CollisionDetection = useCallback(
     (args) => {
-      if (activeId && activeId in items) {
+      if (activeId && activeId in itemList) {
         return closestCenter({
           ...args,
           droppableContainers: args.droppableContainers.filter(
-            (container) => container.id in items,
+            (container) => container.id in itemList,
           ),
         });
       }
@@ -89,8 +96,8 @@ export function DragManager({ initialItems, children }: Props) {
       let overId = getFirstCollision(intersections, 'id');
 
       if (overId != null) {
-        if (overId in items) {
-          const containerItems = items[overId];
+        if (overId in itemList) {
+          const containerItems = itemList[overId];
 
           // If a container is matched and it contains items (columns 'A', 'B', 'C')
           if (containerItems.length > 0) {
@@ -120,7 +127,7 @@ export function DragManager({ initialItems, children }: Props) {
       // If no droppable is matched, return the last match
       return lastOverId.current ? [{ id: lastOverId.current }] : [];
     },
-    [activeId, items],
+    [activeId, itemList],
   );
 
   const [clonedItems, setClonedItems] = useState<Items | null>(null);
@@ -134,18 +141,18 @@ export function DragManager({ initialItems, children }: Props) {
   );
 
   const findContainerId = (id: UniqueIdentifier) => {
-    if (id in items) {
+    if (id in itemList) {
       return id;
     }
 
-    return Object.keys(items).find((key) => items[key].includes(id));
+    return Object.keys(itemList).find((key) => itemList[key].includes(id));
   };
 
   const onDragCancel = () => {
     if (clonedItems) {
       // Reset items to their original state in case items have been
       // Dragged across containers
-      setItems(clonedItems);
+      setItemlist(clonedItems);
     }
 
     setActiveId(null);
@@ -156,7 +163,7 @@ export function DragManager({ initialItems, children }: Props) {
     requestAnimationFrame(() => {
       recentlyMovedToNewContainer.current = false;
     });
-  }, [items]);
+  }, [itemList]);
 
   return (
     <DndContext
@@ -169,12 +176,12 @@ export function DragManager({ initialItems, children }: Props) {
       }}
       onDragStart={({ active }) => {
         setActiveId(active.id);
-        setClonedItems(items);
+        setClonedItems(itemList);
       }}
       onDragOver={({ active, over }) => {
         const overId = over?.id;
 
-        if (overId == null || active.id in items) {
+        if (overId == null || active.id in itemList) {
           return;
         }
 
@@ -186,7 +193,7 @@ export function DragManager({ initialItems, children }: Props) {
         }
 
         if (activeContainer !== overContainer) {
-          setItems((items) => {
+          setItemlist((items) => {
             const activeItems = items[activeContainer];
             const overItems = items[overContainer];
             const overIndex = overItems.indexOf(overId);
@@ -239,11 +246,11 @@ export function DragManager({ initialItems, children }: Props) {
         const overContainer = findContainerId(overId);
 
         if (overContainer) {
-          const activeIndex = items[activeContainer].indexOf(active.id);
-          const overIndex = items[overContainer].indexOf(overId);
+          const activeIndex = itemList[activeContainer].indexOf(active.id);
+          const overIndex = itemList[overContainer].indexOf(overId);
 
           if (activeIndex !== overIndex) {
-            setItems((items) => ({
+            setItemlist((items) => ({
               ...items,
               [overContainer]: arrayMove(items[overContainer], activeIndex, overIndex),
             }));
@@ -254,7 +261,7 @@ export function DragManager({ initialItems, children }: Props) {
       }}
       onDragCancel={onDragCancel}
     >
-      <ItemsContext.Provider value={items}>{children}</ItemsContext.Provider>
+      <ItemsContext.Provider value={itemList}>{children}</ItemsContext.Provider>
       {createPortal(
         <DragOverlay adjustScale={false} dropAnimation={dropAnimation}>
           {activeId ? renderSortableItemDragOverlay(activeId) : null}
@@ -267,7 +274,7 @@ export function DragManager({ initialItems, children }: Props) {
   function renderSortableItemDragOverlay(id: UniqueIdentifier) {
     return (
       <DraggableItem id={id} dragOverlay={true}>
-        {id}
+        {renderItem(id)}
       </DraggableItem>
     );
   }

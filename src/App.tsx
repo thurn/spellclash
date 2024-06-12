@@ -22,9 +22,9 @@ import { Modal, ModalBody, ModalContent, ModalHeader, useDisclosure } from '@nex
 import { Event, listen } from '@tauri-apps/api/event';
 
 export const GlobalContext: React.Context<ClientData> = createContext({
+  id: '',
   userId: '',
   scene: 'loading',
-  displayState: {},
 } as ClientData);
 
 export function App(): ReactNode {
@@ -58,7 +58,7 @@ export function App(): ReactNode {
   if (sceneView === 'loading') {
     scene = <h1>Loading...</h1>;
   } else if ('gameView' in sceneView) {
-    scene = <Game view={sceneView.gameView} />;
+    scene = <Game key={clientData.id} view={sceneView.gameView} />;
   } else if ('mainMenuView' in sceneView) {
     scene = <MainMenu view={sceneView.mainMenuView} />;
   }

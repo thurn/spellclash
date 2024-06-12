@@ -132,6 +132,12 @@ export type ClientCardId = string;
  */
 export type ClientData = {
   /**
+   * Unique identifier for a given client data instance.
+   *
+   * Each request and response should be tagged with its own ID.
+   */
+  id: string;
+  /**
    * User who is currently connected
    */
   userId: UserId;

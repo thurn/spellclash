@@ -16,51 +16,24 @@
 
 .Container {
   display: flex;
-  flex-direction: column;
-  grid-auto-rows: max-content;
+  flex-direction: row;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   overflow: hidden;
-  box-sizing: border-box;
-  appearance: none;
-  outline: none;
-  min-width: 350px;
-  margin: 10px;
-  border-radius: 5px;
-  min-height: 200px;
   transition: background-color 350ms ease;
   background-color: rgb(246, 246, 246);
   border: 1px solid rgba(0, 0, 0, 0.05);
-  font-size: 1em;
+  width: 100%;
 }
 
 .Container ul {
-  display: grid;
-  grid-gap: 10px;
-  grid-template-columns: repeat(var(--columns, 1), 1fr);
+  display: flex;
+  flex-direction: row;
   list-style: none;
-  padding: 20px;
-  margin: 0;
-}
-
-.Container.scrollable ul {
-  overflow-y: auto;
 }
 
 .Container.hover {
   background-color: rgb(235, 235, 235);
-}
-
-.Container.horizontal {
-  width: 100%;
-}
-
-.Container.horizontal ul {
-  grid-auto-flow: column;
-}
-
-.Container.shadow {
-  box-shadow: 0 1px 10px 0 rgba(34, 33, 81, 0.1);
 }
 
 .Container:focus-visible {

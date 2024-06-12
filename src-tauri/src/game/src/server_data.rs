@@ -19,6 +19,7 @@ use display::panels::modal_panel::{ModalPanel, PanelData};
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use tokio::sync::mpsc::UnboundedSender;
+use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub struct Client {
@@ -28,8 +29,10 @@ pub struct Client {
 
 impl Client {
     pub fn send(&self, command: impl Into<Command>) {
+        let mut client_data = self.data.clone();
+        client_data.id = Uuid::new_v4();
         self.channel
-            .send(GameResponse { client_data: self.data.clone(), command: command.into() })
+            .send(GameResponse { client_data, command: command.into() })
             .expect("Failed to send command, receiver has dropped");
     }
 
@@ -55,6 +58,11 @@ pub struct GameResponse {
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct ClientData {
+    /// Unique identifier for a given client data instance.
+    ///
+    /// Each request and response should be tagged with its own ID.
+    pub id: Uuid,
+
     /// User who is currently connected
     pub user_id: UserId,
 
@@ -63,10 +71,6 @@ pub struct ClientData {
 }
 
 impl ClientData {
-    pub fn new(user_id: UserId, scene: SceneIdentifier) -> Self {
-        Self { user_id, scene }
-    }
-
     pub fn game_id(&self) -> GameId {
         match self.scene {
             SceneIdentifier::Game(id) => id,

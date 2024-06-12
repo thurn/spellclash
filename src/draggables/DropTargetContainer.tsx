@@ -29,6 +29,7 @@ interface Props {
   readonly id: UniqueIdentifier;
   readonly children: React.ReactNode;
   readonly items: UniqueIdentifier[];
+  readonly height: string;
 }
 
 export function DropTargetContainer({ children, id, items, ...props }: Props) {
@@ -53,25 +54,23 @@ const animateLayoutChanges: AnimateLayoutChanges = (args) =>
   defaultAnimateLayoutChanges({ ...args, wasDragging: true });
 
 interface InnerContainerProps {
-  children: React.ReactNode;
+  readonly children: React.ReactNode;
+  readonly height: string;
 }
 
 /* eslint-disable react/display-name */
 const InnerContainer = forwardRef<HTMLDivElement, InnerContainerProps>(
-  ({ children, ...props }: InnerContainerProps, ref) => {
-    const columns = 1;
+  ({ children, height, ...props }: InnerContainerProps, ref) => {
     return (
       <div
         {...props}
         ref={ref}
-        style={
-          {
-            '--columns': columns,
-          } as React.CSSProperties
-        }
-        className={classNames(styles.Container, styles.horizontal, styles.scrollable)}
+        style={{
+          height,
+        }}
+        className={classNames(styles.Container)}
       >
-        {<ul>{children}</ul>}
+        {<ul style={{ flex: 1 }}>{children}</ul>}
       </div>
     );
   },

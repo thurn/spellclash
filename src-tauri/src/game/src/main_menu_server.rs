@@ -27,7 +27,7 @@ use display::core::game_view::GameButtonView;
 use display::core::main_menu_view::MainMenuView;
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::info;
-use uuid::uuid;
+use uuid::{uuid, Uuid};
 
 use crate::server_data::{Client, ClientData, GameResponse};
 
@@ -35,7 +35,7 @@ use crate::server_data::{Client, ClientData, GameResponse};
 pub fn connect(response_channel: UnboundedSender<GameResponse>, user: &UserState) {
     info!(?user.id, "Connected");
     let client = Client {
-        data: ClientData::new(user.id, SceneIdentifier::MainMenu),
+        data: ClientData { user_id: user.id, scene: SceneIdentifier::MainMenu, id: Uuid::new_v4() },
         channel: response_channel,
     };
     client.send(Command::UpdateScene(SceneView::MainMenuView(main_menu_view())));

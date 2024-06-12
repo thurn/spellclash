@@ -33,6 +33,7 @@ use specta::Type;
 use tauri::{AppHandle, EventTarget, Manager};
 use tauri_specta::Event;
 use tokio::sync::mpsc;
+use tokio::sync::mpsc::UnboundedSender;
 use tracing::info;
 use utils::command_line::TracingStyle;
 use utils::{command_line, paths};
@@ -68,8 +69,7 @@ async fn handle_action(client_data: ClientData, action: UserAction, app: AppHand
     info!(?action, "Got handle_action request");
     let (sender, mut receiver) = mpsc::unbounded_channel();
     tokio::spawn(async move {
-        let mut client = Client { data: client_data, channel: sender };
-        server::handle_action(DATABASE.clone(), &mut client, action).await;
+        server::handle_action(DATABASE.clone(), &mut new_client(client_data, sender), action).await;
     });
     while let Some(response) = receiver.recv().await {
         app.emit_to(EventTarget::app(), "game_response", response).unwrap();
@@ -81,8 +81,12 @@ async fn handle_action(client_data: ClientData, action: UserAction, app: AppHand
 async fn update_field(client_data: ClientData, key: FieldKey, value: FieldValue, app: AppHandle) {
     let (sender, mut receiver) = mpsc::unbounded_channel();
     tokio::spawn(async move {
-        let mut client = Client { data: client_data, channel: sender };
-        server::handle_update_field(DATABASE.clone(), &mut client, key, value);
+        server::handle_update_field(
+            DATABASE.clone(),
+            &mut new_client(client_data, sender),
+            key,
+            value,
+        );
     });
     while let Some(response) = receiver.recv().await {
         app.emit_to(EventTarget::app(), "game_response", response).unwrap();
@@ -100,12 +104,22 @@ async fn drag_card(
 ) {
     let (sender, mut receiver) = mpsc::unbounded_channel();
     tokio::spawn(async move {
-        let mut client = Client { data: client_data, channel: sender };
-        server::handle_drag_card(DATABASE.clone(), &mut client, card_id, location, index);
+        server::handle_drag_card(
+            DATABASE.clone(),
+            &mut new_client(client_data, sender),
+            card_id,
+            location,
+            index,
+        );
     });
     while let Some(response) = receiver.recv().await {
         app.emit_to(EventTarget::app(), "game_response", response).unwrap();
     }
+}
+
+fn new_client(mut client_data: ClientData, sender: UnboundedSender<GameResponse>) -> Client {
+    client_data.id = Uuid::new_v4();
+    Client { data: client_data, channel: sender }
 }
 
 fn main() {

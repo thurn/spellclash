@@ -12,17 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ReactNode } from 'react';
-import { CardOrderLocation, CardView } from '../generated_types';
+import { ReactNode, useContext } from 'react';
+import { CardOrderLocation } from '../generated_types';
 import { Card } from './Card';
-import { useDroppable } from '@dnd-kit/core';
-import { PositionKey, PositionMap } from './PlayArea';
-import { horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable';
+import { CardMap, PositionKey } from './PlayArea';
+import { DropTargetContainer } from '../draggables/DropTargetContainer';
+import { ItemsContext } from '../draggables/DragManager';
+import { DraggableItem } from '../draggables/DraggableItem';
 
 export interface Props {
   readonly name: string;
   readonly positionKey: PositionKey;
-  readonly positionMap: PositionMap;
+  readonly cardMap: CardMap;
   readonly dropTarget?: CardOrderLocation;
   readonly omitIfEmpty?: boolean;
 }
@@ -30,61 +31,60 @@ export interface Props {
 export function LinearCardDisplay({
   name,
   positionKey,
-  positionMap,
+  cardMap,
   dropTarget,
   omitIfEmpty = false,
 }: Props): ReactNode {
-  // const { isOver, setNodeRef } = useDroppable({
-  //   id: positionKey,
-  //   data: { dropTarget },
-  // });
-  const cards = getPosition(positionMap, positionKey);
+  const items = useContext(ItemsContext);
+  const cardIds = items[positionKey] ?? [];
   const isDropTarget = dropTarget != null;
-  // const ref = isDropTarget ? setNodeRef : undefined;
+  if (cardIds.length === 0 && omitIfEmpty && !isDropTarget) {
+    return null;
+  }
 
   let background;
-  /*if (isOver && isDropTarget) {
-    background = 'bg-green-300';
-  } else */ if (isDropTarget) {
+  if (isDropTarget) {
     background = 'bg-green-600';
   } else {
     background = 'bg-slate-300';
   }
 
-  if (cards.length === 0 && omitIfEmpty && !isDropTarget) {
-    return null;
-  }
-
-  const cardViews = cards.map((card, i) => <Card card={card} key={i} />);
-  const className = `${background} m-1 rounded flex flex-row items-center`;
-  const content = (
-    <div
-      // ref={ref}
-      className={className}
-      style={{
-        height: '13.5vh',
-      }}
-    >
-      {cardViews}
-      <div className="w-32 text-center text-sm">{name}</div>
-    </div>
-  );
+  const cardViews = cardIds.map((cardId) => (
+    <Card key={cardId} cardId={cardId as string} map={cardMap} />
+  ));
+  const className = `${background} m-1 rounded flex grow flex-row items-center`;
 
   if (isDropTarget) {
     return (
-      <SortableContext strategy={horizontalListSortingStrategy} items={cards.map((c) => c.id)}>
-        {content}
-      </SortableContext>
+      <DropTargetContainer key={positionKey} id={positionKey} items={cardIds} height="14vh">
+        <div
+          className={className}
+          style={{
+            height: '14vh',
+          }}
+        >
+          {cardIds.map((id, index) => {
+            return (
+              <DraggableItem key={id} id={id} index={index}>
+                <Card key={id} cardId={id as string} map={cardMap} />
+              </DraggableItem>
+            );
+          })}
+          <div className="w-32 text-center text-sm">{name}</div>
+        </div>
+      </DropTargetContainer>
     );
   } else {
-    return content;
-  }
-}
-
-function getPosition(map: Map<PositionKey, CardView[]>, position: PositionKey): CardView[] {
-  if (map.has(position)) {
-    return map.get(position)!;
-  } else {
-    return [];
+    return (
+      <div
+        className={className}
+        style={{
+          height: '14vh',
+        }}
+      >
+        {cardViews}
+        <div className="w-32 text-center text-sm">{name}</div>
+      </div>
+    );
   }
 }

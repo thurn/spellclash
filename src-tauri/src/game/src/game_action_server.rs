@@ -42,6 +42,7 @@ use tokio::sync::mpsc;
 use tokio::sync::mpsc::UnboundedSender;
 use tokio::task;
 use tracing::{debug, error, info, instrument};
+use uuid::Uuid;
 
 use crate::requests;
 use crate::server_data::{Client, ClientData, GameResponse};
@@ -63,7 +64,11 @@ pub fn connect(
     info!(?user.id, ?game.id, "Connected to game");
     let commands = render::connect(&game, player_name, &get_display_state());
     let client = Client {
-        data: ClientData { user_id: user.id, scene: SceneIdentifier::Game(game.id) },
+        data: ClientData {
+            user_id: user.id,
+            scene: SceneIdentifier::Game(game.id),
+            id: Uuid::new_v4(),
+        },
         channel: response_channel,
     };
     client.send_all(commands);

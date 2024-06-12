@@ -13,15 +13,26 @@
 // limitations under the License.
 
 import { ReactNode } from 'react';
-import { CardView } from '../generated_types';
+import { ClientCardId } from '../generated_types';
 import { HiddenCard } from './HiddenCard';
 import { RevealedCard } from './RevealedCard';
+import { CardMap } from './PlayArea';
 
-export function Card({ card }: { card: CardView }): ReactNode {
+interface Props {
+  readonly cardId: ClientCardId;
+  readonly map: CardMap;
+}
+
+export function Card({ cardId, map }: Props): ReactNode {
+  const card = map.cards.get(cardId);
+  if (card == null) {
+    throw new Error(`Card not found: ${cardId}`);
+  }
+
   const height = 13.5;
   let body;
   if (card.revealed != null) {
-    body = <RevealedCard cardId={card.id} revealed={card.revealed} />;
+    body = <RevealedCard revealed={card.revealed} />;
   } else {
     body = <HiddenCard card={card} />;
   }

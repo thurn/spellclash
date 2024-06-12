@@ -27,30 +27,17 @@
 // limitations under the License.
 
 import { ReactNode, useContext } from 'react';
-import { ClientCardId, RevealedCardView } from '../generated_types';
+import { RevealedCardView } from '../generated_types';
 import { GlobalContext } from '../App';
 import { handleAction } from '../server';
-import { CSS } from '@dnd-kit/utilities';
-import { useSortable } from '@dnd-kit/sortable';
 
 export interface Props {
-  readonly cardId: ClientCardId;
   readonly revealed: RevealedCardView;
 }
 
-export function RevealedCard({ cardId, revealed }: Props): ReactNode {
+export function RevealedCard({ revealed }: Props): ReactNode {
   const clientData = useContext(GlobalContext);
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
-    id: cardId,
-    data: { cardId },
-  });
 
-  const draggableStyle = transform
-    ? {
-        transform: CSS.Transform.toString(transform),
-        transition,
-      }
-    : undefined;
   let borderClass = 'border-2 border-black';
   let label = '';
   if (revealed.status === 'canPlay') {
@@ -67,13 +54,7 @@ export function RevealedCard({ cardId, revealed }: Props): ReactNode {
 
   if (revealed.canDrag) {
     return (
-      <div
-        className={borderClass}
-        style={draggableStyle}
-        ref={setNodeRef}
-        {...listeners}
-        {...attributes}
-      >
+      <div className={borderClass}>
         <img
           src={revealed.image}
           style={{

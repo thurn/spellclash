@@ -13,57 +13,33 @@
 // limitations under the License.
 
 import { ReactNode } from 'react';
-import { CardOrderLocation, CardView, ClientCardId, GameView, Position } from '../generated_types';
+import { CardView, ClientCardId, GameView, Position } from '../generated_types';
 import { LinearCardDisplay } from './LinearCardDisplay';
 import { StackCardDisplay } from './StackCardDisplay';
-import {
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import { useContext } from 'react';
-import { GlobalContext } from '../App';
-import { dragCard } from '../server';
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { DragManager, Items } from '../draggables/DragManager';
+import { Card } from './Card';
 
 export type PositionKey = string;
+
 export type PositionMap = Map<PositionKey, CardView[]>;
+
+export interface CardMap {
+  readonly positions: PositionMap;
+  readonly cards: Map<ClientCardId, CardView>;
+}
 
 export interface Props {
   readonly view: GameView;
 }
 
 export function PlayArea({ view }: Props): ReactNode {
-  const clientData = useContext(GlobalContext);
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
+  //  const clientData = useContext(GlobalContext);
   const map = cardPositions(view);
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={(event) => {
-        const { active, over } = event;
-        const index = over?.data?.current?.sortable.index as number;
-        const cardId = active.data.current?.cardId as ClientCardId;
-        const location = over?.data?.current?.dropTarget as CardOrderLocation;
-        console.log('onDragEnd ' + cardId + ' to ' + location + ' at ' + index);
-        dragCard(clientData, cardId, 'unordered', index);
-        // const cardId = e.active.data.current?.cardId as ClientCardId;
-        // const location = e.over?.data?.current?.dropTarget as CardOrderLocation;
-        // console.log('onDragEnd for card ' + cardId + ' to ' + location);
-        // if (cardId != null && location != null) {
-        //   dragCard(clientData, cardId, location, 0);
-        // }
-      }}
+    <DragManager
+      items={toDraggableItems(map)}
+      renderItem={(id) => <Card cardId={id as string} map={map} />}
     >
       <div className="flex flex-row">
         <div className="w-11/12">
@@ -71,39 +47,39 @@ export function PlayArea({ view }: Props): ReactNode {
             key="oh"
             name="Opponent Hand"
             positionKey={keyForPosition({ hand: 'opponent' })}
-            positionMap={map}
+            cardMap={map}
           />
           <LinearCardDisplay
             key="om"
             name="Opponent Mana"
             positionKey={keyForPosition({ battlefield: ['opponent', 'mana'] })}
-            positionMap={map}
+            cardMap={map}
           />
           <LinearCardDisplay
             key="op"
             name="Opponent Permanents"
             positionKey={keyForPosition({ battlefield: ['opponent', 'permanents'] })}
-            positionMap={map}
+            cardMap={map}
           />
           <LinearCardDisplay
             key="stack"
             name="Stack"
             positionKey={keyForPosition('stack')}
-            positionMap={map}
+            cardMap={map}
             omitIfEmpty={true}
           />
           <LinearCardDisplay
             key="selection"
             name="Selection"
             positionKey={keyForPosition('cardSelectionChoices')}
-            positionMap={map}
+            cardMap={map}
             omitIfEmpty={true}
           />
           <LinearCardDisplay
             key="unordered"
             name="Unordered"
             positionKey={keyForPosition({ cardOrderLocation: 'unordered' })}
-            positionMap={map}
+            cardMap={map}
             omitIfEmpty={true}
             dropTarget={view.cardDragTargets.includes('unordered') ? 'unordered' : undefined}
           />
@@ -111,7 +87,7 @@ export function PlayArea({ view }: Props): ReactNode {
             key="topOfLibrary"
             name="Top Of Library"
             positionKey={keyForPosition({ cardOrderLocation: 'topOfLibrary' })}
-            positionMap={map}
+            cardMap={map}
             omitIfEmpty={true}
             dropTarget={view.cardDragTargets.includes('topOfLibrary') ? 'topOfLibrary' : undefined}
           />
@@ -119,19 +95,19 @@ export function PlayArea({ view }: Props): ReactNode {
             key="vp"
             name="Viewer Permanents"
             positionKey={keyForPosition({ battlefield: ['viewer', 'permanents'] })}
-            positionMap={map}
+            cardMap={map}
           />
           <LinearCardDisplay
             key="vm"
             name="Viewer Mana"
             positionKey={keyForPosition({ battlefield: ['viewer', 'mana'] })}
-            positionMap={map}
+            cardMap={map}
           />
           <LinearCardDisplay
             key="vh"
             name="Viewer Hand"
             positionKey={keyForPosition({ hand: 'viewer' })}
-            positionMap={map}
+            cardMap={map}
           />
         </div>
         <div className="w-1/12 flex flex-col justify-between">
@@ -145,39 +121,51 @@ export function PlayArea({ view }: Props): ReactNode {
           />
         </div>
       </div>
-    </DndContext>
+    </DragManager>
   );
 }
 
-function getPosition(map: Map<PositionKey, CardView[]>, position: PositionKey): CardView[] {
-  if (map.has(position)) {
-    return map.get(position)!;
+function getPosition(map: CardMap, position: PositionKey): CardView[] {
+  if (map.positions.has(position)) {
+    return map.positions.get(position)!;
   } else {
     return [];
   }
 }
 
-function cardPositions(view: GameView): Map<PositionKey, CardView[]> {
+function cardPositions(view: GameView): CardMap {
   const withKeys = new Map<PositionKey, [number, CardView][]>();
+  const cards = new Map<ClientCardId, CardView>();
   for (const card of view.cards) {
+    cards.set(card.id, card);
     const p = card.position;
     if (!withKeys.has(keyForPosition(p.position))) {
       withKeys.set(keyForPosition(p.position), []);
     }
     withKeys.get(keyForPosition(p.position))!.push([p.sortingKey, card]);
   }
-  const result = new Map<PositionKey, CardView[]>();
+
+  const positions = new Map<PositionKey, CardView[]>();
   for (const [position, array] of withKeys) {
     array.sort(function (a, b) {
       const x = a[0];
       const y = b[0];
       return x < y ? -1 : x > y ? 1 : 0;
     });
-    result.set(
+    positions.set(
       position,
       array.map(([_, card]) => card),
     );
   }
+  return { positions, cards };
+}
+
+function toDraggableItems(map: CardMap): Items {
+  const result: Items = {};
+  for (const [position, cards] of map.positions) {
+    result[position] = cards.map((card) => card.id);
+  }
+  result[keyForPosition({ cardOrderLocation: 'topOfLibrary' })] = [];
   return result;
 }
 
