@@ -26,11 +26,11 @@ import {
   KeyboardSensor,
   MouseSensor,
   TouchSensor,
-  UniqueIdentifier,
   useSensors,
   useSensor,
   MeasuringStrategy,
   defaultDropAnimationSideEffects,
+  UniqueIdentifier,
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { coordinateGetter as multipleContainersCoordinateGetter } from './multipleContainersKeyboardCoordinates';
@@ -43,8 +43,11 @@ export default {
   title: 'Presets/Sortable/Multiple Containers',
 };
 
+export type ContainerId = string;
+export type ItemId = string;
+
 // Map of ContainerId -> Array of Item ID
-export type Items = Record<UniqueIdentifier, UniqueIdentifier[]>;
+export type Items = Record<ContainerId, ItemId[]>;
 
 export const ItemsContext = createContext<Items>({});
 
@@ -57,14 +60,14 @@ interface Props {
    *
    * Used to implement the drag overlay.
    */
-  renderItem(item: UniqueIdentifier): ReactNode;
+  renderItem(item: ItemId): ReactNode;
 }
 
 export function DragManager({ items, children, renderItem }: Props) {
   const coordinateGetter = multipleContainersCoordinateGetter;
-  const [itemList, setItemlist] = useState<Items>(() => items);
-  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
-  const lastOverId = useRef<UniqueIdentifier | null>(null);
+  const [itemList, setItemList] = useState<Items>(() => items);
+  const [activeId, setActiveId] = useState<ItemId | null>(null);
+  const lastOverId = useRef<ContainerId | null>(null);
   const recentlyMovedToNewContainer = useRef(false);
 
   /**
@@ -105,13 +108,14 @@ export function DragManager({ items, children, renderItem }: Props) {
             overId = closestCenter({
               ...args,
               droppableContainers: args.droppableContainers.filter(
-                (container) => container.id !== overId && containerItems.includes(container.id),
+                (container) =>
+                  container.id !== overId && containerItems.includes(toContainerId(container.id)),
               ),
             })[0]?.id;
           }
         }
 
-        lastOverId.current = overId;
+        lastOverId.current = toContainerId(overId);
 
         return [{ id: overId }];
       }
@@ -140,7 +144,7 @@ export function DragManager({ items, children, renderItem }: Props) {
     }),
   );
 
-  const findContainerId = (id: UniqueIdentifier) => {
+  const findContainerId = (id: ContainerId | ItemId) => {
     if (id in itemList) {
       return id;
     }
@@ -152,7 +156,7 @@ export function DragManager({ items, children, renderItem }: Props) {
     if (clonedItems) {
       // Reset items to their original state in case items have been
       // Dragged across containers
-      setItemlist(clonedItems);
+      setItemList(clonedItems);
     }
 
     setActiveId(null);
@@ -175,7 +179,7 @@ export function DragManager({ items, children, renderItem }: Props) {
         },
       }}
       onDragStart={({ active }) => {
-        setActiveId(active.id);
+        setActiveId(toItemId(active.id));
         setClonedItems(itemList);
       }}
       onDragOver={({ active, over }) => {
@@ -185,19 +189,19 @@ export function DragManager({ items, children, renderItem }: Props) {
           return;
         }
 
-        const overContainer = findContainerId(overId);
-        const activeContainer = findContainerId(active.id);
+        const overContainer = findContainerId(toContainerId(overId));
+        const activeContainer = findContainerId(toItemId(active.id));
 
         if (!overContainer || !activeContainer) {
           return;
         }
 
         if (activeContainer !== overContainer) {
-          setItemlist((items) => {
+          setItemList((items) => {
             const activeItems = items[activeContainer];
             const overItems = items[overContainer];
-            const overIndex = overItems.indexOf(overId);
-            const activeIndex = activeItems.indexOf(active.id);
+            const overIndex = overItems.indexOf(toContainerId(overId));
+            const activeIndex = activeItems.indexOf(toItemId(active.id));
 
             let newIndex: number;
 
@@ -229,7 +233,7 @@ export function DragManager({ items, children, renderItem }: Props) {
         }
       }}
       onDragEnd={({ active, over }) => {
-        const activeContainer = findContainerId(active.id);
+        const activeContainer = findContainerId(toItemId(active.id));
 
         if (!activeContainer) {
           setActiveId(null);
@@ -243,14 +247,14 @@ export function DragManager({ items, children, renderItem }: Props) {
           return;
         }
 
-        const overContainer = findContainerId(overId);
+        const overContainer = findContainerId(toContainerId(overId));
 
         if (overContainer) {
-          const activeIndex = itemList[activeContainer].indexOf(active.id);
-          const overIndex = itemList[overContainer].indexOf(overId);
+          const activeIndex = itemList[activeContainer].indexOf(toItemId(active.id));
+          const overIndex = itemList[overContainer].indexOf(toContainerId(overId));
 
           if (activeIndex !== overIndex) {
-            setItemlist((items) => ({
+            setItemList((items) => ({
               ...items,
               [overContainer]: arrayMove(items[overContainer], activeIndex, overIndex),
             }));
@@ -271,13 +275,21 @@ export function DragManager({ items, children, renderItem }: Props) {
     </DndContext>
   );
 
-  function renderSortableItemDragOverlay(id: UniqueIdentifier) {
+  function renderSortableItemDragOverlay(id: ItemId) {
     return (
       <DraggableItem id={id} dragOverlay={true}>
         {renderItem(id)}
       </DraggableItem>
     );
   }
+}
+
+function toItemId(id: UniqueIdentifier): ItemId {
+  return id.toString();
+}
+
+function toContainerId(id: UniqueIdentifier): ContainerId {
+  return id.toString();
 }
 
 const dropAnimation: DropAnimation = {

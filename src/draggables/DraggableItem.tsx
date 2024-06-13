@@ -14,16 +14,17 @@
 
 import React, { useEffect } from 'react';
 import classNames from 'classnames';
-import { type DraggableSyntheticListeners, type UniqueIdentifier } from '@dnd-kit/core';
+import { type DraggableSyntheticListeners } from '@dnd-kit/core';
 import type { Transform } from '@dnd-kit/utilities';
 
 import styles from './DraggableItem.module.css';
 import { useSortable } from '@dnd-kit/sortable';
 import { useState } from 'react';
 import { ReactNode } from 'react';
+import { ItemId } from './DragManager';
 
 interface Props {
-  readonly id: UniqueIdentifier;
+  readonly id: ItemId;
   readonly children: ReactNode;
   readonly index?: number;
   readonly disabled?: boolean;

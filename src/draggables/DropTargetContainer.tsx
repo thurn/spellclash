@@ -24,9 +24,10 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { UniqueIdentifier } from '@dnd-kit/core';
+import { ContainerId } from './DragManager';
 
 interface Props {
-  readonly id: UniqueIdentifier;
+  readonly id: ContainerId;
   readonly children: React.ReactNode;
   readonly items: UniqueIdentifier[];
   readonly height: string;

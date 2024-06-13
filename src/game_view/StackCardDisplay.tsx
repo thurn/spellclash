@@ -13,13 +13,22 @@
 // limitations under the License.
 
 import { ReactNode } from 'react';
-import { CardView } from '../generated_types';
 import { Card } from './Card';
+import { CardMap, PositionKey } from './PlayArea';
+import { useContext } from 'react';
+import { ItemsContext } from '../draggables/DragManager';
 
-export function StackCardDisplay({ cards }: { cards: CardView[] }): ReactNode {
-  const cardViews = cards.map((card, i) => (
-    <div className="absolute" key={i}>
-      <Card card={card} />
+export interface Props {
+  readonly positionKey: PositionKey;
+  readonly cardMap: CardMap;
+}
+
+export function StackCardDisplay({ positionKey, cardMap }: Props): ReactNode {
+  const items = useContext(ItemsContext);
+  const cardIds = items[positionKey] ?? [];
+  const cardViews = cardIds.map((cardId) => (
+    <div className="absolute" key={cardId}>
+      <Card key={cardId} cardId={cardId} map={cardMap} />
     </div>
   ));
   return (

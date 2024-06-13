@@ -21,8 +21,6 @@
   justify-content: center;
   overflow: hidden;
   transition: background-color 350ms ease;
-  background-color: rgb(246, 246, 246);
-  border: 1px solid rgba(0, 0, 0, 0.05);
   width: 100%;
 }
 
@@ -37,7 +35,6 @@
 }
 
 .Container:focus-visible {
-  border-color: transparent;
   box-shadow:
     0 0 0 2px rgba(255, 255, 255, 0),
     0 0px 0px 2px #4c9ffe;

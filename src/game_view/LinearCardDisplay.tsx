@@ -49,42 +49,34 @@ export function LinearCardDisplay({
     background = 'bg-slate-300';
   }
 
-  const cardViews = cardIds.map((cardId) => (
-    <Card key={cardId} cardId={cardId as string} map={cardMap} />
-  ));
   const className = `${background} m-1 rounded flex grow flex-row items-center`;
 
+  let content;
   if (isDropTarget) {
-    return (
+    content = (
       <DropTargetContainer key={positionKey} id={positionKey} items={cardIds} height="14vh">
-        <div
-          className={className}
-          style={{
-            height: '14vh',
-          }}
-        >
-          {cardIds.map((id, index) => {
-            return (
-              <DraggableItem key={id} id={id} index={index}>
-                <Card key={id} cardId={id as string} map={cardMap} />
-              </DraggableItem>
-            );
-          })}
-          <div className="w-32 text-center text-sm">{name}</div>
-        </div>
+        {cardIds.map((id, index) => {
+          return (
+            <DraggableItem key={id} id={id} index={index}>
+              <Card key={id} cardId={id} map={cardMap} />
+            </DraggableItem>
+          );
+        })}
       </DropTargetContainer>
     );
   } else {
-    return (
-      <div
-        className={className}
-        style={{
-          height: '14vh',
-        }}
-      >
-        {cardViews}
-        <div className="w-32 text-center text-sm">{name}</div>
-      </div>
-    );
+    content = cardIds.map((cardId) => <Card key={cardId} cardId={cardId} map={cardMap} />);
   }
+
+  return (
+    <div
+      className={className}
+      style={{
+        height: '14vh',
+      }}
+    >
+      {content}
+      <div className="w-32 text-center text-sm">{name}</div>
+    </div>
+  );
 }

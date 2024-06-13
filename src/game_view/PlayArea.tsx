@@ -37,10 +37,7 @@ export function PlayArea({ view }: Props): ReactNode {
   const map = cardPositions(view);
 
   return (
-    <DragManager
-      items={toDraggableItems(map)}
-      renderItem={(id) => <Card cardId={id as string} map={map} />}
-    >
+    <DragManager items={toDraggableItems(map)} renderItem={(id) => <Card cardId={id} map={map} />}>
       <div className="flex flex-row">
         <div className="w-11/12">
           <LinearCardDisplay
@@ -113,24 +110,18 @@ export function PlayArea({ view }: Props): ReactNode {
         <div className="w-1/12 flex flex-col justify-between">
           <StackCardDisplay
             key="og"
-            cards={getPosition(map, keyForPosition({ discardPile: 'opponent' }))}
+            positionKey={keyForPosition({ discardPile: 'opponent' })}
+            cardMap={map}
           />
           <StackCardDisplay
             key="vg"
-            cards={getPosition(map, keyForPosition({ discardPile: 'viewer' }))}
+            positionKey={keyForPosition({ discardPile: 'viewer' })}
+            cardMap={map}
           />
         </div>
       </div>
     </DragManager>
   );
-}
-
-function getPosition(map: CardMap, position: PositionKey): CardView[] {
-  if (map.positions.has(position)) {
-    return map.positions.get(position)!;
-  } else {
-    return [];
-  }
 }
 
 function cardPositions(view: GameView): CardMap {
