@@ -13,11 +13,14 @@
 // limitations under the License.
 
 import { ReactNode } from 'react';
-import { CardView, ClientCardId, GameView, Position } from '../generated_types';
+import { CardOrderLocation, CardView, ClientCardId, GameView, Position } from '../generated_types';
 import { LinearCardDisplay } from './LinearCardDisplay';
 import { StackCardDisplay } from './StackCardDisplay';
 import { DragManager, Items } from '../draggables/DragManager';
 import { Card } from './Card';
+import { useContext } from 'react';
+import { GlobalContext } from '../App';
+import { dragCard } from '../server';
 
 export type PositionKey = string;
 
@@ -33,11 +36,23 @@ export interface Props {
 }
 
 export function PlayArea({ view }: Props): ReactNode {
-  //  const clientData = useContext(GlobalContext);
+  const clientData = useContext(GlobalContext);
   const map = cardPositions(view);
+  const items = toDraggableItems(map);
 
   return (
-    <DragManager items={toDraggableItems(map)} renderItem={(id) => <Card cardId={id} map={map} />}>
+    <DragManager
+      key={clientData.id}
+      items={items}
+      renderItem={(id) => <Card cardId={id} map={map} />}
+      onMoved={(cardId, positionKey, index) => {
+        const location = orderLocations().get(positionKey);
+        if (location == null) {
+          throw new Error(`Invalid position key: ${positionKey}`);
+        }
+        dragCard(clientData, cardId, location, index);
+      }}
+    >
       <div className="flex flex-row">
         <div className="w-11/12">
           <LinearCardDisplay
@@ -153,10 +168,29 @@ function cardPositions(view: GameView): CardMap {
 
 function toDraggableItems(map: CardMap): Items {
   const result: Items = {};
+
+  for (const location of orderLocations().keys()) {
+    result[location] = [];
+  }
+
   for (const [position, cards] of map.positions) {
     result[position] = cards.map((card) => card.id);
   }
-  result[keyForPosition({ cardOrderLocation: 'topOfLibrary' })] = [];
+
+  return result;
+}
+
+function orderLocations(): Map<PositionKey, CardOrderLocation> {
+  const result = new Map<PositionKey, CardOrderLocation>();
+  const locations: CardOrderLocation[] = [
+    'unordered',
+    'topOfLibrary',
+    'bottomOfLibrary',
+    'graveyard',
+  ];
+  for (const location of locations) {
+    result.set(keyForPosition({ cardOrderLocation: location }), location);
+  }
   return result;
 }
 

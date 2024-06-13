@@ -31,7 +31,7 @@ pub enum PromptAction {
     /// The provided index is interpreted relative to other cards already in
     /// this location. The card currently occupying this location will be pushed
     /// towards the end of the list (right).
-    SelectAndSetOrder(CardId, CardOrderLocation, usize),
+    SelectOrder(CardId, CardOrderLocation, usize),
 
     /// Confirm selected card choices on a card selection prompt
     SubmitCardSelection,

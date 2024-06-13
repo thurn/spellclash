@@ -61,14 +61,27 @@ interface Props {
    * Used to implement the drag overlay.
    */
   renderItem(item: ItemId): ReactNode;
+
+  /**
+   * Invoked when an item is moved to a new position.
+   */
+  onMoved(item: ItemId, container: ContainerId, index: number): void;
 }
 
-export function DragManager({ items, children, renderItem }: Props) {
+export function DragManager({ items, children, renderItem, onMoved }: Props) {
   const coordinateGetter = multipleContainersCoordinateGetter;
   const [itemList, setItemList] = useState<Items>(() => items);
   const [activeId, setActiveId] = useState<ItemId | null>(null);
   const lastOverId = useRef<ContainerId | null>(null);
   const recentlyMovedToNewContainer = useRef(false);
+  const [clonedItems, setClonedItems] = useState<Items | null>(null);
+  const sensors = useSensors(
+    useSensor(MouseSensor),
+    useSensor(TouchSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter,
+    }),
+  );
 
   /**
    * Custom collision detection strategy optimized for multiple containers
@@ -132,16 +145,6 @@ export function DragManager({ items, children, renderItem }: Props) {
       return lastOverId.current ? [{ id: lastOverId.current }] : [];
     },
     [activeId, itemList],
-  );
-
-  const [clonedItems, setClonedItems] = useState<Items | null>(null);
-
-  const sensors = useSensors(
-    useSensor(MouseSensor),
-    useSensor(TouchSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter,
-    }),
   );
 
   const findContainerId = (id: ContainerId | ItemId) => {
@@ -258,6 +261,19 @@ export function DragManager({ items, children, renderItem }: Props) {
               ...items,
               [overContainer]: arrayMove(items[overContainer], activeIndex, overIndex),
             }));
+            setTimeout(() => {
+              onMoved(toItemId(active.id), overContainer, overIndex);
+            }, 300);
+          } else if (clonedItems != null) {
+            const originalContainerId = Object.keys(clonedItems).find((key) =>
+              clonedItems[key].includes(toItemId(active.id)),
+            );
+            if (originalContainerId !== overContainer) {
+              // First item in container
+              setTimeout(() => {
+                onMoved(toItemId(active.id), overContainer, overIndex);
+              }, 300);
+            }
           }
         }
 

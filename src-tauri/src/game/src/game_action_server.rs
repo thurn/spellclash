@@ -135,10 +135,7 @@ pub fn handle_drag_card(
     info!(?card_id, ?location, "handle_drag_card");
     let mut display_state = get_display_state();
     let prompt = display_state.prompt.as_mut().expect("No active prompt");
-    prompt_actions::execute(
-        prompt,
-        PromptAction::SelectAndSetOrder(card_id, location, index as usize),
-    );
+    prompt_actions::execute(prompt, PromptAction::SelectOrder(card_id, location, index as usize));
     let game = display_state.game_snapshot.as_ref().expect("No game snapshot saved");
     send_updates(game, client, &display_state);
 }

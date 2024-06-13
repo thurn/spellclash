@@ -37,20 +37,15 @@ use crate::game_creation::initialize_game;
 pub fn execute(prompt: &mut Prompt, action: PromptAction) -> Option<PromptResponse> {
     match action {
         PromptAction::PickNumber(n) => Some(PromptResponse::PickNumber(n)),
-        PromptAction::SelectAndSetOrder(card_id, location, index) => {
-            select_and_set_order(prompt, card_id, location, index);
+        PromptAction::SelectOrder(card_id, location, index) => {
+            select_order(prompt, card_id, location, index);
             None
         }
         PromptAction::SubmitCardSelection => None,
     }
 }
 
-fn select_and_set_order(
-    prompt: &mut Prompt,
-    card_id: CardId,
-    location: CardOrderLocation,
-    index: usize,
-) {
+fn select_order(prompt: &mut Prompt, card_id: CardId, location: CardOrderLocation, index: usize) {
     let PromptType::SelectOrder(prompt_data) = &mut prompt.prompt_type else {
         panic!("Expected SelectOrder prompt type");
     };
