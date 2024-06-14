@@ -98,24 +98,30 @@ pub fn pick_number(
     number
 }
 
-/// Prompt to select a [Quantity] of cards from controller's hand and place them
-/// on top of the library in a chosen order. Returns the list of selected cards
-/// in order.
-pub fn hand_to_top_of_library(
+/// Prompt the controller to select a `quantity` from the provided unordered
+/// list of cards to move to a new `target` location.
+///
+/// This is typically used when the cards in question do not already exist in an
+/// ordered location, e.g. for selecting cards from hand to place on top of the
+/// library.
+pub fn select_cards_from<'a>(
     game: &mut GameState,
     scope: Scope,
-    quantity: Quantity,
+    text: Text,
+    cards: impl IntoIterator<Item = &'a CardId>,
+    quantity: usize,
+    target: CardOrderLocation,
 ) -> Vec<CardId> {
     select_order(
         game,
         scope.controller,
-        Text::HandToTopOfLibraryPrompt,
+        text,
         SelectOrderPrompt::new(hashmap! {
-            CardOrderLocation::Unordered => game.hand(scope.controller).iter().copied().collect(),
-            CardOrderLocation::TopOfLibrary => vec![]
+            CardOrderLocation::Unordered => cards.into_iter().copied().collect(),
+            target => vec![]
         })
-        .quantity(quantity),
+        .quantity(Quantity::Ordered(quantity)),
     )
-    .remove(&CardOrderLocation::TopOfLibrary)
+    .remove(&target)
     .unwrap_or_default()
 }

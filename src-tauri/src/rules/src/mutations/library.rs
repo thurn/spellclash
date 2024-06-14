@@ -51,14 +51,17 @@ pub fn draw_cards(
     }
 }
 
+/// Move a card to the top of its owner's library.
 pub fn move_to_top(game: &mut GameState, source: impl HasSource, card_id: impl HasCardId) {
     move_card::run(game, source, card_id.card_id(), Zone::Library)
 }
 
+/// Moves all provided cards to the top of their owner's library in the given
+/// order.
 pub fn move_all_to_top<'a>(
     game: &mut GameState,
     source: impl HasSource,
-    cards: impl Iterator<Item = &'a CardId>,
+    cards: impl IntoIterator<Item = &'a CardId>,
 ) {
     let source = source.source();
     for card_id in cards {
