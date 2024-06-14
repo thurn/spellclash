@@ -45,7 +45,6 @@ pub fn main_menu_view() -> MainMenuView {
     let new_game = UserAction::NewGameAction(NewGameAction {
         deck: deck_name::DANDAN,
         opponent_deck: deck_name::DANDAN,
-        opponent_id: None,
         debug_options: NewGameDebugOptions {
             override_game_id: None,
             configuration: DebugConfiguration { reveal_all_cards: true, act_as_player: None },
@@ -54,7 +53,6 @@ pub fn main_menu_view() -> MainMenuView {
     let new_debug_game = UserAction::NewGameAction(NewGameAction {
         deck: deck_name::DANDAN,
         opponent_deck: deck_name::DANDAN,
-        opponent_id: None,
         debug_options: NewGameDebugOptions {
             override_game_id: None,
             configuration: DebugConfiguration {

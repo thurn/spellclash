@@ -31,7 +31,7 @@ use data::game_states::game_step::GamePhaseStep;
 use data::game_states::history_data::GameHistory;
 use data::game_states::oracle::Oracle;
 use data::game_states::undo_tracker::UndoTracker;
-use data::player_states::player_state::Players;
+use data::player_states::player_state::{PlayerType, Players};
 use data::printed_cards::printed_card_id;
 use data::state_machines::state_machine_data::StateMachines;
 use data::users::user_state::UserActivity;
@@ -66,9 +66,14 @@ pub fn create(database: SqliteDatabase, client: &mut Client, action: NewGameActi
     let mut game = new_game::create_and_start(
         database.clone(),
         game_id,
-        Some(user.id),
+        PlayerType::Human(user.id),
         action.deck,
-        action.debug_options.configuration.act_as_player.map(|p| p.id).or(action.opponent_id),
+        action
+            .debug_options
+            .configuration
+            .act_as_player
+            .map(|p| PlayerType::Human(p.id))
+            .unwrap_or(PlayerType::None),
         action.opponent_deck,
         action.debug_options.configuration,
     );
@@ -89,11 +94,5 @@ pub fn create(database: SqliteDatabase, client: &mut Client, action: NewGameActi
 
     database.write_game(&game);
     database.write_user(&user);
-    if let Some(opponent_id) = action.opponent_id {
-        let mut opponent = requests::fetch_user(database.clone(), opponent_id);
-        opponent.activity = UserActivity::Playing(game_id);
-        database.write_user(&opponent);
-    }
-
     client.send_all(commands);
 }

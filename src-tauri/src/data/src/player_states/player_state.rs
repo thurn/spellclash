@@ -19,6 +19,7 @@ use crate::core::numerics::LifeValue;
 use crate::core::primitives::{
     CardId, EntityId, HasController, HasEntityId, HasPlayerName, PlayerName, UserId,
 };
+use crate::player_states::game_agent::GameAgent;
 use crate::player_states::mana_pool::ManaPool;
 use crate::player_states::player_options::PlayerOptions;
 use crate::player_states::prompt_stack::PromptStack;
@@ -41,12 +42,12 @@ pub struct Players {
 }
 
 impl Players {
-    pub fn new(p1: Option<UserId>, p2: Option<UserId>, starting_life: LifeValue) -> Self {
+    pub fn new(p1: PlayerType, p2: PlayerType, starting_life: LifeValue) -> Self {
         Self {
             player_1: PlayerState::new(PlayerName::One, p1, starting_life),
             player_2: PlayerState::new(PlayerName::Two, p2, starting_life),
-            player_3: PlayerState::new(PlayerName::Three, None, starting_life),
-            player_4: PlayerState::new(PlayerName::Three, None, starting_life),
+            player_3: PlayerState::new(PlayerName::Three, PlayerType::None, starting_life),
+            player_4: PlayerState::new(PlayerName::Three, PlayerType::None, starting_life),
         }
     }
 }
@@ -71,14 +72,42 @@ impl PlayerQueries for Players {
     }
 }
 
+/// Possible types of players
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum PlayerType {
+    Human(UserId),
+
+    #[serde(skip)]
+    Agent(Box<dyn GameAgent>),
+
+    /// Player is not participating in this game
+    None,
+}
+
+impl PlayerType {
+    pub fn user_id(&self) -> Option<UserId> {
+        match self {
+            Self::Human(id) => Some(*id),
+            _ => None,
+        }
+    }
+
+    pub fn agent(&self) -> Option<&dyn GameAgent> {
+        match self {
+            Self::Agent(agent) => Some(agent.as_ref()),
+            _ => None,
+        }
+    }
+}
+
 /// Represents the state of a single player within a game
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlayerState {
     /// Name of this player
     pub name: PlayerName,
 
-    /// Optionally, the ID of a user who is this player
-    pub user_id: Option<UserId>,
+    /// Type of player this is
+    pub player_type: PlayerType,
 
     /// Entity ID for this player
     pub entity_id: EntityId,
@@ -111,10 +140,10 @@ pub struct PlayerState {
 }
 
 impl PlayerState {
-    pub fn new(name: PlayerName, user_id: Option<UserId>, life: LifeValue) -> Self {
+    pub fn new(name: PlayerName, player_type: PlayerType, life: LifeValue) -> Self {
         Self {
             name,
-            user_id,
+            player_type,
             entity_id: name.entity_id(),
             options: PlayerOptions::default(),
             life,

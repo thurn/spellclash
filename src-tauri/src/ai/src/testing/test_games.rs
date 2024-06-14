@@ -18,6 +18,7 @@ use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
 use data::game_states::game_state::{DebugConfiguration, GameState, GameStatus};
 use data::game_states::game_step::GamePhaseStep;
+use data::player_states::player_state::PlayerType;
 use database::sqlite_database::SqliteDatabase;
 use rules::game_creation::new_game;
 use utils::paths;
@@ -31,9 +32,9 @@ pub fn create(deck_name: DeckName) -> GameState {
     let mut game = new_game::create(
         database,
         GameId(Uuid::new_v4()),
-        None,
+        PlayerType::None,
         deck_name,
-        None,
+        PlayerType::None,
         deck_name,
         DebugConfiguration::default(),
     );

@@ -26,7 +26,7 @@ use data::game_states::game_step::GamePhaseStep;
 use data::game_states::history_data::GameHistory;
 use data::game_states::oracle::Oracle;
 use data::game_states::undo_tracker::UndoTracker;
-use data::player_states::player_state::Players;
+use data::player_states::player_state::{PlayerType, Players};
 use data::printed_cards::printed_card_id;
 use data::state_machines::state_machine_data::StateMachines;
 use database::sqlite_database::SqliteDatabase;
@@ -50,14 +50,14 @@ use crate::steps::step;
 pub fn create_and_start(
     database: SqliteDatabase,
     game_id: GameId,
-    p1_id: Option<UserId>,
+    p1: PlayerType,
     p1_deck_name: DeckName,
-    p2_id: Option<UserId>,
+    p2: PlayerType,
     p2_deck_name: DeckName,
     debug: DebugConfiguration,
 ) -> GameState {
     info!(?game_id, "Creating new game");
-    let mut game = create(database, game_id, p1_id, p1_deck_name, p2_id, p2_deck_name, debug);
+    let mut game = create(database, game_id, p1, p1_deck_name, p2, p2_deck_name, debug);
     library::draw_cards(&mut game, Source::Game, PlayerName::One, 7);
     library::draw_cards(&mut game, Source::Game, PlayerName::Two, 7);
     // TODO: Resolve mulligans
@@ -72,9 +72,9 @@ pub fn create_and_start(
 pub fn create(
     database: SqliteDatabase,
     game_id: GameId,
-    p1_id: Option<UserId>,
+    p1: PlayerType,
     p1_deck_name: DeckName,
-    p2_id: Option<UserId>,
+    p2: PlayerType,
     p2_deck_name: DeckName,
     debug: DebugConfiguration,
 ) -> GameState {
@@ -82,7 +82,7 @@ pub fn create(
     let p1_deck = find_deck(p1_deck_name);
     let p2_deck = find_deck(p2_deck_name);
 
-    let mut game = create_game(oracle, game_id, p1_id, p1_deck, p2_id, p2_deck, debug);
+    let mut game = create_game(oracle, game_id, p1, p1_deck, p2, p2_deck, debug);
     initialize_game::run(database.clone(), &mut game, None);
 
     game.shuffle_library(PlayerName::One);
@@ -93,9 +93,9 @@ pub fn create(
 fn create_game(
     oracle: Box<dyn Oracle>,
     game_id: GameId,
-    p1_id: Option<UserId>,
+    p1: PlayerType,
     p1_deck: Deck,
-    p2_id: Option<UserId>,
+    p2: PlayerType,
     p2_deck: Deck,
     debug: DebugConfiguration,
 ) -> GameState {
@@ -113,7 +113,7 @@ fn create_game(
         passed: EnumSet::empty(),
         configuration: GameConfiguration::new(PlayerName::One | PlayerName::Two, debug),
         state_machines: StateMachines::default(),
-        players: Players::new(p1_id, p2_id, 20),
+        players: Players::new(p1, p2, 20),
         zones,
         updates: None,
         combat: None,

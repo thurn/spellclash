@@ -38,9 +38,6 @@ pub struct NewGameAction {
     /// Deck for opponent to use
     pub opponent_deck: DeckName,
 
-    /// Optionally, a [UserId] for the opposing player
-    pub opponent_id: Option<UserId>,
-
     /// Debug options
     pub debug_options: NewGameDebugOptions,
 }

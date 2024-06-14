@@ -186,7 +186,7 @@ pub fn handle_game_action_internal(
             current_player = next_player;
             current_action = action;
             current_action_is_automatic = true;
-        } else if game.player(next_player).user_id.is_some() {
+        } else if game.player(next_player).player_type.user_id().is_some() {
             database.write_game(game);
             break;
         } else {

@@ -175,7 +175,7 @@ impl GameState {
     /// Panics if this user is not a player in this game.
     pub fn find_player_name(&self, user_id: UserId) -> PlayerName {
         for name in enum_iterator::all::<PlayerName>() {
-            if self.player(name).user_id == Some(user_id) {
+            if self.player(name).player_type.user_id() == Some(user_id) {
                 return name;
             }
         }
