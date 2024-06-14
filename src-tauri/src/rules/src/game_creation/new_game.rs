@@ -186,8 +186,9 @@ fn find_deck(name: DeckName) -> Deck {
         deck_name::DANDAN => Deck {
             colors: EnumSet::only(Color::Blue),
             cards: hashmap! {
-                printed_card_id::ISLAND => 30,
-                printed_card_id::BRAINSTORM => 30,
+                printed_card_id::ISLAND => 20,
+                printed_card_id::BRAINSTORM => 20,
+                printed_card_id::DANDAN => 20,
             },
         },
         _ => {

@@ -24,7 +24,7 @@ use rules::prompt_handling::prompts;
 pub fn brainstorm() -> CardDefinition {
     CardDefinition::new(card_name::BRAINSTORM).ability(SpellAbility::new().effects(|g, s| {
         library::draw_cards(g, s, s.controller, 3);
-        let cards = prompts::select_cards_from(
+        let cards = prompts::select_ordered_from(
             g,
             s,
             Text::HandToTopOfLibraryPrompt,

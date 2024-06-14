@@ -104,7 +104,7 @@ pub fn pick_number(
 /// This is typically used when the cards in question do not already exist in an
 /// ordered location, e.g. for selecting cards from hand to place on top of the
 /// library.
-pub fn select_cards_from<'a>(
+pub fn select_ordered_from<'a>(
     game: &mut GameState,
     scope: Scope,
     text: Text,
