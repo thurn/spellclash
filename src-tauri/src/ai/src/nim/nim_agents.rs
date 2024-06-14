@@ -14,8 +14,9 @@
 
 use std::marker::PhantomData;
 
-use crate::core::agent::AgentData;
-use crate::core::win_loss_evaluator::WinLossEvaluator;
+use ai_core::agent::AgentData;
+use ai_core::win_loss_evaluator::WinLossEvaluator;
+
 use crate::monte_carlo::monte_carlo_search::{MonteCarloAlgorithm, RandomPlayoutEvaluator};
 use crate::monte_carlo::uct1::Uct1;
 use crate::nim::nim_game::{NimPerfectEvaluator, NimState};

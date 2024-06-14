@@ -14,12 +14,12 @@
 
 use std::time::{Duration, Instant};
 
-use crate::core::game_state_node::{GameStateNode, GameStatus};
-use crate::core::selection_algorithm::SelectionAlgorithm;
-use crate::core::state_combiner::StateCombiner;
-use crate::core::state_evaluator::StateEvaluator;
-use crate::core::state_predictor::StatePredictor;
-use crate::core::{state_combiner, state_predictor};
+use crate::game_state_node::{GameStateNode, GameStatus};
+use crate::selection_algorithm::SelectionAlgorithm;
+use crate::state_combiner::StateCombiner;
+use crate::state_evaluator::StateEvaluator;
+use crate::state_predictor::StatePredictor;
+use crate::{state_combiner, state_predictor};
 
 #[derive(Debug, Clone, Copy)]
 pub struct AgentConfig {

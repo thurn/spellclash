@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::core::game_state_node::{GameStateNode, GameStatus};
-use crate::core::state_evaluator::StateEvaluator;
+use crate::game_state_node::{GameStateNode, GameStatus};
+use crate::state_evaluator::StateEvaluator;
 
 /// Evaluator which returns the scores for a completed game and 0 otherwise
 pub struct WinLossEvaluator;

@@ -15,13 +15,13 @@
 use std::marker::PhantomData;
 use std::time::{Duration, Instant};
 
-use ai::core::agent::AgentConfig;
-use ai::core::state_evaluator::StateEvaluator;
-use ai::core::win_loss_evaluator::WinLossEvaluator;
 use ai::game::agents;
 use ai::game::agents::AgentName;
 use ai::monte_carlo::monte_carlo_search::RandomPlayoutEvaluator;
 use ai::testing::test_games;
+use ai_core::agent::AgentConfig;
+use ai_core::state_evaluator::StateEvaluator;
+use ai_core::win_loss_evaluator::WinLossEvaluator;
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use data::actions::game_action::GameAction;
 use data::card_definitions::card_name;

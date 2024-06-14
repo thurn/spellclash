@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::core::agent::AgentConfig;
-use crate::core::game_state_node::GameStateNode;
-use crate::core::selection_algorithm::SelectionAlgorithm;
-use crate::core::state_evaluator::StateEvaluator;
+use ai_core::agent::AgentConfig;
+use ai_core::game_state_node::GameStateNode;
+use ai_core::selection_algorithm::SelectionAlgorithm;
+use ai_core::state_evaluator::StateEvaluator;
 
 /// An agent which does a depth 1 search of legal actions, returning the one
 /// that produces the best evaluator state.

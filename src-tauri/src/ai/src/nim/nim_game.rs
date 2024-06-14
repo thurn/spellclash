@@ -16,11 +16,10 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
+use ai_core::agent::{Agent, AgentConfig};
+use ai_core::game_state_node::{GameStateNode, GameStatus};
+use ai_core::state_evaluator::StateEvaluator;
 use enumset::{EnumSet, EnumSetType};
-
-use crate::core::agent::{Agent, AgentConfig};
-use crate::core::game_state_node::{GameStateNode, GameStatus};
-use crate::core::state_evaluator::StateEvaluator;
 
 /// Asserts that a given `agent` picks an optimal game action for the provided
 /// game state.

@@ -14,10 +14,11 @@
 
 use std::time::Instant;
 
-use crate::core::agent::AgentConfig;
-use crate::core::game_state_node::{GameStateNode, GameStatus};
-use crate::core::selection_algorithm::SelectionAlgorithm;
-use crate::core::state_evaluator::StateEvaluator;
+use ai_core::agent::AgentConfig;
+use ai_core::game_state_node::{GameStateNode, GameStatus};
+use ai_core::selection_algorithm::SelectionAlgorithm;
+use ai_core::state_evaluator::StateEvaluator;
+
 use crate::tree_search::scored_action::ScoredAction;
 
 /// The Minimax search algorithm, one of the simplest tree search algorithms.

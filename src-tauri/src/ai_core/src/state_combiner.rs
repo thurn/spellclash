@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::core::game_state_node::{GameStateNode, GameStatus};
-use crate::core::state_evaluator::StateEvaluator;
-use crate::core::state_predictor::StatePredictor;
+use crate::game_state_node::{GameStateNode, GameStatus};
+use crate::state_evaluator::StateEvaluator;
+use crate::state_predictor::StatePredictor;
 
 /// StateCombiners merge together the results of [StatePredictor]s. Given the
 /// set of predicted game states, they select the best *actual* game state to

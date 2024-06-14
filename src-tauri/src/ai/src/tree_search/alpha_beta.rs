@@ -15,12 +15,12 @@
 use std::cmp;
 use std::time::Instant;
 
+use ai_core::agent::AgentConfig;
+use ai_core::game_state_node::{GameStateNode, GameStatus};
+use ai_core::selection_algorithm::SelectionAlgorithm;
+use ai_core::state_evaluator::StateEvaluator;
 use tracing::debug;
 
-use crate::core::agent::AgentConfig;
-use crate::core::game_state_node::{GameStateNode, GameStatus};
-use crate::core::selection_algorithm::SelectionAlgorithm;
-use crate::core::state_evaluator::StateEvaluator;
 use crate::tree_search::scored_action::ScoredAction;
 
 /// Implements alpha-beta pruning over minimax tree search.

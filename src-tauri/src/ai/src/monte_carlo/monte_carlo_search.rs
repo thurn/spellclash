@@ -22,6 +22,10 @@ use std::collections::HashSet;
 use std::marker::PhantomData;
 use std::time::Instant;
 
+use ai_core::agent::AgentConfig;
+use ai_core::game_state_node::{GameStateNode, GameStatus};
+use ai_core::selection_algorithm::SelectionAlgorithm;
+use ai_core::state_evaluator::StateEvaluator;
 use petgraph::prelude::{EdgeRef, NodeIndex};
 use petgraph::{Direction, Graph};
 use rand::prelude::IteratorRandom;
@@ -29,10 +33,6 @@ use tracing::{info, instrument};
 use utils::command_line;
 use utils::command_line::TracingStyle;
 
-use crate::core::agent::AgentConfig;
-use crate::core::game_state_node::{GameStateNode, GameStatus};
-use crate::core::selection_algorithm::SelectionAlgorithm;
-use crate::core::state_evaluator::StateEvaluator;
 use crate::monte_carlo::child_score::{ChildScoreAlgorithm, SelectionMode};
 
 /// Plays out a game using random moves until a terminal state is reached, then

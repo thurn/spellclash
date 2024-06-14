@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::core::game_state_node::GameStateNode;
+use crate::game_state_node::GameStateNode;
 
 /// A trait implementation for producing a 'score' for a given game state.
 pub trait StateEvaluator<TNode: GameStateNode>: Send {

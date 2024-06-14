@@ -9,6 +9,7 @@ doctest = false
 bench = false
 
 [dependencies]
+ai_core = { path = "../ai_core", version = "0.0.0" }
 utils = { path = "../utils", version = "0.0.0" }
 
 color-eyre = "0.6.2"

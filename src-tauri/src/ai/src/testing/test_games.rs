@@ -23,6 +23,7 @@ use rules::game_creation::new_game;
 use utils::paths;
 use uuid::Uuid;
 
+use crate::game::ai_definitions::AgentGameState;
 use crate::testing::test_game_builder::{TestGame, TestPlayer};
 
 /// Create a new [GameState] for use in benchmarking & AI testing
@@ -44,7 +45,7 @@ pub fn create(deck_name: DeckName) -> GameState {
     game
 }
 
-pub fn vanilla_game_scenario() -> GameState {
+pub fn vanilla_game_scenario() -> AgentGameState {
     let mut game = create(deck_name::GREEN_VANILLA);
     let player = TestPlayer::new()
         .on_battlefield(card_name::FOREST)
@@ -67,5 +68,5 @@ pub fn vanilla_game_scenario() -> GameState {
         .player_2(player)
         .apply_to(&mut game);
 
-    game
+    AgentGameState(game)
 }
