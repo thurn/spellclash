@@ -14,13 +14,13 @@
 
 use std::time::Instant;
 
-use ai_core::agent::AgentConfig;
-use ai_core::game_state_node::GameStateNode;
-use ai_core::selection_algorithm::SelectionAlgorithm;
-use ai_core::state_evaluator::StateEvaluator;
 use utils::command_line;
 use utils::command_line::TracingStyle;
 
+use crate::core::agent::AgentConfig;
+use crate::core::game_state_node::GameStateNode;
+use crate::core::selection_algorithm::SelectionAlgorithm;
+use crate::core::state_evaluator::StateEvaluator;
 use crate::tree_search::alpha_beta;
 
 /// Implements a search algorithm which repeatedly applies alpha-beta search at

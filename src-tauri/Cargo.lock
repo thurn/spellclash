@@ -62,7 +62,6 @@ dependencies = [
 name = "ai"
 version = "0.0.0"
 dependencies = [
- "ai_core",
  "clap",
  "color-eyre",
  "crossbeam",
@@ -78,30 +77,6 @@ dependencies = [
  "rand_xoshiro",
  "rayon",
  "rules",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "tree-flat",
- "utils",
- "uuid",
-]
-
-[[package]]
-name = "ai_core"
-version = "0.0.0"
-dependencies = [
- "clap",
- "color-eyre",
- "crossbeam",
- "enum-iterator",
- "enumset",
- "itertools 0.12.1",
- "maplit",
- "once_cell",
- "petgraph",
- "rand 0.8.5",
- "rand_xoshiro",
- "rayon",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -293,7 +268,6 @@ name = "benchmarks"
 version = "0.0.0"
 dependencies = [
  "ai",
- "ai_core",
  "criterion",
  "data",
  "database",
@@ -1117,7 +1091,6 @@ dependencies = [
 name = "data"
 version = "0.0.0"
 dependencies = [
- "ai_core",
  "color-eyre",
  "dashmap",
  "derive_more",

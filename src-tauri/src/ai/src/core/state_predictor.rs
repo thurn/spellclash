@@ -14,7 +14,7 @@
 
 use std::iter;
 
-use crate::game_state_node::GameStateNode;
+use crate::core::game_state_node::GameStateNode;
 
 /// StatePredictors address the problem of hidden information in games. Most
 /// decision rules function effectively only for perfect-information games. The

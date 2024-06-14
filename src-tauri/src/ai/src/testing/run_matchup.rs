@@ -14,15 +14,15 @@
 
 use std::time::{Duration, Instant};
 
-use ai_core::agent::AgentConfig;
-use ai_core::game_state_node::{GameStateNode, GameStatus};
 use clap::{Parser, ValueEnum};
 use data::core::primitives::PlayerName;
 use data::decks::deck_name;
+use data::game_states::game_state::GameState;
 
+use crate::core::agent::AgentConfig;
+use crate::core::game_state_node::{GameStateNode, GameStatus};
 use crate::game::agents;
 use crate::game::agents::AgentName;
-use crate::game::ai_definitions::AgentGameState;
 use crate::testing::test_games;
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
@@ -58,7 +58,7 @@ pub fn run_with_args(args: &MatchupArgs) {
         if args.verbosity >= Verbosity::Matches {
             println!(">>> Running match {} between {} and {}", i, user.name(), opponent.name());
         }
-        let mut game = AgentGameState(test_games::create(deck_name::GREEN_VANILLA));
+        let mut game = test_games::create(deck_name::GREEN_VANILLA);
         run_match(args.user, args.opponent, &mut game, args.move_time_ms, args.verbosity);
     }
 }
@@ -66,7 +66,7 @@ pub fn run_with_args(args: &MatchupArgs) {
 pub fn run_match(
     user_agent: AgentName,
     opponent_agent: AgentName,
-    game: &mut AgentGameState,
+    game: &mut GameState,
     move_time_ms: u64,
     verbosity: Verbosity,
 ) -> AgentName {

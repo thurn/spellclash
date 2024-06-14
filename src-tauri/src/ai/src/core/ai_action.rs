@@ -14,7 +14,6 @@
 
 use std::time::{Duration, Instant};
 
-use ai_core::agent::AgentConfig;
 use data::actions::game_action::GameAction;
 use data::core::primitives::PlayerName;
 use data::game_states::game_state::GameState;
@@ -24,9 +23,9 @@ use tracing::{instrument, subscriber, Level};
 use utils::command_line;
 use utils::command_line::TracingStyle;
 
+use crate::core::agent::AgentConfig;
 use crate::game::agents;
 use crate::game::agents::AgentName;
-use crate::game::ai_definitions::AgentGameState;
 
 /// Select a game action for the [PlayerName] in the given [GameState].
 #[instrument(level = "debug", skip_all)]
@@ -39,7 +38,7 @@ pub fn select(input_game: &GameState, player: PlayerName) -> GameAction {
         return legal[0];
     }
 
-    let game = AgentGameState(input_game.shallow_clone());
+    let game = input_game.shallow_clone();
     let agent = agents::get_agent(AgentName::Uct1Iterations10_000);
     let deadline = Duration::from_secs(100);
     match command_line::flags().tracing_style {

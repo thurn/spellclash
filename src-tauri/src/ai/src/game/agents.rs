@@ -14,12 +14,12 @@
 
 use std::marker::PhantomData;
 
-use ai_core::agent::{Agent, AgentData};
-use ai_core::first_available_action::FirstAvailableActionAlgorithm;
-use ai_core::win_loss_evaluator::WinLossEvaluator;
 use clap::ValueEnum;
+use data::game_states::game_state::GameState;
 
-use crate::game::ai_definitions::AgentGameState;
+use crate::core::agent::{Agent, AgentData};
+use crate::core::first_available_action::FirstAvailableActionAlgorithm;
+use crate::core::win_loss_evaluator::WinLossEvaluator;
 use crate::game::evaluators::CustomHeuristicEvaluator;
 use crate::monte_carlo::monte_carlo_search::{MonteCarloAlgorithm, RandomPlayoutEvaluator};
 use crate::monte_carlo::uct1::Uct1;
@@ -38,7 +38,7 @@ pub enum AgentName {
     FirstAvailableAction,
 }
 
-pub fn get_agent(name: AgentName) -> Box<dyn Agent<AgentGameState>> {
+pub fn get_agent(name: AgentName) -> Box<dyn Agent<GameState>> {
     match name {
         AgentName::AlphaBetaDepth5 => Box::new(AgentData::omniscient(
             "ALPHA_BETA_5",

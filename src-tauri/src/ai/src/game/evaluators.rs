@@ -12,19 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use ai_core::state_evaluator::StateEvaluator;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives;
-use data::game_states::game_state::GameStatus;
+use data::game_states::game_state::{GameState, GameStatus};
 use data::player_states::player_state::PlayerQueries;
 use rules::queries::player_queries;
 
-use crate::game::ai_definitions::AgentGameState;
+use crate::core::state_evaluator::StateEvaluator;
 
 pub struct CustomHeuristicEvaluator;
 
-impl StateEvaluator<AgentGameState> for CustomHeuristicEvaluator {
-    fn evaluate(&self, game: &AgentGameState, player: primitives::PlayerName) -> i32 {
+impl StateEvaluator<GameState> for CustomHeuristicEvaluator {
+    fn evaluate(&self, game: &GameState, player: primitives::PlayerName) -> i32 {
         match game.status {
             GameStatus::Playing => {
                 let life = (game.player(player).life

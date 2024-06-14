@@ -12,10 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::fmt::Debug;
-use std::ops::{Deref, DerefMut};
-
-use ai_core::game_state_node::{GameStateNode, GameStatus};
 use data::actions::game_action::GameAction;
 use data::core::primitives;
 use data::game_states::game_state;
@@ -25,24 +21,9 @@ use rules::action_handlers::actions::ExecuteAction;
 use rules::legality::legal_actions;
 use rules::legality::legal_actions::LegalActions;
 
-#[derive(Debug, Clone)]
-pub struct AgentGameState(pub GameState);
+use crate::core::game_state_node::{GameStateNode, GameStatus};
 
-impl Deref for AgentGameState {
-    type Target = GameState;
-
-    fn deref(&self) -> &GameState {
-        &self.0
-    }
-}
-
-impl DerefMut for AgentGameState {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl GameStateNode for AgentGameState {
+impl GameStateNode for GameState {
     type Action = GameAction;
     type PlayerName = primitives::PlayerName;
 
