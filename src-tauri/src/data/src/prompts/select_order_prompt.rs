@@ -38,9 +38,10 @@ pub enum Quantity {
     /// No restrictions on number of cards selected.
     AnyNumber,
 
-    /// Player must select exactly this number of cards *or* all cards in the
-    /// prompt if less than this number are available.
-    Count(usize),
+    /// Player must select order for exactly this number of cards from the
+    /// [CardOrderLocation::Unordered] location *or* all cards in that location
+    /// if less than this number are available.
+    Ordered(usize),
 }
 
 /// A prompt for a player to select one or more cards from a set of cards to
@@ -57,19 +58,39 @@ pub struct SelectOrderPrompt {
     pub cards: HashMap<CardOrderLocation, Vec<CardId>>,
 
     /// Validation for the number of cards selected.
-    ///
-    /// The counts used here are determined across all [CardOrderLocation]s
-    /// *except* the 'Unordered' location. For example a 'Count' constraint
-    /// will count the number of cards selected in all target locations but will
-    /// not count unordered cards.
     pub quantity: Quantity,
+
+    /// Cards which have been moved within the prompt at least once.
+    ///
+    /// In order to prevent infinite loops in AI action selection, we only allow
+    /// it to move each card one time.
+    pub moved: HashSet<CardId>,
 }
 
 impl SelectOrderPrompt {
+    pub fn new(cards: HashMap<CardOrderLocation, Vec<CardId>>) -> Self {
+        SelectOrderPrompt { cards, quantity: Quantity::AnyNumber, moved: HashSet::new() }
+    }
+
+    pub fn quantity(mut self, quantity: Quantity) -> Self {
+        self.quantity = quantity;
+        self
+    }
+
     /// Returns the list of selected cards in a given selection location.
-    pub fn in_location(&self, selection_type: CardOrderLocation) -> &Vec<CardId> {
+    pub fn cards_in_location(&self, selection_type: CardOrderLocation) -> &Vec<CardId> {
         static EMPTY: Vec<CardId> = vec![];
         self.cards.get(&selection_type).unwrap_or(&EMPTY)
+    }
+
+    /// Counts the cards stored in this prompt, skipping cards in the
+    /// [CardOrderLocation::Unordered] location.
+    pub fn count_ordered_cards(&self) -> usize {
+        self.cards
+            .iter()
+            .filter(|(&location, _)| location != CardOrderLocation::Unordered)
+            .map(|(_, cards)| cards.len())
+            .sum()
     }
 
     /// Returns true if the provided [CardId] is present anywhere among the

@@ -34,7 +34,7 @@ impl GameStateNode for GameState {
     fn status(&self) -> GameStatus<primitives::PlayerName> {
         match self.status {
             game_state::GameStatus::GameOver { winners } => GameStatus::Completed { winners },
-            _ => GameStatus::InProgress { current_turn: legal_actions::next_to_act(self) },
+            _ => GameStatus::InProgress { current_turn: legal_actions::next_to_act(self, None) },
         }
     }
 
@@ -43,7 +43,7 @@ impl GameStateNode for GameState {
         player: primitives::PlayerName,
     ) -> Box<dyn Iterator<Item = GameAction> + 'a> {
         Box::new(
-            legal_actions::compute(self, player, LegalActions { include_interface_actions: false })
+            legal_actions::compute(self, player, LegalActions { for_human_player: false })
                 .into_iter(),
         )
     }

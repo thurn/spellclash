@@ -27,7 +27,7 @@ use data::player_states::player_state::PlayerQueries;
 use data::prompts::prompt::{Prompt, PromptType};
 use data::prompts::select_order_prompt::CardOrderLocation;
 use log::info;
-use rules::legality::legal_actions;
+use rules::legality::{legal_actions, legal_prompt_actions};
 
 use crate::commands::field_state::FieldKey;
 use crate::core::display_state::DisplayState;
@@ -48,9 +48,10 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
         .map(|c| card_sync::card_view(builder, &CardViewContext::Game(c.printed(), game, c)))
         .collect::<Vec<_>>();
 
+    let display_state = builder.response_state.display_state;
     builder.push_game_view(GameView {
-        viewer: player_view(game, builder.display_as_player()),
-        opponent: player_view(game, match builder.display_as_player() {
+        viewer: player_view(display_state, game, builder.display_as_player()),
+        opponent: player_view(display_state, game, match builder.display_as_player() {
             PlayerName::One => PlayerName::Two,
             PlayerName::Two => PlayerName::One,
             _ => todo!("Not implemented"),
@@ -87,10 +88,10 @@ fn card_drag_targets(
     vec![]
 }
 
-fn player_view(game: &GameState, player: PlayerName) -> PlayerView {
+fn player_view(display_state: &DisplayState, game: &GameState, player: PlayerName) -> PlayerView {
     PlayerView {
         life: game.player(player).life as f64,
-        can_act: legal_actions::next_to_act(game) == player,
+        can_act: legal_actions::next_to_act(game, display_state.prompt.as_ref()) == player,
     }
 }
 
@@ -118,7 +119,7 @@ fn bottom_game_controls(
     player: PlayerName,
 ) -> Vec<GameControlView> {
     if let Some(current) = &state.prompt {
-        return prompt_view(state, current);
+        return prompt_view(state, current, player);
     }
 
     let mut result = vec![];
@@ -181,7 +182,15 @@ fn bottom_game_controls(
     result.into_iter().map(GameControlView::Button).collect()
 }
 
-fn prompt_view(state: &DisplayState, prompt: &Prompt) -> Vec<GameControlView> {
+fn prompt_view(state: &DisplayState, prompt: &Prompt, player: PlayerName) -> Vec<GameControlView> {
+    let mut result = vec![];
+    if legal_prompt_actions::can_take_action(prompt, player, PromptAction::SubmitCardSelection) {
+        result.push(GameControlView::Button(GameButtonView::new_primary(
+            "Submit",
+            PromptAction::SubmitCardSelection,
+        )));
+    }
+
     match &prompt.prompt_type {
         PromptType::EntityChoice(_) => {}
         PromptType::SelectOrder(_) => {}
@@ -205,5 +214,6 @@ fn prompt_view(state: &DisplayState, prompt: &Prompt) -> Vec<GameControlView> {
             return vec![input];
         }
     }
-    vec![]
+
+    result
 }

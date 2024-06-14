@@ -20,6 +20,7 @@ use data::core::primitives::{CardId, PlayerName, Source};
 use data::game_states::combat_state::{CombatState, CombatStateKind};
 use data::game_states::game_state::{GameState, GameStatus};
 use data::printed_cards::printed_card::Face;
+use data::prompts::prompt::Prompt;
 use tracing::instrument;
 
 use crate::legality::{can_pay_mana_cost, legal_combat_actions};
@@ -27,11 +28,12 @@ use crate::play_cards::{pick_face_to_play, play_card};
 
 #[derive(Debug, Clone, Copy)]
 pub struct LegalActions {
-    /// Include 'interface only' actions in the response which do not progress
-    /// game state, e.g. removing a declared attacker.
+    /// Include 'interface only' actions in the response which don't affect the
+    /// game, e.g. removing a declared attacker.
     ///
-    /// These are normally excluded from AI agent options.
-    pub include_interface_actions: bool,
+    /// These are excluded from AI agent options in order to prevent infinite
+    /// loops of game actions which do not progress the game state.
+    pub for_human_player: bool,
 }
 
 /// List of all legal actions the named player can take in the
@@ -43,7 +45,7 @@ pub fn compute(game: &GameState, player: PlayerName, options: LegalActions) -> V
         return result;
     }
 
-    if next_to_act(game) != player {
+    if next_to_act(game, None) != player {
         return result;
     }
 
@@ -65,7 +67,7 @@ pub fn compute(game: &GameState, player: PlayerName, options: LegalActions) -> V
 /// provided [GameAction].
 #[instrument(level = "trace", skip(game, game_action))]
 pub fn can_take_action(game: &GameState, player: PlayerName, game_action: &GameAction) -> bool {
-    compute(game, player, LegalActions { include_interface_actions: true })
+    compute(game, player, LegalActions { for_human_player: true })
         .iter()
         .any(|action| action == game_action)
 }
@@ -75,7 +77,11 @@ pub fn can_take_action(game: &GameState, player: PlayerName, game_action: &GameA
 /// If the game has not yet started, this will be player one. If the game
 /// has ended, this will be the player who held priority at the end of the
 /// game.
-pub fn next_to_act(game: &GameState) -> PlayerName {
+pub fn next_to_act(game: &GameState, prompt: Option<&Prompt>) -> PlayerName {
+    if let Some(p) = prompt {
+        return p.player;
+    }
+
     match game.combat.as_ref() {
         Some(CombatState::ProposingAttackers(_)) => game.turn.active_player,
         Some(CombatState::ConfirmedAttackers(_)) => game.priority,

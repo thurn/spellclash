@@ -102,13 +102,16 @@ pub fn hand_to_top_of_library(
     scope: Scope,
     quantity: Quantity,
 ) -> Vec<CardId> {
-    select_order(game, scope.controller, Text::HandToTopOfLibraryPrompt, SelectOrderPrompt {
-        cards: hashmap! {
+    select_order(
+        game,
+        scope.controller,
+        Text::HandToTopOfLibraryPrompt,
+        SelectOrderPrompt::new(hashmap! {
             CardOrderLocation::Unordered => game.hand(scope.controller).iter().copied().collect(),
             CardOrderLocation::TopOfLibrary => vec![]
-        },
-        quantity,
-    })
+        })
+        .quantity(quantity),
+    )
     .remove(&CardOrderLocation::TopOfLibrary)
     .unwrap_or_default()
 }

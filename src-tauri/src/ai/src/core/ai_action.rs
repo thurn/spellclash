@@ -30,10 +30,9 @@ use crate::game::agents::AgentName;
 /// Select a game action for the [PlayerName] in the given [GameState].
 #[instrument(level = "debug", skip_all)]
 pub fn select(input_game: &GameState, player: PlayerName) -> GameAction {
-    assert_eq!(legal_actions::next_to_act(input_game), player, "Not {:?}'s turn", player);
-    let legal = legal_actions::compute(input_game, player, LegalActions {
-        include_interface_actions: false,
-    });
+    assert_eq!(legal_actions::next_to_act(input_game, None), player, "Not {:?}'s turn", player);
+    let legal =
+        legal_actions::compute(input_game, player, LegalActions { for_human_player: false });
     assert!(!legal.is_empty(), "No legal actions available");
     if legal.len() == 1 {
         return legal[0];

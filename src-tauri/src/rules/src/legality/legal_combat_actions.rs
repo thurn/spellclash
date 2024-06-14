@@ -58,7 +58,7 @@ pub fn append(
                         .map(CombatAction::SetSelectedAttackersTarget),
                 );
             }
-            if options.include_interface_actions {
+            if options.for_human_player {
                 extend_actions(
                     actions,
                     selected_attackers
@@ -87,7 +87,7 @@ pub fn append(
                     blockers.attackers.all().map(CombatAction::SetSelectedBlockersTarget),
                 );
             }
-            if options.include_interface_actions {
+            if options.for_human_player {
                 extend_actions(
                     actions,
                     blockers

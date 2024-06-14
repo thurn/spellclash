@@ -50,6 +50,8 @@ fn select_order(prompt: &mut Prompt, card_id: CardId, location: CardOrderLocatio
         panic!("Expected SelectOrder prompt type");
     };
 
+    prompt_data.moved.insert(card_id);
+
     // Remove previous position
     for order_location in enum_iterator::all::<CardOrderLocation>() {
         if let Some(map) = prompt_data.cards.get_mut(&order_location) {

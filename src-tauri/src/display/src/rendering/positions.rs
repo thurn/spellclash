@@ -77,7 +77,9 @@ fn position_override(builder: &ResponseBuilder, card: &CardState) -> Option<Obje
             PromptType::EntityChoice(_) => {}
             PromptType::SelectOrder(data) => {
                 for location in enum_iterator::all::<CardOrderLocation>() {
-                    if let Some(i) = data.in_location(location).iter().position(|c| c == &card.id) {
+                    if let Some(i) =
+                        data.cards_in_location(location).iter().position(|c| c == &card.id)
+                    {
                         return Some(ObjectPosition {
                             position: Position::CardOrderLocation(location),
                             sorting_key: i as f64,

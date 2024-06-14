@@ -150,7 +150,7 @@ pub fn handle_game_action_internal(
 
     if let Some(act_as) = game.configuration.debug.act_as_player {
         // Override player we are acting as for debugging purposes
-        if act_as.name == legal_actions::next_to_act(game) {
+        if act_as.name == legal_actions::next_to_act(game, None) {
             current_player = act_as.name;
         }
     }
@@ -165,7 +165,7 @@ pub fn handle_game_action_internal(
         });
         send_updates(game, client, &get_display_state());
 
-        let next_player = legal_actions::next_to_act(game);
+        let next_player = legal_actions::next_to_act(game, None);
         if let Some(action) = auto_pass_action(game, next_player) {
             debug!(?next_player, "Automatically passing");
             current_player = next_player;
@@ -234,10 +234,8 @@ pub fn auto_pass_action(game: &GameState, player: PlayerName) -> Option<GameActi
             }
 
             if game.player(player).options.auto_pass
-                && legal_actions::compute(game, player, LegalActions {
-                    include_interface_actions: true,
-                })
-                .len()
+                && legal_actions::compute(game, player, LegalActions { for_human_player: true })
+                    .len()
                     <= 1
                 && !(is_active_player && ALWAYS_STOP_ACTIVE.contains(game.step)
                     || !is_active_player && ALWAYS_STOP_INACTIVE.contains(game.step))
@@ -247,10 +245,7 @@ pub fn auto_pass_action(game: &GameState, player: PlayerName) -> Option<GameActi
                 return Some(GameAction::PassPriority);
             }
         } else if game.player(player).options.auto_pass
-            && legal_actions::compute(game, player, LegalActions {
-                include_interface_actions: true,
-            })
-            .len()
+            && legal_actions::compute(game, player, LegalActions { for_human_player: true }).len()
                 <= 1
         {
             // No response available to item on stack, automatically pass

@@ -45,9 +45,7 @@ pub fn green_vanilla(c: &mut Criterion) {
     let game = test_games::vanilla_game_scenario();
     group.bench_function("legal_actions", |b| {
         b.iter(|| {
-            legal_actions::compute(&game, PlayerName::One, LegalActions {
-                include_interface_actions: false,
-            })
+            legal_actions::compute(&game, PlayerName::One, LegalActions { for_human_player: false })
         })
     });
 

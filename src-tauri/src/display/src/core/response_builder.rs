@@ -118,7 +118,9 @@ impl<'a> ResponseBuilder<'a> {
     /// this may not match the user's [PlayerName].
     pub fn act_as_player(&self, game: &GameState) -> PlayerName {
         if let Some(act) = self.response_state.act_as_player {
-            if act.name == legal_actions::next_to_act(game) {
+            let next =
+                legal_actions::next_to_act(game, self.response_state.display_state.prompt.as_ref());
+            if act.name == next {
                 return act.name;
             }
         }
