@@ -22,30 +22,45 @@ use tracing::instrument;
 
 use crate::game_creation::initialize_game;
 
+pub enum PromptExecutionResult {
+    Prompt(Prompt),
+    PromptResponse(PromptResponse),
+}
+
 /// Updates the state of a [Prompt] based on a [PromptAction].
 ///
 /// There are two types of possible actions in response to a prompt:
 ///
 /// 1) For intermediate updates as part of selecting a response (e.g. moving
 ///    around or reordering cards in a card selector), this function is expected
-///    to mutate the provided [Prompt] and return None
-/// 2) For 'final' actions (e.g. submitting the list of selected cards in a card
+///    to return a new [Prompt] to show.
+/// 2) For 'final' actions e.g. submitting the list of selected cards in a card
 ///    selector), this function is expected to return a [PromptResponse] which
-///    will be used to unblock the thread which requested a choice. Changes to
-///    the provided [Prompt] will be ignored in this case.
+///    will be used to unblock the thread which requested a choice.
 #[instrument(name = "prompt_actions_execute", level = "debug")]
-pub fn execute(prompt: &mut Prompt, action: PromptAction) -> Option<PromptResponse> {
+pub fn execute(prompt: Prompt, action: PromptAction) -> PromptExecutionResult {
     match action {
-        PromptAction::PickNumber(n) => Some(PromptResponse::PickNumber(n)),
-        PromptAction::SelectOrder(card_id, location, index) => {
-            select_order(prompt, card_id, location, index);
-            None
+        PromptAction::PickNumber(n) => {
+            PromptExecutionResult::PromptResponse(PromptResponse::PickNumber(n))
         }
-        PromptAction::SubmitCardSelection => None,
+        PromptAction::SelectOrder(card_id, location, index) => {
+            select_order(prompt, card_id, location, index)
+        }
+        PromptAction::SubmitCardSelection => {
+            let PromptType::SelectOrder(prompt_data) = prompt.prompt_type else {
+                panic!("Expected SelectOrder prompt type");
+            };
+            PromptExecutionResult::PromptResponse(PromptResponse::SelectOrder(prompt_data.cards))
+        }
     }
 }
 
-fn select_order(prompt: &mut Prompt, card_id: CardId, location: CardOrderLocation, index: usize) {
+fn select_order(
+    mut prompt: Prompt,
+    card_id: CardId,
+    location: CardOrderLocation,
+    index: usize,
+) -> PromptExecutionResult {
     let PromptType::SelectOrder(prompt_data) = &mut prompt.prompt_type else {
         panic!("Expected SelectOrder prompt type");
     };
@@ -60,4 +75,5 @@ fn select_order(prompt: &mut Prompt, card_id: CardId, location: CardOrderLocatio
     }
 
     prompt_data.cards.entry(location).or_default().insert(index, card_id);
+    PromptExecutionResult::Prompt(prompt)
 }

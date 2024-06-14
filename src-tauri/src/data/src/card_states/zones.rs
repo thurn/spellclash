@@ -15,6 +15,7 @@
 use std::collections::{HashSet, VecDeque};
 
 use enumset::EnumSet;
+use log::debug;
 use rand::prelude::SliceRandom;
 use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};

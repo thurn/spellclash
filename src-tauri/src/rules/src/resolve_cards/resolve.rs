@@ -50,8 +50,7 @@ pub fn resolve_top_of_stack(game: &mut GameState) {
     }
 
     let card = game.card(card_id);
-    if (CardKind::Normal | CardKind::CardCopyOnStack).contains(card.kind) &&
-        card_queries::card_types(game, card_id).iter().any(|t| t.is_permanent()) {
+    if card_queries::card_types(game, card_id).iter().any(|t| t.is_permanent()) {
         // > 608.3. If the object that's resolving is a permanent spell, its resolution may involve
         // > several steps. The instructions in rules 608.3a and b are always performed first. Then
         // > one of the steps in rule 608.3c-e is performed, if appropriate.
@@ -71,5 +70,9 @@ pub fn resolve_top_of_stack(game: &mut GameState) {
         } else {
             todo!("Implement targeting for permanents");
         }
+    } else {
+        // > 608.2m. As the final part of an instant or sorcery spell's resolution, the spell
+        // is put into its owner's graveyard.
+        move_card::run(game, Source::Game, card_id, Zone::Graveyard);
     }
 }

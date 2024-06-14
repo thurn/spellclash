@@ -61,10 +61,17 @@ impl PromptType {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, EnumDiscriminants)]
+#[strum_discriminants(name(PromptResponseKind))]
 pub enum PromptResponse {
     EntityChoice(EntityId),
     SelectOrder(HashMap<CardOrderLocation, Vec<CardId>>),
     PlayCards(Vec<CardId>),
     PickNumber(u32),
+}
+
+impl PromptResponse {
+    pub fn kind(&self) -> PromptResponseKind {
+        self.into()
+    }
 }

@@ -19,6 +19,7 @@ use data::core::numerics::Damage;
 use data::core::primitives::{CardId, EntityId, HasCardId, HasSource, Zone, ALL_POSSIBLE_PLAYERS};
 use data::game_states::game_state::{GameState, TurnData};
 use data::game_states::state_based_event::StateBasedEvent;
+use tracing::debug;
 
 /// Moves a card to a new zone, updates indices, assigns a new
 /// [EntityId] to it, and fires all relevant events.
@@ -28,6 +29,7 @@ use data::game_states::state_based_event::StateBasedEvent;
 /// Panics if this card was not found in its previous zone.
 pub fn run(game: &mut GameState, _source: impl HasSource, id: impl HasCardId, zone: Zone) {
     let id = id.card_id();
+    debug!(?id, ?zone, "Moving card to zone");
     on_leave_zone(game, id, game.card(id.card_id()).zone);
     game.zones.move_card(id, zone);
     on_enter_zone(game, id, zone);

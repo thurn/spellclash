@@ -39,7 +39,11 @@ pub fn send(game: &mut GameState, prompt: Prompt) -> PromptResponse {
         .as_ref()
         .expect("PromptChannel")
         .send(GameUpdate::new(game).prompt(prompt).response_channel(sender));
-    receiver.blocking_recv().expect("Unable to receive prompt response, sender has dropped")
+    let result =
+        receiver.blocking_recv().expect("Unable to receive prompt response, sender has dropped");
+    let result_kind = result.kind();
+    info!(?result_kind, "Got prompt response");
+    result
 }
 
 pub fn choose_entity(

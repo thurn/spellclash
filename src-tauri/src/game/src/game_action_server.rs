@@ -34,6 +34,7 @@ use display::rendering::render;
 use enumset::{enum_set, EnumSet};
 use once_cell::sync::Lazy;
 use rules::action_handlers::actions::ExecuteAction;
+use rules::action_handlers::prompt_actions::PromptExecutionResult;
 use rules::action_handlers::{actions, prompt_actions};
 use rules::legality::legal_actions;
 use rules::legality::legal_actions::LegalActions;
@@ -90,11 +91,11 @@ pub async fn handle_game_action(database: SqliteDatabase, client: &mut Client, a
     });
 
     while let Some(update) = receiver.recv().await {
-        let mut display_state = get_display_state();
         if let Some(prompt) = update.prompt.as_ref() {
             let kind = prompt.prompt_type.kind();
             info!(immediate = true, ?kind, "Awaiting prompt response")
         }
+        let mut display_state = get_display_state();
         display_state.prompt = update.prompt;
         display_state.prompt_channel = update.response_channel;
         send_updates(&update.game, client, &display_state);
@@ -105,11 +106,18 @@ pub async fn handle_game_action(database: SqliteDatabase, client: &mut Client, a
 #[instrument(level = "debug", skip(client))]
 pub fn handle_prompt_action(client: &mut Client, action: PromptAction) {
     let mut display_state = get_display_state();
-    let mut prompt = display_state.prompt.as_mut().expect("No active prompt");
-    if let Some(response) = prompt_actions::execute(prompt, action) {
-        let channel = display_state.prompt_channel.take().expect("No active prompt channel");
-        display_state.prompt = None;
-        channel.send(response).expect("Failed to send prompt response");
+    let mut prompt = display_state.prompt.take().expect("No active prompt");
+    match prompt_actions::execute(prompt, action) {
+        PromptExecutionResult::Prompt(prompt) => {
+            display_state.prompt = Some(prompt);
+        }
+        PromptExecutionResult::PromptResponse(response) => {
+            let channel = display_state.prompt_channel.take().expect("No active prompt channel");
+            display_state.prompt = None;
+            let kind = response.kind();
+            debug!(?kind, "Sending prompt response");
+            channel.send(response).expect("Failed to send prompt response");
+        }
     }
 }
 
@@ -134,8 +142,15 @@ pub fn handle_drag_card(
 ) {
     info!(?card_id, ?location, "handle_drag_card");
     let mut display_state = get_display_state();
-    let prompt = display_state.prompt.as_mut().expect("No active prompt");
-    prompt_actions::execute(prompt, PromptAction::SelectOrder(card_id, location, index as usize));
+    let prompt = display_state.prompt.take().expect("No active prompt");
+    let result = prompt_actions::execute(
+        prompt,
+        PromptAction::SelectOrder(card_id, location, index as usize),
+    );
+    let PromptExecutionResult::Prompt(prompt) = result else {
+        panic!("Expected prompt result");
+    };
+    display_state.prompt = Some(prompt);
     let game = display_state.game_snapshot.as_ref().expect("No game snapshot saved");
     send_updates(game, client, &display_state);
 }

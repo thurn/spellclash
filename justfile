@@ -42,6 +42,9 @@ show-help:
 show-version:
   npm run tauri dev -- -- -- --version
 
+no-tracing:
+  npm run tauri dev -- -- -- --tracing-style none
+
 aggregate-time:
   npm run tauri dev -- --release -- -- --tracing-style aggregate-time
 
