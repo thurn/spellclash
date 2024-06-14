@@ -183,37 +183,46 @@ fn bottom_game_controls(
 }
 
 fn prompt_view(state: &DisplayState, prompt: &Prompt, player: PlayerName) -> Vec<GameControlView> {
-    let mut result = vec![];
-    if legal_prompt_actions::can_take_action(prompt, player, PromptAction::SubmitCardSelection) {
-        result.push(GameControlView::Button(GameButtonView::new_primary(
-            "Submit",
-            PromptAction::SubmitCardSelection,
-        )));
-    }
-
     match &prompt.prompt_type {
-        PromptType::EntityChoice(_) => {}
-        PromptType::SelectOrder(_) => {}
-        PromptType::PlayCards(_) => {}
+        PromptType::EntityChoice(_) => {
+            vec![]
+        }
+        PromptType::SelectOrder(_) => {
+            if legal_prompt_actions::can_take_action(
+                prompt,
+                player,
+                PromptAction::SubmitCardSelection,
+            ) {
+                return vec![GameControlView::Button(GameButtonView::new_primary(
+                    "Submit",
+                    PromptAction::SubmitCardSelection,
+                ))];
+            }
+
+            vec![]
+        }
+        PromptType::PlayCards(_) => {
+            vec![]
+        }
         PromptType::PickNumber(pick_number) => {
-            let input =
-                GameControlView::TextInput(TextInputView { key: FieldKey::PickNumberPrompt });
+            let mut result =
+                vec![GameControlView::TextInput(TextInputView { key: FieldKey::PickNumberPrompt })];
             if let Some(value) = state.fields.get(&FieldKey::PickNumberPrompt) {
                 if let Some(n) = value.as_u32() {
-                    if n >= pick_number.minimum && n <= pick_number.maximum {
-                        return vec![
-                            input,
-                            GameControlView::Button(GameButtonView::new_primary(
-                                format!("Set {}", n),
-                                PromptAction::PickNumber(n),
-                            )),
-                        ];
+                    if legal_prompt_actions::can_take_action(
+                        prompt,
+                        player,
+                        PromptAction::PickNumber(n),
+                    ) {
+                        result.push(GameControlView::Button(GameButtonView::new_primary(
+                            format!("Set {}", n),
+                            PromptAction::PickNumber(n),
+                        )));
                     }
                 }
             }
-            return vec![input];
+
+            result
         }
     }
-
-    result
 }
