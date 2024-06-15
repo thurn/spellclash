@@ -151,7 +151,7 @@ fn find_deck(name: DeckName) -> Deck {
                 printed_card_id::ALPINE_GRIZZLY => 1,
                 printed_card_id::LEATHERBACK_BALOTH => 1,
                 printed_card_id::KALONIAN_TUSKER => 1,
-                printed_card_id::ANCIENT_BRONOTODON => 1,
+                printed_card_id::ANCIENT_BRONTODON => 1,
                 printed_card_id::GARRUKS_GOREHORN => 1,
                 printed_card_id::GOLDEN_BEAR => 1,
                 printed_card_id::PRIMORDIAL_WURM => 1,

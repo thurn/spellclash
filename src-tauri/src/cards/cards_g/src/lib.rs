@@ -12,5 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+pub mod card_go;
+pub mod cards_ga;
 pub mod cards_gi;
 pub mod cards_gr;

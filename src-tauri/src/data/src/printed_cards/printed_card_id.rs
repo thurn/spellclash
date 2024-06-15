@@ -38,7 +38,7 @@ pub const LEATHERBACK_BALOTH: PrintedCardId =
     PrintedCardId(uuid!("55f97b4c-42c7-4986-a150-0b8de11f0537"));
 pub const KALONIAN_TUSKER: PrintedCardId =
     PrintedCardId(uuid!("135946fc-fe67-401f-821d-d7145c63f030"));
-pub const ANCIENT_BRONOTODON: PrintedCardId =
+pub const ANCIENT_BRONTODON: PrintedCardId =
     PrintedCardId(uuid!("39421ce8-86d5-4739-b6fd-78d63c0bb258"));
 pub const GARRUKS_GOREHORN: PrintedCardId =
     PrintedCardId(uuid!("3928bbce-87b7-4b28-9af4-20362935c909"));

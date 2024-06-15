@@ -12,5 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod cards_fe;
-pub mod cards_fo;
+use data::card_definitions::card_definition::CardDefinition;
+use data::card_definitions::card_name;
+
+pub fn golden_bear() -> CardDefinition {
+    CardDefinition::new(card_name::GOLDEN_BEAR)
+}
+
+pub fn gorilla_warrior() -> CardDefinition {
+    CardDefinition::new(card_name::GORILLA_WARRIOR)
+}

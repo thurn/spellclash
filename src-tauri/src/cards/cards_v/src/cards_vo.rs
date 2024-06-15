@@ -12,5 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod cards_fe;
-pub mod cards_fo;
+use data::card_definitions::card_definition::CardDefinition;
+use data::card_definitions::card_name;
+
+pub fn vorstclaw() -> CardDefinition {
+    CardDefinition::new(card_name::VORSTCLAW)
+}

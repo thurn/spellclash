@@ -35,3 +35,7 @@ pub fn brainstorm() -> CardDefinition {
         library::move_all_to_top(g, s, &cards);
     }))
 }
+
+pub fn broodhunter_wurm() -> CardDefinition {
+    CardDefinition::new(card_name::BROODHUNTER_WURM)
+}
