@@ -17,6 +17,7 @@ use crate::core::game_state_node::GameStateNode;
 use crate::core::selection_algorithm::SelectionAlgorithm;
 use crate::core::state_evaluator::StateEvaluator;
 
+#[derive(Debug, Clone)]
 pub struct FirstAvailableActionAlgorithm;
 
 impl SelectionAlgorithm for FirstAvailableActionAlgorithm {

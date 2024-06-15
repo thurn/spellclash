@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use data::core::primitives::PlayerName;
 use data::game_states::game_state::GameState;
+use data::player_states::game_agent::{AgentType, GameAgent};
+use data::player_states::player_state::{PlayerQueries, PlayerState, PlayerType};
 use data::prompts::game_update::UpdateChannel;
 use database::sqlite_database::SqliteDatabase;
 use oracle::card_database;
@@ -22,5 +25,21 @@ pub fn run(database: SqliteDatabase, game: &mut GameState, update_channel: Optio
         run(database.clone(), previous.as_mut(), None);
     }
     card_database::populate(database, game);
+
+    for player in enum_iterator::all::<PlayerName>() {
+        if let PlayerType::Agent(agent) = &mut game.player_mut(player).player_type {
+            initialize_agent(agent);
+        }
+    }
+
     game.updates = update_channel;
+}
+
+fn initialize_agent(agent: &mut GameAgent) {
+    match agent.agent_type {
+        AgentType::FirstAvailableAction => {}
+        AgentType::TreeSearch(_) => {}
+        AgentType::MonteCarlo(_) => {}
+    }
+    todo!()
 }

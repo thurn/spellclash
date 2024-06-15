@@ -19,6 +19,7 @@ use crate::core::state_evaluator::StateEvaluator;
 
 /// An agent which does a depth 1 search of legal actions, returning the one
 /// that produces the best evaluator state.
+#[derive(Debug, Clone)]
 pub struct SingleLevel {}
 
 impl SelectionAlgorithm for SingleLevel {

@@ -46,6 +46,7 @@ use crate::monte_carlo::child_score::{ChildScoreAlgorithm, SelectionMode};
 ///     s ← f(s,𝒂)
 ///   𝐫𝐞𝐭𝐮𝐫𝐧 reward for state s
 /// ```
+#[derive(Debug, Clone)]
 pub struct RandomPlayoutEvaluator<TState: GameStateNode + Send, TEvaluator: StateEvaluator<TState>>
 {
     pub evaluator: TEvaluator,
@@ -117,6 +118,7 @@ type SearchGraph<TState> = Graph<SearchNode<TState>, SearchEdge<TState>>;
 ///     BACKUP(v₁, ∆)
 ///   𝐫𝐞𝐭𝐮𝐫𝐧 𝒂(BESTCHILD(v₀, 0))
 /// ```
+#[derive(Debug, Clone)]
 pub struct MonteCarloAlgorithm<TScoreAlgorithm: ChildScoreAlgorithm> {
     pub child_score_algorithm: TScoreAlgorithm,
     pub max_iterations: Option<u32>,

@@ -20,6 +20,7 @@ use rules::queries::player_queries;
 
 use crate::core::state_evaluator::StateEvaluator;
 
+#[derive(Debug, Clone)]
 pub struct CustomHeuristicEvaluator;
 
 impl StateEvaluator<GameState> for CustomHeuristicEvaluator {

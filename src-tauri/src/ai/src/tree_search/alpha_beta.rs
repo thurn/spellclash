@@ -29,6 +29,7 @@ use crate::tree_search::scored_action::ScoredAction;
 /// detect any performance or gameplay difference with the 'fail hard' version.
 ///
 /// See <https://en.wikipedia.org/wiki/Alpha-beta_pruning>
+#[derive(Debug, Clone)]
 pub struct AlphaBetaAlgorithm {
     pub search_depth: u32,
 }

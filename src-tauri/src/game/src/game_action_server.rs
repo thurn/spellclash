@@ -14,6 +14,7 @@
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, MutexGuard};
+use std::time::{Duration, Instant};
 
 use ai::core::ai_action;
 use data::actions::game_action::{CombatAction, GameAction};
@@ -22,7 +23,7 @@ use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, GameId, PlayerName};
 use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
-use data::player_states::player_state::PlayerQueries;
+use data::player_states::player_state::{PlayerQueries, PlayerType};
 use data::prompts::select_order_prompt::CardOrderLocation;
 use data::users::user_state::UserState;
 use database::sqlite_database::SqliteDatabase;
@@ -171,11 +172,11 @@ pub fn handle_game_action_internal(
     }
 
     let mut current_action = action;
-    let mut current_action_is_automatic = false;
+    let mut skip_undo_tracking = false;
 
     loop {
         actions::execute(game, current_player, current_action, ExecuteAction {
-            automatic: current_action_is_automatic,
+            skip_undo_tracking,
             validate: true,
         });
         send_updates(game, client, &get_display_state());
@@ -185,16 +186,21 @@ pub fn handle_game_action_internal(
             debug!(?next_player, "Automatically passing");
             current_player = next_player;
             current_action = action;
-            current_action_is_automatic = true;
-        } else if game.player(next_player).player_type.user_id().is_some() {
-            database.write_game(game);
-            break;
+            skip_undo_tracking = true;
         } else {
-            debug!(?next_player, "Searching for AI action");
-            current_player = next_player;
-            current_action = ai_action::select(game, next_player);
-            current_action_is_automatic = true;
-            debug!(?next_player, ?current_action, "AI action selected");
+            match &game.player(next_player).player_type {
+                PlayerType::Human(_) | PlayerType::None => {
+                    database.write_game(game);
+                    break;
+                }
+                PlayerType::Agent(agent) => {
+                    debug!(?next_player, "Searching for AI action");
+                    current_player = next_player;
+                    current_action = agent.implementation().pick_action(game, current_player);
+                    skip_undo_tracking = true;
+                    debug!(?next_player, ?current_action, "AI action selected");
+                }
+            }
         }
     }
 }

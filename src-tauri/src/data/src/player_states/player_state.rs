@@ -19,7 +19,7 @@ use crate::core::numerics::LifeValue;
 use crate::core::primitives::{
     CardId, EntityId, HasController, HasEntityId, HasPlayerName, PlayerName, UserId,
 };
-use crate::player_states::game_agent::GameAgent;
+use crate::player_states::game_agent::{GameAgent, GameAgentImpl};
 use crate::player_states::mana_pool::ManaPool;
 use crate::player_states::player_options::PlayerOptions;
 use crate::player_states::prompt_stack::PromptStack;
@@ -77,8 +77,7 @@ impl PlayerQueries for Players {
 pub enum PlayerType {
     Human(UserId),
 
-    #[serde(skip)]
-    Agent(Box<dyn GameAgent>),
+    Agent(GameAgent),
 
     /// Player is not participating in this game
     None,
@@ -92,9 +91,9 @@ impl PlayerType {
         }
     }
 
-    pub fn agent(&self) -> Option<&dyn GameAgent> {
+    pub fn agent(&self) -> Option<&dyn GameAgentImpl> {
         match self {
-            Self::Agent(agent) => Some(agent.as_ref()),
+            Self::Agent(agent) => Some(agent.implementation()),
             _ => None,
         }
     }

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod game_agent;
+pub mod game_agent;
 pub mod mana_pool;
-mod player_options;
+pub mod player_options;
 pub mod player_state;
 pub mod prompt_stack;

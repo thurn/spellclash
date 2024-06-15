@@ -13,29 +13,97 @@
 // limitations under the License.
 
 use std::fmt::Debug;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use dyn_clone::DynClone;
+use serde::{Deserialize, Serialize};
 
 use crate::actions::game_action::GameAction;
 use crate::actions::prompt_action::PromptAction;
+use crate::core::primitives::PlayerName;
 use crate::game_states::game_state::GameState;
+use crate::game_states::oracle::Oracle;
 use crate::prompts::prompt::Prompt;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GameAgent {
+    pub search_duration: Duration,
+
+    pub agent_type: AgentType,
+
+    pub state_predictor: StatePredictor,
+
+    pub state_combiner: StateCombiner,
+
+    pub evaluator: AgentEvaluator,
+
+    #[serde(skip)]
+    pub implementation_reference: Option<Box<dyn GameAgentImpl>>,
+}
+
+impl GameAgent {
+    pub fn implementation(&self) -> &dyn GameAgentImpl {
+        self.implementation_reference
+            .as_ref()
+            .expect("Implementation reference not populated")
+            .as_ref()
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum StatePredictor {
+    Omniscient,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum StateCombiner {
+    First,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum AgentType {
+    FirstAvailableAction,
+    TreeSearch(TreeSearchAgent),
+    MonteCarlo(MonteCarloAgent),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TreeSearchAgent {
+    pub max_depth: Option<usize>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MonteCarloAgent {
+    pub child_score_algorithm: ChildScoreAlgorithm,
+    pub max_iterations: Option<usize>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum AgentEvaluator {
+    CustomHeuristics,
+    WinLoss,
+    RandomPlayout(Box<AgentEvaluator>),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ChildScoreAlgorithm {
+    Uct1,
+}
 
 /// Trait representing an AI agent playing in a game.
 ///
 /// This is very similar to the normal 'Agent' trait, but we separate it out to
 /// avoid crate circular dependency problems and add a little bit of
 /// game-specific context.
-pub trait GameAgent: Debug + DynClone + Send {
-    fn pick_action(&self, deadline: Instant, game: &GameState) -> GameAction;
+pub trait GameAgentImpl: Debug + DynClone + Send {
+    fn pick_action(&self, game: &GameState, player: PlayerName) -> GameAction;
 
     fn pick_prompt_action(
         &self,
-        deadline: Instant,
         game: &GameState,
         prompt: &Prompt,
+        player: PlayerName,
     ) -> PromptAction;
 }
 
-dyn_clone::clone_trait_object!(GameAgent);
+dyn_clone::clone_trait_object!(GameAgentImpl);

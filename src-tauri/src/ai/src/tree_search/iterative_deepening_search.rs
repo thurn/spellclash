@@ -25,6 +25,7 @@ use crate::tree_search::alpha_beta;
 
 /// Implements a search algorithm which repeatedly applies alpha-beta search at
 /// increasing depths until its deadline is exceeded
+#[derive(Debug, Clone)]
 pub struct IterativeDeepeningSearch;
 
 impl SelectionAlgorithm for IterativeDeepeningSearch {

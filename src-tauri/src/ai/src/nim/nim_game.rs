@@ -45,6 +45,7 @@ pub fn assert_perfect_in_seconds(state: &NimState, agent: &impl Agent<NimState>,
 
 /// Evaluator which returns 1 if the current game state is a winning state the
 /// player and -1 otherwise.
+#[derive(Debug, Clone)]
 pub struct NimPerfectEvaluator {}
 
 impl StateEvaluator<NimState> for NimPerfectEvaluator {

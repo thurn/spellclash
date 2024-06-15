@@ -65,7 +65,7 @@ pub fn green_vanilla(c: &mut Criterion) {
                     &mut game,
                     PlayerName::One,
                     GameAction::ProposePlayingCard(creature_id),
-                    ExecuteAction { automatic: false, validate: false },
+                    ExecuteAction { skip_undo_tracking: false, validate: false },
                 )
             },
             BatchSize::LargeInput,
@@ -88,7 +88,7 @@ pub fn green_vanilla(c: &mut Criterion) {
                     &mut game,
                     PlayerName::One,
                     GameAction::ProposePlayingCard(creature_id),
-                    ExecuteAction { automatic: false, validate: false },
+                    ExecuteAction { skip_undo_tracking: false, validate: false },
                 )
             },
             BatchSize::LargeInput,

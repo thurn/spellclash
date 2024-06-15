@@ -28,6 +28,7 @@ use crate::monte_carlo::child_score::{ChildScoreAlgorithm, SelectionMode};
 ///     c * √ [ 2 * ln(N(v)) / N(v′) ]
 ///   )
 /// ```
+#[derive(Debug, Clone)]
 pub struct Uct1 {}
 
 impl ChildScoreAlgorithm for Uct1 {

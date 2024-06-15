@@ -12,16 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::fmt::Debug;
+
 use data::actions::game_action::GameAction;
+use data::actions::prompt_action::PromptAction;
 use data::core::primitives;
 use data::game_states::game_state;
 use data::game_states::game_state::GameState;
+use data::player_states::game_agent::GameAgentImpl;
+use data::prompts::prompt::Prompt;
 use rules::action_handlers::actions;
 use rules::action_handlers::actions::ExecuteAction;
 use rules::legality::legal_actions;
 use rules::legality::legal_actions::LegalActions;
 
+use crate::core::agent::AgentData;
 use crate::core::game_state_node::{GameStateNode, GameStatus};
+use crate::core::selection_algorithm::SelectionAlgorithm;
+use crate::core::state_evaluator::StateEvaluator;
 
 impl GameStateNode for GameState {
     type Action = GameAction;
@@ -49,6 +57,28 @@ impl GameStateNode for GameState {
     }
 
     fn execute_action(&mut self, player: primitives::PlayerName, action: GameAction) {
-        actions::execute(self, player, action, ExecuteAction { automatic: false, validate: false });
+        actions::execute(self, player, action, ExecuteAction {
+            skip_undo_tracking: false,
+            validate: false,
+        });
+    }
+}
+
+impl<TSelector, TEvaluator> GameAgentImpl for AgentData<TSelector, TEvaluator, GameState>
+where
+    TSelector: SelectionAlgorithm + Debug + Clone,
+    TEvaluator: StateEvaluator<GameState> + Debug + Clone,
+{
+    fn pick_action(&self, _game: &GameState, _player: primitives::PlayerName) -> GameAction {
+        todo!()
+    }
+
+    fn pick_prompt_action(
+        &self,
+        _game: &GameState,
+        _prompt: &Prompt,
+        _player: primitives::PlayerName,
+    ) -> PromptAction {
+        todo!()
     }
 }

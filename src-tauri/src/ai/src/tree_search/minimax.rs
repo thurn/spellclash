@@ -23,6 +23,7 @@ use crate::tree_search::scored_action::ScoredAction;
 /// The Minimax search algorithm, one of the simplest tree search algorithms.
 ///
 /// See <https://en.wikipedia.org/wiki/Minimax>
+#[derive(Debug, Clone)]
 pub struct MinimaxAlgorithm {
     pub search_depth: u32,
 }

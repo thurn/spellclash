@@ -31,8 +31,8 @@ use crate::steps::step;
 /// Options for executing a game action
 #[derive(Debug, Clone, Copy)]
 pub struct ExecuteAction {
-    /// True if this is an automatically applied action, e.g. auto-pass
-    pub automatic: bool,
+    /// True if this is an automatically applied or AI action, e.g. auto-pass
+    pub skip_undo_tracking: bool,
     /// True if this action should be checked for legality
     pub validate: bool,
 }
@@ -53,7 +53,7 @@ pub fn execute(
         );
     }
 
-    if !options.automatic
+    if !options.skip_undo_tracking
         && game.undo_tracker.enabled
         && action != GameAction::DebugAction(DebugGameAction::Undo)
     {
