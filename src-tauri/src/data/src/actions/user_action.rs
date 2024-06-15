@@ -20,7 +20,7 @@ use crate::actions::new_game_action::NewGameAction;
 use crate::actions::prompt_action::PromptAction;
 use crate::core::panel_address::PanelAddress;
 
-#[derive(Clone, Copy, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum UserAction {
     NewGameAction(NewGameAction),
     GameAction(GameAction),

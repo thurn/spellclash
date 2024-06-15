@@ -13,12 +13,18 @@
 // limitations under the License.
 
 use std::sync::Arc;
+use std::time::Duration;
 
 use data::actions::new_game_action::{NewGameAction, NewGameDebugOptions};
 use data::actions::user_action::UserAction;
 use data::core::primitives::{PlayerName, UserId};
 use data::decks::deck_name;
 use data::game_states::game_state::{DebugActAsPlayer, DebugConfiguration};
+use data::player_states::game_agent::{
+    AgentEvaluator, AgentType, ChildScoreAlgorithm, GameAgent, MonteCarloAgent, StateCombiner,
+    StatePredictor,
+};
+use data::player_states::player_state::PlayerType;
 use data::users::user_state::UserState;
 use database::sqlite_database::SqliteDatabase;
 use display::commands::command::{Command, SceneView};
@@ -42,31 +48,43 @@ pub fn connect(response_channel: UnboundedSender<GameResponse>, user: &UserState
 }
 
 pub fn main_menu_view() -> MainMenuView {
-    let new_game = UserAction::NewGameAction(NewGameAction {
-        deck: deck_name::DANDAN,
-        opponent_deck: deck_name::DANDAN,
+    let deck = deck_name::GREEN_VANILLA;
+    let opponent_id = UserId(uuid!("d5f8cda2-0916-4655-8353-aaf435d562a5"));
+    let new_local = UserAction::NewGameAction(NewGameAction {
+        deck,
+        opponent: PlayerType::Human(opponent_id),
+        opponent_deck: deck,
+        debug_options: NewGameDebugOptions {
+            override_game_id: None,
+            configuration: DebugConfiguration {
+                reveal_all_cards: true,
+                act_as_player: Some(DebugActAsPlayer { id: opponent_id, name: PlayerName::Two }),
+            },
+        },
+    });
+    let new_ai = UserAction::NewGameAction(NewGameAction {
+        deck,
+        opponent: PlayerType::Agent(GameAgent {
+            search_duration: Duration::from_secs(3),
+            agent_type: AgentType::MonteCarlo(MonteCarloAgent {
+                child_score_algorithm: ChildScoreAlgorithm::Uct1,
+                max_iterations: None,
+            }),
+            state_predictor: StatePredictor::Omniscient,
+            state_combiner: StateCombiner::First,
+            evaluator: AgentEvaluator::RandomPlayout(Box::new(AgentEvaluator::WinLoss)),
+            implementation_reference: None,
+        }),
+        opponent_deck: deck,
         debug_options: NewGameDebugOptions {
             override_game_id: None,
             configuration: DebugConfiguration { reveal_all_cards: true, act_as_player: None },
         },
     });
-    let new_debug_game = UserAction::NewGameAction(NewGameAction {
-        deck: deck_name::DANDAN,
-        opponent_deck: deck_name::DANDAN,
-        debug_options: NewGameDebugOptions {
-            override_game_id: None,
-            configuration: DebugConfiguration {
-                reveal_all_cards: true,
-                act_as_player: Some(DebugActAsPlayer {
-                    id: UserId(uuid!("d5f8cda2-0916-4655-8353-aaf435d562a5")),
-                    name: PlayerName::Two,
-                }),
-            },
-        },
-    });
+
     let buttons = vec![
-        GameButtonView::new_primary("Play", new_game),
-        GameButtonView::new_default("Debug Game", new_debug_game),
+        GameButtonView::new_primary("vs Local", new_local),
+        GameButtonView::new_primary("vs AI", new_ai),
         GameButtonView::new_default("Codex", UserAction::QuitGameAction),
         GameButtonView::new_default("Community", UserAction::QuitGameAction),
         GameButtonView::new_default("Settings", UserAction::QuitGameAction),

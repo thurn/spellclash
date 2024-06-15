@@ -14,4 +14,4 @@
 
 pub mod agents;
 pub mod ai_definitions;
-mod evaluators;
+pub mod evaluators;

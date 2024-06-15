@@ -12,6 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::marker::PhantomData;
+
+use ai::core::agent::AgentData;
+use ai::core::first_available_action::FirstAvailableActionAlgorithm;
+use ai::core::win_loss_evaluator::WinLossEvaluator;
+use ai::game::evaluators::CustomHeuristicEvaluator;
+use ai::monte_carlo::monte_carlo_search::{MonteCarloAlgorithm, RandomPlayoutEvaluator};
+use ai::monte_carlo::uct1::Uct1;
+use ai::tree_search::iterative_deepening_search::IterativeDeepeningSearch;
 use data::core::primitives::PlayerName;
 use data::game_states::game_state::GameState;
 use data::player_states::game_agent::{AgentType, GameAgent};
@@ -37,9 +46,29 @@ pub fn run(database: SqliteDatabase, game: &mut GameState, update_channel: Optio
 
 fn initialize_agent(agent: &mut GameAgent) {
     match agent.agent_type {
-        AgentType::FirstAvailableAction => {}
-        AgentType::TreeSearch(_) => {}
-        AgentType::MonteCarlo(_) => {}
+        AgentType::FirstAvailableAction => {
+            agent.implementation_reference = Some(Box::new(AgentData::omniscient(
+                "FIRST_AVAILABLE_ACTION",
+                FirstAvailableActionAlgorithm,
+                WinLossEvaluator,
+            )));
+        }
+        AgentType::TreeSearch(_) => {
+            agent.implementation_reference = Some(Box::new(AgentData::omniscient(
+                "ITERATIVE_DEEPENING",
+                IterativeDeepeningSearch,
+                CustomHeuristicEvaluator,
+            )));
+        }
+        AgentType::MonteCarlo(_) => {
+            agent.implementation_reference = Some(Box::new(AgentData::omniscient(
+                "UCT1_10_000",
+                MonteCarloAlgorithm {
+                    child_score_algorithm: Uct1 {},
+                    max_iterations: Some(10_000),
+                },
+                RandomPlayoutEvaluator { evaluator: WinLossEvaluator, phantom_data: PhantomData },
+            )));
+        }
     }
-    todo!()
 }

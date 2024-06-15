@@ -24,7 +24,7 @@ use specta::Type;
 use crate::core::object_position::ObjectPosition;
 
 /// Represents the visual state of a card or ability in a game
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Type)]
+#[derive(Clone, Debug, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct CardView {
     /// Identifier for this card
@@ -87,7 +87,7 @@ impl ClientCardId {
 }
 
 /// Visual state of a revealed card
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
+#[derive(Clone, Debug, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct RevealedCardView {
     /// Image URL for this card

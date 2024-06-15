@@ -23,7 +23,7 @@ use crate::commands::field_state::FieldKey;
 use crate::core::card_view::CardView;
 
 /// Represents the visual state of an ongoing game
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Type)]
+#[derive(Clone, Debug, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct GameView {
     /// Player who is operating the client
@@ -54,14 +54,14 @@ pub struct GameView {
     pub bottom_controls: Vec<GameControlView>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
+#[derive(Clone, Debug, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub enum GameControlView {
     Button(GameButtonView),
     TextInput(TextInputView),
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
+#[derive(Clone, Debug, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct GameButtonView {
     pub label: String,

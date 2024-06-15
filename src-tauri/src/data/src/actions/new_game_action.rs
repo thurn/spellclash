@@ -18,6 +18,7 @@ use crate::actions::user_action::UserAction;
 use crate::core::primitives::{GameId, UserId};
 use crate::decks::deck_name::DeckName;
 use crate::game_states::game_state::DebugConfiguration;
+use crate::player_states::player_state::PlayerType;
 
 /// Debug options for a new game
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Serialize, Deserialize)]
@@ -30,10 +31,13 @@ pub struct NewGameDebugOptions {
 }
 
 /// Action to create a new game
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NewGameAction {
     /// Deck to use for this game
     pub deck: DeckName,
+
+    /// AI configuration for opponent
+    pub opponent: PlayerType,
 
     /// Deck for opponent to use
     pub opponent_deck: DeckName,

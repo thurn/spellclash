@@ -68,12 +68,7 @@ pub fn create(database: SqliteDatabase, client: &mut Client, action: NewGameActi
         game_id,
         PlayerType::Human(user.id),
         action.deck,
-        action
-            .debug_options
-            .configuration
-            .act_as_player
-            .map(|p| PlayerType::Human(p.id))
-            .unwrap_or(PlayerType::None),
+        action.opponent,
         action.opponent_deck,
         action.debug_options.configuration,
     );

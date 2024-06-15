@@ -18,7 +18,7 @@ use specta::Type;
 use crate::core::game_view::GameButtonView;
 
 /// Represents the visual state of the main menu
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
+#[derive(Clone, Debug, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct MainMenuView {
     /// Primary buttons to show
