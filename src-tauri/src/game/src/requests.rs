@@ -20,7 +20,8 @@ use data::prompts::game_update::UpdateChannel;
 use data::users::user_state::UserState;
 use database::sqlite_database::SqliteDatabase;
 use oracle::card_database;
-use rules::game_creation::initialize_game;
+
+use crate::game_creation::initialize_game;
 
 /// Looks up a user by ID in the database.
 pub fn fetch_user(database: SqliteDatabase, user_id: UserId) -> UserState {

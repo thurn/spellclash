@@ -14,6 +14,7 @@
 
 #![allow(unused)]
 
+pub mod game_creation;
 pub mod server;
 pub mod server_data;
 

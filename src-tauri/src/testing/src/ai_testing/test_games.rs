@@ -20,7 +20,7 @@ use data::game_states::game_state::{DebugConfiguration, GameState, GameStatus};
 use data::game_states::game_step::GamePhaseStep;
 use data::player_states::player_state::PlayerType;
 use database::sqlite_database::SqliteDatabase;
-use rules::game_creation::new_game;
+use game::game_creation::new_game;
 use utils::paths;
 use uuid::Uuid;
 

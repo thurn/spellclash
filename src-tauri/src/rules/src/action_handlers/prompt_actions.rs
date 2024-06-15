@@ -20,8 +20,6 @@ use data::prompts::prompt::{Prompt, PromptResponse, PromptType};
 use data::prompts::select_order_prompt::CardOrderLocation;
 use tracing::instrument;
 
-use crate::game_creation::initialize_game;
-
 pub enum PromptExecutionResult {
     Prompt(Prompt),
     PromptResponse(PromptResponse),
