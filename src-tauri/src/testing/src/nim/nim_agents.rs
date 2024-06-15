@@ -14,14 +14,15 @@
 
 use std::marker::PhantomData;
 
-use crate::core::agent::AgentData;
-use crate::core::win_loss_evaluator::WinLossEvaluator;
-use crate::monte_carlo::monte_carlo_search::{MonteCarloAlgorithm, RandomPlayoutEvaluator};
-use crate::monte_carlo::uct1::Uct1;
+use ai::core::agent::AgentData;
+use ai::core::win_loss_evaluator::WinLossEvaluator;
+use ai::monte_carlo::monte_carlo_search::{MonteCarloAlgorithm, RandomPlayoutEvaluator};
+use ai::monte_carlo::uct1::Uct1;
+use ai::tree_search::alpha_beta::AlphaBetaAlgorithm;
+use ai::tree_search::minimax::MinimaxAlgorithm;
+use ai::tree_search::single_level::SingleLevel;
+
 use crate::nim::nim_game::{NimPerfectEvaluator, NimState};
-use crate::tree_search::alpha_beta::AlphaBetaAlgorithm;
-use crate::tree_search::minimax::MinimaxAlgorithm;
-use crate::tree_search::single_level::SingleLevel;
 
 /// Agent which always makes optimal moves
 pub const NIM_PERFECT_AGENT: AgentData<SingleLevel, NimPerfectEvaluator, NimState> =

@@ -272,6 +272,7 @@ dependencies = [
  "data",
  "database",
  "rules",
+ "testing",
  "tracing",
  "tracing-subscriber",
  "utils",
@@ -5329,6 +5330,35 @@ checksum = "21bebf2b7c9e0a515f6e0f8c51dc0f8e4696391e6f1ff30379559f8365fb0df7"
 dependencies = [
  "rustix",
  "windows-sys 0.48.0",
+]
+
+[[package]]
+name = "testing"
+version = "0.0.0"
+dependencies = [
+ "ai",
+ "clap",
+ "color-eyre",
+ "crossbeam",
+ "data",
+ "database",
+ "enum-iterator",
+ "enumset",
+ "game",
+ "itertools 0.12.1",
+ "maplit",
+ "once_cell",
+ "petgraph",
+ "rand 0.8.5",
+ "rand_xoshiro",
+ "rayon",
+ "rules",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "tree-flat",
+ "utils",
+ "uuid",
 ]
 
 [[package]]

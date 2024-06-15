@@ -24,7 +24,7 @@ use rules::game_creation::new_game;
 use utils::paths;
 use uuid::Uuid;
 
-use crate::testing::test_game_builder::{TestGame, TestPlayer};
+use crate::ai_testing::test_game_builder::{TestGame, TestPlayer};
 
 /// Create a new [GameState] for use in benchmarking & AI testing
 pub fn create(deck_name: DeckName) -> GameState {

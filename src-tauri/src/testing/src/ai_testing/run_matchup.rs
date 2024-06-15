@@ -14,16 +14,16 @@
 
 use std::time::{Duration, Instant};
 
+use ai::core::agent::AgentConfig;
+use ai::core::game_state_node::{GameStateNode, GameStatus};
+use ai::game::agents;
+use ai::game::agents::AgentName;
 use clap::{Parser, ValueEnum};
 use data::core::primitives::PlayerName;
 use data::decks::deck_name;
 use data::game_states::game_state::GameState;
 
-use crate::core::agent::AgentConfig;
-use crate::core::game_state_node::{GameStateNode, GameStatus};
-use crate::game::agents;
-use crate::game::agents::AgentName;
-use crate::testing::test_games;
+use crate::ai_testing::test_games;
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum Verbosity {

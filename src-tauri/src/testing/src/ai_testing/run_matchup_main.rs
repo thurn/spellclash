@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use ai::testing::run_matchup;
-use ai::testing::run_matchup::MatchupArgs;
 use clap::Parser;
+use testing::ai_testing::run_matchup;
+use testing::ai_testing::run_matchup::MatchupArgs;
 
 pub fn main() {
     let args = MatchupArgs::parse();

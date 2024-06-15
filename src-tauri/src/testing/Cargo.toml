@@ -1,5 +1,5 @@
 [package]
-name = "ai"
+name = "testing"
 version = "0.0.0"
 edition = "2021"
 
@@ -8,9 +8,19 @@ test = false
 doctest = false
 bench = false
 
+[[bin]]
+name = "nim"
+path = "src/nim/nim_main.rs"
+
+[[bin]]
+name = "run_matchup"
+path = "src/ai_testing/run_matchup_main.rs"
+
 [dependencies]
+ai = { path = "../ai", version = "0.0.0" }
 data = { path = "../data", version = "0.0.0" }
 database = { path = "../database", version = "0.0.0" }
+game = { path = "../game", version = "0.0.0" }
 rules = { path = "../rules", version = "0.0.0" }
 utils = { path = "../utils", version = "0.0.0" }
 

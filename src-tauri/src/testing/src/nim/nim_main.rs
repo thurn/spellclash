@@ -16,11 +16,11 @@ use std::io;
 
 use ai::core::agent::{Agent, AgentConfig};
 use ai::core::game_state_node::{GameStateNode, GameStatus};
-use ai::nim::nim_agents::{
+use clap::{Parser, ValueEnum};
+use testing::nim::nim_agents::{
     NIM_ALPHA_BETA_AGENT, NIM_MINIMAX_AGENT, NIM_PERFECT_AGENT, NIM_UCT1_AGENT,
 };
-use ai::nim::nim_game::{nim_sum, NimAction, NimPile, NimPlayer, NimState};
-use clap::{Parser, ValueEnum};
+use testing::nim::nim_game::{nim_sum, NimAction, NimPile, NimPlayer, NimState};
 
 #[derive(Parser)]
 #[clap()]
