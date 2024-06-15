@@ -9,11 +9,33 @@ doctest = false
 bench = false
 
 [dependencies]
+cards_a = { path = "../cards_a", version = "0.0.0" }
 cards_b = { path = "../cards_b", version = "0.0.0" }
+cards_c = { path = "../cards_c", version = "0.0.0" }
 cards_d = { path = "../cards_d", version = "0.0.0" }
+cards_e = { path = "../cards_e", version = "0.0.0" }
 cards_f = { path = "../cards_f", version = "0.0.0" }
 cards_g = { path = "../cards_g", version = "0.0.0" }
+cards_h = { path = "../cards_h", version = "0.0.0" }
 cards_i = { path = "../cards_i", version = "0.0.0" }
+cards_j = { path = "../cards_j", version = "0.0.0" }
+cards_k = { path = "../cards_k", version = "0.0.0" }
+cards_l = { path = "../cards_l", version = "0.0.0" }
+cards_m = { path = "../cards_m", version = "0.0.0" }
+cards_n = { path = "../cards_n", version = "0.0.0" }
+cards_o = { path = "../cards_o", version = "0.0.0" }
+cards_other = { path = "../cards_other", version = "0.0.0" }
+cards_p = { path = "../cards_p", version = "0.0.0" }
+cards_q = { path = "../cards_q", version = "0.0.0" }
+cards_r = { path = "../cards_r", version = "0.0.0" }
+cards_s = { path = "../cards_s", version = "0.0.0" }
+cards_t = { path = "../cards_t", version = "0.0.0" }
+cards_u = { path = "../cards_u", version = "0.0.0" }
+cards_v = { path = "../cards_v", version = "0.0.0" }
+cards_w = { path = "../cards_w", version = "0.0.0" }
+cards_x = { path = "../cards_x", version = "0.0.0" }
+cards_y = { path = "../cards_y", version = "0.0.0" }
+cards_z = { path = "../cards_z", version = "0.0.0" }
 data = { path = "../../data", version = "0.0.0" }
 
 [build-dependencies]

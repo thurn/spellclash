@@ -89,11 +89,33 @@ dependencies = [
 name = "all_cards"
 version = "0.0.0"
 dependencies = [
+ "cards_a",
  "cards_b",
+ "cards_c",
  "cards_d",
+ "cards_e",
  "cards_f",
  "cards_g",
+ "cards_h",
  "cards_i",
+ "cards_j",
+ "cards_k",
+ "cards_l",
+ "cards_m",
+ "cards_n",
+ "cards_o",
+ "cards_other",
+ "cards_p",
+ "cards_q",
+ "cards_r",
+ "cards_s",
+ "cards_t",
+ "cards_u",
+ "cards_v",
+ "cards_w",
+ "cards_x",
+ "cards_y",
+ "cards_z",
  "data",
  "regex",
  "walkdir",
@@ -431,7 +453,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "cards_a"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
 name = "cards_b"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_c"
 version = "0.0.0"
 dependencies = [
  "abilities",
@@ -443,6 +483,15 @@ dependencies = [
 name = "cards_d"
 version = "0.0.0"
 dependencies = [
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_e"
+version = "0.0.0"
+dependencies = [
+ "abilities",
  "data",
  "rules",
 ]
@@ -464,9 +513,180 @@ dependencies = [
 ]
 
 [[package]]
+name = "cards_h"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
 name = "cards_i"
 version = "0.0.0"
 dependencies = [
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_j"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_k"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_l"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_m"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_n"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_o"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_other"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_p"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_q"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_r"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_s"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_t"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_u"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_v"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_w"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_x"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_y"
+version = "0.0.0"
+dependencies = [
+ "abilities",
+ "data",
+ "rules",
+]
+
+[[package]]
+name = "cards_z"
+version = "0.0.0"
+dependencies = [
+ "abilities",
  "data",
  "rules",
 ]
