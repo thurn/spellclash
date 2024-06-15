@@ -12,5 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod cards_gi;
-pub mod cards_gr;
+use data::card_definitions::card_definition::CardDefinition;
+use data::card_definitions::card_name;
+
+pub fn gigantosaurus() -> CardDefinition {
+    CardDefinition::new(card_name::GIGANTOSAURUS)
+}
