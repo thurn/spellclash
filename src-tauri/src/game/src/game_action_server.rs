@@ -43,6 +43,7 @@ use tokio::sync::mpsc;
 use tokio::sync::mpsc::UnboundedSender;
 use tokio::task;
 use tracing::{debug, error, info, instrument};
+use utils::outcome::HaltCondition;
 use uuid::Uuid;
 
 use crate::requests;
@@ -174,10 +175,19 @@ pub fn handle_game_action_internal(
     let mut skip_undo_tracking = false;
 
     loop {
-        actions::execute(game, current_player, current_action, ExecuteAction {
+        let result = actions::execute(game, current_player, current_action, ExecuteAction {
             skip_undo_tracking,
             validate: true,
         });
+        if result == Err(HaltCondition::Cancel) {
+            // Halt current user action, roll back UI to previous state.
+            let mut display_state = get_display_state();
+            display_state.prompt = None;
+            let original = requests::fetch_game(database.clone(), client.data.game_id(), None);
+            send_updates(&original, client, &display_state);
+            break;
+        }
+
         send_updates(game, client, &get_display_state());
 
         let next_player = legal_actions::next_to_act(game, None);

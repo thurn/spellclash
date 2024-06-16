@@ -20,37 +20,48 @@ use data::game_states::game_state::GameState;
 use data::game_states::state_based_event::StateBasedEvent;
 use data::printed_cards::printed_card::Face;
 use tracing::debug;
+use utils::outcome;
+use utils::outcome::Outcome;
 
 /// Turns the [Face] face of this card up and reveals it to all players.
-pub fn turn_face_up(game: &mut GameState, _source: Source, card: CardId, face: Face) {
+pub fn turn_face_up(game: &mut GameState, _source: Source, card: CardId, face: Face) -> Outcome {
     let card = game.card_mut(card);
     card.facing = CardFacing::FaceUp(face);
     card.revealed_to = ALL_POSSIBLE_PLAYERS;
+    outcome::OK
 }
 
 /// Taps a card.
 ///
 /// Panics if this card is already tapped or this card is not on the
 /// battlefield.
-pub fn tap(game: &mut GameState, _source: Source, card_id: CardId) {
+pub fn tap(game: &mut GameState, _source: Source, card_id: CardId) -> Outcome {
     let card = game.card_mut(card_id);
     assert_eq!(card.zone, Zone::Battlefield, "Card {card_id:?} is not on the battlefield");
     assert_eq!(card.tapped_state, TappedState::Untapped, "Card {card_id:?} is already tapped");
     card.tapped_state = TappedState::Tapped;
+    outcome::OK
 }
 
 /// Untaps a card
 ///
 /// Panics if this card is not on the battlefield.
-pub fn untap(game: &mut GameState, _source: Source, card_id: CardId) {
+pub fn untap(game: &mut GameState, _source: Source, card_id: CardId) -> Outcome {
     let card = game.card_mut(card_id);
     assert_eq!(card.zone, Zone::Battlefield, "Card {card_id:?} is not on the battlefield");
     card.tapped_state = TappedState::Untapped;
+    outcome::OK
 }
 
 /// Deals damage to a permanent
-pub fn deal_damage(game: &mut GameState, source: Source, card_id: CardId, damage: Damage) {
+pub fn deal_damage(
+    game: &mut GameState,
+    source: Source,
+    card_id: CardId,
+    damage: Damage,
+) -> Outcome {
     debug!("Dealing {damage:?} damage to {card_id:?}");
     game.card_mut(card_id).damage += damage;
     game.add_state_based_event(StateBasedEvent::CreatureDamaged(card_id));
+    outcome::OK
 }

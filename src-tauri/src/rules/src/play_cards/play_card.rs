@@ -20,6 +20,7 @@ use data::core::primitives::{CardId, PlayerName, Source, Zone};
 use data::game_states::game_state::GameState;
 use enum_iterator::Sequence;
 use tracing::instrument;
+use utils::outcome::Outcome;
 
 use crate::play_cards::play_card_choices::{PlayCardChoice, PlayCardChoicePrompt};
 use crate::play_cards::{play_card_choices, play_card_executor};
@@ -30,7 +31,12 @@ use crate::play_cards::{play_card_choices, play_card_executor};
 /// then put it into play. An error is returned if the player makes a choice
 /// which results in this card being illegal to play (e.g. selecting a target
 /// which increases the cost of a spell beyond their ability to play).
-pub fn execute(game: &mut GameState, player: PlayerName, source: Source, card_id: CardId) {
+pub fn execute(
+    game: &mut GameState,
+    player: PlayerName,
+    source: Source,
+    card_id: CardId,
+) -> Outcome {
     let plan = prompt_for_play_card_plan(game, source, card_id);
     play_card_executor::execute_plan(game, player, card_id, source, plan)
 }

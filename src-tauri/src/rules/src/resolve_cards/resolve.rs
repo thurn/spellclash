@@ -20,6 +20,8 @@ use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use enumset::EnumSet;
 use tracing::{debug, info};
+use utils::outcome;
+use utils::outcome::Outcome;
 
 use crate::mutations::{move_card, permanents};
 use crate::queries::card_queries;
@@ -31,9 +33,9 @@ use crate::queries::card_queries;
 /// > top of the stack resolves.
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R608>
-pub fn resolve_top_of_stack(game: &mut GameState) {
+pub fn resolve_top_of_stack(game: &mut GameState) -> Outcome {
     let Some(StackItemId::Card(card_id)) = game.stack().last().copied() else {
-        return;
+        return outcome::OK;
     };
     debug!(?card_id, "Resolving top of stack");
 
@@ -45,7 +47,7 @@ pub fn resolve_top_of_stack(game: &mut GameState) {
                 number: ability_number,
                 card_id,
             };
-            effect(game, scope);
+            effect(game, scope)?;
         }
     }
 
@@ -65,14 +67,16 @@ pub fn resolve_top_of_stack(game: &mut GameState) {
             } else {
                 panic!("Expected only a single face!");
             };
-            permanents::turn_face_up(game, Source::Game, card_id, face);
-            move_card::run(game, Source::Game, card_id, Zone::Battlefield);
+            permanents::turn_face_up(game, Source::Game, card_id, face)?;
+            move_card::run(game, Source::Game, card_id, Zone::Battlefield)?;
         } else {
             todo!("Implement targeting for permanents");
         }
     } else {
         // > 608.2m. As the final part of an instant or sorcery spell's resolution, the spell
         // is put into its owner's graveyard.
-        move_card::run(game, Source::Game, card_id, Zone::Graveyard);
+        move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
     }
+
+    outcome::OK
 }

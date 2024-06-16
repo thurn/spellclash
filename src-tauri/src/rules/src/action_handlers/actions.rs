@@ -19,6 +19,8 @@ use data::core::primitives::{CardId, PlayerName, Source, Zone};
 use data::game_states::game_state::{GameState, GameStatus};
 use data::printed_cards::printed_card::Face;
 use tracing::{debug, info, instrument};
+use utils::outcome;
+use utils::outcome::Outcome;
 
 use crate::action_handlers::{combat_actions, debug_actions, prompt_actions};
 use crate::legality::legal_actions;
@@ -43,7 +45,7 @@ pub fn execute(
     player: PlayerName,
     mut action: GameAction,
     options: ExecuteAction,
-) {
+) -> Outcome {
     if options.validate {
         assert!(
             legal_actions::can_take_action(game, player, &action) || action.is_debug_action(),
@@ -68,22 +70,29 @@ pub fn execute(
         GameAction::PassPriority => handle_pass_priority(game, player),
         GameAction::ProposePlayingCard(id) => handle_play_card(game, Source::Game, player, id),
         GameAction::CombatAction(a) => combat_actions::execute(game, player, a),
-    };
+    }?;
 
     if legal_actions::can_any_player_pass_priority(game) {
         // If any player has priority as a result of this game action, check state-based
         // actions.
-        state_based_actions::run(game);
+        state_based_actions::run(game)?;
     }
+
+    outcome::OK
 }
 
 #[instrument(level = "debug", skip(game))]
-fn handle_pass_priority(game: &mut GameState, player: PlayerName) {
+fn handle_pass_priority(game: &mut GameState, player: PlayerName) -> Outcome {
     priority::pass(game, player)
 }
 
 #[instrument(level = "debug", skip(game))]
-fn handle_play_card(game: &mut GameState, source: Source, player: PlayerName, card_id: CardId) {
+fn handle_play_card(
+    game: &mut GameState,
+    source: Source,
+    player: PlayerName,
+    card_id: CardId,
+) -> Outcome {
     debug!(?player, ?card_id, "Playing card");
     play_card::execute(game, player, Source::Game, card_id)
 }

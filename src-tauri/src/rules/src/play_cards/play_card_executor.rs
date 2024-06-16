@@ -17,6 +17,8 @@ use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, PlayerName, Source, Zone};
 use data::game_states::game_state::GameState;
 use data::player_states::player_state::PlayerQueries;
+use utils::outcome;
+use utils::outcome::Outcome;
 
 use crate::mutations::{move_card, permanents, priority};
 
@@ -27,23 +29,25 @@ pub fn execute_plan(
     card_id: CardId,
     source: Source,
     plan: PlayCardPlan,
-) {
+) -> Outcome {
     for land in &plan.mana_payment.basic_land_abilities_to_activate {
-        permanents::tap(game, source, *land);
+        permanents::tap(game, source, *land)?;
     }
 
     if plan.spell_choices.play_as.play_as == PlayCardTiming::Land {
         game.history_counters_mut(player).lands_played += 1;
         let face = plan.spell_choices.play_as.single_face();
-        permanents::turn_face_up(game, source, card_id, face);
-        move_card::run(game, source, card_id, Zone::Battlefield)
+        permanents::turn_face_up(game, source, card_id, face)?;
+        move_card::run(game, source, card_id, Zone::Battlefield)?;
     } else {
         game.card_mut(card_id).cast_as = plan.spell_choices.play_as.faces;
-        move_card::run(game, source, card_id, Zone::Stack);
+        move_card::run(game, source, card_id, Zone::Stack)?;
 
         if !game.player(player).options.hold_priority {
             // Automatically pass priority after putting something on the stack.
-            priority::pass(game, player)
+            priority::pass(game, player)?;
         }
     }
+
+    outcome::OK
 }

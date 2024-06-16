@@ -12,6 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod command_line;
-pub mod outcome;
-pub mod paths;
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HaltCondition {
+    Cancel,
+}
+
+/// Provides the ability to halt the rules engine during execution in order to
+/// cancel a selected user action.
+pub type Outcome = Result<(), HaltCondition>;
+
+/// Outcome which wraps a return value
+pub type PromptResult<T> = Result<T, HaltCondition>;
+
+/// Continue execution.
+pub const OK: Outcome = Ok(());
+
+/// Cancel the current user action.
+pub const CANCEL: Outcome = Err(HaltCondition::Cancel);

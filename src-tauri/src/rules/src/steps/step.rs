@@ -24,6 +24,8 @@ use data::game_states::combat_state::{
 use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
 use enumset::EnumSet;
+use utils::outcome;
+use utils::outcome::Outcome;
 
 use crate::mutations::{library, permanents, players};
 use crate::queries::{card_queries, player_queries};
@@ -34,7 +36,7 @@ use crate::queries::{card_queries, player_queries};
 /// for exiting the previous [GamePhaseStep] and then performs action_handlers
 /// which occur at the start of this step. Increments the turn number and active
 /// player when transitioning to the Untap step.
-pub fn advance(game: &mut GameState) {
+pub fn advance(game: &mut GameState) -> Outcome {
     let step = enum_iterator::next(&game.step).unwrap_or(GamePhaseStep::Untap);
     match step {
         GamePhaseStep::Untap => untap(game),
@@ -58,7 +60,7 @@ fn begin_step(game: &mut GameState, step: GamePhaseStep) {
     game.priority = game.turn.active_player;
 }
 
-fn untap(game: &mut GameState) {
+fn untap(game: &mut GameState) -> Outcome {
     begin_step(game, GamePhaseStep::Untap);
     let next = player_queries::next_player_after(game, game.turn.active_player);
     if next == PlayerName::One {
@@ -85,11 +87,12 @@ fn untap(game: &mut GameState) {
     advance(game)
 }
 
-fn upkeep(game: &mut GameState) {
-    begin_step(game, GamePhaseStep::Upkeep)
+fn upkeep(game: &mut GameState) -> Outcome {
+    begin_step(game, GamePhaseStep::Upkeep);
+    outcome::OK
 }
 
-fn draw(game: &mut GameState) {
+fn draw(game: &mut GameState) -> Outcome {
     begin_step(game, GamePhaseStep::Draw);
 
     // > 504.1. First, the active player draws a card. This turn-based action
@@ -98,15 +101,17 @@ fn draw(game: &mut GameState) {
     library::draw(game, Source::Game, game.turn.active_player)
 }
 
-fn pre_combat_main(game: &mut GameState) {
-    begin_step(game, GamePhaseStep::PreCombatMain)
+fn pre_combat_main(game: &mut GameState) -> Outcome {
+    begin_step(game, GamePhaseStep::PreCombatMain);
+    outcome::OK
 }
 
-fn begin_combat(game: &mut GameState) {
-    begin_step(game, GamePhaseStep::BeginCombat)
+fn begin_combat(game: &mut GameState) -> Outcome {
+    begin_step(game, GamePhaseStep::BeginCombat);
+    outcome::OK
 }
 
-fn declare_attackers(game: &mut GameState) {
+fn declare_attackers(game: &mut GameState) -> Outcome {
     begin_step(game, GamePhaseStep::DeclareAttackers);
     // > 508.1. First, the active player declares attackers. This turn-based action
     // > doesn't use the stack.
@@ -121,9 +126,10 @@ fn declare_attackers(game: &mut GameState) {
         proposed_attacks: AttackerMap::default(),
         selected_attackers: HashSet::new(),
     }));
+    outcome::OK
 }
 
-fn declare_blockers(game: &mut GameState) {
+fn declare_blockers(game: &mut GameState) -> Outcome {
     begin_step(game, GamePhaseStep::DeclareBlockers);
     // > 509.1. First, the defending player declares blockers. This turn-based
     // > action doesn't use the stack.
@@ -147,10 +153,12 @@ fn declare_blockers(game: &mut GameState) {
         selected_blockers: HashSet::new(),
         proposed_blocks: HashMap::new(),
     }));
+    outcome::OK
 }
 
-fn first_strike_damage(game: &mut GameState) {
-    begin_step(game, GamePhaseStep::FirstStrikeDamage)
+fn first_strike_damage(game: &mut GameState) -> Outcome {
+    begin_step(game, GamePhaseStep::FirstStrikeDamage);
+    outcome::OK
 }
 
 enum CombatDamageAssignment {
@@ -160,7 +168,7 @@ enum CombatDamageAssignment {
     Creature(CardId, Damage),
 }
 
-fn combat_damage(game: &mut GameState) {
+fn combat_damage(game: &mut GameState) -> Outcome {
     begin_step(game, GamePhaseStep::CombatDamage);
     let Some(CombatState::ConfirmedBlockers(blockers)) = &game.combat else {
         panic!("Not in the 'ConfirmedBlockers' state");
@@ -244,29 +252,33 @@ fn combat_damage(game: &mut GameState) {
                 todo!("Implement battle damage");
             }
             CombatDamageAssignment::Creature(card_id, damage) => {
-                permanents::deal_damage(game, Source::Game, card_id, damage);
+                permanents::deal_damage(game, Source::Game, card_id, damage)?;
             }
         }
     }
 
     // > 510.3. Third, the active player gets priority.
     // <https://yawgatog.com/resources/magic-rules/#R5103>
+    outcome::OK
 }
 
-fn end_combat(game: &mut GameState) {
-    begin_step(game, GamePhaseStep::EndCombat)
+fn end_combat(game: &mut GameState) -> Outcome {
+    begin_step(game, GamePhaseStep::EndCombat);
+    outcome::OK
 }
 
-fn post_combat_main(game: &mut GameState) {
+fn post_combat_main(game: &mut GameState) -> Outcome {
     begin_step(game, GamePhaseStep::PostCombatMain);
     game.combat = None;
+    outcome::OK
 }
 
-fn end_step(game: &mut GameState) {
-    begin_step(game, GamePhaseStep::EndStep)
+fn end_step(game: &mut GameState) -> Outcome {
+    begin_step(game, GamePhaseStep::EndStep);
+    outcome::OK
 }
 
-fn cleanup(game: &mut GameState) {
+fn cleanup(game: &mut GameState) -> Outcome {
     begin_step(game, GamePhaseStep::Cleanup);
 
     // > 514.1. First, if the active player's hand contains more cards than their

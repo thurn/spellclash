@@ -64,7 +64,8 @@ impl GameStateNode for GameState {
         actions::execute(self, player, action, ExecuteAction {
             skip_undo_tracking: false,
             validate: false,
-        });
+        })
+        .expect("Halt encountered during AI action execution");
     }
 }
 
