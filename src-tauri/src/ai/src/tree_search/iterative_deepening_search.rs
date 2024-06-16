@@ -28,18 +28,18 @@ use crate::tree_search::alpha_beta;
 #[derive(Debug, Clone)]
 pub struct IterativeDeepeningSearch;
 
-impl SelectionAlgorithm for IterativeDeepeningSearch {
-    fn pick_action<N, E>(
+impl<N, E> SelectionAlgorithm<N, E> for IterativeDeepeningSearch
+where
+    N: GameStateNode,
+    E: StateEvaluator<N>,
+{
+    fn pick_action(
         &mut self,
         config: AgentConfig,
         node: &N,
         evaluator: &E,
         player: N::PlayerName,
-    ) -> N::Action
-    where
-        N: GameStateNode,
-        E: StateEvaluator<N>,
-    {
+    ) -> N::Action {
         let mut depth = 1;
         let mut best_action = None;
 

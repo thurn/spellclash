@@ -18,9 +18,8 @@ use ai::core::agent::{Agent, AgentConfig, AgentData};
 use ai::core::game_state_node::{GameStateNode, GameStatus};
 use ai::tree_search::single_level::SingleLevel;
 use clap::{Parser, ValueEnum};
-use testing::nim::nim_agents::{
-    NIM_ALPHA_BETA_AGENT, NIM_MINIMAX_AGENT, NIM_PERFECT_AGENT, NIM_UCT1_AGENT,
-};
+use testing::nim::nim_agents;
+use testing::nim::nim_agents::{NIM_ALPHA_BETA_AGENT, NIM_MINIMAX_AGENT, NIM_PERFECT_AGENT};
 use testing::nim::nim_game::{
     nim_sum, NimAction, NimPerfectEvaluator, NimPile, NimPlayer, NimState,
 };
@@ -63,7 +62,7 @@ fn get_agent(name: NimAgentName) -> Box<dyn Agent<NimState>> {
         NimAgentName::Perfect => Box::new(NIM_PERFECT_AGENT),
         NimAgentName::Minimax => Box::new(NIM_MINIMAX_AGENT),
         NimAgentName::AlphaBeta => Box::new(NIM_ALPHA_BETA_AGENT),
-        NimAgentName::UCT1 => Box::new(NIM_UCT1_AGENT),
+        NimAgentName::UCT1 => Box::new(nim_agents::nim_uct1_agent()),
     }
 }
 

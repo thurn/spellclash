@@ -22,18 +22,18 @@ use crate::core::state_evaluator::StateEvaluator;
 #[derive(Debug, Clone)]
 pub struct SingleLevel {}
 
-impl SelectionAlgorithm for SingleLevel {
-    fn pick_action<N, E>(
+impl<N, E> SelectionAlgorithm<N, E> for SingleLevel
+where
+    N: GameStateNode,
+    E: StateEvaluator<N>,
+{
+    fn pick_action(
         &mut self,
         _: AgentConfig,
         node: &N,
         evaluator: &E,
         player: N::PlayerName,
-    ) -> N::Action
-    where
-        N: GameStateNode,
-        E: StateEvaluator<N>,
-    {
+    ) -> N::Action {
         let mut best_score = i32::MIN;
         let mut best_action: Option<N::Action> = None;
 

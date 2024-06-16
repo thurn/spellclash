@@ -18,7 +18,11 @@ use crate::core::state_evaluator::StateEvaluator;
 
 /// A trait for generic decision rules that select a game action to take without
 /// specific game knowledge.
-pub trait SelectionAlgorithm: Send {
+pub trait SelectionAlgorithm<TStateNode, TEvaluator>: Send
+where
+    TStateNode: GameStateNode,
+    TEvaluator: StateEvaluator<TStateNode>,
+{
     /// Should return the best action action for the current player `player`
     /// to take in the provided `node` game state, using the provided
     /// `evaluator` to evaluate different game outcomes.
@@ -26,14 +30,11 @@ pub trait SelectionAlgorithm: Send {
     /// Implementations are expected to return a result before the
     /// `config.deadline` time by periodically comparing it to
     /// `Instant::now()`.
-    fn pick_action<TStateNode, TEvaluator>(
+    fn pick_action(
         &mut self,
         config: AgentConfig,
         node: &TStateNode,
         evaluator: &TEvaluator,
         player: TStateNode::PlayerName,
-    ) -> TStateNode::Action
-    where
-        TStateNode: GameStateNode,
-        TEvaluator: StateEvaluator<TStateNode>;
+    ) -> TStateNode::Action;
 }

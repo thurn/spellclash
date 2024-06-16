@@ -33,10 +33,10 @@ pub enum GameStatus<TPlayer: EnumSetType + Debug> {
 /// doing broadly correct things.
 pub trait GameStateNode {
     /// A game action to transition the game to a new state.
-    type Action: Eq + Hash + Debug + Copy;
+    type Action: Eq + Hash + Debug + Copy + Send;
 
     /// A player in the game.
-    type PlayerName: EnumSetType + Debug;
+    type PlayerName: EnumSetType + Debug + Send;
 
     /// Create a copy of this search node to be mutated by selection algorithms.
     /// A basic implementation of this would be to simply call `.clone()`, but

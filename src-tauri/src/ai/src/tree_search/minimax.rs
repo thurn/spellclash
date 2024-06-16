@@ -28,18 +28,18 @@ pub struct MinimaxAlgorithm {
     pub search_depth: u32,
 }
 
-impl SelectionAlgorithm for MinimaxAlgorithm {
-    fn pick_action<N, E>(
+impl<N, E> SelectionAlgorithm<N, E> for MinimaxAlgorithm
+where
+    N: GameStateNode,
+    E: StateEvaluator<N>,
+{
+    fn pick_action(
         &mut self,
         config: AgentConfig,
         node: &N,
         evaluator: &E,
         player: N::PlayerName,
-    ) -> N::Action
-    where
-        N: GameStateNode,
-        E: StateEvaluator<N>,
-    {
+    ) -> N::Action {
         run_internal(config, node, evaluator, self.search_depth, player).action()
     }
 }

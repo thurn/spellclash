@@ -20,8 +20,13 @@ use crate::core::state_evaluator::StateEvaluator;
 #[derive(Debug, Clone)]
 pub struct FirstAvailableActionAlgorithm;
 
-impl SelectionAlgorithm for FirstAvailableActionAlgorithm {
-    fn pick_action<TStateNode, TEvaluator>(
+impl<TStateNode, TEvaluator> SelectionAlgorithm<TStateNode, TEvaluator>
+    for FirstAvailableActionAlgorithm
+where
+    TStateNode: GameStateNode,
+    TEvaluator: StateEvaluator<TStateNode>,
+{
+    fn pick_action(
         &mut self,
         _config: AgentConfig,
         node: &TStateNode,

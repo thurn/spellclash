@@ -18,7 +18,9 @@ use ai::core::agent::AgentData;
 use ai::core::first_available_action::FirstAvailableActionAlgorithm;
 use ai::core::win_loss_evaluator::WinLossEvaluator;
 use ai::game::evaluators::CustomHeuristicEvaluator;
-use ai::monte_carlo::monte_carlo_search::{MonteCarloAlgorithm, RandomPlayoutEvaluator};
+use ai::monte_carlo::monte_carlo_search::{
+    MonteCarloAlgorithm, RandomPlayoutEvaluator, SearchGraph,
+};
 use ai::monte_carlo::uct1::Uct1;
 use ai::tree_search::iterative_deepening_search::IterativeDeepeningSearch;
 use data::core::primitives::PlayerName;
@@ -64,6 +66,7 @@ fn initialize_agent(agent: &mut GameAgent) {
             agent.implementation_reference = Some(Box::new(AgentData::omniscient(
                 "UCT1_10_000",
                 MonteCarloAlgorithm {
+                    graph: SearchGraph::new(),
                     child_score_algorithm: Uct1 {},
                     max_iterations: Some(10_000),
                 },

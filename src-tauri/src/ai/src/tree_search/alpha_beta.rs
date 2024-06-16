@@ -37,18 +37,18 @@ pub struct AlphaBetaAlgorithm {
 #[derive(Debug)]
 pub struct DeadlineExceededError;
 
-impl SelectionAlgorithm for AlphaBetaAlgorithm {
-    fn pick_action<N, E>(
+impl<N, E> SelectionAlgorithm<N, E> for AlphaBetaAlgorithm
+where
+    N: GameStateNode,
+    E: StateEvaluator<N>,
+{
+    fn pick_action(
         &mut self,
         config: AgentConfig,
         node: &N,
         evaluator: &E,
         player: N::PlayerName,
-    ) -> N::Action
-    where
-        N: GameStateNode,
-        E: StateEvaluator<N>,
-    {
+    ) -> N::Action {
         assert!(matches!(node.status(), GameStatus::InProgress { .. }));
         run_internal(config, node, evaluator, self.search_depth, player, i32::MIN, i32::MAX, true)
             .expect("Deadline exceeded")

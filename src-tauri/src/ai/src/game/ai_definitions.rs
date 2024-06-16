@@ -70,7 +70,7 @@ impl GameStateNode for GameState {
 
 impl<TSelector, TEvaluator> GameAgentImpl for AgentData<TSelector, TEvaluator, GameState>
 where
-    TSelector: SelectionAlgorithm + Debug + Clone,
+    TSelector: SelectionAlgorithm<GameState, TEvaluator> + Debug + Clone,
     TEvaluator: StateEvaluator<GameState> + Debug + Clone,
 {
     fn select_action(&mut self, game: GameState, player: primitives::PlayerName) -> GameAction {

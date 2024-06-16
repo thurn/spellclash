@@ -63,7 +63,7 @@ where
 #[derive(Debug, Clone)]
 pub struct AgentData<TSelector, TEvaluator, TNode>
 where
-    TSelector: SelectionAlgorithm + Debug + Clone,
+    TSelector: SelectionAlgorithm<TNode, TEvaluator> + Debug + Clone,
     TEvaluator: StateEvaluator<TNode> + Debug + Clone,
     TNode: GameStateNode + 'static + Debug + Clone,
 {
@@ -83,7 +83,7 @@ where
 
 impl<TSelector, TEvaluator, TNode> AgentData<TSelector, TEvaluator, TNode>
 where
-    TSelector: SelectionAlgorithm + Debug + Clone,
+    TSelector: SelectionAlgorithm<TNode, TEvaluator> + Debug + Clone,
     TEvaluator: StateEvaluator<TNode> + Debug + Clone,
     TNode: GameStateNode + 'static + Debug + Clone,
 {
@@ -107,7 +107,7 @@ where
 
 impl<TSelector, TEvaluator, TNode> Agent<TNode> for AgentData<TSelector, TEvaluator, TNode>
 where
-    TSelector: SelectionAlgorithm + Debug + Clone,
+    TSelector: SelectionAlgorithm<TNode, TEvaluator> + Debug + Clone,
     TEvaluator: StateEvaluator<TNode> + Debug + Clone,
     TNode: GameStateNode + 'static + Debug + Clone,
 {

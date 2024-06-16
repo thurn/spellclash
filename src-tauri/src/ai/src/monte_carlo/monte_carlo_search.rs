@@ -19,6 +19,7 @@
 //! Computational Intelligence and AI in Games, Vol. 4, No. 1, March 2012.
 
 use std::collections::HashSet;
+use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::time::Instant;
 
@@ -77,7 +78,7 @@ impl<TState: GameStateNode + Send, TEvaluator: StateEvaluator<TState>> StateEval
 }
 
 #[derive(Debug, Clone)]
-struct SearchNode<TState: GameStateNode> {
+pub struct SearchNode<TState: GameStateNode> {
     /// Player who acted to create this node
     pub player: TState::PlayerName,
     /// Q(v): Total reward of all playouts that passed through this state
@@ -86,11 +87,12 @@ struct SearchNode<TState: GameStateNode> {
     pub visit_count: u32,
 }
 
-struct SearchEdge<TState: GameStateNode> {
+#[derive(Debug, Clone)]
+pub struct SearchEdge<TState: GameStateNode> {
     pub action: TState::Action,
 }
 
-type SearchGraph<TState> = Graph<SearchNode<TState>, SearchEdge<TState>>;
+pub type SearchGraph<TState> = Graph<SearchNode<TState>, SearchEdge<TState>>;
 
 /// Monte Carlo search algorithm.
 ///
@@ -119,25 +121,32 @@ type SearchGraph<TState> = Graph<SearchNode<TState>, SearchEdge<TState>>;
 ///   𝐫𝐞𝐭𝐮𝐫𝐧 𝒂(BESTCHILD(v₀, 0))
 /// ```
 #[derive(Debug, Clone)]
-pub struct MonteCarloAlgorithm<TScoreAlgorithm: ChildScoreAlgorithm> {
+pub struct MonteCarloAlgorithm<TState, TScoreAlgorithm: ChildScoreAlgorithm>
+where
+    TState: GameStateNode + Debug + Clone,
+{
+    pub graph: SearchGraph<TState>,
     pub child_score_algorithm: TScoreAlgorithm,
     pub max_iterations: Option<u32>,
 }
 
-impl<TScoreAlgorithm: ChildScoreAlgorithm> SelectionAlgorithm
-    for MonteCarloAlgorithm<TScoreAlgorithm>
+impl<TState, TEvaluator, TScoreAlgorithm: ChildScoreAlgorithm>
+    SelectionAlgorithm<TState, TEvaluator> for MonteCarloAlgorithm<TState, TScoreAlgorithm>
+where
+    TState: GameStateNode + Debug + Clone,
+    TEvaluator: StateEvaluator<TState>,
 {
     #[instrument(level = "debug", skip_all)]
-    fn pick_action<TStateNode, TEvaluator>(
+    fn pick_action(
         &mut self,
         config: AgentConfig,
-        node: &TStateNode,
+        node: &TState,
         evaluator: &TEvaluator,
-        player: TStateNode::PlayerName,
-    ) -> TStateNode::Action
+        player: TState::PlayerName,
+    ) -> TState::Action
     where
-        TStateNode: GameStateNode,
-        TEvaluator: StateEvaluator<TStateNode>,
+        TState: GameStateNode,
+        TEvaluator: StateEvaluator<TState>,
     {
         self.run_search(
             |i| {
@@ -150,15 +159,18 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> SelectionAlgorithm
     }
 }
 
-impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> {
+impl<TState, TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TState, TScoreAlgorithm>
+where
+    TState: GameStateNode + Debug + Clone,
+{
     #[instrument(level = "debug", skip_all)]
-    pub fn run_search<TStateNode: GameStateNode, TEvaluator: StateEvaluator<TStateNode>>(
+    pub fn run_search<TEvaluator: StateEvaluator<TState>>(
         &self,
         should_halt: impl Fn(u32) -> bool,
-        node: &TStateNode,
+        node: &TState,
         evaluator: &TEvaluator,
-        player: TStateNode::PlayerName,
-    ) -> TStateNode::Action {
+        player: TState::PlayerName,
+    ) -> TState::Action {
         let mut graph = SearchGraph::new();
         let root = graph.add_node(SearchNode { total_reward: 0.0, visit_count: 1, player });
         let mut i = 0;
@@ -251,7 +263,7 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> 
     ///   𝐫𝐞𝐭𝐮𝐫𝐧 v
     /// ```
     #[instrument(level = "debug", skip_all)]
-    fn tree_policy<TState: GameStateNode>(
+    fn tree_policy(
         &self,
         graph: &mut SearchGraph<TState>,
         game: &mut TState,
@@ -288,7 +300,7 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> 
     ///   𝐫𝐞𝐭𝐮𝐫𝐧 v′
     /// ```
     #[instrument(level = "debug", skip_all)]
-    fn expand<TState: GameStateNode>(
+    fn expand(
         graph: &mut SearchGraph<TState>,
         game: &mut TState,
         player: TState::PlayerName,
@@ -304,7 +316,7 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> 
     /// Picks the most promising child node to explore, returning its associated
     /// action and node identifier.
     #[instrument(level = "debug", skip_all)]
-    fn best_child<TState: GameStateNode>(
+    fn best_child(
         &self,
         graph: &SearchGraph<TState>,
         node: NodeIndex,
@@ -350,7 +362,7 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TScoreAlgorithm> 
     ///     v ← parent of v
     /// ```
     #[instrument(level = "debug", skip_all)]
-    fn backup<TState: GameStateNode>(
+    fn backup(
         graph: &mut SearchGraph<TState>,
         maximizing_player: TState::PlayerName,
         mut node: NodeIndex,
