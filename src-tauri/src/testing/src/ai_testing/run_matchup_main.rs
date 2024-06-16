@@ -15,8 +15,11 @@
 use clap::Parser;
 use testing::ai_testing::run_matchup;
 use testing::ai_testing::run_matchup::MatchupArgs;
+use utils::command_line;
+use utils::command_line::CommandLine;
 
 pub fn main() {
+    command_line::FLAGS.set(CommandLine::default()).ok();
     let args = MatchupArgs::parse();
     run_matchup::run_with_args(&args)
 }

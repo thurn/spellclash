@@ -24,6 +24,8 @@ use testing::nim::nim_agents::{
 use testing::nim::nim_game::{
     nim_sum, NimAction, NimPerfectEvaluator, NimPile, NimPlayer, NimState,
 };
+use utils::command_line;
+use utils::command_line::CommandLine;
 
 #[derive(Parser)]
 #[clap()]
@@ -48,6 +50,7 @@ pub enum NimAgentName {
 }
 
 pub fn main() {
+    command_line::FLAGS.set(CommandLine::default()).ok();
     let args = Args::parse();
     println!("Welcome to the Game of Nim");
     let nim = NimState::new(args.stack_size);
