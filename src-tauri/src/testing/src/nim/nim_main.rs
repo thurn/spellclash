@@ -14,13 +14,16 @@
 
 use std::io;
 
-use ai::core::agent::{Agent, AgentConfig};
+use ai::core::agent::{Agent, AgentConfig, AgentData};
 use ai::core::game_state_node::{GameStateNode, GameStatus};
+use ai::tree_search::single_level::SingleLevel;
 use clap::{Parser, ValueEnum};
 use testing::nim::nim_agents::{
     NIM_ALPHA_BETA_AGENT, NIM_MINIMAX_AGENT, NIM_PERFECT_AGENT, NIM_UCT1_AGENT,
 };
-use testing::nim::nim_game::{nim_sum, NimAction, NimPile, NimPlayer, NimState};
+use testing::nim::nim_game::{
+    nim_sum, NimAction, NimPerfectEvaluator, NimPile, NimPlayer, NimState,
+};
 
 #[derive(Parser)]
 #[clap()]
@@ -64,8 +67,8 @@ fn get_agent(name: NimAgentName) -> Box<dyn Agent<NimState>> {
 fn run_game_loop(
     mut nim: NimState,
     move_time: u64,
-    player_one: Box<dyn Agent<NimState>>,
-    player_two: Box<dyn Agent<NimState>>,
+    mut player_one: Box<dyn Agent<NimState>>,
+    mut player_two: Box<dyn Agent<NimState>>,
 ) {
     loop {
         print_optimal_action(&nim, player_one.name());
@@ -89,7 +92,8 @@ fn print_optimal_action(state: &NimState, player_name: &str) {
     if nim_sum(state) == 0 {
         println!("  (Game is unwinnable for {} with optimal play)", player_name);
     } else {
-        let action = NIM_PERFECT_AGENT.pick_action(AgentConfig::with_deadline(5), state);
+        let mut perfect = AgentData::omniscient("PERFECT", SingleLevel {}, NimPerfectEvaluator {});
+        let action = perfect.pick_action(AgentConfig::with_deadline(5), state);
         println!("  (Optimal play for {} is {} take {})", player_name, action.pile, action.amount);
     }
 }
@@ -108,7 +112,7 @@ impl Agent<NimState> for NimHumanAgent {
         "HUMAN"
     }
 
-    fn pick_action(&self, _: AgentConfig, state: &NimState) -> NimAction {
+    fn pick_action(&mut self, _: AgentConfig, state: &NimState) -> NimAction {
         println!("\n>>> Input your action, e.g. 'a2' or 'b3'");
 
         let mut input_text = String::new();

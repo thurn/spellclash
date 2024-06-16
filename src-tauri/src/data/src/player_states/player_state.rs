@@ -90,13 +90,6 @@ impl PlayerType {
             _ => None,
         }
     }
-
-    pub fn agent(&self) -> Option<&dyn GameAgentImpl> {
-        match self {
-            Self::Agent(agent) => Some(agent.implementation()),
-            _ => None,
-        }
-    }
 }
 
 /// Represents the state of a single player within a game

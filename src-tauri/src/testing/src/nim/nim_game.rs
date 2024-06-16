@@ -23,18 +23,18 @@ use enumset::{EnumSet, EnumSetType};
 
 /// Asserts that a given `agent` picks an optimal game action for the provided
 /// game state.
-pub fn assert_perfect(state: &NimState, agent: &impl Agent<NimState>) {
+pub fn assert_perfect(state: &NimState, agent: &mut impl Agent<NimState>) {
     assert_perfect_in_seconds(state, agent, 60)
 }
 
 /// Equivalent to [assert_perfect] with a short timeout in seconds.
-pub fn assert_perfect_short(state: &NimState, agent: &impl Agent<NimState>) {
+pub fn assert_perfect_short(state: &NimState, agent: &mut impl Agent<NimState>) {
     assert_perfect_in_seconds(state, agent, 1)
 }
 
 /// Equivalent to [assert_perfect] with a manually-specified deadline in
 /// seconds.
-pub fn assert_perfect_in_seconds(state: &NimState, agent: &impl Agent<NimState>, seconds: u64) {
+pub fn assert_perfect_in_seconds(state: &NimState, agent: &mut impl Agent<NimState>, seconds: u64) {
     let current = state.current_turn();
     let result = agent.pick_action(AgentConfig::with_deadline(seconds), state);
     let mut copy = state.make_copy();

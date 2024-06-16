@@ -70,8 +70,8 @@ pub fn run_match(
     move_time_ms: u64,
     verbosity: Verbosity,
 ) -> AgentName {
-    let user = agents::get_agent(user_agent);
-    let opponent = agents::get_agent(opponent_agent);
+    let mut user = agents::get_agent(user_agent);
+    let mut opponent = agents::get_agent(opponent_agent);
     if verbosity > Verbosity::None {
         println!("Starting game");
     }
@@ -79,7 +79,7 @@ pub fn run_match(
     loop {
         match game.status() {
             GameStatus::InProgress { current_turn } => {
-                let agent = if current_turn == PlayerName::One { &user } else { &opponent };
+                let agent = if current_turn == PlayerName::One { &mut user } else { &mut opponent };
                 let config =
                     AgentConfig { deadline: Instant::now() + Duration::from_millis(move_time_ms) };
                 let action = agent.pick_action(config, game);

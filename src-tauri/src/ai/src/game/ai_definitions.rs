@@ -73,16 +73,14 @@ where
     TSelector: SelectionAlgorithm + Debug + Clone,
     TEvaluator: StateEvaluator<GameState> + Debug + Clone,
 {
-    fn select_action(&self, input_game: &GameState, player: primitives::PlayerName) -> GameAction {
-        assert_eq!(legal_actions::next_to_act(input_game, None), player, "Not {:?}'s turn", player);
-        let legal =
-            legal_actions::compute(input_game, player, LegalActions { for_human_player: false });
+    fn select_action(&mut self, game: GameState, player: primitives::PlayerName) -> GameAction {
+        assert_eq!(legal_actions::next_to_act(&game, None), player, "Not {:?}'s turn", player);
+        let legal = legal_actions::compute(&game, player, LegalActions { for_human_player: false });
         assert!(!legal.is_empty(), "No legal actions available");
         if legal.len() == 1 {
             return legal[0];
         }
 
-        let game = input_game.shallow_clone();
         let deadline = Duration::from_secs(100);
         match command_line::flags().tracing_style {
             TracingStyle::AggregateTime | TracingStyle::None => {
