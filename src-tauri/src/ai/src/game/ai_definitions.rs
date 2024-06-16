@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use std::fmt::Debug;
+use std::time::{Duration, Instant};
 
 use data::actions::game_action::GameAction;
 use data::actions::prompt_action::PromptAction;
@@ -25,8 +26,11 @@ use rules::action_handlers::actions;
 use rules::action_handlers::actions::ExecuteAction;
 use rules::legality::legal_actions;
 use rules::legality::legal_actions::LegalActions;
+use tracing::{subscriber, Level};
+use utils::command_line;
+use utils::command_line::TracingStyle;
 
-use crate::core::agent::AgentData;
+use crate::core::agent::{Agent, AgentConfig, AgentData};
 use crate::core::game_state_node::{GameStateNode, GameStatus};
 use crate::core::selection_algorithm::SelectionAlgorithm;
 use crate::core::state_evaluator::StateEvaluator;
@@ -69,11 +73,32 @@ where
     TSelector: SelectionAlgorithm + Debug + Clone,
     TEvaluator: StateEvaluator<GameState> + Debug + Clone,
 {
-    fn pick_action(&self, _game: &GameState, _player: primitives::PlayerName) -> GameAction {
-        todo!()
+    fn select_action(&self, input_game: &GameState, player: primitives::PlayerName) -> GameAction {
+        assert_eq!(legal_actions::next_to_act(input_game, None), player, "Not {:?}'s turn", player);
+        let legal =
+            legal_actions::compute(input_game, player, LegalActions { for_human_player: false });
+        assert!(!legal.is_empty(), "No legal actions available");
+        if legal.len() == 1 {
+            return legal[0];
+        }
+
+        let game = input_game.shallow_clone();
+        let deadline = Duration::from_secs(100);
+        match command_line::flags().tracing_style {
+            TracingStyle::AggregateTime | TracingStyle::None => {
+                self.pick_action(AgentConfig { deadline: Instant::now() + deadline }, &game)
+            }
+            TracingStyle::Forest => {
+                let info_subscriber =
+                    tracing_subscriber::fmt().with_max_level(Level::INFO).finish();
+                subscriber::with_default(info_subscriber, || {
+                    self.pick_action(AgentConfig { deadline: Instant::now() + deadline }, &game)
+                })
+            }
+        }
     }
 
-    fn pick_prompt_action(
+    fn select_prompt_action(
         &self,
         _game: &GameState,
         _prompt: &Prompt,

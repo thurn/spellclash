@@ -196,7 +196,7 @@ pub fn handle_game_action_internal(
                 PlayerType::Agent(agent) => {
                     debug!(?next_player, "Searching for AI action");
                     current_player = next_player;
-                    current_action = agent.implementation().pick_action(game, current_player);
+                    current_action = agent.implementation().select_action(game, current_player);
                     skip_undo_tracking = true;
                     debug!(?next_player, ?current_action, "AI action selected");
                 }

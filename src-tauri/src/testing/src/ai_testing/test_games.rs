@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use all_cards::card_list;
 use data::card_definitions::card_name;
 use data::core::primitives::GameId;
 use data::decks::deck_name;
@@ -25,25 +26,6 @@ use utils::paths;
 use uuid::Uuid;
 
 use crate::ai_testing::test_game_builder::{TestGame, TestPlayer};
-
-/// Create a new [GameState] for use in benchmarking & AI testing
-pub fn create(deck_name: DeckName) -> GameState {
-    let database = SqliteDatabase::new(paths::get_data_dir());
-    let mut game = new_game::create(
-        database,
-        GameId(Uuid::new_v4()),
-        PlayerType::None,
-        deck_name,
-        PlayerType::None,
-        deck_name,
-        DebugConfiguration::default(),
-    );
-    game.status = GameStatus::Playing;
-    game.undo_tracker.enabled = false;
-    game.undo_tracker.undo.clear();
-    game.updates = None;
-    game
-}
 
 pub fn vanilla_game_scenario() -> GameState {
     let mut game = create(deck_name::GREEN_VANILLA);
@@ -68,5 +50,25 @@ pub fn vanilla_game_scenario() -> GameState {
         .player_2(player)
         .apply_to(&mut game);
 
+    game
+}
+
+/// Create a new [GameState] for use in benchmarking & AI testing
+pub fn create(deck_name: DeckName) -> GameState {
+    card_list::initialize();
+    let database = SqliteDatabase::new(paths::get_data_dir());
+    let mut game = new_game::create(
+        database,
+        GameId(Uuid::new_v4()),
+        PlayerType::None,
+        deck_name,
+        PlayerType::None,
+        deck_name,
+        DebugConfiguration::default(),
+    );
+    game.status = GameStatus::Playing;
+    game.undo_tracker.enabled = false;
+    game.undo_tracker.undo.clear();
+    game.updates = None;
     game
 }

@@ -96,9 +96,9 @@ pub enum ChildScoreAlgorithm {
 /// avoid crate circular dependency problems and add a little bit of
 /// game-specific context.
 pub trait GameAgentImpl: Debug + DynClone + Send {
-    fn pick_action(&self, game: &GameState, player: PlayerName) -> GameAction;
+    fn select_action(&self, game: &GameState, player: PlayerName) -> GameAction;
 
-    fn pick_prompt_action(
+    fn select_prompt_action(
         &self,
         game: &GameState,
         prompt: &Prompt,

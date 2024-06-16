@@ -5557,6 +5557,7 @@ name = "testing"
 version = "0.0.0"
 dependencies = [
  "ai",
+ "all_cards",
  "clap",
  "color-eyre",
  "crossbeam",

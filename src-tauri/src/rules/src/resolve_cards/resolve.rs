@@ -19,7 +19,7 @@ use data::core::primitives::{Source, StackItemId, Zone};
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use enumset::EnumSet;
-use tracing::info;
+use tracing::{debug, info};
 
 use crate::mutations::{move_card, permanents};
 use crate::queries::card_queries;
@@ -35,7 +35,7 @@ pub fn resolve_top_of_stack(game: &mut GameState) {
     let Some(StackItemId::Card(card_id)) = game.stack().last().copied() else {
         return;
     };
-    info!(?card_id, "Resolving top of stack");
+    debug!(?card_id, "Resolving top of stack");
 
     let definition = definitions::get(game.card(card_id).card_name);
     for (ability_number, ability) in definition.abilities() {
