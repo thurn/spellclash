@@ -22,7 +22,7 @@ pub struct FirstAvailableActionAlgorithm;
 
 impl SelectionAlgorithm for FirstAvailableActionAlgorithm {
     fn pick_action<TStateNode, TEvaluator>(
-        &self,
+        &mut self,
         _config: AgentConfig,
         node: &TStateNode,
         _evaluator: &TEvaluator,

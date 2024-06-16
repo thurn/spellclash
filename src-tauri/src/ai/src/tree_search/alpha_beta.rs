@@ -39,7 +39,7 @@ pub struct DeadlineExceededError;
 
 impl SelectionAlgorithm for AlphaBetaAlgorithm {
     fn pick_action<N, E>(
-        &self,
+        &mut self,
         config: AgentConfig,
         node: &N,
         evaluator: &E,

@@ -24,7 +24,7 @@ pub struct SingleLevel {}
 
 impl SelectionAlgorithm for SingleLevel {
     fn pick_action<N, E>(
-        &self,
+        &mut self,
         _: AgentConfig,
         node: &N,
         evaluator: &E,

@@ -30,7 +30,7 @@ pub struct IterativeDeepeningSearch;
 
 impl SelectionAlgorithm for IterativeDeepeningSearch {
     fn pick_action<N, E>(
-        &self,
+        &mut self,
         config: AgentConfig,
         node: &N,
         evaluator: &E,

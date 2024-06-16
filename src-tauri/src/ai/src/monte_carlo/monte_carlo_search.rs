@@ -129,7 +129,7 @@ impl<TScoreAlgorithm: ChildScoreAlgorithm> SelectionAlgorithm
 {
     #[instrument(level = "debug", skip_all)]
     fn pick_action<TStateNode, TEvaluator>(
-        &self,
+        &mut self,
         config: AgentConfig,
         node: &TStateNode,
         evaluator: &TEvaluator,

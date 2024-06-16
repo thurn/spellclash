@@ -30,7 +30,7 @@ pub struct MinimaxAlgorithm {
 
 impl SelectionAlgorithm for MinimaxAlgorithm {
     fn pick_action<N, E>(
-        &self,
+        &mut self,
         config: AgentConfig,
         node: &N,
         evaluator: &E,

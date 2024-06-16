@@ -27,7 +27,7 @@ pub trait SelectionAlgorithm: Send {
     /// `config.deadline` time by periodically comparing it to
     /// `Instant::now()`.
     fn pick_action<TStateNode, TEvaluator>(
-        &self,
+        &mut self,
         config: AgentConfig,
         node: &TStateNode,
         evaluator: &TEvaluator,
