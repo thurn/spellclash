@@ -36,24 +36,25 @@ where
     TSelector: SelectionAlgorithm<GameState, TEvaluator> + Debug + Clone,
     TEvaluator: StateEvaluator<GameState> + Debug + Clone,
 {
-    fn select_action(&mut self, game: GameState, player: primitives::PlayerName) -> GameAction {
-        assert_eq!(legal_actions::next_to_act(&game, None), player, "Not {:?}'s turn", player);
-        let legal = legal_actions::compute(&game, player, LegalActions { for_human_player: false });
+    fn select_action(&self, game: &GameState, player: primitives::PlayerName) -> GameAction {
+        assert_eq!(legal_actions::next_to_act(game, None), player, "Not {:?}'s turn", player);
+        let legal = legal_actions::compute(game, player, LegalActions { for_human_player: false });
         assert!(!legal.is_empty(), "No legal actions available");
         if legal.len() == 1 {
             return legal[0];
         }
 
+        let copy = game.shallow_clone();
         let deadline = Duration::from_secs(100);
         match command_line::flags().tracing_style {
             TracingStyle::AggregateTime | TracingStyle::None => {
-                self.pick_action(Instant::now() + deadline, &game)
+                self.pick_action(Instant::now() + deadline, &copy)
             }
             TracingStyle::Forest => {
                 let info_subscriber =
                     tracing_subscriber::fmt().with_max_level(Level::INFO).finish();
                 subscriber::with_default(info_subscriber, || {
-                    self.pick_action(Instant::now() + deadline, &game)
+                    self.pick_action(Instant::now() + deadline, &copy)
                 })
             }
         }

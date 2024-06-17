@@ -20,6 +20,7 @@ use std::time::{Duration, Instant};
 use ai::core::agent::Agent;
 use ai::core::game_state_node::{GameStateNode, GameStatus};
 use ai::core::state_evaluator::StateEvaluator;
+use ai_core::core::agent_state::AgentState;
 use enumset::{EnumSet, EnumSetType};
 
 /// Asserts that a given `agent` picks an optimal game action for the provided
@@ -98,6 +99,7 @@ pub struct NimAction {
 pub struct NimState {
     pub piles: HashMap<NimPile, u32>,
     pub turn: NimPlayer,
+    pub agent_state: Option<AgentState<NimPlayer, NimAction>>,
 }
 
 impl NimState {
@@ -110,7 +112,7 @@ impl NimState {
         piles.insert(NimPile::PileA, a);
         piles.insert(NimPile::PileB, b);
         piles.insert(NimPile::PileC, c);
-        Self { piles, turn: NimPlayer::One }
+        Self { piles, turn: NimPlayer::One, agent_state: None }
     }
 }
 
@@ -139,7 +141,7 @@ impl GameStateNode for NimState {
     type PlayerName = NimPlayer;
 
     fn make_copy(&self) -> Self {
-        self.clone()
+        Self { agent_state: None, piles: self.piles.clone(), turn: self.turn }
     }
 
     fn status(&self) -> GameStatus<NimPlayer> {
@@ -171,5 +173,21 @@ impl GameStateNode for NimState {
             NimPlayer::One => NimPlayer::Two,
             NimPlayer::Two => NimPlayer::One,
         };
+    }
+
+    fn set_agent_state(&mut self, agent_state: AgentState<Self::PlayerName, Self::Action>) {
+        self.agent_state = Some(agent_state);
+    }
+
+    fn get_agent_state(&self) -> &AgentState<Self::PlayerName, Self::Action> {
+        self.agent_state.as_ref().expect("Agent state not found")
+    }
+
+    fn get_agent_state_mut(&mut self) -> &mut AgentState<Self::PlayerName, Self::Action> {
+        self.agent_state.as_mut().expect("Agent state not found")
+    }
+
+    fn take_agent_state(mut self) -> AgentState<Self::PlayerName, Self::Action> {
+        self.agent_state.take().expect("Agent state not found")
     }
 }

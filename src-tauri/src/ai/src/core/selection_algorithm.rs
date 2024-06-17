@@ -32,7 +32,7 @@ where
     /// `deadline` time by periodically comparing it to
     /// `Instant::now()`.
     fn pick_action(
-        &mut self,
+        &self,
         deadline: Instant,
         node: &TStateNode,
         evaluator: &TEvaluator,

@@ -14,10 +14,12 @@
 
 use std::collections::{HashSet, VecDeque};
 
+use ai_core::core::agent_state::AgentState;
 use enumset::EnumSet;
 use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};
 
+use crate::actions::game_action::GameAction;
 use crate::card_states::card_state::CardState;
 use crate::card_states::stack_ability_state::StackAbilityState;
 use crate::card_states::zones::{ZoneQueries, Zones};
@@ -130,6 +132,9 @@ pub struct GameState {
     /// the [Self::oracle] method.
     #[serde(skip)]
     pub oracle_reference: Option<Box<dyn Oracle>>,
+
+    #[serde(skip)]
+    pub agent_state: Option<AgentState<PlayerName, GameAction>>,
 }
 
 impl GameState {
@@ -150,12 +155,13 @@ impl GameState {
     }
 
     /// Makes a clone of this game state suitable suitable for use in display
-    /// or simulation logic, but which omits undo tracking information and the
-    /// ability to process incremental visual updates.
+    /// or simulation logic, but which omits undo tracking information, agent
+    /// state, and the ability to process incremental visual updates.
     pub fn shallow_clone(&self) -> Self {
         Self {
             updates: None,
             undo_tracker: UndoTracker { enabled: false, undo: vec![] },
+            agent_state: None,
             ..self.clone()
         }
     }

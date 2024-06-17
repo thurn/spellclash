@@ -18,6 +18,7 @@ path = "src/ai_testing/run_matchup_main.rs"
 
 [dependencies]
 ai = { path = "../ai", version = "0.0.0" }
+ai_core = { path = "../ai_core", version = "0.0.0" }
 all_cards = { path = "../cards/all_cards", version = "0.0.0" }
 data = { path = "../data", version = "0.0.0" }
 database = { path = "../database", version = "0.0.0" }

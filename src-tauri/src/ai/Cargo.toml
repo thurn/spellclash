@@ -9,6 +9,7 @@ doctest = false
 bench = false
 
 [dependencies]
+ai_core = { path = "../ai_core", version = "0.0.0" }
 data = { path = "../data", version = "0.0.0" }
 database = { path = "../database", version = "0.0.0" }
 rules = { path = "../rules", version = "0.0.0" }

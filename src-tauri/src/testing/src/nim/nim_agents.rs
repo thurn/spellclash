@@ -16,9 +16,7 @@ use std::marker::PhantomData;
 
 use ai::core::agent::AgentData;
 use ai::core::win_loss_evaluator::WinLossEvaluator;
-use ai::monte_carlo::monte_carlo_search::{
-    MonteCarloAlgorithm, RandomPlayoutEvaluator, SearchGraph,
-};
+use ai::monte_carlo::monte_carlo_search::{MonteCarloAlgorithm, RandomPlayoutEvaluator};
 use ai::monte_carlo::uct1::Uct1;
 use ai::tree_search::alpha_beta::AlphaBetaAlgorithm;
 use ai::tree_search::minimax::MinimaxAlgorithm;
@@ -44,9 +42,9 @@ pub fn nim_uct1_agent() -> AgentData<
     AgentData::omniscient(
         "UCT1",
         MonteCarloAlgorithm {
-            graph: SearchGraph::new(),
             child_score_algorithm: Uct1 {},
             max_iterations: None,
+            phantom_data: PhantomData,
         },
         RandomPlayoutEvaluator { evaluator: WinLossEvaluator, phantom_data: PhantomData },
     )

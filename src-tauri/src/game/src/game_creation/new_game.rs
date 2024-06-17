@@ -123,6 +123,7 @@ fn create_game(
         delegates: GameDelegates::default(),
         state_based_events: Some(vec![]),
         oracle_reference: Some(oracle),
+        agent_state: None,
     }
 }
 

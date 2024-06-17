@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod agent_config;
-pub mod agent_state;
-pub mod monte_carlo_agent_state;
+use crate::core::monte_carlo_agent_state::MonteCarloAgentState;
+
+#[derive(Debug, Clone)]
+pub enum AgentState<TPlayerName, TAction> {
+    FirstAvailable,
+    MonteCarlo(MonteCarloAgentState<TPlayerName, TAction>),
+}

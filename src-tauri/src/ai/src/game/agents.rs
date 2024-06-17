@@ -21,9 +21,7 @@ use crate::core::agent::{Agent, AgentData};
 use crate::core::first_available_action::FirstAvailableActionAlgorithm;
 use crate::core::win_loss_evaluator::WinLossEvaluator;
 use crate::game::evaluators::CustomHeuristicEvaluator;
-use crate::monte_carlo::monte_carlo_search::{
-    MonteCarloAlgorithm, RandomPlayoutEvaluator, SearchGraph,
-};
+use crate::monte_carlo::monte_carlo_search::{MonteCarloAlgorithm, RandomPlayoutEvaluator};
 use crate::monte_carlo::uct1::Uct1;
 use crate::tree_search::alpha_beta::AlphaBetaAlgorithm;
 use crate::tree_search::iterative_deepening_search::IterativeDeepeningSearch;
@@ -60,36 +58,36 @@ pub fn get_agent(name: AgentName) -> Box<dyn Agent<GameState>> {
         AgentName::Uct1 => Box::new(AgentData::omniscient(
             "UCT1",
             MonteCarloAlgorithm {
-                graph: SearchGraph::new(),
                 child_score_algorithm: Uct1 {},
                 max_iterations: None,
+                phantom_data: PhantomData,
             },
             RandomPlayoutEvaluator { evaluator: WinLossEvaluator, phantom_data: PhantomData },
         )),
         AgentName::Uct1Iterations1 => Box::new(AgentData::omniscient(
             "UCT1_1",
             MonteCarloAlgorithm {
-                graph: SearchGraph::new(),
                 child_score_algorithm: Uct1 {},
                 max_iterations: Some(1),
+                phantom_data: PhantomData,
             },
             RandomPlayoutEvaluator { evaluator: WinLossEvaluator, phantom_data: PhantomData },
         )),
         AgentName::Uct1Iterations250 => Box::new(AgentData::omniscient(
             "UCT1_250",
             MonteCarloAlgorithm {
-                graph: SearchGraph::new(),
                 child_score_algorithm: Uct1 {},
                 max_iterations: Some(250),
+                phantom_data: PhantomData,
             },
             RandomPlayoutEvaluator { evaluator: WinLossEvaluator, phantom_data: PhantomData },
         )),
         AgentName::Uct1Iterations10_000 => Box::new(AgentData::omniscient(
             "UCT1_10_000",
             MonteCarloAlgorithm {
-                graph: SearchGraph::new(),
                 child_score_algorithm: Uct1 {},
                 max_iterations: Some(10_000),
+                phantom_data: PhantomData,
             },
             RandomPlayoutEvaluator { evaluator: WinLossEvaluator, phantom_data: PhantomData },
         )),

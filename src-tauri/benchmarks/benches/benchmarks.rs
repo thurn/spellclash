@@ -104,7 +104,7 @@ pub fn uct1(c: &mut Criterion) {
     subscriber::with_default(error_subscriber, || {
         group.bench_function("uct1", |b| {
             b.iter(|| {
-                let mut agent = agents::get_agent(AgentName::Uct1Iterations1);
+                let agent = agents::get_agent(AgentName::Uct1Iterations1);
                 agent.pick_action(Instant::now() + Duration::from_secs(100), &game)
             })
         });
@@ -132,7 +132,7 @@ pub fn alpha_beta(c: &mut Criterion) {
 
     group.bench_function("alpha_beta", |b| {
         b.iter(|| {
-            let mut agent = agents::get_agent(AgentName::AlphaBetaDepth5);
+            let agent = agents::get_agent(AgentName::AlphaBetaDepth5);
             agent.pick_action(Instant::now() + Duration::from_secs(100), &game)
         })
     });

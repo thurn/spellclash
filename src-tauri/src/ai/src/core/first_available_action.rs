@@ -28,7 +28,7 @@ where
     TEvaluator: StateEvaluator<TStateNode>,
 {
     fn pick_action(
-        &mut self,
+        &self,
         _deadline: Instant,
         node: &TStateNode,
         _evaluator: &TEvaluator,

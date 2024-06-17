@@ -197,8 +197,7 @@ pub fn handle_game_action_internal(
             current_action = action;
             skip_undo_tracking = true;
         } else {
-            let to_search = game.shallow_clone();
-            let player_type = &mut game.player_mut(next_player).player_type;
+            let player_type = &game.player(next_player).player_type;
             match player_type {
                 PlayerType::Human(_) | PlayerType::None => {
                     database.write_game(game);
@@ -207,8 +206,7 @@ pub fn handle_game_action_internal(
                 PlayerType::Agent(agent) => {
                     debug!(?next_player, "Searching for AI action");
                     current_player = next_player;
-                    current_action =
-                        agent.implementation().select_action(to_search, current_player);
+                    current_action = agent.implementation().select_action(game, current_player);
                     skip_undo_tracking = true;
                     debug!(?next_player, ?current_action, "AI action selected");
                 }

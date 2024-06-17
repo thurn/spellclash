@@ -37,7 +37,7 @@ where
 
     /// Select an action for the current player to take in the `node` game
     /// state. Should attempt to return a result before the `deadline`.
-    fn pick_action(&mut self, deadline: Instant, node: &TNode) -> TNode::Action;
+    fn pick_action(&self, deadline: Instant, node: &TNode) -> TNode::Action;
 }
 
 /// A tuple of various pieces needed to perform agent action selection.
@@ -102,7 +102,7 @@ where
         self.name
     }
 
-    fn pick_action(&mut self, deadline: Instant, node: &TNode) -> TNode::Action {
+    fn pick_action(&self, deadline: Instant, node: &TNode) -> TNode::Action {
         let player = match node.status() {
             GameStatus::InProgress { current_turn } => current_turn,
             _ => panic!("Game is over"),

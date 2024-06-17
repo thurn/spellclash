@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use ai_core::core::agent_state::AgentState;
 use data::actions::game_action::GameAction;
 use data::core::primitives;
 use data::game_states::game_state;
@@ -54,5 +55,21 @@ impl GameStateNode for GameState {
             validate: false,
         })
         .expect("Halt encountered during AI action execution");
+    }
+
+    fn set_agent_state(&mut self, agent_state: AgentState<Self::PlayerName, Self::Action>) {
+        self.agent_state = Some(agent_state);
+    }
+
+    fn get_agent_state(&self) -> &AgentState<Self::PlayerName, Self::Action> {
+        self.agent_state.as_ref().expect("Agent state not found")
+    }
+
+    fn get_agent_state_mut(&mut self) -> &mut AgentState<Self::PlayerName, Self::Action> {
+        self.agent_state.as_mut().expect("Agent state not found")
+    }
+
+    fn take_agent_state(mut self) -> AgentState<Self::PlayerName, Self::Action> {
+        self.agent_state.take().expect("Agent state not found")
     }
 }

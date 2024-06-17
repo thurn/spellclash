@@ -15,6 +15,7 @@
 use std::fmt::Debug;
 use std::hash::Hash;
 
+use ai_core::core::agent_state::AgentState;
 use enumset::{EnumSet, EnumSetType};
 
 #[derive(Debug, PartialEq, Eq)]
@@ -68,4 +69,12 @@ pub trait GameStateNode {
 
     /// Apply the result of a given action to this game state.
     fn execute_action(&mut self, player: Self::PlayerName, action: Self::Action);
+
+    fn set_agent_state(&mut self, state: AgentState<Self::PlayerName, Self::Action>);
+
+    fn get_agent_state(&self) -> &AgentState<Self::PlayerName, Self::Action>;
+
+    fn get_agent_state_mut(&mut self) -> &mut AgentState<Self::PlayerName, Self::Action>;
+
+    fn take_agent_state(self) -> AgentState<Self::PlayerName, Self::Action>;
 }

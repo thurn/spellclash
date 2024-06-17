@@ -29,7 +29,7 @@ where
     E: StateEvaluator<N>,
 {
     fn pick_action(
-        &mut self,
+        &self,
         _deadline: Instant,
         node: &N,
         evaluator: &E,

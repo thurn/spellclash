@@ -42,11 +42,11 @@ pub struct GameAgent {
 }
 
 impl GameAgent {
-    pub fn implementation(&mut self) -> &mut dyn GameAgentImpl {
+    pub fn implementation(&self) -> &dyn GameAgentImpl {
         self.implementation_reference
-            .as_mut()
+            .as_ref()
             .expect("Implementation reference not populated")
-            .as_mut()
+            .as_ref()
     }
 }
 
@@ -96,7 +96,7 @@ pub enum ChildScoreAlgorithm {
 /// avoid crate circular dependency problems and add a little bit of
 /// game-specific context.
 pub trait GameAgentImpl: Debug + DynClone + Send {
-    fn select_action(&mut self, game: GameState, player: PlayerName) -> GameAction;
+    fn select_action(&self, game: &GameState, player: PlayerName) -> GameAction;
 
     fn select_prompt_action(
         &self,

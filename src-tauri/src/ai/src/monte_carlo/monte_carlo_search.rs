@@ -23,8 +23,12 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::time::Instant;
 
+use ai_core::core::agent_state::AgentState;
+use ai_core::core::monte_carlo_agent_state::{
+    MonteCarloAgentState, SearchEdge, SearchGraph, SearchNode,
+};
 use petgraph::prelude::{EdgeRef, NodeIndex};
-use petgraph::{Direction, Graph};
+use petgraph::Direction;
 use rand::prelude::IteratorRandom;
 use tracing::{info, instrument};
 use utils::command_line;
@@ -76,22 +80,22 @@ impl<TState: GameStateNode + Send, TEvaluator: StateEvaluator<TState>> StateEval
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct SearchNode<TState: GameStateNode> {
-    /// Player who acted to create this node
-    pub player: TState::PlayerName,
-    /// Q(v): Total reward of all playouts that passed through this state
-    pub total_reward: f64,
-    /// N(v): Visit count for this node
-    pub visit_count: u32,
-}
-
-#[derive(Debug, Clone)]
-pub struct SearchEdge<TState: GameStateNode> {
-    pub action: TState::Action,
-}
-
-pub type SearchGraph<TState> = Graph<SearchNode<TState>, SearchEdge<TState>>;
+// #[derive(Debug, Clone)]
+// pub struct SearchNode<TState: GameStateNode> {
+//     /// Player who acted to create this node
+//     pub player: TState::PlayerName,
+//     /// Q(v): Total reward of all playouts that passed through this state
+//     pub total_reward: f64,
+//     /// N(v): Visit count for this node
+//     pub visit_count: u32,
+// }
+//
+// #[derive(Debug, Clone)]
+// pub struct SearchEdge<TState: GameStateNode> {
+//     pub action: TState::Action,
+// }
+//
+// pub type SearchGraph<TState> = Graph<SearchNode<TState>, SearchEdge<TState>>;
 
 /// Monte Carlo search algorithm.
 ///
@@ -122,22 +126,22 @@ pub type SearchGraph<TState> = Graph<SearchNode<TState>, SearchEdge<TState>>;
 #[derive(Debug, Clone)]
 pub struct MonteCarloAlgorithm<TState, TScoreAlgorithm: ChildScoreAlgorithm>
 where
-    TState: GameStateNode + Debug + Clone,
+    TState: GameStateNode + Debug + Clone + Send,
 {
-    pub graph: SearchGraph<TState>,
     pub child_score_algorithm: TScoreAlgorithm,
     pub max_iterations: Option<u32>,
+    pub phantom_data: PhantomData<TState>,
 }
 
 impl<TState, TEvaluator, TScoreAlgorithm: ChildScoreAlgorithm>
     SelectionAlgorithm<TState, TEvaluator> for MonteCarloAlgorithm<TState, TScoreAlgorithm>
 where
-    TState: GameStateNode + Debug + Clone,
+    TState: GameStateNode + Debug + Clone + Send,
     TEvaluator: StateEvaluator<TState>,
 {
     #[instrument(level = "debug", skip_all)]
     fn pick_action(
-        &mut self,
+        &self,
         deadline: Instant,
         node: &TState,
         evaluator: &TEvaluator,
@@ -159,50 +163,60 @@ where
 
 impl<TState, TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TState, TScoreAlgorithm>
 where
-    TState: GameStateNode + Debug + Clone,
+    TState: GameStateNode + Debug + Clone + Send,
 {
     #[instrument(level = "debug", skip_all)]
     pub fn run_search<TEvaluator: StateEvaluator<TState>>(
-        &mut self,
+        &self,
         should_halt: impl Fn(u32) -> bool,
-        node: &TState,
+        initial_game: &TState,
         evaluator: &TEvaluator,
         player: TState::PlayerName,
     ) -> TState::Action {
-        self.graph = SearchGraph::new();
-        let root = self.graph.add_node(SearchNode { total_reward: 0.0, visit_count: 1, player });
+        let mut agent_state = MonteCarloAgentState { graph: SearchGraph::new() };
+        let root =
+            agent_state.graph.add_node(SearchNode { total_reward: 0.0, visit_count: 1, player });
         let mut i = 0;
         while !should_halt(i) {
             if i > 0 && i % 1000 == 0 {
                 println!("Iteration {}", i);
             }
-            let mut game = node.make_copy();
-            let node = self.tree_policy(&mut game, root);
-            let reward = f64::from(evaluator.evaluate(&game, player));
-            self.backup(player, node, reward);
+            let mut game_copy = initial_game.make_copy();
+            game_copy.set_state(agent_state);
+            let node = self.tree_policy(&mut game_copy, root);
+            let reward = f64::from(evaluator.evaluate(&game_copy, player));
+            Self::backup(&mut game_copy.state_mut().graph, player, node, reward);
             i += 1;
+            agent_state = game_copy.take_state();
         }
 
-        let (action, _) =
-            self.best_child(root, node.legal_actions(player).collect(), SelectionMode::Best);
+        let (action, _) = self.best_child(
+            &agent_state.graph,
+            root,
+            initial_game.legal_actions(player).collect(),
+            SelectionMode::Best,
+        );
 
-        self.log_results(i, node, player, root);
+        self.log_results(i, &agent_state.graph, root);
         action
     }
 
     #[instrument(level = "debug", skip_all)]
-    fn log_results(&self, count: u32, node: &TState, player: TState::PlayerName, root: NodeIndex) {
+    fn log_results(
+        &self,
+        count: u32,
+        graph: &SearchGraph<TState::PlayerName, TState::Action>,
+        root: NodeIndex,
+    ) {
         info!("Search completed in {} iterations", count);
         if command_line::flags().tracing_style == TracingStyle::AggregateTime {
             println!(">>> Search completed in {} iterations\n", count);
         }
-        let parent_visits = self.graph[root].visit_count;
-        let mut edges = self
-            .graph
+        let parent_visits = graph[root].visit_count;
+        let mut edges = graph
             .edges(root)
-            .filter(|edge| node.legal_actions(player).any(|a| a == edge.weight().action))
             .map(|edge| {
-                let child = &self.graph[edge.target()];
+                let child = &graph[edge.target()];
                 (
                     edge,
                     self.child_score_algorithm.score(
@@ -251,22 +265,31 @@ where
     ///   𝐫𝐞𝐭𝐮𝐫𝐧 v
     /// ```
     #[instrument(level = "debug", skip_all)]
-    fn tree_policy(&mut self, game: &mut TState, mut node: NodeIndex) -> NodeIndex {
+    fn tree_policy(&self, game: &mut TState, mut node_index: NodeIndex) -> NodeIndex {
         while let GameStatus::InProgress { current_turn } = game.status() {
             let actions = game.legal_actions(current_turn).collect::<HashSet<_>>();
-            let explored =
-                self.graph.edges(node).map(|e| e.weight().action).collect::<HashSet<_>>();
+            let explored = game
+                .state()
+                .graph
+                .edges(node_index)
+                .map(|e| e.weight().action)
+                .collect::<HashSet<_>>();
             if let Some(action) = actions.iter().find(|a| !explored.contains(a)) {
                 // An action exists which has not yet been tried
-                return self.expand(game, current_turn, node, *action);
+                return self.expand(game, current_turn, node_index, *action);
             } else {
                 // All actions have been tried, recursively search the best candidate
-                let (action, best) = self.best_child(node, actions, SelectionMode::Exploration);
+                let (action, action_index) = self.best_child(
+                    &game.state().graph,
+                    node_index,
+                    actions,
+                    SelectionMode::Exploration,
+                );
                 game.execute_action(current_turn, action);
-                node = best;
+                node_index = action_index;
             }
         }
-        node
+        node_index
     }
 
     /// Generates a new tree node by applying the next untried action from the
@@ -284,15 +307,19 @@ where
     /// ```
     #[instrument(level = "debug", skip_all)]
     fn expand(
-        &mut self,
+        &self,
         game: &mut TState,
         player: TState::PlayerName,
         source: NodeIndex,
         action: TState::Action,
     ) -> NodeIndex {
         game.execute_action(player, action);
-        let target = self.graph.add_node(SearchNode { player, total_reward: 0.0, visit_count: 0 });
-        self.graph.add_edge(source, target, SearchEdge { action });
+        let target = game.state_mut().graph.add_node(SearchNode {
+            player,
+            total_reward: 0.0,
+            visit_count: 0,
+        });
+        game.state_mut().graph.add_edge(source, target, SearchEdge { action });
         target
     }
 
@@ -301,19 +328,19 @@ where
     #[instrument(level = "debug", skip_all)]
     fn best_child(
         &self,
+        graph: &SearchGraph<TState::PlayerName, TState::Action>,
         node: NodeIndex,
         legal: HashSet<TState::Action>,
         selection_mode: SelectionMode,
     ) -> (TState::Action, NodeIndex) {
-        let parent_visits = self.graph[node].visit_count;
-        let (edge, _) = self
-            .graph
+        let parent_visits = graph[node].visit_count;
+        let (edge, _) = graph
             .edges(node)
             // We re-check action legality here because the set of legal actions can change between
             // visits, e.g. if different cards are drawn
             .filter(|edge| legal.contains(&edge.weight().action))
             .map(|edge| {
-                let child = &self.graph[edge.target()];
+                let child = &graph[edge.target()];
                 // This can technically panic when invoked from root with a very small
                 // simulation count, so don't do that :)
                 assert_ne!(child.visit_count, 0);
@@ -345,17 +372,59 @@ where
     ///     v ← parent of v
     /// ```
     #[instrument(level = "debug", skip_all)]
-    fn backup(&mut self, maximizing_player: TState::PlayerName, mut node: NodeIndex, reward: f64) {
+    fn backup(
+        graph: &mut SearchGraph<TState::PlayerName, TState::Action>,
+        maximizing_player: TState::PlayerName,
+        mut node: NodeIndex,
+        reward: f64,
+    ) {
         loop {
-            let weight = self.graph.node_weight_mut(node).expect("Node not found");
+            let weight = graph.node_weight_mut(node).expect("Node not found");
             weight.visit_count += 1;
             weight.total_reward +=
                 if weight.player == maximizing_player { reward } else { -reward };
 
-            node = match self.graph.neighbors_directed(node, Direction::Incoming).next() {
+            node = match graph.neighbors_directed(node, Direction::Incoming).next() {
                 Some(n) => n,
                 _ => return,
             };
+        }
+    }
+}
+
+trait MonteCarloGameState<TPlayer, TAction> {
+    fn set_state(&mut self, state: MonteCarloAgentState<TPlayer, TAction>);
+
+    fn state(&self) -> &MonteCarloAgentState<TPlayer, TAction>;
+
+    fn state_mut(&mut self) -> &mut MonteCarloAgentState<TPlayer, TAction>;
+
+    fn take_state(self) -> MonteCarloAgentState<TPlayer, TAction>;
+}
+
+impl<T: GameStateNode> MonteCarloGameState<T::PlayerName, T::Action> for T {
+    fn set_state(&mut self, state: MonteCarloAgentState<T::PlayerName, T::Action>) {
+        self.set_agent_state(AgentState::MonteCarlo(state));
+    }
+
+    fn state(&self) -> &MonteCarloAgentState<T::PlayerName, T::Action> {
+        match self.get_agent_state() {
+            AgentState::MonteCarlo(ref data) => data,
+            _ => panic!("Expected monte carlo agent state"),
+        }
+    }
+
+    fn state_mut(&mut self) -> &mut MonteCarloAgentState<T::PlayerName, T::Action> {
+        match self.get_agent_state_mut() {
+            AgentState::MonteCarlo(ref mut data) => data,
+            _ => panic!("Expected monte carlo agent state"),
+        }
+    }
+
+    fn take_state(self) -> MonteCarloAgentState<T::PlayerName, T::Action> {
+        match self.take_agent_state() {
+            AgentState::MonteCarlo(data) => data,
+            _ => panic!("Expected monte carlo agent state"),
         }
     }
 }
