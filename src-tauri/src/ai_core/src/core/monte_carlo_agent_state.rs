@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use petgraph::graph::NodeIndex;
 use petgraph::Graph;
 
 #[derive(Debug, Clone)]
@@ -31,7 +32,18 @@ pub struct SearchEdge<TAction> {
 
 pub type SearchGraph<TPlayerName, TAction> = Graph<SearchNode<TPlayerName>, SearchEdge<TAction>>;
 
+#[derive(Debug, Clone, Copy)]
+pub enum SearchOperation {
+    TreeSearch { source_position: NodeIndex, target_position: NodeIndex },
+    EvaluateNode,
+}
+
 #[derive(Debug, Clone)]
 pub struct MonteCarloAgentState<TPlayerName, TAction> {
     pub graph: SearchGraph<TPlayerName, TAction>,
+
+    /// Current context for executing a game action as part of a search.
+    ///
+    /// None when no action is currently being executed by the search algorithm.
+    pub search_operation: Option<SearchOperation>,
 }

@@ -25,7 +25,7 @@ use std::time::Instant;
 
 use ai_core::core::agent_state::AgentState;
 use ai_core::core::monte_carlo_agent_state::{
-    MonteCarloAgentState, SearchEdge, SearchGraph, SearchNode,
+    MonteCarloAgentState, SearchEdge, SearchGraph, SearchNode, SearchOperation,
 };
 use petgraph::prelude::{EdgeRef, NodeIndex};
 use petgraph::Direction;
@@ -79,23 +79,6 @@ impl<TState: GameStateNode + Send, TEvaluator: StateEvaluator<TState>> StateEval
         }
     }
 }
-
-// #[derive(Debug, Clone)]
-// pub struct SearchNode<TState: GameStateNode> {
-//     /// Player who acted to create this node
-//     pub player: TState::PlayerName,
-//     /// Q(v): Total reward of all playouts that passed through this state
-//     pub total_reward: f64,
-//     /// N(v): Visit count for this node
-//     pub visit_count: u32,
-// }
-//
-// #[derive(Debug, Clone)]
-// pub struct SearchEdge<TState: GameStateNode> {
-//     pub action: TState::Action,
-// }
-//
-// pub type SearchGraph<TState> = Graph<SearchNode<TState>, SearchEdge<TState>>;
 
 /// Monte Carlo search algorithm.
 ///
@@ -173,7 +156,8 @@ where
         evaluator: &TEvaluator,
         player: TState::PlayerName,
     ) -> TState::Action {
-        let mut agent_state = MonteCarloAgentState { graph: SearchGraph::new() };
+        let mut agent_state =
+            MonteCarloAgentState { graph: SearchGraph::new(), search_operation: None };
         let root =
             agent_state.graph.add_node(SearchNode { total_reward: 0.0, visit_count: 1, player });
         let mut i = 0;
@@ -184,6 +168,7 @@ where
             let mut game_copy = initial_game.make_copy();
             game_copy.set_state(agent_state);
             let node = self.tree_policy(&mut game_copy, root);
+            game_copy.state_mut().search_operation = Some(SearchOperation::EvaluateNode);
             let reward = f64::from(evaluator.evaluate(&game_copy, player));
             Self::backup(&mut game_copy.state_mut().graph, player, node, reward);
             i += 1;
@@ -285,8 +270,8 @@ where
                     actions,
                     SelectionMode::Exploration,
                 );
-                game.execute_action(current_turn, action);
-                node_index = action_index;
+                node_index =
+                    game.execute_search_action(node_index, action_index, current_turn, action);
             }
         }
         node_index
@@ -313,14 +298,13 @@ where
         source: NodeIndex,
         action: TState::Action,
     ) -> NodeIndex {
-        game.execute_action(player, action);
         let target = game.state_mut().graph.add_node(SearchNode {
             player,
             total_reward: 0.0,
             visit_count: 0,
         });
         game.state_mut().graph.add_edge(source, target, SearchEdge { action });
-        target
+        game.execute_search_action(source, target, player, action)
     }
 
     /// Picks the most promising child node to explore, returning its associated
@@ -393,6 +377,14 @@ where
 }
 
 trait MonteCarloGameState<TPlayer, TAction> {
+    fn execute_search_action(
+        &mut self,
+        source: NodeIndex,
+        target: NodeIndex,
+        player: TPlayer,
+        action: TAction,
+    ) -> NodeIndex;
+
     fn set_state(&mut self, state: MonteCarloAgentState<TPlayer, TAction>);
 
     fn state(&self) -> &MonteCarloAgentState<TPlayer, TAction>;
@@ -403,6 +395,25 @@ trait MonteCarloGameState<TPlayer, TAction> {
 }
 
 impl<T: GameStateNode> MonteCarloGameState<T::PlayerName, T::Action> for T {
+    fn execute_search_action(
+        &mut self,
+        source: NodeIndex,
+        target: NodeIndex,
+        player: T::PlayerName,
+        action: T::Action,
+    ) -> NodeIndex {
+        self.state_mut().search_operation =
+            Some(SearchOperation::TreeSearch { source_position: source, target_position: target });
+        self.execute_action(player, action);
+        let Some(SearchOperation::TreeSearch { target_position, .. }) =
+            self.state().search_operation
+        else {
+            panic!("Expected tree search operation")
+        };
+        self.state_mut().search_operation = None;
+        target_position
+    }
+
     fn set_state(&mut self, state: MonteCarloAgentState<T::PlayerName, T::Action>) {
         self.set_agent_state(AgentState::MonteCarlo(state));
     }
