@@ -30,7 +30,6 @@ use tracing::{info, instrument};
 use utils::command_line;
 use utils::command_line::TracingStyle;
 
-use crate::core::agent::AgentConfig;
 use crate::core::game_state_node::{GameStateNode, GameStatus};
 use crate::core::selection_algorithm::SelectionAlgorithm;
 use crate::core::state_evaluator::StateEvaluator;
@@ -139,7 +138,7 @@ where
     #[instrument(level = "debug", skip_all)]
     fn pick_action(
         &mut self,
-        config: AgentConfig,
+        deadline: Instant,
         node: &TState,
         evaluator: &TEvaluator,
         player: TState::PlayerName,
@@ -150,7 +149,7 @@ where
     {
         let max_iterations = self.max_iterations;
         self.run_search(
-            |i| config.deadline < Instant::now() || max_iterations.map_or(false, |max| i > max),
+            |i| deadline < Instant::now() || max_iterations.map_or(false, |max| i > max),
             node,
             evaluator,
             player,

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use std::fmt::Debug;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 use crate::core::game_state_node::{GameStateNode, GameStatus};
 use crate::core::selection_algorithm::SelectionAlgorithm;
@@ -21,18 +21,6 @@ use crate::core::state_combiner::StateCombiner;
 use crate::core::state_evaluator::StateEvaluator;
 use crate::core::state_predictor::StatePredictor;
 use crate::core::{state_combiner, state_predictor};
-
-#[derive(Debug, Clone, Copy)]
-pub struct AgentConfig {
-    /// Time at which the agent should complete its move selection.
-    pub deadline: Instant,
-}
-
-impl AgentConfig {
-    pub fn with_deadline(seconds: u64) -> Self {
-        Self { deadline: Instant::now() + Duration::from_secs(seconds) }
-    }
-}
 
 /// An AI Agent for a given game state, any system capable of selecting valid
 /// game actions for a player.
@@ -48,9 +36,8 @@ where
     fn name(&self) -> &'static str;
 
     /// Select an action for the current player to take in the `node` game
-    /// state. Should attempt to return a result before the [AgentConfig]'s
-    /// `deadline`.
-    fn pick_action(&mut self, config: AgentConfig, node: &TNode) -> TNode::Action;
+    /// state. Should attempt to return a result before the `deadline`.
+    fn pick_action(&mut self, deadline: Instant, node: &TNode) -> TNode::Action;
 }
 
 /// A tuple of various pieces needed to perform agent action selection.
@@ -115,7 +102,7 @@ where
         self.name
     }
 
-    fn pick_action(&mut self, deadline: AgentConfig, node: &TNode) -> TNode::Action {
+    fn pick_action(&mut self, deadline: Instant, node: &TNode) -> TNode::Action {
         let player = match node.status() {
             GameStatus::InProgress { current_turn } => current_turn,
             _ => panic!("Game is over"),

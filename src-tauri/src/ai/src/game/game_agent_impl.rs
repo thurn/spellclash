@@ -27,7 +27,7 @@ use tracing::{subscriber, Level};
 use utils::command_line;
 use utils::command_line::TracingStyle;
 
-use crate::core::agent::{Agent, AgentConfig, AgentData};
+use crate::core::agent::{Agent, AgentData};
 use crate::core::selection_algorithm::SelectionAlgorithm;
 use crate::core::state_evaluator::StateEvaluator;
 
@@ -47,13 +47,13 @@ where
         let deadline = Duration::from_secs(100);
         match command_line::flags().tracing_style {
             TracingStyle::AggregateTime | TracingStyle::None => {
-                self.pick_action(AgentConfig { deadline: Instant::now() + deadline }, &game)
+                self.pick_action(Instant::now() + deadline, &game)
             }
             TracingStyle::Forest => {
                 let info_subscriber =
                     tracing_subscriber::fmt().with_max_level(Level::INFO).finish();
                 subscriber::with_default(info_subscriber, || {
-                    self.pick_action(AgentConfig { deadline: Instant::now() + deadline }, &game)
+                    self.pick_action(Instant::now() + deadline, &game)
                 })
             }
         }

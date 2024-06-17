@@ -14,7 +14,6 @@
 
 use std::time::Instant;
 
-use crate::core::agent::AgentConfig;
 use crate::core::game_state_node::{GameStateNode, GameStatus};
 use crate::core::selection_algorithm::SelectionAlgorithm;
 use crate::core::state_evaluator::StateEvaluator;
@@ -35,17 +34,17 @@ where
 {
     fn pick_action(
         &mut self,
-        config: AgentConfig,
+        deadline: Instant,
         node: &N,
         evaluator: &E,
         player: N::PlayerName,
     ) -> N::Action {
-        run_internal(config, node, evaluator, self.search_depth, player).action()
+        run_internal(deadline, node, evaluator, self.search_depth, player).action()
     }
 }
 
 fn run_internal<N, E>(
-    config: AgentConfig,
+    deadline: Instant,
     node: &N,
     evaluator: &E,
     depth: u32,
@@ -64,14 +63,14 @@ where
             // unnecessarily for children, but it makes no performance
             // difference in benchmark tests.
             for action in node.legal_actions(current_turn) {
-                if deadline_exceeded(config.deadline, depth) {
+                if deadline_exceeded(deadline, depth) {
                     return result.with_fallback_action(action);
                 }
                 let mut child = node.make_copy();
                 child.execute_action(current_turn, action);
                 result.insert_max(
                     action,
-                    run_internal(config, &child, evaluator, depth - 1, player).score(),
+                    run_internal(deadline, &child, evaluator, depth - 1, player).score(),
                 );
             }
             result
@@ -79,14 +78,14 @@ where
         GameStatus::InProgress { current_turn } => {
             let mut result = ScoredAction::new(i32::MAX);
             for action in node.legal_actions(current_turn) {
-                if deadline_exceeded(config.deadline, depth) {
+                if deadline_exceeded(deadline, depth) {
                     return result.with_fallback_action(action);
                 }
                 let mut child = node.make_copy();
                 child.execute_action(current_turn, action);
                 result.insert_min(
                     action,
-                    run_internal(config, &child, evaluator, depth - 1, player).score(),
+                    run_internal(deadline, &child, evaluator, depth - 1, player).score(),
                 );
             }
             result

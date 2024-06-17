@@ -14,7 +14,6 @@
 
 use std::time::{Duration, Instant};
 
-use ai::core::agent::AgentConfig;
 use ai::core::game_state_node::{GameStateNode, GameStatus};
 use ai::game::agents;
 use ai::game::agents::AgentName;
@@ -80,9 +79,8 @@ pub fn run_match(
         match game.status() {
             GameStatus::InProgress { current_turn } => {
                 let agent = if current_turn == PlayerName::One { &mut user } else { &mut opponent };
-                let config =
-                    AgentConfig { deadline: Instant::now() + Duration::from_millis(move_time_ms) };
-                let action = agent.pick_action(config, game);
+                let deadline = Instant::now() + Duration::from_millis(move_time_ms);
+                let action = agent.pick_action(deadline, game);
                 game.execute_action(current_turn, action);
                 clear_action_line(verbosity);
                 if verbosity > Verbosity::None {

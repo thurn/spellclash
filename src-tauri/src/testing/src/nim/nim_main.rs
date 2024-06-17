@@ -13,8 +13,9 @@
 // limitations under the License.
 
 use std::io;
+use std::time::{Duration, Instant};
 
-use ai::core::agent::{Agent, AgentConfig, AgentData};
+use ai::core::agent::{Agent, AgentData};
 use ai::core::game_state_node::{GameStateNode, GameStatus};
 use ai::tree_search::single_level::SingleLevel;
 use clap::{Parser, ValueEnum};
@@ -75,7 +76,8 @@ fn run_game_loop(
     loop {
         print_optimal_action(&nim, player_one.name());
         println!("{}", nim);
-        let p1_action = player_one.pick_action(AgentConfig::with_deadline(move_time), &nim);
+        let p1_action =
+            player_one.pick_action(Instant::now() + Duration::from_secs(move_time), &nim);
         println!("<<{}>> takes {} from {}", player_one.name(), p1_action.amount, p1_action.pile);
         nim.execute_action(NimPlayer::One, p1_action);
         check_game_over(&nim);
@@ -83,7 +85,8 @@ fn run_game_loop(
         print_optimal_action(&nim, player_two.name());
         println!("{}", nim);
 
-        let p2_action = player_two.pick_action(AgentConfig::with_deadline(move_time), &nim);
+        let p2_action =
+            player_two.pick_action(Instant::now() + Duration::from_secs(move_time), &nim);
         println!("<<{}>> takes {} from {}", player_two.name(), p2_action.amount, p2_action.pile);
         nim.execute_action(NimPlayer::Two, p2_action);
         check_game_over(&nim);
@@ -95,7 +98,7 @@ fn print_optimal_action(state: &NimState, player_name: &str) {
         println!("  (Game is unwinnable for {} with optimal play)", player_name);
     } else {
         let mut perfect = AgentData::omniscient("PERFECT", SingleLevel {}, NimPerfectEvaluator {});
-        let action = perfect.pick_action(AgentConfig::with_deadline(5), state);
+        let action = perfect.pick_action(Instant::now() + Duration::from_secs(5), state);
         println!("  (Optimal play for {} is {} take {})", player_name, action.pile, action.amount);
     }
 }
@@ -114,7 +117,7 @@ impl Agent<NimState> for NimHumanAgent {
         "HUMAN"
     }
 
-    fn pick_action(&mut self, _: AgentConfig, state: &NimState) -> NimAction {
+    fn pick_action(&mut self, _: Instant, state: &NimState) -> NimAction {
         println!("\n>>> Input your action, e.g. 'a2' or 'b3'");
 
         let mut input_text = String::new();

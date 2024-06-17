@@ -17,7 +17,6 @@ use std::time::Instant;
 use utils::command_line;
 use utils::command_line::TracingStyle;
 
-use crate::core::agent::AgentConfig;
 use crate::core::game_state_node::GameStateNode;
 use crate::core::selection_algorithm::SelectionAlgorithm;
 use crate::core::state_evaluator::StateEvaluator;
@@ -35,7 +34,7 @@ where
 {
     fn pick_action(
         &mut self,
-        config: AgentConfig,
+        deadline: Instant,
         node: &N,
         evaluator: &E,
         player: N::PlayerName,
@@ -43,13 +42,13 @@ where
         let mut depth = 1;
         let mut best_action = None;
 
-        while config.deadline > Instant::now() {
+        while deadline > Instant::now() {
             if command_line::flags().tracing_style == TracingStyle::AggregateTime {
                 println!(">>> Searching at depth {}", depth);
             }
 
             let result = alpha_beta::run_internal(
-                config,
+                deadline,
                 node,
                 evaluator,
                 depth,

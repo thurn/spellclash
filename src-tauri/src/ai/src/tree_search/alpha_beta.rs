@@ -17,7 +17,6 @@ use std::time::Instant;
 
 use tracing::debug;
 
-use crate::core::agent::AgentConfig;
 use crate::core::game_state_node::{GameStateNode, GameStatus};
 use crate::core::selection_algorithm::SelectionAlgorithm;
 use crate::core::state_evaluator::StateEvaluator;
@@ -44,13 +43,13 @@ where
 {
     fn pick_action(
         &mut self,
-        config: AgentConfig,
+        deadline: Instant,
         node: &N,
         evaluator: &E,
         player: N::PlayerName,
     ) -> N::Action {
         assert!(matches!(node.status(), GameStatus::InProgress { .. }));
-        run_internal(config, node, evaluator, self.search_depth, player, i32::MIN, i32::MAX, true)
+        run_internal(deadline, node, evaluator, self.search_depth, player, i32::MIN, i32::MAX, true)
             .expect("Deadline exceeded")
             .action()
     }
@@ -58,7 +57,7 @@ where
 
 #[allow(clippy::too_many_arguments)]
 pub fn run_internal<N, E>(
-    config: AgentConfig,
+    deadline: Instant,
     node: &N,
     evaluator: &E,
     depth: u32,
@@ -77,14 +76,22 @@ where
         GameStatus::InProgress { current_turn } if current_turn == player => {
             let mut result = ScoredAction::new(i32::MIN);
             for action in node.legal_actions(current_turn) {
-                if deadline_exceeded(config, depth) {
+                if deadline_exceeded(deadline, depth) {
                     return Err(DeadlineExceededError);
                 }
                 let mut child = node.make_copy();
                 child.execute_action(current_turn, action);
-                let score =
-                    run_internal(config, &child, evaluator, depth - 1, player, alpha, beta, false)?
-                        .score();
+                let score = run_internal(
+                    deadline,
+                    &child,
+                    evaluator,
+                    depth - 1,
+                    player,
+                    alpha,
+                    beta,
+                    false,
+                )?
+                .score();
                 alpha = cmp::max(alpha, score);
                 result.insert_max(action, score);
                 if score >= beta {
@@ -96,14 +103,22 @@ where
         GameStatus::InProgress { current_turn } => {
             let mut result = ScoredAction::new(i32::MAX);
             for action in node.legal_actions(current_turn) {
-                if deadline_exceeded(config, depth) {
+                if deadline_exceeded(deadline, depth) {
                     return Err(DeadlineExceededError);
                 }
                 let mut child = node.make_copy();
                 child.execute_action(current_turn, action);
-                let score =
-                    run_internal(config, &child, evaluator, depth - 1, player, alpha, beta, false)?
-                        .score();
+                let score = run_internal(
+                    deadline,
+                    &child,
+                    evaluator,
+                    depth - 1,
+                    player,
+                    alpha,
+                    beta,
+                    false,
+                )?
+                .score();
                 if top_level {
                     debug!("Score {:?} for action {:?}", score, action);
                 }
@@ -120,6 +135,6 @@ where
 }
 
 /// Check whether `deadline` has been exceeded.
-fn deadline_exceeded(config: AgentConfig, depth: u32) -> bool {
-    depth > 1 && config.deadline < Instant::now()
+fn deadline_exceeded(deadline: Instant, depth: u32) -> bool {
+    depth > 1 && deadline < Instant::now()
 }

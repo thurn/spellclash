@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::core::agent::AgentConfig;
+use std::time::Instant;
+
 use crate::core::game_state_node::GameStateNode;
 use crate::core::selection_algorithm::SelectionAlgorithm;
 use crate::core::state_evaluator::StateEvaluator;
@@ -28,7 +29,7 @@ where
 {
     fn pick_action(
         &mut self,
-        _config: AgentConfig,
+        _deadline: Instant,
         node: &TStateNode,
         _evaluator: &TEvaluator,
         player: TStateNode::PlayerName,
