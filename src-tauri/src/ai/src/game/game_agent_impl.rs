@@ -18,12 +18,9 @@ use std::time::{Duration, Instant};
 use data::actions::game_action::GameAction;
 use data::actions::prompt_action::PromptAction;
 use data::core::primitives;
-use data::game_states::game_state;
 use data::game_states::game_state::GameState;
 use data::player_states::game_agent::GameAgentImpl;
 use data::prompts::prompt::Prompt;
-use rules::action_handlers::actions;
-use rules::action_handlers::actions::ExecuteAction;
 use rules::legality::legal_actions;
 use rules::legality::legal_actions::LegalActions;
 use tracing::{subscriber, Level};
@@ -31,43 +28,8 @@ use utils::command_line;
 use utils::command_line::TracingStyle;
 
 use crate::core::agent::{Agent, AgentConfig, AgentData};
-use crate::core::game_state_node::{GameStateNode, GameStatus};
 use crate::core::selection_algorithm::SelectionAlgorithm;
 use crate::core::state_evaluator::StateEvaluator;
-
-impl GameStateNode for GameState {
-    type Action = GameAction;
-    type PlayerName = primitives::PlayerName;
-
-    fn make_copy(&self) -> Self {
-        self.clone()
-    }
-
-    fn status(&self) -> GameStatus<primitives::PlayerName> {
-        match self.status {
-            game_state::GameStatus::GameOver { winners } => GameStatus::Completed { winners },
-            _ => GameStatus::InProgress { current_turn: legal_actions::next_to_act(self, None) },
-        }
-    }
-
-    fn legal_actions<'a>(
-        &'a self,
-        player: primitives::PlayerName,
-    ) -> Box<dyn Iterator<Item = GameAction> + 'a> {
-        Box::new(
-            legal_actions::compute(self, player, LegalActions { for_human_player: false })
-                .into_iter(),
-        )
-    }
-
-    fn execute_action(&mut self, player: primitives::PlayerName, action: GameAction) {
-        actions::execute(self, player, action, ExecuteAction {
-            skip_undo_tracking: false,
-            validate: false,
-        })
-        .expect("Halt encountered during AI action execution");
-    }
-}
 
 impl<TSelector, TEvaluator> GameAgentImpl for AgentData<TSelector, TEvaluator, GameState>
 where

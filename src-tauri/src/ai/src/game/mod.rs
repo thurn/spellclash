@@ -13,5 +13,6 @@
 // limitations under the License.
 
 pub mod agents;
-pub mod ai_definitions;
 pub mod evaluators;
+pub mod game_agent_impl;
+pub mod game_state_node_impl;

@@ -235,7 +235,7 @@ where
     /// and then repeats this process recursively until an unseen node is
     /// found (or the best child is terminal).
     ///
-    /// Mutates the provided [GameState] to represent the game state at the
+    /// Mutates the provided [GameStateNode] to represent the game state at the
     /// returned node.
     ///
     /// Cᵖ is the exploration constant, Cᵖ = 1/√2 was suggested by Kocsis and
