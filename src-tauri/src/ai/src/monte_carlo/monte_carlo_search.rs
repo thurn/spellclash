@@ -221,6 +221,55 @@ where
         }
     }
 
+    pub fn select_prompt_action(
+        &self,
+        game: &mut TState,
+        player: TState::PlayerName,
+        actions: HashSet<TState::Action>,
+    ) -> TState::Action {
+        let Some(SearchOperation::TreeSearch { target_position: current_position, .. }) =
+            game.state().search_operation
+        else {
+            panic!("Expected tree search operation")
+        };
+
+        let explored = game
+            .state()
+            .graph
+            .edges(current_position)
+            .map(|e| e.weight().action)
+            .collect::<HashSet<_>>();
+        if let Some(action) = actions.iter().find(|a| !explored.contains(a)) {
+            // An action exists which has not yet been tried
+            let target = game.state_mut().graph.add_node(SearchNode {
+                player,
+                total_reward: 0.0,
+                visit_count: 0,
+            });
+            game.state_mut()
+                .graph
+                .add_edge(current_position, target, SearchEdge { action: *action });
+            game.state_mut().search_operation = Some(SearchOperation::TreeSearch {
+                source_position: current_position,
+                target_position: target,
+            });
+            return *action;
+        } else {
+            // All actions have been tried, recursively search the best candidate
+            let (action, action_index) = self.best_child(
+                &game.state().graph,
+                current_position,
+                actions,
+                SelectionMode::Exploration,
+            );
+            game.state_mut().search_operation = Some(SearchOperation::TreeSearch {
+                source_position: current_position,
+                target_position: action_index,
+            });
+            action
+        }
+    }
+
     /// Returns a descendant node to examine next for the provided parent node,
     /// either:
     ///  * A node which has not yet been explored
