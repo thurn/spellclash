@@ -65,7 +65,7 @@ pub fn green_vanilla(c: &mut Criterion) {
                     &mut game,
                     PlayerName::One,
                     GameAction::ProposePlayingCard(creature_id),
-                    ExecuteAction { skip_undo_tracking: false, validate: false },
+                    ExecuteAction { skip_undo_tracking: true, validate: false },
                 )
             },
             BatchSize::LargeInput,

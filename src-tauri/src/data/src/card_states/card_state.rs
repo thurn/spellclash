@@ -195,6 +195,11 @@ impl CardState {
         self.printed_card_reference.as_ref().expect("PrintedCard reference not populated!")
     }
 
+    /// Returns the name on the primary face of this card.
+    pub fn displayed_name(&self) -> &str {
+        &self.printed().face.displayed_name
+    }
+
     /// Returns the [PrintedCardFace] for this card if it is currently face up.
     pub fn face_up_printed_face(&self) -> Option<&PrintedCardFace> {
         match self.facing {

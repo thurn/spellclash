@@ -76,6 +76,7 @@ fn add_land_to_map(
     if game.card(card_id).tapped_state.is_tapped() {
         return;
     }
+    let name = game.card(card_id).printed().face.displayed_name.clone();
     let subtypes = card_queries::land_subtypes(game, card_id);
     if subtypes.contains(subtype) {
         lands.entry(color).or_default().push((card_id, subtypes.len()));

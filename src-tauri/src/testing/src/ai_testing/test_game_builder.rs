@@ -13,10 +13,12 @@
 // limitations under the License.
 
 use data::card_definitions::card_name::CardName;
+use data::card_states::card_state::CardFacing;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{PlayerName, Source, Zone};
 use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
+use data::printed_cards::printed_card::Face;
 use rules::mutations::move_card;
 
 #[derive(Debug, Clone, Default)]
@@ -78,19 +80,28 @@ impl TestPlayer {
 
     pub fn apply_to(self, state: &mut GameState, player_name: PlayerName) {
         for card in self.hand {
-            Self::move_to_zone(state, player_name, card, Zone::Hand);
+            Self::move_to_zone(state, player_name, card, Zone::Hand, false);
         }
         for card in self.battlefield {
-            Self::move_to_zone(state, player_name, card, Zone::Battlefield);
+            Self::move_to_zone(state, player_name, card, Zone::Battlefield, true);
         }
     }
 
-    fn move_to_zone(game: &mut GameState, player: PlayerName, name: CardName, zone: Zone) {
+    fn move_to_zone(
+        game: &mut GameState,
+        player: PlayerName,
+        name: CardName,
+        zone: Zone,
+        turn_primary_face_up: bool,
+    ) {
         let id = *game
             .library(player)
             .iter()
             .find(|&id| game.card(id).card_name == name)
             .unwrap_or_else(|| panic!("Card {name:?} not found in library"));
         move_card::run(game, Source::Game, id, zone).unwrap();
+        if turn_primary_face_up {
+            game.card_mut(id).facing = CardFacing::FaceUp(Face::Primary);
+        }
     }
 }
