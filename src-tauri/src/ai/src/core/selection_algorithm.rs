@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::collections::HashSet;
 use std::time::Instant;
 
 use crate::core::game_state_node::GameStateNode;
@@ -19,10 +20,10 @@ use crate::core::state_evaluator::StateEvaluator;
 
 /// A trait for generic decision rules that select a game action to take without
 /// specific game knowledge.
-pub trait SelectionAlgorithm<TStateNode, TEvaluator>: Send
+pub trait SelectionAlgorithm<TState, TEvaluator>: Send
 where
-    TStateNode: GameStateNode,
-    TEvaluator: StateEvaluator<TStateNode>,
+    TState: GameStateNode,
+    TEvaluator: StateEvaluator<TState>,
 {
     /// Should return the best action action for the current player `player`
     /// to take in the provided `node` game state, using the provided
@@ -34,8 +35,17 @@ where
     fn pick_action(
         &self,
         deadline: Instant,
-        node: &TStateNode,
+        node: &TState,
         evaluator: &TEvaluator,
-        player: TStateNode::PlayerName,
-    ) -> TStateNode::Action;
+        player: TState::PlayerName,
+    ) -> TState::Action;
+
+    fn pick_prompt_action(
+        &self,
+        _game: &mut TState,
+        _player: TState::PlayerName,
+        actions: HashSet<TState::Action>,
+    ) -> TState::Action {
+        *actions.iter().next().expect("No actions provided!")
+    }
 }

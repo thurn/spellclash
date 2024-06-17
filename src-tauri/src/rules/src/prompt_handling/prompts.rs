@@ -18,6 +18,7 @@ use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, EntityId, PlayerName};
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
+use data::player_states::player_state::{PlayerQueries, PlayerType};
 use data::prompts::choice_prompt::{Choice, ChoicePrompt};
 use data::prompts::game_update::GameUpdate;
 use data::prompts::pick_number_prompt::PickNumberPrompt;
@@ -30,21 +31,45 @@ use tokio::sync::oneshot;
 use tracing::info;
 use utils::outcome::PromptResult;
 
+use crate::action_handlers::prompt_actions;
+use crate::action_handlers::prompt_actions::PromptExecutionResult;
+
 /// Sends a new [Prompt] to the player and blocks until they respond with a
 /// [PromptResponse].
-pub fn send(game: &mut GameState, prompt: Prompt) -> PromptResult<PromptResponse> {
-    let kind = prompt.prompt_type.kind();
-    info!(immediate = true, ?kind, "Sending prompt");
-    let (sender, receiver) = oneshot::channel();
-    game.updates
-        .as_ref()
-        .expect("PromptChannel")
-        .send(GameUpdate::new(game).prompt(prompt).response_channel(sender));
-    let result =
-        receiver.blocking_recv().expect("Unable to receive prompt response, sender has dropped");
-    let result_kind = result.kind();
-    info!(?result_kind, "Got prompt response");
-    Ok(result)
+pub fn send(game: &mut GameState, mut prompt: Prompt) -> PromptResult<PromptResponse> {
+    let agent_player = game.current_agent_searcher.unwrap_or(prompt.player);
+    if let Some(agent) = game.player(agent_player).agent() {
+        let ongoing = game.current_agent_searcher.is_some();
+        loop {
+            let action = if ongoing {
+                agent.incremental_prompt_action(game, &prompt, prompt.player)
+            } else {
+                agent.top_level_prompt_action(game, &prompt, prompt.player)
+            };
+            match prompt_actions::execute(prompt, action) {
+                PromptExecutionResult::Prompt(p) => {
+                    prompt = p;
+                }
+                PromptExecutionResult::PromptResponse(response) => {
+                    return Ok(response);
+                }
+            }
+        }
+    } else {
+        let kind = prompt.prompt_type.kind();
+        info!(immediate = true, ?kind, "Sending prompt");
+        let (sender, receiver) = oneshot::channel();
+        game.updates
+            .as_ref()
+            .expect("PromptChannel")
+            .send(GameUpdate::new(game).prompt(prompt).response_channel(sender));
+        let result = receiver
+            .blocking_recv()
+            .expect("Unable to receive prompt response, sender has dropped");
+        let result_kind = result.kind();
+        info!(?result_kind, "Got prompt response");
+        Ok(result)
+    }
 }
 
 pub fn choose_entity(

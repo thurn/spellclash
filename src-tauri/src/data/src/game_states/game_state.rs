@@ -19,7 +19,9 @@ use enumset::EnumSet;
 use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};
 
+use crate::actions::agent_action::AgentAction;
 use crate::actions::game_action::GameAction;
+use crate::actions::user_action::UserAction;
 use crate::card_states::card_state::CardState;
 use crate::card_states::stack_ability_state::StackAbilityState;
 use crate::card_states::zones::{ZoneQueries, Zones};
@@ -134,7 +136,10 @@ pub struct GameState {
     pub oracle_reference: Option<Box<dyn Oracle>>,
 
     #[serde(skip)]
-    pub agent_state: Option<AgentState<PlayerName, GameAction>>,
+    pub agent_state: Option<AgentState<PlayerName, AgentAction>>,
+
+    #[serde(skip)]
+    pub current_agent_searcher: Option<PlayerName>,
 }
 
 impl GameState {

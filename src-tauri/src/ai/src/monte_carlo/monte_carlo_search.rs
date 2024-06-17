@@ -27,6 +27,10 @@ use ai_core::core::agent_state::AgentState;
 use ai_core::core::monte_carlo_agent_state::{
     MonteCarloAgentState, SearchEdge, SearchGraph, SearchNode, SearchOperation,
 };
+use data::actions::agent_action::AgentAction;
+use data::core::primitives;
+use data::core::primitives::PlayerName;
+use data::game_states::game_state::GameState;
 use petgraph::prelude::{EdgeRef, NodeIndex};
 use petgraph::Direction;
 use rand::prelude::IteratorRandom;
@@ -142,6 +146,59 @@ where
             player,
         )
     }
+
+    fn pick_prompt_action(
+        &self,
+        game: &mut TState,
+        player: TState::PlayerName,
+        actions: HashSet<TState::Action>,
+    ) -> TState::Action {
+        let current_position = match game.state().search_operation {
+            Some(SearchOperation::EvaluateNode) => {
+                return actions.iter().choose(&mut rand::thread_rng()).copied().unwrap()
+            }
+            Some(SearchOperation::TreeSearch { target_position, .. }) => target_position,
+            None => {
+                panic!("Expected search operation")
+            }
+        };
+
+        let explored = game
+            .state()
+            .graph
+            .edges(current_position)
+            .map(|e| e.weight().action)
+            .collect::<HashSet<_>>();
+        if let Some(action) = actions.iter().find(|a| !explored.contains(a)) {
+            // An action exists which has not yet been tried
+            let target = game.state_mut().graph.add_node(SearchNode {
+                player,
+                total_reward: 0.0,
+                visit_count: 0,
+            });
+            game.state_mut()
+                .graph
+                .add_edge(current_position, target, SearchEdge { action: *action });
+            game.state_mut().search_operation = Some(SearchOperation::TreeSearch {
+                source_position: current_position,
+                target_position: target,
+            });
+            *action
+        } else {
+            // All actions have been tried, recursively search the best candidate
+            let (action, action_index) = self.best_child(
+                &game.state().graph,
+                current_position,
+                actions,
+                SelectionMode::Exploration,
+            );
+            game.state_mut().search_operation = Some(SearchOperation::TreeSearch {
+                source_position: current_position,
+                target_position: action_index,
+            });
+            action
+        }
+    }
 }
 
 impl<TState, TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TState, TScoreAlgorithm>
@@ -218,55 +275,6 @@ where
 
         for (child, weight) in edges.iter().map(|(edge, weight)| (edge.weight().action, *weight)) {
             info!("Action: {:?} at {:?}", weight, child);
-        }
-    }
-
-    pub fn select_prompt_action(
-        &self,
-        game: &mut TState,
-        player: TState::PlayerName,
-        actions: HashSet<TState::Action>,
-    ) -> TState::Action {
-        let Some(SearchOperation::TreeSearch { target_position: current_position, .. }) =
-            game.state().search_operation
-        else {
-            panic!("Expected tree search operation")
-        };
-
-        let explored = game
-            .state()
-            .graph
-            .edges(current_position)
-            .map(|e| e.weight().action)
-            .collect::<HashSet<_>>();
-        if let Some(action) = actions.iter().find(|a| !explored.contains(a)) {
-            // An action exists which has not yet been tried
-            let target = game.state_mut().graph.add_node(SearchNode {
-                player,
-                total_reward: 0.0,
-                visit_count: 0,
-            });
-            game.state_mut()
-                .graph
-                .add_edge(current_position, target, SearchEdge { action: *action });
-            game.state_mut().search_operation = Some(SearchOperation::TreeSearch {
-                source_position: current_position,
-                target_position: target,
-            });
-            return *action;
-        } else {
-            // All actions have been tried, recursively search the best candidate
-            let (action, action_index) = self.best_child(
-                &game.state().graph,
-                current_position,
-                actions,
-                SelectionMode::Exploration,
-            );
-            game.state_mut().search_operation = Some(SearchOperation::TreeSearch {
-                source_position: current_position,
-                target_position: action_index,
-            });
-            action
         }
     }
 

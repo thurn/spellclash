@@ -124,6 +124,7 @@ fn create_game(
         state_based_events: Some(vec![]),
         oracle_reference: Some(oracle),
         agent_state: None,
+        current_agent_searcher: None,
     }
 }
 

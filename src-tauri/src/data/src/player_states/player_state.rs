@@ -90,6 +90,10 @@ impl PlayerType {
             _ => None,
         }
     }
+
+    pub fn is_agent(&self) -> bool {
+        matches!(self, Self::Agent(_))
+    }
 }
 
 /// Represents the state of a single player within a game
@@ -144,6 +148,13 @@ impl PlayerState {
             mana_pool: ManaPool::default(),
             prompts: Default::default(),
             selected_cards: vec![],
+        }
+    }
+
+    pub fn agent(&self) -> Option<Box<dyn GameAgentImpl>> {
+        match &self.player_type {
+            PlayerType::Agent(agent) => agent.implementation_reference.clone(),
+            _ => None,
         }
     }
 }

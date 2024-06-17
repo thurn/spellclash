@@ -197,8 +197,7 @@ pub fn handle_game_action_internal(
             current_action = action;
             skip_undo_tracking = true;
         } else {
-            let player_type = &game.player(next_player).player_type;
-            match player_type {
+            match &game.player(next_player).player_type {
                 PlayerType::Human(_) | PlayerType::None => {
                     database.write_game(game);
                     break;

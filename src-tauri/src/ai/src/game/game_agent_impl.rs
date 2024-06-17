@@ -12,22 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::collections::HashSet;
 use std::fmt::Debug;
 use std::time::{Duration, Instant};
 
+use data::actions::agent_action::AgentAction;
 use data::actions::game_action::GameAction;
 use data::actions::prompt_action::PromptAction;
 use data::core::primitives;
 use data::game_states::game_state::GameState;
 use data::player_states::game_agent::GameAgentImpl;
 use data::prompts::prompt::Prompt;
-use rules::legality::legal_actions;
 use rules::legality::legal_actions::LegalActions;
+use rules::legality::{legal_actions, legal_prompt_actions};
 use tracing::{subscriber, Level};
 use utils::command_line;
 use utils::command_line::TracingStyle;
 
 use crate::core::agent::{Agent, AgentData};
+use crate::core::game_state_node::GameStateNode;
 use crate::core::selection_algorithm::SelectionAlgorithm;
 use crate::core::state_evaluator::StateEvaluator;
 
@@ -37,35 +40,62 @@ where
     TEvaluator: StateEvaluator<GameState> + Debug + Clone,
 {
     fn select_action(&self, game: &GameState, player: primitives::PlayerName) -> GameAction {
-        assert_eq!(legal_actions::next_to_act(game, None), player, "Not {:?}'s turn", player);
-        let legal = legal_actions::compute(game, player, LegalActions { for_human_player: false });
-        assert!(!legal.is_empty(), "No legal actions available");
-        if legal.len() == 1 {
-            return legal[0];
-        }
-
-        let copy = game.shallow_clone();
-        let deadline = Duration::from_secs(100);
-        match command_line::flags().tracing_style {
-            TracingStyle::AggregateTime | TracingStyle::None => {
-                self.pick_action(Instant::now() + deadline, &copy)
-            }
-            TracingStyle::Forest => {
-                let info_subscriber =
-                    tracing_subscriber::fmt().with_max_level(Level::INFO).finish();
-                subscriber::with_default(info_subscriber, || {
-                    self.pick_action(Instant::now() + deadline, &copy)
-                })
-            }
-        }
+        let mut copy = game.shallow_clone();
+        copy.current_agent_searcher = Some(player);
+        select_action_impl(self, copy, player).as_game_action()
     }
 
-    fn select_prompt_action(
+    fn top_level_prompt_action(
         &self,
         _game: &GameState,
         _prompt: &Prompt,
         _player: primitives::PlayerName,
     ) -> PromptAction {
-        todo!()
+        todo!("")
+    }
+
+    fn incremental_prompt_action(
+        &self,
+        game: &mut GameState,
+        prompt: &Prompt,
+        player: primitives::PlayerName,
+    ) -> PromptAction {
+        let legal =
+            legal_prompt_actions::compute(prompt, player, LegalActions { for_human_player: false })
+                .into_iter()
+                .map(AgentAction::PromptAction)
+                .collect::<HashSet<_>>();
+        assert!(!legal.is_empty(), "No legal prompt actions available");
+        self.selector.pick_prompt_action(game, player, legal).as_prompt_action()
+    }
+}
+
+fn select_action_impl<TSelector, TEvaluator>(
+    agent: &AgentData<TSelector, TEvaluator, GameState>,
+    state: GameState,
+    player: primitives::PlayerName,
+) -> AgentAction
+where
+    TSelector: SelectionAlgorithm<GameState, TEvaluator> + Debug + Clone,
+    TEvaluator: StateEvaluator<GameState> + Debug + Clone,
+{
+    assert_eq!(legal_actions::next_to_act(&state, None), player, "Not {:?}'s turn", player);
+    let legal = state.legal_actions(player).collect::<Vec<_>>();
+    assert!(!legal.is_empty(), "No legal actions available");
+    if legal.len() == 1 {
+        return legal[0];
+    }
+
+    let deadline = Duration::from_secs(10);
+    match command_line::flags().tracing_style {
+        TracingStyle::AggregateTime | TracingStyle::None => {
+            agent.pick_action(Instant::now() + deadline, &state)
+        }
+        TracingStyle::Forest => {
+            let info_subscriber = tracing_subscriber::fmt().with_max_level(Level::INFO).finish();
+            subscriber::with_default(info_subscriber, || {
+                agent.pick_action(Instant::now() + deadline, &state)
+            })
+        }
     }
 }

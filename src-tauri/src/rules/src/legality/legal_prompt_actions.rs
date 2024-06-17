@@ -110,12 +110,16 @@ fn add_select_order_actions_for_card(
             continue;
         }
 
-        for i in 0..prompt.cards[&location].len() {
+        for i in 0..=prompt.cards[&location].len() {
             if location == current_location && i == current_index {
                 // Skip moving to current location
                 continue;
             }
             result.push(PromptAction::SelectOrder(card_id, location, i));
         }
+    }
+
+    if !options.for_human_player && result.is_empty() {
+        panic!("No legal actions found!");
     }
 }

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use ai_core::core::agent_state::AgentState;
-use data::actions::game_action::GameAction;
+use data::actions::agent_action::AgentAction;
 use data::core::primitives;
 use data::game_states::game_state;
 use data::game_states::game_state::GameState;
@@ -25,7 +25,7 @@ use rules::legality::legal_actions::LegalActions;
 use crate::core::game_state_node::{GameStateNode, GameStatus};
 
 impl GameStateNode for GameState {
-    type Action = GameAction;
+    type Action = AgentAction;
     type PlayerName = primitives::PlayerName;
 
     fn make_copy(&self) -> Self {
@@ -42,16 +42,17 @@ impl GameStateNode for GameState {
     fn legal_actions<'a>(
         &'a self,
         player: primitives::PlayerName,
-    ) -> Box<dyn Iterator<Item = GameAction> + 'a> {
+    ) -> Box<dyn Iterator<Item = AgentAction> + 'a> {
         Box::new(
             legal_actions::compute(self, player, LegalActions { for_human_player: false })
-                .into_iter(),
+                .into_iter()
+                .map(AgentAction::GameAction),
         )
     }
 
-    fn execute_action(&mut self, player: primitives::PlayerName, action: GameAction) {
-        actions::execute(self, player, action, ExecuteAction {
-            skip_undo_tracking: false,
+    fn execute_action(&mut self, player: primitives::PlayerName, action: AgentAction) {
+        actions::execute(self, player, action.as_game_action(), ExecuteAction {
+            skip_undo_tracking: true,
             validate: false,
         })
         .expect("Halt encountered during AI action execution");

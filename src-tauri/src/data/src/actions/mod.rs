@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+pub mod agent_action;
 pub mod debug_action;
 pub mod game_action;
 pub mod new_game_action;

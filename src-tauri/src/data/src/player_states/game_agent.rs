@@ -98,9 +98,16 @@ pub enum ChildScoreAlgorithm {
 pub trait GameAgentImpl: Debug + DynClone + Send {
     fn select_action(&self, game: &GameState, player: PlayerName) -> GameAction;
 
-    fn select_prompt_action(
+    fn top_level_prompt_action(
         &self,
         game: &GameState,
+        prompt: &Prompt,
+        player: PlayerName,
+    ) -> PromptAction;
+
+    fn incremental_prompt_action(
+        &self,
+        game: &mut GameState,
         prompt: &Prompt,
         player: PlayerName,
     ) -> PromptAction;
