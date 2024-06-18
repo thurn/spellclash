@@ -47,21 +47,40 @@ pub fn run(database: SqliteDatabase, game: &mut GameState, update_channel: Optio
 fn initialize_agent(agent: &mut GameAgent) {
     match agent.agent_type {
         AgentType::FirstAvailableAction => {
-            agent.implementation_reference = Some(Box::new(AgentData::omniscient(
+            agent.game_agent_reference = Some(Box::new(AgentData::omniscient(
+                "FIRST_AVAILABLE_ACTION",
+                FirstAvailableActionAlgorithm,
+                WinLossEvaluator,
+            )));
+            agent.prompt_agent_reference = Some(Box::new(AgentData::omniscient(
                 "FIRST_AVAILABLE_ACTION",
                 FirstAvailableActionAlgorithm,
                 WinLossEvaluator,
             )));
         }
         AgentType::TreeSearch(_) => {
-            agent.implementation_reference = Some(Box::new(AgentData::omniscient(
+            agent.game_agent_reference = Some(Box::new(AgentData::omniscient(
                 "ITERATIVE_DEEPENING",
                 IterativeDeepeningSearch,
                 CustomHeuristicEvaluator,
             )));
+            agent.prompt_agent_reference = Some(Box::new(AgentData::omniscient(
+                "ITERATIVE_DEEPENING",
+                IterativeDeepeningSearch,
+                WinLossEvaluator,
+            )));
         }
         AgentType::MonteCarlo(_) => {
-            agent.implementation_reference = Some(Box::new(AgentData::omniscient(
+            agent.game_agent_reference = Some(Box::new(AgentData::omniscient(
+                "UCT1_10_000",
+                MonteCarloAlgorithm {
+                    child_score_algorithm: Uct1 {},
+                    max_iterations: Some(10_000),
+                    phantom_data: PhantomData,
+                },
+                RandomPlayoutEvaluator { evaluator: WinLossEvaluator, phantom_data: PhantomData },
+            )));
+            agent.prompt_agent_reference = Some(Box::new(AgentData::omniscient(
                 "UCT1_10_000",
                 MonteCarloAlgorithm {
                     child_score_algorithm: Uct1 {},

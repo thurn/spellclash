@@ -19,7 +19,7 @@ use crate::core::numerics::LifeValue;
 use crate::core::primitives::{
     CardId, EntityId, HasController, HasEntityId, HasPlayerName, PlayerName, UserId,
 };
-use crate::player_states::game_agent::{GameAgent, GameAgentImpl};
+use crate::player_states::game_agent::{GameAgent, GameAgentImpl, PromptAgentImpl};
 use crate::player_states::mana_pool::ManaPool;
 use crate::player_states::player_options::PlayerOptions;
 use crate::player_states::prompt_stack::PromptStack;
@@ -153,7 +153,14 @@ impl PlayerState {
 
     pub fn agent(&self) -> Option<Box<dyn GameAgentImpl>> {
         match &self.player_type {
-            PlayerType::Agent(agent) => agent.implementation_reference.clone(),
+            PlayerType::Agent(agent) => agent.game_agent_reference.clone(),
+            _ => None,
+        }
+    }
+
+    pub fn prompt_agent(&self) -> Option<Box<dyn PromptAgentImpl>> {
+        match &self.player_type {
+            PlayerType::Agent(agent) => agent.prompt_agent_reference.clone(),
             _ => None,
         }
     }

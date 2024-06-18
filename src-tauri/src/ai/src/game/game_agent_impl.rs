@@ -21,7 +21,7 @@ use data::actions::game_action::GameAction;
 use data::actions::prompt_action::PromptAction;
 use data::core::primitives;
 use data::game_states::game_state::GameState;
-use data::player_states::game_agent::GameAgentImpl;
+use data::player_states::game_agent::{GameAgentImpl, PromptAgentImpl};
 use data::prompts::prompt::Prompt;
 use rules::legality::legal_actions::LegalActions;
 use rules::legality::{legal_actions, legal_prompt_actions};
@@ -33,6 +33,7 @@ use crate::core::agent::{Agent, AgentData};
 use crate::core::game_state_node::GameStateNode;
 use crate::core::selection_algorithm::SelectionAlgorithm;
 use crate::core::state_evaluator::StateEvaluator;
+use crate::game::prompt_state_node_impl::PromptStateNode;
 
 impl<TSelector, TEvaluator> GameAgentImpl for AgentData<TSelector, TEvaluator, GameState>
 where
@@ -43,15 +44,6 @@ where
         let mut copy = game.shallow_clone();
         copy.current_agent_searcher = Some(player);
         select_action_impl(self, copy, player).as_game_action()
-    }
-
-    fn top_level_prompt_action(
-        &self,
-        _game: &GameState,
-        _prompt: &Prompt,
-        _player: primitives::PlayerName,
-    ) -> PromptAction {
-        todo!("")
     }
 
     fn incremental_prompt_action(
@@ -67,6 +59,24 @@ where
                 .collect::<HashSet<_>>();
         assert!(!legal.is_empty(), "No legal prompt actions available");
         self.selector.pick_prompt_action(game, player, legal).as_prompt_action()
+    }
+}
+
+impl<TSelector, TEvaluator> PromptAgentImpl for AgentData<TSelector, TEvaluator, PromptStateNode>
+where
+    TSelector: SelectionAlgorithm<PromptStateNode, TEvaluator> + Debug + Clone,
+    TEvaluator: StateEvaluator<PromptStateNode> + Debug + Clone,
+{
+    fn top_level_prompt_action(
+        &self,
+        game: &GameState,
+        prompt: &Prompt,
+        player: primitives::PlayerName,
+    ) -> PromptAction {
+        let mut copy = game.shallow_clone();
+        copy.current_agent_searcher = Some(player);
+        let state = PromptStateNode { game: copy, prompt: Some(prompt.clone()) };
+        select_action_impl(self, state, player).as_prompt_action()
     }
 }
 

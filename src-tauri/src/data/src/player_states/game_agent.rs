@@ -38,12 +38,19 @@ pub struct GameAgent {
     pub evaluator: AgentEvaluator,
 
     #[serde(skip)]
-    pub implementation_reference: Option<Box<dyn GameAgentImpl>>,
+    pub game_agent_reference: Option<Box<dyn GameAgentImpl>>,
+
+    #[serde(skip)]
+    pub prompt_agent_reference: Option<Box<dyn PromptAgentImpl>>,
 }
 
 impl GameAgent {
     pub fn implementation(&self) -> &dyn GameAgentImpl {
-        self.implementation_reference
+        self.game_agent_reference.as_ref().expect("Implementation reference not populated").as_ref()
+    }
+
+    pub fn prompt_agent_implementation(&self) -> &dyn PromptAgentImpl {
+        self.prompt_agent_reference
             .as_ref()
             .expect("Implementation reference not populated")
             .as_ref()
@@ -98,13 +105,6 @@ pub enum ChildScoreAlgorithm {
 pub trait GameAgentImpl: Debug + DynClone + Send {
     fn select_action(&self, game: &GameState, player: PlayerName) -> GameAction;
 
-    fn top_level_prompt_action(
-        &self,
-        game: &GameState,
-        prompt: &Prompt,
-        player: PlayerName,
-    ) -> PromptAction;
-
     fn incremental_prompt_action(
         &self,
         game: &mut GameState,
@@ -113,4 +113,14 @@ pub trait GameAgentImpl: Debug + DynClone + Send {
     ) -> PromptAction;
 }
 
+pub trait PromptAgentImpl: Debug + DynClone + Send {
+    fn top_level_prompt_action(
+        &self,
+        game: &GameState,
+        prompt: &Prompt,
+        player: PlayerName,
+    ) -> PromptAction;
+}
+
 dyn_clone::clone_trait_object!(GameAgentImpl);
+dyn_clone::clone_trait_object!(PromptAgentImpl);

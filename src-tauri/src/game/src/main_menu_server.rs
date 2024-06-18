@@ -73,7 +73,8 @@ pub fn main_menu_view() -> MainMenuView {
             state_predictor: StatePredictor::Omniscient,
             state_combiner: StateCombiner::First,
             evaluator: AgentEvaluator::RandomPlayout(Box::new(AgentEvaluator::WinLoss)),
-            implementation_reference: None,
+            prompt_agent_reference: None,
+            game_agent_reference: None,
         }),
         opponent_deck: deck,
         debug_options: NewGameDebugOptions {

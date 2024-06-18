@@ -38,13 +38,15 @@ use crate::action_handlers::prompt_actions::PromptExecutionResult;
 /// [PromptResponse].
 pub fn send(game: &mut GameState, mut prompt: Prompt) -> PromptResult<PromptResponse> {
     let agent_player = game.current_agent_searcher.unwrap_or(prompt.player);
-    if let Some(agent) = game.player(agent_player).agent() {
+    if let (Some(agent), Some(prompt_agent)) =
+        (game.player(agent_player).agent(), game.player(agent_player).prompt_agent())
+    {
         let ongoing = game.current_agent_searcher.is_some();
         loop {
             let action = if ongoing {
                 agent.incremental_prompt_action(game, &prompt, prompt.player)
             } else {
-                agent.top_level_prompt_action(game, &prompt, prompt.player)
+                prompt_agent.top_level_prompt_action(game, &prompt, prompt.player)
             };
             match prompt_actions::execute(prompt, action) {
                 PromptExecutionResult::Prompt(p) => {
