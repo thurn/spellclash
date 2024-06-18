@@ -44,7 +44,7 @@ impl GameStateNode for PromptStateNode {
         match self.game.status {
             game_state::GameStatus::GameOver { winners } => GameStatus::Completed { winners },
             _ => GameStatus::InProgress {
-                current_turn: legal_actions::next_to_act(&self.game, self.prompt.as_ref()),
+                current_turn: legal_actions::next_to_act(&self.game, self.prompt.as_ref()).unwrap(),
             },
         }
     }

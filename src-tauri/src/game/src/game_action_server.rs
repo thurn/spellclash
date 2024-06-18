@@ -166,7 +166,7 @@ pub fn handle_game_action_internal(
 
     if let Some(act_as) = game.configuration.debug.act_as_player {
         // Override player we are acting as for debugging purposes
-        if act_as.name == legal_actions::next_to_act(game, None) {
+        if Some(act_as.name) == legal_actions::next_to_act(game, None) {
             current_player = act_as.name;
         }
     }
@@ -201,7 +201,10 @@ pub fn handle_game_action_internal(
 
         send_updates(game, client, &get_display_state());
 
-        let next_player = legal_actions::next_to_act(game, None);
+        let Some(next_player) = legal_actions::next_to_act(game, None) else {
+            break;
+        };
+
         if let Some(action) = auto_pass_action(game, next_player) {
             debug!(?next_player, "Automatically passing");
             current_player = next_player;

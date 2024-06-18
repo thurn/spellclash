@@ -125,7 +125,7 @@ impl<'a> ResponseBuilder<'a> {
         if let Some(act) = self.response_state.act_as_player {
             let next =
                 legal_actions::next_to_act(game, self.response_state.display_state.prompt.as_ref());
-            if act.name == next {
+            if Some(act.name) == next {
                 return act.name;
             }
         }

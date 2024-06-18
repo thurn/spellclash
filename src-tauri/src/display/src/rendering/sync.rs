@@ -99,7 +99,7 @@ fn card_drag_targets(
 fn player_view(display_state: &DisplayState, game: &GameState, player: PlayerName) -> PlayerView {
     PlayerView {
         life: game.player(player).life as f64,
-        can_act: legal_actions::next_to_act(game, display_state.prompt.as_ref()) == player,
+        can_act: legal_actions::next_to_act(game, display_state.prompt.as_ref()) == Some(player),
     }
 }
 

@@ -41,11 +41,8 @@ pub struct LegalActions {
 #[instrument(name = "legal_actions_compute", level = "trace", skip(game, options))]
 pub fn compute(game: &GameState, player: PlayerName, options: LegalActions) -> Vec<GameAction> {
     let mut result = vec![];
-    if game.status != GameStatus::Playing {
-        return result;
-    }
 
-    if next_to_act(game, None) != player {
+    if next_to_act(game, None) != Some(player) {
         return result;
     }
 
@@ -74,22 +71,27 @@ pub fn can_take_action(game: &GameState, player: PlayerName, game_action: &GameA
 
 /// Returns the name of the player who is currently allowed to take an action.
 ///
-/// If the game has not yet started, this will be player one. If the game
-/// has ended, this will be the player who held priority at the end of the
-/// game.
-pub fn next_to_act(game: &GameState, prompt: Option<&Prompt>) -> PlayerName {
-    if let Some(p) = prompt {
-        return p.player;
+/// If the game has not yet started, this will be the player currently resolving
+/// pre-game actions.
+///
+/// If the game has ended, this will return None.
+pub fn next_to_act(game: &GameState, prompt: Option<&Prompt>) -> Option<PlayerName> {
+    if matches!(game.status, GameStatus::GameOver { .. }) {
+        return None;
     }
 
-    match game.combat.as_ref() {
+    if let Some(p) = prompt {
+        return Some(p.player);
+    }
+
+    Some(match game.combat.as_ref() {
         Some(CombatState::ProposingAttackers(_)) => game.turn.active_player,
         Some(CombatState::ConfirmedAttackers(_)) => game.priority,
         Some(CombatState::ProposingBlockers(blockers)) => blockers.defender,
         Some(CombatState::OrderingBlockers(_)) => game.turn.active_player,
         Some(CombatState::ConfirmedBlockers(_)) => game.priority,
         None => game.priority,
-    }
+    })
 }
 
 /// Returns true if any player can currently take the action to pass

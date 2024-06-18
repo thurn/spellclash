@@ -35,7 +35,9 @@ impl GameStateNode for GameState {
     fn status(&self) -> GameStatus<primitives::PlayerName> {
         match self.status {
             game_state::GameStatus::GameOver { winners } => GameStatus::Completed { winners },
-            _ => GameStatus::InProgress { current_turn: legal_actions::next_to_act(self, None) },
+            _ => GameStatus::InProgress {
+                current_turn: legal_actions::next_to_act(self, None).unwrap(),
+            },
         }
     }
 
