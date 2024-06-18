@@ -70,16 +70,17 @@ where
     }
 }
 
-fn select_action_impl<TSelector, TEvaluator>(
-    agent: &AgentData<TSelector, TEvaluator, GameState>,
-    state: GameState,
-    player: primitives::PlayerName,
-) -> AgentAction
+fn select_action_impl<TState, TSelector, TEvaluator>(
+    agent: &AgentData<TSelector, TEvaluator, TState>,
+    state: TState,
+    player: TState::PlayerName,
+) -> TState::Action
 where
-    TSelector: SelectionAlgorithm<GameState, TEvaluator> + Debug + Clone,
-    TEvaluator: StateEvaluator<GameState> + Debug + Clone,
+    TState: GameStateNode + Clone + Debug,
+    TSelector: SelectionAlgorithm<TState, TEvaluator> + Debug + Clone,
+    TEvaluator: StateEvaluator<TState> + Debug + Clone,
 {
-    assert_eq!(legal_actions::next_to_act(&state, None), player, "Not {:?}'s turn", player);
+    assert_eq!(state.current_turn(), player, "Not {:?}'s turn", player);
     let legal = state.legal_actions(player).collect::<Vec<_>>();
     assert!(!legal.is_empty(), "No legal actions available");
     if legal.len() == 1 {

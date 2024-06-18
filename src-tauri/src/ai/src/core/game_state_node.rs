@@ -49,8 +49,9 @@ pub trait GameStateNode {
     /// the player who won.
     fn status(&self) -> GameStatus<Self::PlayerName>;
 
-    /// Returns the player whose turn it currently is, or an error if the game
-    /// has ended.
+    /// Returns the player whose turn it currently is.
+    ///
+    /// Panics if the game has ended.
     fn current_turn(&self) -> Self::PlayerName {
         match self.status() {
             GameStatus::InProgress { current_turn } => current_turn,
