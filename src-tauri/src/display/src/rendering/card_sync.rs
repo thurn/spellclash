@@ -88,6 +88,10 @@ fn card_status(
     game: &GameState,
     card: &CardState,
 ) -> Option<RevealedCardStatus> {
+    if let Some(prompt) = builder.current_prompt() {
+        return None;
+    }
+
     if play_card::can_play_card(game, builder.act_as_player(game), Source::Game, card.id)
         && builder.allow_actions()
     {
