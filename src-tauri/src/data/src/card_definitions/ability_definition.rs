@@ -20,7 +20,7 @@ use utils::outcome::Outcome;
 use crate::core::primitives::Zone;
 use crate::costs::cost::Cost;
 #[allow(unused)] // Used in docs
-use crate::delegates::game_delegates::{Delegate, DelegateFn, GameDelegates};
+use crate::delegates::game_delegates::GameDelegates;
 use crate::delegates::scope::Scope;
 use crate::game_states::game_state::GameState;
 
@@ -29,6 +29,16 @@ pub type EffectFn = fn(&mut GameState, Scope) -> Outcome;
 
 /// A predicate to apply to a delegate activation.
 pub type RequirementFn = fn(&GameState, Scope) -> bool;
+
+pub type DelegateCreationFn = fn(&mut GameDelegates);
+
+pub struct Delegate {
+    /// [Zone]s in which this delegate should be active.
+    pub zones: EnumSet<Zone>,
+
+    /// Function to populate callbacks for this delegate
+    pub run: DelegateCreationFn,
+}
 
 /// Defines the game rules for an ability.
 ///
@@ -109,9 +119,13 @@ impl SpellAbility<NoEffects> {
 }
 
 impl SpellAbility<WithEffects> {
-    /// Adds a new [DelegateFn] to this ability. See [GameDelegates] for more
-    /// information.
-    pub fn delegate(mut self, zones: impl Into<EnumSet<Zone>>, delegate: DelegateFn) -> Self {
+    /// Adds a new [DelegateCreationFn] to this ability. See [GameDelegates] for
+    /// more information.
+    pub fn delegate(
+        mut self,
+        zones: impl Into<EnumSet<Zone>>,
+        delegate: DelegateCreationFn,
+    ) -> Self {
         self.delegates.push(Delegate { zones: zones.into(), run: delegate });
         self
     }
@@ -175,9 +189,13 @@ impl ActivatedAbility<WithCosts, NoEffects> {
 }
 
 impl ActivatedAbility<WithCosts, WithEffects> {
-    /// Adds a new [DelegateFn] to this ability. See [GameDelegates] for more
-    /// information.
-    pub fn delegate(mut self, zones: impl Into<EnumSet<Zone>>, delegate: DelegateFn) -> Self {
+    /// Adds a new [DelegateCreationFn] to this ability. See [GameDelegates] for
+    /// more information.
+    pub fn delegate(
+        mut self,
+        zones: impl Into<EnumSet<Zone>>,
+        delegate: DelegateCreationFn,
+    ) -> Self {
         self.delegates.push(Delegate { zones: zones.into(), run: delegate });
         self
     }
@@ -228,7 +246,7 @@ impl TriggeredAbility<NoCondition, NoEffects> {
     pub fn condition(
         self,
         zones: impl Into<EnumSet<Zone>>,
-        delegate: DelegateFn,
+        delegate: DelegateCreationFn,
     ) -> TriggeredAbility<WithCondition, NoEffects> {
         TriggeredAbility {
             effects: NoEffects,
@@ -263,9 +281,13 @@ impl TriggeredAbility<WithCondition, NoEffects> {
 }
 
 impl TriggeredAbility<WithCondition, WithEffects> {
-    /// Adds a new [DelegateFn] to this ability. See [GameDelegates] for more
-    /// information.
-    pub fn delegate(mut self, zones: impl Into<EnumSet<Zone>>, delegate: DelegateFn) -> Self {
+    /// Adds a new [DelegateCreationFn] to this ability. See [GameDelegates] for
+    /// more information.
+    pub fn delegate(
+        mut self,
+        zones: impl Into<EnumSet<Zone>>,
+        delegate: DelegateCreationFn,
+    ) -> Self {
         self.delegates.push(Delegate { zones: zones.into(), run: delegate });
         self
     }
@@ -301,9 +323,13 @@ impl StaticAbility {
         Self { delegates: vec![] }
     }
 
-    /// Adds a new [DelegateFn] to this ability. See [GameDelegates] for more
-    /// information.
-    pub fn delegate(mut self, zones: impl Into<EnumSet<Zone>>, delegate: DelegateFn) -> Self {
+    /// Adds a new [DelegateCreationFn] to this ability. See [GameDelegates] for
+    /// more information.
+    pub fn delegate(
+        mut self,
+        zones: impl Into<EnumSet<Zone>>,
+        delegate: DelegateCreationFn,
+    ) -> Self {
         self.delegates.push(Delegate { zones: zones.into(), run: delegate });
         self
     }

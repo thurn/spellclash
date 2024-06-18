@@ -51,7 +51,7 @@ impl CardDefinition {
     }
 
     /// Iterates over all abilities of this card with their [AbilityNumber]s.
-    pub fn abilities(&self) -> impl Iterator<Item = (AbilityNumber, &AbilityDefinition)> {
+    pub fn all_abilities(&self) -> impl Iterator<Item = (AbilityNumber, &AbilityDefinition)> {
         self.abilities.iter().enumerate().map(|(i, a)| (AbilityNumber(i), a))
     }
 }

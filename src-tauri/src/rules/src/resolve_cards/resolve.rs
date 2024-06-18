@@ -15,7 +15,8 @@
 use data::card_definitions::definitions;
 use data::card_states::card_kind::CardKind;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{Source, StackItemId, Zone};
+use data::core::primitives::{AbilityId, Source, StackItemId, Zone};
+use data::delegates::has_delegates::HasDelegates;
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use enumset::EnumSet;
@@ -40,14 +41,10 @@ pub fn resolve_top_of_stack(game: &mut GameState) -> Outcome {
     debug!(?card_id, "Resolving top of stack");
 
     let definition = definitions::get(game.card(card_id).card_name);
-    for (ability_number, ability) in definition.abilities() {
+    for (ability_number, ability) in definition.all_abilities() {
         if let Some(effect) = ability.effects {
-            let scope = Scope {
-                controller: game.card(card_id).controller,
-                number: ability_number,
-                card_id,
-            };
-            effect(game, scope)?;
+            let ability_id = AbilityId { card_id, number: ability_number };
+            effect(game, game.create_scope(ability_id))?;
         }
     }
 

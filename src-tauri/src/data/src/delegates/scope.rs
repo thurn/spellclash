@@ -14,28 +14,25 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::core::primitives::{AbilityNumber, CardId, HasCardId, HasSource, PlayerName, Source};
+use crate::core::primitives::{
+    AbilityId, AbilityNumber, CardId, HasCardId, HasSource, PlayerName, Source,
+};
 
-/// Identifies an ability of a card within a game
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+/// Identifies the context in which an event delegate is currently executing
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct Scope {
     pub controller: PlayerName,
-    pub number: AbilityNumber,
-    pub card_id: CardId,
+    pub ability_id: AbilityId,
 }
 
 impl HasCardId for Scope {
     fn card_id(&self) -> CardId {
-        self.card_id
+        self.ability_id.card_id
     }
 }
 
 impl HasSource for Scope {
     fn source(&self) -> Source {
-        Source::Ability {
-            controller: self.controller,
-            card_id: self.card_id,
-            ability_number: self.number,
-        }
+        Source::Ability { controller: self.controller, ability_id: self.ability_id }
     }
 }

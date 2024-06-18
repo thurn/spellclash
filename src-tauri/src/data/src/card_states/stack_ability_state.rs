@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 #[allow(unused)] // Used in docs
 use crate::card_states::zones::Zones;
 use crate::core::primitives::{
-    CardId, EntityId, HasCardId, HasController, HasEntityId, HasPlayerName, PlayerName,
+    AbilityId, CardId, EntityId, HasCardId, HasController, HasEntityId, HasPlayerName, PlayerName,
 };
 use crate::delegates::scope::Scope;
 
@@ -25,7 +25,7 @@ use crate::delegates::scope::Scope;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StackAbilityState {
     /// ID of this ability.
-    pub ability_id: Scope,
+    pub ability_id: AbilityId,
 
     /// Entity ID for this ability.
     ///

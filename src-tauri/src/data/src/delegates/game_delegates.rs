@@ -14,21 +14,32 @@
 
 use enumset::EnumSet;
 
-use crate::core::primitives::Zone;
+use crate::core::primitives::{AbilityId, CardId, HasCardId, Zone};
+use crate::delegates::card_delegate_list::CardDelegateList;
+use crate::delegates::stores_delegates::StoresDelegates;
+use crate::game_states::combat_state::AttackTarget;
+use crate::game_states::game_state::GameState;
 
-pub type DelegateFn = fn(&mut GameDelegates);
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+pub struct AttackerData {
+    pub card_id: CardId,
+    pub target: AttackTarget,
+}
 
-pub struct Delegate {
-    /// [Zone]s in which this delegate should be active.
-    ///
-    /// The [Self::run] function will be invoked to populate this delegate's
-    /// callbacks when its entity enters one of these zones, and the callbacks
-    /// will be cleared when it exits one of these zones.
-    pub zones: EnumSet<Zone>,
-
-    /// Function to populate callbacks for this delegate
-    pub run: DelegateFn,
+impl HasCardId for AttackerData {
+    fn card_id(&self) -> CardId {
+        self.card_id
+    }
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct GameDelegates {}
+pub struct GameDelegates {
+    /// Can the creature in [AttackerData] attack the indicated target?
+    pub can_attack: CardDelegateList<GameState, AttackerData, bool>,
+}
+
+impl GameDelegates {
+    pub fn apply_writes(&mut self, id: AbilityId, zones: EnumSet<Zone>) {
+        self.can_attack.apply_writes(id, zones);
+    }
+}

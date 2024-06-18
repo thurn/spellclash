@@ -250,15 +250,33 @@ impl HasEntityId for PlayerName {
     }
 }
 
-/// Identifies an ability of a card.
+/// Identifies an ability within the set of abilities of a card.
 ///
-/// Abilities are always written in oracle text_strings separated by a newline
-/// character. This number is the (0-indexed) position of the ability within
-/// that text_strings. One ability definition should be provided for each clause
-/// that appears in card text_strings, and this number is used to produce the
-/// displayed text_strings for that ability.
+/// Abilities are written in oracle text separated by a newline character, or
+/// via spaces in the case of keywords. This number is the (0-indexed) position
+/// of the ability within that text. One ability definition should be provided
+/// for each clause that appears in card text, and this number is used to
+/// produce the displayed text for that ability.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct AbilityNumber(pub usize);
+
+/// Identifies an ability of a card.
+///
+/// Each ability which appears in a card's oracle text gets its own Ability ID
+/// and Ability Number, as described by [AbilityNumber]. Activated or triggered
+/// abilities on the stack also have a [StackAbilityId] to identify their
+/// current state.
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
+pub struct AbilityId {
+    pub card_id: CardId,
+    pub number: AbilityNumber,
+}
+
+impl HasCardId for AbilityId {
+    fn card_id(&self) -> CardId {
+        self.card_id
+    }
+}
 
 /// Identifies a card or an activated or triggered ability on the stack.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
@@ -335,7 +353,7 @@ pub enum Source {
     Game,
 
     /// Mutation caused by an ability
-    Ability { controller: PlayerName, card_id: CardId, ability_number: AbilityNumber },
+    Ability { controller: PlayerName, ability_id: AbilityId },
 }
 
 /// Marker trait for objects which have a source

@@ -12,9 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use data::card_definitions::ability_definition::StaticAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
+use data::core::primitives::Zone;
+use data::delegates::game_delegates::AttackerData;
+use data::game_states::game_state::GameState;
 
 pub fn dandan() -> CardDefinition {
-    CardDefinition::new(card_name::DANDAN)
+    CardDefinition::new(card_name::DANDAN).ability(
+        StaticAbility::new().delegate(Zone::Battlefield, |on| {
+            on.can_attack.this(|g, _, data, _| controls_island(g, data))
+        }),
+    )
+}
+
+fn controls_island(_game: &GameState, _data: &AttackerData) -> bool {
+    true
 }

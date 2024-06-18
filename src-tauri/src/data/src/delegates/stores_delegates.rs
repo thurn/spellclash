@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod card_delegate_list;
-pub mod game_delegates;
-pub mod has_delegates;
-pub mod scope;
-pub mod stores_delegates;
+use enumset::EnumSet;
+
+use crate::core::primitives::{AbilityId, Zone};
+
+pub trait StoresDelegates {
+    fn apply_writes(&mut self, id: AbilityId, zones: EnumSet<Zone>);
+}

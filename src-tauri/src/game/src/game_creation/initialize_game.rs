@@ -21,7 +21,9 @@ use ai::game::evaluators::CustomHeuristicEvaluator;
 use ai::monte_carlo::monte_carlo_search::{MonteCarloAlgorithm, RandomPlayoutEvaluator};
 use ai::monte_carlo::uct1::Uct1;
 use ai::tree_search::iterative_deepening_search::IterativeDeepeningSearch;
-use data::core::primitives::PlayerName;
+use data::card_definitions::definitions;
+use data::card_states::zones::ZoneQueries;
+use data::core::primitives::{AbilityId, PlayerName};
 use data::game_states::game_state::GameState;
 use data::player_states::game_agent::{AgentType, GameAgent};
 use data::player_states::player_state::{PlayerQueries, PlayerState, PlayerType};
@@ -42,6 +44,16 @@ pub fn run(database: SqliteDatabase, game: &mut GameState, update_channel: Optio
     }
 
     game.updates = update_channel;
+
+    let all_card_ids = game.zones.all_cards().map(|card| card.id).collect::<Vec<_>>();
+    for card_id in all_card_ids {
+        for (number, ability) in definitions::get(game.card(card_id).card_name).all_abilities() {
+            for delegate in &ability.delegates {
+                (delegate.run)(&mut game.delegates);
+                game.delegates.apply_writes(AbilityId { card_id, number }, delegate.zones);
+            }
+        }
+    }
 }
 
 fn initialize_agent(agent: &mut GameAgent) {

@@ -17,13 +17,14 @@ use std::iter;
 use data::card_states::card_state::TappedState;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, CardType, EntityId, PlayerName};
+use data::delegates::game_delegates::AttackerData;
 use data::game_states::combat_state::{AttackTarget, BlockerMap, CombatState, ProposedAttackers};
 use data::game_states::game_state::GameState;
 
 use crate::queries::{card_queries, combat_queries, player_queries};
 
-/// Returns true if the card with the provided [CardId] can attack in the
-/// current combat phase.
+/// Returns true if the card with the provided [CardId] has any valid target to
+/// attack.
 ///
 /// > 508.1a. The active player chooses which creatures that they control, if
 /// > any, will attack. The chosen creatures must be untapped, they can't also
@@ -34,12 +35,16 @@ pub fn can_attack(game: &GameState, card_id: CardId) -> bool {
     let turn = game.turn;
     let card = game.card(card_id);
     let types = card_queries::card_types(game, card_id);
-    card.last_changed_control != turn
+    let result = card.last_changed_control != turn
         && card.entered_current_zone != turn
         && card.controller == turn.active_player
-        && card.tapped_state != TappedState::Tapped
+        && card.tapped_state == TappedState::Untapped
         && types.contains(CardType::Creature)
-        && !types.contains(CardType::Battle)
+        && !types.contains(CardType::Battle);
+
+    attack_targets(game).any(|target| {
+        game.delegates.can_attack.query(game, &AttackerData { card_id, target }, result)
+    })
 }
 
 /// Returns an iterator over all legal attackers for the provided player.
@@ -84,7 +89,7 @@ pub fn attack_targets(game: &GameState) -> impl Iterator<Item = AttackTarget> + 
             )
         })
         .chain(
-            game.battlefield(game.turn.active_player)
+            game.battlefield(game.active_player())
                 .iter()
                 .filter(|&&card_id| {
                     card_queries::card_types(game, card_id).contains(CardType::Battle)
