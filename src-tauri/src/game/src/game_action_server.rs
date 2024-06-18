@@ -108,7 +108,7 @@ pub async fn handle_game_action(database: SqliteDatabase, client: &mut Client, a
 #[instrument(level = "debug", skip(client))]
 pub fn handle_prompt_action(client: &mut Client, action: PromptAction) {
     let mut display_state = get_display_state();
-    let mut prompt = display_state.prompt.take().expect("No active prompt");
+    let prompt = display_state.prompt.take().expect("No active prompt");
     match prompt_actions::execute(prompt, action) {
         PromptExecutionResult::Prompt(prompt) => {
             display_state.prompt = Some(prompt);
@@ -131,7 +131,7 @@ pub fn handle_update_field(
 ) {
     let mut display_state = get_display_state();
     display_state.fields.insert(key, value);
-    let mut game = requests::fetch_game(database.clone(), client.data.game_id(), None);
+    let game = requests::fetch_game(database.clone(), client.data.game_id(), None);
     send_updates(&game, client, &display_state, AllowActions::Yes);
 }
 

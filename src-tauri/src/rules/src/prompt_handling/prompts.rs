@@ -64,7 +64,8 @@ pub fn send(game: &mut GameState, mut prompt: Prompt) -> PromptResult<PromptResp
         game.updates
             .as_ref()
             .expect("PromptChannel")
-            .send(GameUpdate::new(game).prompt(prompt).response_channel(sender));
+            .send(GameUpdate::new(game).prompt(prompt).response_channel(sender))
+            .expect("Unable to send prompt, receiver has dropped");
         let result = receiver
             .blocking_recv()
             .expect("Unable to receive prompt response, sender has dropped");

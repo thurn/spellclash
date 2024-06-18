@@ -63,16 +63,16 @@ pub fn run(game: &mut GameState) -> Outcome {
                 StateBasedEvent::CopyLeftStackOrBattlefield(_) => {}
                 StateBasedEvent::CreatureToughnessChanged(card_id) => {
                     if card_queries::toughness(game, card_id) <= 0 {
-                        move_card::run(game, Source::Game, card_id, Zone::Graveyard);
+                        move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
                     }
                 }
                 StateBasedEvent::CreatureDamaged(card_id) => {
                     if game.card(card_id).damage as i64 >= card_queries::toughness(game, card_id) {
-                        move_card::run(game, Source::Game, card_id, Zone::Graveyard);
+                        move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
                     }
                 }
                 StateBasedEvent::CreatureDamagedByDeathtouch(card_id) => {
-                    move_card::run(game, Source::Game, card_id, Zone::Graveyard);
+                    move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
                 }
                 StateBasedEvent::PlaneswalkerLostLoyalty(_) => {}
                 StateBasedEvent::LegendaryPermanentEntered(_) => {}

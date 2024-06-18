@@ -46,13 +46,15 @@ pub fn compute(game: &GameState, player: PlayerName, options: LegalActions) -> V
         return result;
     }
 
-    if can_pass_priority(game, player) {
-        result.push(GameAction::PassPriority);
-    }
+    if !legal_combat_actions::in_combat_prompt(game, player) {
+        if can_pass_priority(game, player) {
+            result.push(GameAction::PassPriority);
+        }
 
-    for &card_id in game.hand(player) {
-        if play_card::can_play_card(game, player, Source::Game, card_id) {
-            result.push(GameAction::ProposePlayingCard(card_id));
+        for &card_id in game.hand(player) {
+            if play_card::can_play_card(game, player, Source::Game, card_id) {
+                result.push(GameAction::ProposePlayingCard(card_id));
+            }
         }
     }
 

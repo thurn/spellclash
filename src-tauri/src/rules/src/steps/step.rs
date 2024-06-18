@@ -76,7 +76,7 @@ fn untap(game: &mut GameState) -> Outcome {
     // <https://yawgatog.com/resources/magic-rules/#R5023>
     let to_untap = game.battlefield(next).clone();
     for &card_id in &to_untap {
-        permanents::untap(game, Source::Game, card_id);
+        permanents::untap(game, Source::Game, card_id)?;
     }
 
     // > 502.4. No player receives priority during the untap step, so no spells can
@@ -162,7 +162,7 @@ fn first_strike_damage(game: &mut GameState) -> Outcome {
     outcome::OK
 }
 
-enum CombatDamageAssignment {
+pub enum CombatDamageAssignment {
     Player(PlayerName, Damage),
     Planeswalker(PlayerName, Damage),
     Battle(PlayerName, Damage),
@@ -244,7 +244,7 @@ fn combat_damage(game: &mut GameState) -> Outcome {
     for assignment in damage_assignments {
         match assignment {
             CombatDamageAssignment::Player(player, damage) => {
-                players::deal_damage(game, Source::Game, player, damage);
+                players::deal_damage(game, Source::Game, player, damage)?;
             }
             CombatDamageAssignment::Planeswalker(player, damage) => {
                 todo!("Implement planeswalker damage");

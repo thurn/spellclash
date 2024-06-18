@@ -16,7 +16,8 @@ use std::iter;
 
 use data::card_states::card_state::TappedState;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, CardType, EntityId, PlayerName};
+use data::core::primitives::{CardId, CardType, EntityId, PlayerName, Source};
+use data::delegates::flag::Flag;
 use data::delegates::game_delegates::CanAttackTarget;
 use data::game_states::combat_state::{AttackTarget, BlockerMap, CombatState, ProposedAttackers};
 use data::game_states::game_state::GameState;
@@ -31,16 +32,17 @@ use crate::queries::{card_queries, combat_queries, player_queries};
 /// > be battles, and each one must either have haste or have been controlled by
 /// > the active player continuously since the turn began.
 /// <https://yawgatog.com/resources/magic-rules/#R5081a>
-pub fn can_attack(game: &GameState, card_id: CardId) -> bool {
+pub fn can_attack(game: &GameState, card_id: CardId) -> Flag {
     let turn = game.turn;
     let card = game.card(card_id);
     let types = card_queries::card_types(game, card_id);
-    let mut result = card.last_changed_control != turn
-        && card.entered_current_zone != turn
-        && card.controller == turn.active_player
-        && card.tapped_state == TappedState::Untapped
-        && types.contains(CardType::Creature)
-        && !types.contains(CardType::Battle);
+    let mut result = Flag::new();
+    result = result.add_condition(Source::Game, card.last_changed_control != turn);
+    result = result.add_condition(Source::Game, card.entered_current_zone != turn);
+    result = result.add_condition(Source::Game, card.controller == turn.active_player);
+    result = result.add_condition(Source::Game, card.tapped_state == TappedState::Untapped);
+    result = result.add_condition(Source::Game, types.contains(CardType::Creature));
+    result = result.add_condition(Source::Game, !types.contains(CardType::Battle));
 
     game.delegates.can_attack_target.query_any(
         game,
@@ -51,7 +53,7 @@ pub fn can_attack(game: &GameState, card_id: CardId) -> bool {
 
 /// Returns an iterator over all legal attackers for the provided player.
 pub fn legal_attackers(game: &GameState, player: PlayerName) -> impl Iterator<Item = CardId> + '_ {
-    game.battlefield(player).iter().filter(|&&card_id| can_attack(game, card_id)).copied()
+    game.battlefield(player).iter().filter(|&&card_id| can_attack(game, card_id).value()).copied()
 }
 
 /// Returns true if the card with the provided [CardId] can block in the current
@@ -61,6 +63,7 @@ pub fn legal_attackers(game: &GameState, player: PlayerName) -> impl Iterator<It
 /// > will block. The chosen creatures must be untapped and they can't also be
 /// > battles.
 /// <https://yawgatog.com/resources/magic-rules/#R5091a>
+#[must_use]
 pub fn can_block(game: &GameState, card_id: CardId) -> bool {
     let card = game.card(card_id);
     let types = card_queries::card_types(game, card_id);
@@ -112,6 +115,7 @@ pub enum CombatRole {
 }
 
 /// Returns this entity's current [CombatRole], if any.
+#[must_use]
 pub fn role(game: &GameState, entity: EntityId) -> Option<CombatRole> {
     match &game.combat {
         None => None,
@@ -168,6 +172,7 @@ fn role_in_blocker_map(entity: EntityId, blockers: &BlockerMap) -> Option<Combat
 ///
 /// Panics if this target no longer exists, e.g. because the target is no longer
 /// on the battlefield.
+#[must_use]
 pub fn defending_player(game: &GameState, target: AttackTarget) -> PlayerName {
     match target {
         AttackTarget::Player(player) => player,

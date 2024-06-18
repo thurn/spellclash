@@ -342,6 +342,16 @@ pub enum Source {
     Ability { controller: PlayerName, ability_id: AbilityId },
 }
 
+impl Source {
+    pub fn is_game_source(&self) -> bool {
+        *self == Source::Game
+    }
+
+    pub fn is_ability_source(&self) -> bool {
+        matches!(self, Source::Ability { .. })
+    }
+}
+
 /// Marker trait for objects which have a source
 pub trait HasSource {
     fn source(&self) -> Source;

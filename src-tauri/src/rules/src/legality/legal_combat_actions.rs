@@ -15,6 +15,7 @@
 use data::actions::game_action::{CombatAction, GameAction};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::PlayerName;
+use data::delegates::flag::Flag;
 use data::delegates::game_delegates::CanAttackTarget;
 use data::game_states::combat_state::{CombatState, ProposedAttackers};
 use data::game_states::game_state::GameState;
@@ -23,6 +24,17 @@ use data::game_states::game_state::GameState;
 use crate::legality::legal_actions;
 use crate::legality::legal_actions::LegalActions;
 use crate::queries::combat_queries;
+
+/// True if the player is currently making combat decisions and cannot thus take
+/// other game actions.
+pub fn in_combat_prompt(game: &GameState, player: PlayerName) -> bool {
+    matches!(
+        &game.combat,
+        Some(CombatState::ProposingAttackers(_))
+            | Some(CombatState::ProposingBlockers(_))
+            | Some(CombatState::OrderingBlockers(_))
+    )
+}
 
 /// Appends all legal combat actions for the named player to the provided
 /// vector.
@@ -58,14 +70,17 @@ pub fn append(
                     combat_queries::attack_targets(game)
                         .filter(|target| {
                             // Only include targets that all selected attackers can legally attack.
-                            game.delegates.can_attack_target.query_all(
-                                game,
-                                selected_attackers.iter().map(|&attacker| CanAttackTarget {
-                                    card_id: game.card_entity_id(attacker),
-                                    target: *target,
-                                }),
-                                true,
-                            )
+                            game.delegates
+                                .can_attack_target
+                                .query_all(
+                                    game,
+                                    selected_attackers.iter().map(|&attacker| CanAttackTarget {
+                                        card_id: game.card_entity_id(attacker),
+                                        target: *target,
+                                    }),
+                                    Flag::new(),
+                                )
+                                .value()
                         })
                         .map(CombatAction::SetSelectedAttackersTarget),
                 );

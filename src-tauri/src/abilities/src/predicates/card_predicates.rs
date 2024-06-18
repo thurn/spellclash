@@ -22,6 +22,7 @@ use rules::queries::card_queries;
 pub trait CardPredicate: Fn(&GameState, Scope, CardId) -> bool + 'static + Clone + Send {}
 impl<F> CardPredicate for F where F: Fn(&GameState, Scope, CardId) -> bool + 'static + Clone + Send {}
 
+/// True if this card is an island.
 pub fn island(game: &GameState, _: Scope, card_id: CardId) -> bool {
     card_queries::land_subtypes(game, card_id).contains(LandSubtype::Island)
 }

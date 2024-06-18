@@ -24,9 +24,12 @@ pub fn cannot_attack_unless_defender_controls(
     delegates: &mut GameDelegates,
     predicate: impl CardPredicate,
 ) {
-    delegates.can_attack_target.this(move |g, s, data, _| {
-        g.battlefield(combat_queries::defending_player(g, data.target))
-            .iter()
-            .any(|&card_id| predicate(g, s, card_id))
+    delegates.can_attack_target.this(move |g, s, data, current| {
+        current.add_condition(
+            s,
+            g.battlefield(combat_queries::defending_player(g, data.target))
+                .iter()
+                .any(|&card_id| predicate(g, s, card_id)),
+        )
     })
 }

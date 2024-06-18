@@ -43,7 +43,7 @@ pub struct ExecuteAction {
 pub fn execute(
     game: &mut GameState,
     player: PlayerName,
-    mut action: GameAction,
+    action: GameAction,
     options: ExecuteAction,
 ) -> Outcome {
     if options.validate {

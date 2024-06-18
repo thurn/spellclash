@@ -19,6 +19,7 @@ use enumset::EnumSet;
 use crate::card_states::zones::ZoneQueries;
 use crate::core::primitives::{AbilityId, CardId, HasCardId, PlayerName, Zone};
 use crate::delegates::card_delegate_list::CardDelegateList;
+use crate::delegates::flag::Flag;
 use crate::delegates::stores_delegates::StoresDelegates;
 use crate::game_states::combat_state::AttackTarget;
 use crate::game_states::game_state::GameState;
@@ -38,7 +39,7 @@ impl HasCardId for CanAttackTarget {
 #[derive(Default, Clone)]
 pub struct GameDelegates {
     /// Can a creature attack the indicated target?
-    pub can_attack_target: CardDelegateList<GameState, CanAttackTarget, bool>,
+    pub can_attack_target: CardDelegateList<GameState, CanAttackTarget, Flag>,
 }
 
 impl GameDelegates {

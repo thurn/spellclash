@@ -18,6 +18,7 @@ use dyn_clone::DynClone;
 use enumset::EnumSet;
 
 use crate::core::primitives::{AbilityId, EntityId, HasCardId, Zone};
+use crate::delegates::flag::Flag;
 use crate::delegates::has_delegates::HasDelegates;
 use crate::delegates::scope::Scope;
 use crate::delegates::stores_delegates::StoresDelegates;
@@ -90,6 +91,7 @@ impl<TData: HasDelegates, TArg: HasCardId, TResult> CardDelegateList<TData, TArg
         self.current.push((CardDelegateExecution::Any, Box::new(value)));
     }
 
+    #[must_use]
     pub fn query(&self, data: &TData, arg: &TArg, current: TResult) -> TResult {
         let mut result = current;
         for stored in &self.delegates {
@@ -115,7 +117,7 @@ impl<TData: HasDelegates, TArg: HasCardId, TResult> CardDelegateList<TData, TArg
     }
 }
 
-impl<TData: HasDelegates, TArg: HasCardId> CardDelegateList<TData, TArg, bool> {
+impl<TData: HasDelegates, TArg: HasCardId> CardDelegateList<TData, TArg, Flag> {
     /// Runs a boolean query to see if any item in the provided iterator matches
     /// a predicate. Returns `current` if no delegates are present in the map.
     ///
@@ -126,12 +128,12 @@ impl<TData: HasDelegates, TArg: HasCardId> CardDelegateList<TData, TArg, bool> {
         &self,
         data: &TData,
         mut iterator: impl Iterator<Item = TArg>,
-        current: bool,
-    ) -> bool {
+        current: Flag,
+    ) -> Flag {
         if self.is_empty() {
             current
         } else {
-            iterator.any(|arg| self.query(data, &arg, current))
+            Flag::from_bool(iterator.any(|arg| self.query(data, &arg, current).value()))
         }
     }
 
@@ -146,12 +148,12 @@ impl<TData: HasDelegates, TArg: HasCardId> CardDelegateList<TData, TArg, bool> {
         &self,
         data: &TData,
         mut iterator: impl Iterator<Item = TArg>,
-        current: bool,
-    ) -> bool {
+        current: Flag,
+    ) -> Flag {
         if self.is_empty() {
             current
         } else {
-            iterator.all(|arg| self.query(data, &arg, current))
+            Flag::from_bool(iterator.all(|arg| self.query(data, &arg, current).value()))
         }
     }
 }

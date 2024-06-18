@@ -89,7 +89,7 @@ impl GameStateNode for PromptStateNode {
         self.game.get_agent_state_mut()
     }
 
-    fn take_agent_state(mut self) -> AgentState<Self::PlayerName, Self::Action> {
+    fn take_agent_state(self) -> AgentState<Self::PlayerName, Self::Action> {
         self.game.take_agent_state()
     }
 }

@@ -58,11 +58,11 @@ pub fn create_and_start(
 ) -> GameState {
     info!(?game_id, "Creating new game");
     let mut game = create(database, game_id, p1, p1_deck_name, p2, p2_deck_name, debug);
-    library::draw_cards(&mut game, Source::Game, PlayerName::One, 7);
-    library::draw_cards(&mut game, Source::Game, PlayerName::Two, 7);
+    let _ = library::draw_cards(&mut game, Source::Game, PlayerName::One, 7);
+    let _ = library::draw_cards(&mut game, Source::Game, PlayerName::Two, 7);
     // TODO: Resolve mulligans
     game.status = GameStatus::Playing;
-    step::advance(&mut game);
+    let _ = step::advance(&mut game);
     game
 }
 
