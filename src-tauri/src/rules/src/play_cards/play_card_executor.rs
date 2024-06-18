@@ -23,6 +23,9 @@ use utils::outcome::Outcome;
 use crate::mutations::{move_card, permanents, priority};
 
 /// Plays a card, based on the set of choices in a completed [PlayCardPlan].
+///
+/// This will normally move spells to the stack and land cards to the
+/// battlefield.
 pub fn execute_plan(
     game: &mut GameState,
     player: PlayerName,
@@ -43,6 +46,13 @@ pub fn execute_plan(
         game.card_mut(card_id).cast_as = plan.spell_choices.play_as.faces;
         move_card::run(game, source, card_id, Zone::Stack)?;
 
+        // Once a card is played, abilities trigger and then a new priority round is created:
+        //
+        // > 601.2i. Once the steps described in 601.2a-h are completed, effects that modify the
+        // > characteristics of the spell as it's cast are applied, then the spell becomes cast.
+        // > Any abilities that trigger when a spell is cast or put onto the stack trigger at this
+        // > time. If the spell's controller had priority before casting it, they get priority.
+        game.passed.clear();
         if !game.player(player).options.hold_priority {
             // Automatically pass priority after putting something on the stack.
             priority::pass(game, player)?;

@@ -344,10 +344,14 @@ impl Zones {
                 }
             }
             Zone::Stack => {
-                if let Some(p) =
-                    self.stack.iter().rev().position(|&id| id.card_id() == Some(card_id))
+                if let Some((i, _)) = self
+                    .stack
+                    .iter()
+                    .enumerate()
+                    .rev()
+                    .find(|(_, id)| id.card_id() == Some(card_id))
                 {
-                    self.stack.remove(p);
+                    self.stack.remove(i);
                 } else {
                     panic!("Card not found {card_id:?}");
                 }

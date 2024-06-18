@@ -26,6 +26,17 @@ use crate::core::display_state::DisplayState;
 use crate::core::game_view::{DisplayPlayer, GameView};
 use crate::core::object_position::ObjectPosition;
 
+/// Whether the interface should allow user input.
+///
+/// This is is typically disabled during 'incremental' updates while the
+/// simulation is running and enabled during 'final' updates awaiting user
+/// responses.
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum AllowActions {
+    Yes,
+    No,
+}
+
 pub struct ResponseState<'a> {
     /// Whether to play animations as part of this update
     pub animate: bool,
@@ -42,6 +53,9 @@ pub struct ResponseState<'a> {
 
     /// Allows a player to act as another player for debugging purposes
     pub act_as_player: Option<DebugActAsPlayer>,
+
+    /// Whether UI actions should be allowed during this response
+    pub allow_actions: AllowActions,
 }
 
 /// Primary builder used to render game state.
@@ -89,6 +103,11 @@ impl<'a> ResponseBuilder<'a> {
         }
 
         self.commands.push(Command::UpdateScene(SceneView::GameView(game)));
+    }
+
+    /// Whether user interface actions should be enabled during this response
+    pub fn allow_actions(&self) -> bool {
+        self.response_state.allow_actions == AllowActions::Yes
     }
 
     /// Current [DisplayState] for this response.

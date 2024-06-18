@@ -30,6 +30,7 @@ use display::commands::field_state::{FieldKey, FieldValue};
 use display::commands::scene_identifier::SceneIdentifier;
 use display::core::card_view::ClientCardId;
 use display::core::display_state::DisplayState;
+use display::core::response_builder::AllowActions;
 use display::rendering::render;
 use enumset::{enum_set, EnumSet};
 use once_cell::sync::Lazy;
@@ -99,7 +100,7 @@ pub async fn handle_game_action(database: SqliteDatabase, client: &mut Client, a
         let mut display_state = get_display_state();
         display_state.prompt = update.prompt;
         display_state.prompt_channel = update.response_channel;
-        send_updates(&update.game, client, &display_state);
+        send_updates(&update.game, client, &display_state, AllowActions::Yes);
         display_state.game_snapshot = Some(update.game);
     }
 }
@@ -131,7 +132,7 @@ pub fn handle_update_field(
     let mut display_state = get_display_state();
     display_state.fields.insert(key, value);
     let mut game = requests::fetch_game(database.clone(), client.data.game_id(), None);
-    send_updates(&game, client, &display_state);
+    send_updates(&game, client, &display_state, AllowActions::Yes);
 }
 
 pub fn handle_drag_card(
@@ -153,7 +154,7 @@ pub fn handle_drag_card(
     };
     display_state.prompt = Some(prompt);
     let game = display_state.game_snapshot.as_ref().expect("No game snapshot saved");
-    send_updates(game, client, &display_state);
+    send_updates(game, client, &display_state, AllowActions::Yes);
 }
 
 pub fn handle_game_action_internal(
@@ -171,19 +172,12 @@ pub fn handle_game_action_internal(
         }
     }
 
+    // We send incremental updates while the simulation is running to keep the
+    // client informed of AI actions.
+    send_updates(game, client, &get_display_state(), AllowActions::No);
+
     let mut current_action = action;
     let mut skip_undo_tracking = false;
-
-    {
-        // We immediately send an update back to the client with 'forbid actions' set,
-        // in order to clear active buttons & ui actions because `actions::execute` can
-        // take a long time to run (e.g. if it results in the AI being prompted to make
-        // a choice).
-        let mut display_state = get_display_state();
-        display_state.forbid_actions = true;
-        send_updates(game, client, &display_state);
-        display_state.forbid_actions = false;
-    }
 
     loop {
         let result = actions::execute(game, current_player, current_action, ExecuteAction {
@@ -195,13 +189,13 @@ pub fn handle_game_action_internal(
             let mut display_state = get_display_state();
             display_state.prompt = None;
             let original = requests::fetch_game(database.clone(), client.data.game_id(), None);
-            send_updates(&original, client, &display_state);
+            send_updates(&original, client, &display_state, AllowActions::Yes);
             break;
         }
 
-        send_updates(game, client, &get_display_state());
-
+        send_updates(game, client, &get_display_state(), AllowActions::No);
         let Some(next_player) = legal_actions::next_to_act(game, None) else {
+            // Game over
             break;
         };
 
@@ -214,6 +208,7 @@ pub fn handle_game_action_internal(
             match &game.player(next_player).player_type {
                 PlayerType::Human(_) | PlayerType::None => {
                     database.write_game(game);
+                    send_updates(game, client, &get_display_state(), AllowActions::Yes);
                     break;
                 }
                 PlayerType::Agent(agent) => {
@@ -228,9 +223,14 @@ pub fn handle_game_action_internal(
     }
 }
 
-fn send_updates(game: &GameState, client: &mut Client, display_state: &DisplayState) {
+fn send_updates(
+    game: &GameState,
+    client: &mut Client,
+    display_state: &DisplayState,
+    allow_actions: AllowActions,
+) {
     let user_player_name = game.find_player_name(client.data.user_id);
-    let commands = render::render_updates(game, user_player_name, display_state);
+    let commands = render::render_updates(game, user_player_name, display_state, allow_actions);
     client.send_all(commands);
 }
 

@@ -67,16 +67,8 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
         } else {
             GameViewState::None
         },
-        top_controls: top_game_controls(
-            game,
-            builder.response_state.display_state,
-            builder.act_as_player(game),
-        ),
-        bottom_controls: bottom_game_controls(
-            game,
-            builder.response_state.display_state,
-            builder.act_as_player(game),
-        ),
+        top_controls: top_game_controls(game, builder, builder.act_as_player(game)),
+        bottom_controls: bottom_game_controls(game, builder, builder.act_as_player(game)),
     });
 }
 
@@ -84,7 +76,7 @@ fn card_drag_targets(
     response_builder: &ResponseBuilder,
     game: &GameState,
 ) -> Vec<CardOrderLocation> {
-    if response_builder.display_state().forbid_actions {
+    if !response_builder.allow_actions() {
         return vec![];
     }
 
@@ -109,10 +101,10 @@ fn skip_sending_to_client(card: &CardState) -> bool {
 
 fn top_game_controls(
     game: &GameState,
-    state: &DisplayState,
+    builder: &ResponseBuilder,
     _player: PlayerName,
 ) -> Vec<GameControlView> {
-    if state.forbid_actions {
+    if !builder.allow_actions() {
         return vec![];
     }
 
@@ -131,15 +123,15 @@ fn top_game_controls(
 
 fn bottom_game_controls(
     game: &GameState,
-    state: &DisplayState,
+    builder: &ResponseBuilder,
     player: PlayerName,
 ) -> Vec<GameControlView> {
-    if state.forbid_actions {
+    if !builder.allow_actions() {
         return vec![];
     }
 
-    if let Some(current) = &state.prompt {
-        return prompt_view(state, current, player);
+    if let Some(current) = &builder.display_state().prompt {
+        return prompt_view(builder.display_state(), current, player);
     }
 
     let mut result = vec![];

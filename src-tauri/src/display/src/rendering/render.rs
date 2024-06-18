@@ -18,7 +18,7 @@ use data::game_states::game_state::{GameState, GameStatus};
 use crate::commands::command::{Command, DisplayGameMessageCommand};
 use crate::core::display_state::DisplayState;
 use crate::core::game_message::GameMessage;
-use crate::core::response_builder::{ResponseBuilder, ResponseState};
+use crate::core::response_builder::{AllowActions, ResponseBuilder, ResponseState};
 use crate::rendering::{animations, sync};
 
 /// Returns a series of [Command]s which fully describe the current state of the
@@ -30,6 +30,7 @@ pub fn connect(game: &GameState, player: PlayerName, display_state: &DisplayStat
         display_state,
         reveal_all_cards: game.configuration.debug.reveal_all_cards,
         act_as_player: game.configuration.debug.act_as_player,
+        allow_actions: AllowActions::Yes,
     });
     sync::run(&mut builder, game);
 
@@ -52,6 +53,7 @@ pub fn render_updates(
     game: &GameState,
     player: PlayerName,
     display_state: &DisplayState,
+    allow_actions: AllowActions,
 ) -> Vec<Command> {
     let mut builder = ResponseBuilder::new(player, ResponseState {
         animate: true,
@@ -59,6 +61,7 @@ pub fn render_updates(
         display_state,
         reveal_all_cards: game.configuration.debug.reveal_all_cards,
         act_as_player: game.configuration.debug.act_as_player,
+        allow_actions,
     });
 
     builder.response_state.is_final_update = true;

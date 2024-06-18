@@ -89,7 +89,7 @@ fn card_status(
     card: &CardState,
 ) -> Option<RevealedCardStatus> {
     if play_card::can_play_card(game, builder.act_as_player(game), Source::Game, card.id)
-        && !builder.display_state().forbid_actions
+        && builder.allow_actions()
     {
         Some(RevealedCardStatus::CanPlay)
     } else {
@@ -128,7 +128,7 @@ fn card_action(
 ) -> Option<UserAction> {
     let player = builder.act_as_player(game);
 
-    if builder.display_state().forbid_actions {
+    if !builder.allow_actions() {
         return None;
     }
 
@@ -174,7 +174,7 @@ fn card_action(
 }
 
 fn can_drag(builder: &ResponseBuilder, game: &GameState, card: &CardState) -> bool {
-    if builder.display_state().forbid_actions {
+    if !builder.allow_actions() {
         return false;
     }
 

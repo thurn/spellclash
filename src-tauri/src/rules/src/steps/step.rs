@@ -58,6 +58,7 @@ pub fn advance(game: &mut GameState) -> Outcome {
 fn begin_step(game: &mut GameState, step: GamePhaseStep) {
     game.step = step;
     game.priority = game.turn.active_player;
+    game.passed.clear();
 }
 
 fn untap(game: &mut GameState) -> Outcome {

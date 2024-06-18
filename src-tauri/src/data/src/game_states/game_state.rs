@@ -171,11 +171,6 @@ impl GameState {
         }
     }
 
-    /// Clears the set of players who have passed priority.
-    pub fn clear_passed(&mut self) {
-        self.passed = EnumSet::empty();
-    }
-
     /// Shuffles the order of cards in a player's library
     pub fn shuffle_library(&mut self, player: PlayerName) {
         self.zones.shuffle_library(player, &mut self.rng)
@@ -193,10 +188,9 @@ impl GameState {
         panic!("User {user_id:?} is not a player in game {:?}", self.id);
     }
 
-    /// Returns true if this player is currently the active player (the player
-    /// whose turn it is).
-    pub fn is_active_player(&self, player: PlayerName) -> bool {
-        self.turn.active_player == player
+    /// Returns the player whose turn it is
+    pub fn active_player(&self) -> PlayerName {
+        self.turn.active_player
     }
 
     /// Adds a current [HistoryEvent] for the current turn.

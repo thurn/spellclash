@@ -29,10 +29,10 @@ use crate::steps::step;
 #[instrument(level = "debug", skip(game))]
 pub fn pass(game: &mut GameState, player: PlayerName) -> Outcome {
     assert_eq!(game.priority, player, "Player {player:?} does not have priority");
-    debug!(?player, ?game.step, "Passing priority");
     game.passed.insert(player);
     if game.passed.len() == game.configuration.all_players.len() {
-        game.clear_passed();
+        game.passed.clear();
+        game.priority = game.active_player();
         if game.stack().is_empty() {
             step::advance(game)?;
         } else {

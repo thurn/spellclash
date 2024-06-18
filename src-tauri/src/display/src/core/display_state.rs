@@ -43,9 +43,6 @@ pub struct DisplayState {
     /// Current state of the game, used to render correct updates when a prompt
     /// is active.
     pub game_snapshot: Option<GameState>,
-
-    /// True if no actions should be allowed to be taken from the interface
-    pub forbid_actions: bool,
 }
 
 impl Type for DisplayState {
