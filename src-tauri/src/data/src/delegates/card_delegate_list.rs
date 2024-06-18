@@ -14,6 +14,7 @@
 
 use std::collections::HashMap;
 
+use dyn_clone::DynClone;
 use enumset::EnumSet;
 
 use crate::core::primitives::{AbilityId, EntityId, HasCardId, Zone};
@@ -21,8 +22,42 @@ use crate::delegates::has_delegates::HasDelegates;
 use crate::delegates::scope::Scope;
 use crate::delegates::stores_delegates::StoresDelegates;
 
-pub type QueryFn<TData, TArg, TResult> =
-    fn(&TData, &<TData as HasDelegates>::ScopeType, &TArg, TResult) -> TResult;
+/// Function to query some value during game execution.
+pub trait QueryFn<TData: HasDelegates, TArg, TResult>:
+    Fn(&TData, <TData as HasDelegates>::ScopeType, &TArg, TResult) -> TResult + Clone + Send + 'static
+{
+}
+
+impl<F, TData: HasDelegates, TArg, TResult> QueryFn<TData, TArg, TResult> for F where
+    F: Fn(&TData, <TData as HasDelegates>::ScopeType, &TArg, TResult) -> TResult
+        + Clone
+        + Send
+        + 'static
+{
+}
+
+/// Wrapper around [QueryFn] to enable closures to be cloned.
+trait QueryFnWrapper<TData: HasDelegates, TArg, TResult>: DynClone + Send {
+    fn invoke(&self, data: &TData, scope: TData::ScopeType, arg: &TArg, result: TResult)
+        -> TResult;
+}
+
+dyn_clone::clone_trait_object!(<TData: HasDelegates, TArg, TResult> QueryFnWrapper<TData, TArg, TResult>);
+
+impl<TData: HasDelegates, TArg, TResult, F> QueryFnWrapper<TData, TArg, TResult> for F
+where
+    F: Fn(&TData, TData::ScopeType, &TArg, TResult) -> TResult + Clone + Send,
+{
+    fn invoke(
+        &self,
+        data: &TData,
+        scope: TData::ScopeType,
+        arg: &TArg,
+        result: TResult,
+    ) -> TResult {
+        self(data, scope, arg, result)
+    }
+}
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 enum CardDelegateExecution {
@@ -30,27 +65,29 @@ enum CardDelegateExecution {
     Any,
 }
 
-#[derive(Debug, Clone)]
+type BoxedQueryFn<TData, TArg, TResult> = Box<dyn QueryFnWrapper<TData, TArg, TResult>>;
+
+#[derive(Clone)]
 struct StoredQueryDelegate<TData: HasDelegates, TArg, TResult> {
     zones: EnumSet<Zone>,
     ability_id: AbilityId,
     execution_type: CardDelegateExecution,
-    query_fn: QueryFn<TData, TArg, TResult>,
+    query_fn: BoxedQueryFn<TData, TArg, TResult>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct CardDelegateList<TData: HasDelegates, TArg: HasCardId, TResult> {
-    current: Vec<(CardDelegateExecution, QueryFn<TData, TArg, TResult>)>,
+    current: Vec<(CardDelegateExecution, BoxedQueryFn<TData, TArg, TResult>)>,
     delegates: Vec<StoredQueryDelegate<TData, TArg, TResult>>,
 }
 
 impl<TData: HasDelegates, TArg: HasCardId, TResult> CardDelegateList<TData, TArg, TResult> {
-    pub fn this(&mut self, value: QueryFn<TData, TArg, TResult>) {
-        self.current.push((CardDelegateExecution::This, value));
+    pub fn this(&mut self, value: impl QueryFn<TData, TArg, TResult>) {
+        self.current.push((CardDelegateExecution::This, Box::new(value)));
     }
 
-    pub fn any(&mut self, value: QueryFn<TData, TArg, TResult>) {
-        self.current.push((CardDelegateExecution::Any, value));
+    pub fn any(&mut self, value: impl QueryFn<TData, TArg, TResult>) {
+        self.current.push((CardDelegateExecution::Any, Box::new(value)));
     }
 
     pub fn query(&self, data: &TData, arg: &TArg, current: TResult) -> TResult {
@@ -67,7 +104,7 @@ impl<TData: HasDelegates, TArg: HasCardId, TResult> CardDelegateList<TData, TArg
             }
 
             let scope = data.create_scope(stored.ability_id);
-            result = (stored.query_fn)(data, &scope, arg, result);
+            result = stored.query_fn.invoke(data, scope, arg, result);
         }
         result
     }

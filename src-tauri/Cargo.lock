@@ -509,6 +509,7 @@ dependencies = [
 name = "cards_d"
 version = "0.0.0"
 dependencies = [
+ "abilities",
  "data",
  "rules",
 ]

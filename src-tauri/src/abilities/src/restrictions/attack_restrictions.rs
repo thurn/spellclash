@@ -12,6 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod mana;
-pub mod predicates;
-pub mod restrictions;
+use data::card_states::zones::ZoneQueries;
+use data::delegates::game_delegates::GameDelegates;
+
+use crate::predicates::card_predicates::CardPredicate;
+
+/// Prevent this creature from attacking unless the defending player controls a
+/// permanent matching this predicate.
+pub fn cannot_attack_unless_defender_controls(
+    delegates: &mut GameDelegates,
+    predicate: impl CardPredicate,
+) {
+    delegates.can_attack.this(move |g, s, data, _| {
+        g.battlefield(data.defending_player(g)).iter().any(|&card_id| predicate(g, s, card_id))
+    })
+}

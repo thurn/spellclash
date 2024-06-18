@@ -100,23 +100,23 @@ pub fn characteristic_faces(game: &GameState, card_id: CardId) -> Vec<&PrintedCa
     }
 }
 
-/// Returns the set of card types on a card's characteristic faces.
+/// Returns the set of current card types on a card's characteristic faces.
 ///
 /// See [characteristic_faces] for more information.
 pub fn card_types(game: &GameState, card_id: CardId) -> EnumSet<CardType> {
     characteristic_faces(game, card_id).iter().flat_map(|face| face.card_types.iter()).collect()
 }
 
-/// Returns the set of land subtypes on a card's characteristic faces.
+/// Returns the set of current land subtypes on a card's characteristic faces.
 ///
 /// See [characteristic_faces] for more information.
 pub fn land_subtypes(game: &GameState, card_id: CardId) -> EnumSet<LandSubtype> {
     characteristic_faces(game, card_id).iter().flat_map(|face| face.subtypes.land.iter()).collect()
 }
 
-/// Returns the [ManaCost] that needs to be paid to cast the [CardId] card using
-/// the provided [CastSpellChoices]. Cost items are sorted in [ManaCostItem]
-/// order.
+/// Returns the current [ManaCost] that needs to be paid to cast the [CardId]
+/// card using the provided [CastSpellChoices]. Cost items are sorted in
+/// [ManaCostItem] order.
 ///
 /// Panics if invalid choices are selected, e.g. if the selected card
 /// face does not exist.
@@ -131,7 +131,7 @@ pub fn mana_cost_for_casting_card(
     cost
 }
 
-/// Computes the power on card's characteristic faces.
+/// Computes the current power on card's characteristic faces.
 ///
 /// See [characteristic_faces] for more information.
 pub fn power(game: &GameState, card_id: CardId) -> Power {
@@ -152,7 +152,7 @@ pub fn power(game: &GameState, card_id: CardId) -> Power {
     }
 }
 
-/// Computes the toughness on card's characteristic faces.
+/// Computes the current toughness on card's characteristic faces.
 ///
 /// See [characteristic_faces] for more information.
 pub fn toughness(game: &GameState, card_id: CardId) -> Toughness {

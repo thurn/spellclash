@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use std::collections::{HashSet, VecDeque};
+use std::sync::Arc;
 
 use ai_core::core::agent_state::AgentState;
 use enumset::EnumSet;
