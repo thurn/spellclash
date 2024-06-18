@@ -67,6 +67,10 @@ impl<TState: GameStateNode + Send, TEvaluator: StateEvaluator<TState>> StateEval
     #[instrument(level = "debug", skip_all)]
     fn evaluate(&self, input: &TState, player: TState::PlayerName) -> i32 {
         let mut game = input.make_copy();
+        game.set_agent_state(AgentState::MonteCarlo(MonteCarloAgentState {
+            graph: SearchGraph::new(),
+            search_operation: Some(SearchOperation::EvaluateNode),
+        }));
         loop {
             match game.status() {
                 GameStatus::Completed { .. } => {

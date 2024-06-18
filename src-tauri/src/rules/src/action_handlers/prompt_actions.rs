@@ -35,7 +35,7 @@ pub enum PromptExecutionResult {
 /// 2) For 'final' actions e.g. submitting the list of selected cards in a card
 ///    selector), this function is expected to return a [PromptResponse] which
 ///    will be used to unblock the thread which requested a choice.
-#[instrument(name = "prompt_actions_execute", level = "debug")]
+#[instrument(name = "prompt_actions_execute", level = "debug", skip(prompt))]
 pub fn execute(prompt: Prompt, action: PromptAction) -> PromptExecutionResult {
     match action {
         PromptAction::PickNumber(n) => {

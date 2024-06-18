@@ -41,7 +41,12 @@ impl GameStateNode for PromptStateNode {
     }
 
     fn status(&self) -> GameStatus<primitives::PlayerName> {
-        self.game.status()
+        match self.game.status {
+            game_state::GameStatus::GameOver { winners } => GameStatus::Completed { winners },
+            _ => GameStatus::InProgress {
+                current_turn: legal_actions::next_to_act(&self.game, self.prompt.as_ref()),
+            },
+        }
     }
 
     fn legal_actions<'a>(

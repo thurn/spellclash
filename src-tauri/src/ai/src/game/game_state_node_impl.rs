@@ -29,7 +29,7 @@ impl GameStateNode for GameState {
     type PlayerName = primitives::PlayerName;
 
     fn make_copy(&self) -> Self {
-        self.clone()
+        self.shallow_clone()
     }
 
     fn status(&self) -> GameStatus<primitives::PlayerName> {
