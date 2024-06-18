@@ -24,27 +24,12 @@ use crate::game_states::combat_state::AttackTarget;
 use crate::game_states::game_state::GameState;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
-pub struct AttackerData {
+pub struct CanAttackTarget {
     pub card_id: CardId,
     pub target: AttackTarget,
 }
 
-impl AttackerData {
-    /// Returns the [PlayerName] of the player being attacked.
-    ///
-    /// Panics if the attack target is no longer valid (e.g. not on the
-    /// battlefield).
-    pub fn defending_player(&self, game: &GameState) -> PlayerName {
-        match self.target {
-            AttackTarget::Player(p) => p,
-            AttackTarget::Planeswalker(entity_id) | AttackTarget::Battle(entity_id) => {
-                game.card_entity(entity_id).expect("Entity not found").controller
-            }
-        }
-    }
-}
-
-impl HasCardId for AttackerData {
+impl HasCardId for CanAttackTarget {
     fn card_id(&self) -> CardId {
         self.card_id
     }
@@ -52,13 +37,13 @@ impl HasCardId for AttackerData {
 
 #[derive(Default, Clone)]
 pub struct GameDelegates {
-    /// Can the creature in [AttackerData] attack the indicated target?
-    pub can_attack: CardDelegateList<GameState, AttackerData, bool>,
+    /// Can a creature attack the indicated target?
+    pub can_attack_target: CardDelegateList<GameState, CanAttackTarget, bool>,
 }
 
 impl GameDelegates {
     pub fn apply_writes(&mut self, id: AbilityId, zones: EnumSet<Zone>) {
-        self.can_attack.apply_writes(id, zones);
+        self.can_attack_target.apply_writes(id, zones);
     }
 }
 

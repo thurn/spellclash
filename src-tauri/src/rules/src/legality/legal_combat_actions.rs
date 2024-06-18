@@ -15,6 +15,7 @@
 use data::actions::game_action::{CombatAction, GameAction};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::PlayerName;
+use data::delegates::game_delegates::CanAttackTarget;
 use data::game_states::combat_state::{CombatState, ProposedAttackers};
 use data::game_states::game_state::GameState;
 
@@ -55,6 +56,17 @@ pub fn append(
                 extend_actions(
                     actions,
                     combat_queries::attack_targets(game)
+                        .filter(|target| {
+                            // Only include targets that all selected attackers can legally attack.
+                            game.delegates.can_attack_target.query_all(
+                                game,
+                                selected_attackers.iter().map(|&attacker| CanAttackTarget {
+                                    card_id: game.card_entity_id(attacker),
+                                    target: *target,
+                                }),
+                                true,
+                            )
+                        })
                         .map(CombatAction::SetSelectedAttackersTarget),
                 );
             }

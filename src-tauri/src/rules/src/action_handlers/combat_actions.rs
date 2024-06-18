@@ -121,7 +121,7 @@ fn confirm_attackers(game: &mut GameState, source: Source) -> Outcome {
         panic!("Not in the 'ProposingAttackers' state");
     };
     for attacker in attackers.proposed_attacks.all() {
-        permanents::tap(game, Source::Game, attacker.as_card_id())?;
+        permanents::tap(game, Source::Game, game.card_entity_id(attacker))?;
     }
     game.combat = Some(CombatState::ConfirmedAttackers(attackers.proposed_attacks));
     outcome::OK

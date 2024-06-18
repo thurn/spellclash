@@ -115,6 +115,47 @@ impl<TData: HasDelegates, TArg: HasCardId, TResult> CardDelegateList<TData, TArg
     }
 }
 
+impl<TData: HasDelegates, TArg: HasCardId> CardDelegateList<TData, TArg, bool> {
+    /// Runs a boolean query to see if any item in the provided iterator matches
+    /// a predicate. Returns `current` if no delegates are present in the map.
+    ///
+    /// Prefer using this function over directly calling `query` because it
+    /// short-circuits for empty delegate lists and avoids invoking the
+    /// iterator, which can be a significant performance win.
+    pub fn query_any(
+        &self,
+        data: &TData,
+        mut iterator: impl Iterator<Item = TArg>,
+        current: bool,
+    ) -> bool {
+        if self.is_empty() {
+            current
+        } else {
+            iterator.any(|arg| self.query(data, &arg, current))
+        }
+    }
+
+    /// Runs a boolean query to see if all items in the provided iterator
+    /// match a predicate. Returns `current` if no delegates are present
+    /// in the map.
+    ///
+    /// Prefer using this function over directly calling `query` because it
+    /// short-circuits for empty delegate lists and avoids invoking the
+    /// iterator, which can be a significant performance win.
+    pub fn query_all(
+        &self,
+        data: &TData,
+        mut iterator: impl Iterator<Item = TArg>,
+        current: bool,
+    ) -> bool {
+        if self.is_empty() {
+            current
+        } else {
+            iterator.all(|arg| self.query(data, &arg, current))
+        }
+    }
+}
+
 impl<TData: HasDelegates, TArg: HasCardId, TResult> StoresDelegates
     for CardDelegateList<TData, TArg, TResult>
 {

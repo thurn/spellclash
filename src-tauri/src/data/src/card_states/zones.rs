@@ -57,6 +57,14 @@ pub trait ZoneQueries {
     /// Mutable equivalent of [Self::card_entity].
     fn card_entity_mut(&mut self, id: EntityId) -> Option<&mut CardState>;
 
+    /// Returns the [CardId] for this [EntityId].
+    ///
+    /// Panics if this [EntityId] is not valid, e.g. because it is no longer on
+    /// the battlefield.
+    fn card_entity_id(&self, id: EntityId) -> CardId {
+        self.card_entity(id).expect("Card not found").id
+    }
+
     /// Looks up the state for an ability on the stack.
     ///
     /// Panics if this stack ability does not exist.

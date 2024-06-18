@@ -17,7 +17,7 @@ use std::iter;
 use data::card_states::card_state::TappedState;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, CardType, EntityId, PlayerName};
-use data::delegates::game_delegates::AttackerData;
+use data::delegates::game_delegates::CanAttackTarget;
 use data::game_states::combat_state::{AttackTarget, BlockerMap, CombatState, ProposedAttackers};
 use data::game_states::game_state::GameState;
 
@@ -35,22 +35,18 @@ pub fn can_attack(game: &GameState, card_id: CardId) -> bool {
     let turn = game.turn;
     let card = game.card(card_id);
     let types = card_queries::card_types(game, card_id);
-    let result = card.last_changed_control != turn
+    let mut result = card.last_changed_control != turn
         && card.entered_current_zone != turn
         && card.controller == turn.active_player
         && card.tapped_state == TappedState::Untapped
         && types.contains(CardType::Creature)
         && !types.contains(CardType::Battle);
 
-    if game.delegates.can_attack.is_empty() {
-        // Computing attack targets is expensive (this was a 25% regression to the
-        // random playout benchmark), so only do it if we have to.
-        result
-    } else {
-        attack_targets(game).any(|target| {
-            game.delegates.can_attack.query(game, &AttackerData { card_id, target }, result)
-        })
-    }
+    game.delegates.can_attack_target.query_any(
+        game,
+        attack_targets(game).map(|target| CanAttackTarget { card_id, target }),
+        result,
+    )
 }
 
 /// Returns an iterator over all legal attackers for the provided player.
@@ -165,5 +161,18 @@ fn role_in_blocker_map(entity: EntityId, blockers: &BlockerMap) -> Option<Combat
         })
     } else {
         None
+    }
+}
+
+/// Returns the defending player for an [AttackTarget].
+///
+/// Panics if this target no longer exists, e.g. because the target is no longer
+/// on the battlefield.
+pub fn defending_player(game: &GameState, target: AttackTarget) -> PlayerName {
+    match target {
+        AttackTarget::Player(player) => player,
+        AttackTarget::Planeswalker(entity) | AttackTarget::Battle(entity) => {
+            game.card_entity(entity).unwrap().controller
+        }
     }
 }

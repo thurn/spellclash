@@ -14,6 +14,7 @@
 
 use data::card_states::zones::ZoneQueries;
 use data::delegates::game_delegates::GameDelegates;
+use rules::queries::combat_queries;
 
 use crate::predicates::card_predicates::CardPredicate;
 
@@ -23,7 +24,9 @@ pub fn cannot_attack_unless_defender_controls(
     delegates: &mut GameDelegates,
     predicate: impl CardPredicate,
 ) {
-    delegates.can_attack.this(move |g, s, data, _| {
-        g.battlefield(data.defending_player(g)).iter().any(|&card_id| predicate(g, s, card_id))
+    delegates.can_attack_target.this(move |g, s, data, _| {
+        g.battlefield(combat_queries::defending_player(g, data.target))
+            .iter()
+            .any(|&card_id| predicate(g, s, card_id))
     })
 }

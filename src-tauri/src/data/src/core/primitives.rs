@@ -186,20 +186,6 @@ pub enum EntityId {
     StackAbility(StackAbilityId),
 }
 
-impl EntityId {
-    /// Returns the [CardId] for this entity.
-    ///
-    /// Panics if it is not a card.
-    pub fn as_card_id(&self) -> CardId {
-        match self {
-            Self::Card(card_id, _) => *card_id,
-            _ => {
-                panic!("Expected entity {self:?} to be a card");
-            }
-        }
-    }
-}
-
 /// An identifier for a card or ability while it is in a given zone. A new
 /// object ID is assigned each time a card changes zones, meaning that it can be
 /// used for targeting effects that end when the card changes zones.
