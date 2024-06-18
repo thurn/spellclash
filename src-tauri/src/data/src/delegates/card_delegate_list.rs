@@ -108,6 +108,11 @@ impl<TData: HasDelegates, TArg: HasCardId, TResult> CardDelegateList<TData, TArg
         }
         result
     }
+
+    /// True if no delegates have been defined for this list.
+    pub fn is_empty(&self) -> bool {
+        self.delegates.is_empty()
+    }
 }
 
 impl<TData: HasDelegates, TArg: HasCardId, TResult> StoresDelegates

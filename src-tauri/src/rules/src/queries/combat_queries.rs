@@ -42,9 +42,15 @@ pub fn can_attack(game: &GameState, card_id: CardId) -> bool {
         && types.contains(CardType::Creature)
         && !types.contains(CardType::Battle);
 
-    attack_targets(game).any(|target| {
-        game.delegates.can_attack.query(game, &AttackerData { card_id, target }, result)
-    })
+    if game.delegates.can_attack.is_empty() {
+        // Computing attack targets is expensive (this was a 25% regression to the
+        // random playout benchmark), so only do it if we have to.
+        result
+    } else {
+        attack_targets(game).any(|target| {
+            game.delegates.can_attack.query(game, &AttackerData { card_id, target }, result)
+        })
+    }
 }
 
 /// Returns an iterator over all legal attackers for the provided player.
