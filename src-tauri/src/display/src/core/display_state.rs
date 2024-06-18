@@ -33,14 +33,19 @@ pub struct DisplayState {
     /// States of displayed input fields.
     pub fields: HashMap<FieldKey, FieldValue>,
 
-    /// A prompt currently being shown to some player.
+    /// A prompt currently being shown to the player.
     pub prompt: Option<Prompt>,
 
     /// A channel on which to send a [PromptResponse] to select an option to
     /// respond to the prompt in [Self::prompt].
     pub prompt_channel: Option<oneshot::Sender<PromptResponse>>,
 
+    /// Current state of the game, used to render correct updates when a prompt
+    /// is active.
     pub game_snapshot: Option<GameState>,
+
+    /// True if no actions should be allowed to be taken from the interface
+    pub forbid_actions: bool,
 }
 
 impl Type for DisplayState {

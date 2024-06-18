@@ -67,7 +67,11 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
         } else {
             GameViewState::None
         },
-        top_controls: top_game_controls(game, builder.act_as_player(game)),
+        top_controls: top_game_controls(
+            game,
+            builder.response_state.display_state,
+            builder.act_as_player(game),
+        ),
         bottom_controls: bottom_game_controls(
             game,
             builder.response_state.display_state,
@@ -80,6 +84,10 @@ fn card_drag_targets(
     response_builder: &ResponseBuilder,
     game: &GameState,
 ) -> Vec<CardOrderLocation> {
+    if response_builder.display_state().forbid_actions {
+        return vec![];
+    }
+
     if let Some(prompt) = &response_builder.response_state.display_state.prompt {
         if let PromptType::SelectOrder(select_and_order) = &prompt.prompt_type {
             return select_and_order.cards.keys().copied().collect();
@@ -99,7 +107,15 @@ fn skip_sending_to_client(card: &CardState) -> bool {
     card.revealed_to.is_empty() && card.zone == Zone::Library
 }
 
-fn top_game_controls(game: &GameState, _player: PlayerName) -> Vec<GameControlView> {
+fn top_game_controls(
+    game: &GameState,
+    state: &DisplayState,
+    _player: PlayerName,
+) -> Vec<GameControlView> {
+    if state.forbid_actions {
+        return vec![];
+    }
+
     let mut result = vec![
         GameButtonView::new_default("Leave Game", UserAction::LeaveGameAction),
         GameButtonView::new_default(
@@ -118,6 +134,10 @@ fn bottom_game_controls(
     state: &DisplayState,
     player: PlayerName,
 ) -> Vec<GameControlView> {
+    if state.forbid_actions {
+        return vec![];
+    }
+
     if let Some(current) = &state.prompt {
         return prompt_view(state, current, player);
     }

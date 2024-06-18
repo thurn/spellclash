@@ -88,7 +88,9 @@ fn card_status(
     game: &GameState,
     card: &CardState,
 ) -> Option<RevealedCardStatus> {
-    if play_card::can_play_card(game, builder.act_as_player(game), Source::Game, card.id) {
+    if play_card::can_play_card(game, builder.act_as_player(game), Source::Game, card.id)
+        && !builder.display_state().forbid_actions
+    {
         Some(RevealedCardStatus::CanPlay)
     } else {
         match combat_queries::role(game, card.entity_id) {
@@ -125,6 +127,10 @@ fn card_action(
     card: &CardState,
 ) -> Option<UserAction> {
     let player = builder.act_as_player(game);
+
+    if builder.display_state().forbid_actions {
+        return None;
+    }
 
     if let Some(prompt) = builder.current_prompt() {
         return None;
@@ -168,6 +174,10 @@ fn card_action(
 }
 
 fn can_drag(builder: &ResponseBuilder, game: &GameState, card: &CardState) -> bool {
+    if builder.display_state().forbid_actions {
+        return false;
+    }
+
     if let Some(prompt) = &builder.response_state.display_state.prompt {
         if let PromptType::SelectOrder(select_and_order) = &prompt.prompt_type {
             return select_and_order.contains_card(card.id);

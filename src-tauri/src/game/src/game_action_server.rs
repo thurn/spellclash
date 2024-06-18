@@ -174,6 +174,17 @@ pub fn handle_game_action_internal(
     let mut current_action = action;
     let mut skip_undo_tracking = false;
 
+    {
+        // We immediately send an update back to the client with 'forbid actions' set,
+        // in order to clear active buttons & ui actions because `actions::execute` can
+        // take a long time to run (e.g. if it results in the AI being prompted to make
+        // a choice).
+        let mut display_state = get_display_state();
+        display_state.forbid_actions = true;
+        send_updates(game, client, &display_state);
+        display_state.forbid_actions = false;
+    }
+
     loop {
         let result = actions::execute(game, current_player, current_action, ExecuteAction {
             skip_undo_tracking,

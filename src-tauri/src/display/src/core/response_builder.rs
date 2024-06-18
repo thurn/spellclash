@@ -91,6 +91,11 @@ impl<'a> ResponseBuilder<'a> {
         self.commands.push(Command::UpdateScene(SceneView::GameView(game)));
     }
 
+    /// Current [DisplayState] for this response.
+    pub fn display_state(&self) -> &DisplayState {
+        self.response_state.display_state
+    }
+
     /// Converts a [PlayerName] into a [DisplayPlayer].
     pub fn to_display_player(&self, name: PlayerName) -> DisplayPlayer {
         if name == self.player {
