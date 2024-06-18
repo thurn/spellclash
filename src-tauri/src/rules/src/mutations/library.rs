@@ -23,8 +23,11 @@ use crate::mutations::move_card;
 
 /// Draws a card from the top of the `player`'s library.
 ///
-/// Marks the card as revealed to its owner. Returns `outcome::GAME_OVER` if
-/// this causes the game to end due to drawing from an empty library.
+/// Marks the card as revealed to its owner.
+///
+/// Attempting to draw from an empty library will add a [StateBasedEvent] marker
+/// which will cause the player to lose the game the next time state-based
+/// actions are checked.
 pub fn draw(game: &mut GameState, source: impl HasSource, player: impl HasPlayerName) -> Outcome {
     let player = player.player_name();
     let Some(&id) = game.library(player).back() else {
@@ -37,9 +40,7 @@ pub fn draw(game: &mut GameState, source: impl HasSource, player: impl HasPlayer
 
 /// Draws `count` cards in sequence from the top of the `player`'s library.
 ///
-/// Events are fired one at a time for each individual draw. Returns
-/// `outcome::GAME_OVER` if this causes the game to end due to drawing from an
-/// empty library.
+/// Events are fired one at a time for each individual draw.
 pub fn draw_cards(
     game: &mut GameState,
     source: impl HasSource,
