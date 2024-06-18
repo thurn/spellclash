@@ -16,3 +16,4 @@ pub mod agents;
 pub mod evaluators;
 pub mod game_agent_impl;
 pub mod game_state_node_impl;
+mod prompt_state_node_impl;
