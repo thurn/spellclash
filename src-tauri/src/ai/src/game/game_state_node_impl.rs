@@ -32,9 +32,11 @@ impl GameStateNode for GameState {
         self.shallow_clone()
     }
 
-    fn status(&self) -> GameStatus<primitives::PlayerName> {
-        match self.status {
-            game_state::GameStatus::GameOver { winners } => GameStatus::Completed { winners },
+    fn game_status(&self) -> GameStatus<primitives::PlayerName> {
+        match self.status() {
+            game_state::GameStatus::GameOver { winners } => {
+                GameStatus::Completed { winners: *winners }
+            }
             _ => GameStatus::InProgress {
                 current_turn: legal_actions::next_to_act(self, None).unwrap(),
             },
@@ -61,18 +63,18 @@ impl GameStateNode for GameState {
     }
 
     fn set_agent_state(&mut self, agent_state: AgentState<Self::PlayerName, Self::Action>) {
-        self.agent_state = Some(agent_state);
+        *self.agent_state_mut() = Some(agent_state);
     }
 
     fn get_agent_state(&self) -> &AgentState<Self::PlayerName, Self::Action> {
-        self.agent_state.as_ref().expect("Agent state not found")
+        self.agent_state().expect("Agent state not found")
     }
 
     fn get_agent_state_mut(&mut self) -> &mut AgentState<Self::PlayerName, Self::Action> {
-        self.agent_state.as_mut().expect("Agent state not found")
+        self.agent_state_mut().as_mut().expect("Agent state not found")
     }
 
     fn take_agent_state(mut self) -> AgentState<Self::PlayerName, Self::Action> {
-        self.agent_state.take().expect("Agent state not found")
+        self.agent_state_mut().take().expect("Agent state not found")
     }
 }

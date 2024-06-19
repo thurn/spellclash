@@ -61,7 +61,7 @@ pub fn create_and_start(
     let _ = library::draw_cards(&mut game, Source::Game, PlayerName::One, 7);
     let _ = library::draw_cards(&mut game, Source::Game, PlayerName::Two, 7);
     // TODO: Resolve mulligans
-    game.status = GameStatus::Playing;
+    *game.status_mut() = GameStatus::Playing;
     let _ = step::advance(&mut game);
     game
 }
@@ -82,64 +82,12 @@ pub fn create(
     let p1_deck = find_deck(p1_deck_name);
     let p2_deck = find_deck(p2_deck_name);
 
-    let mut game = create_game(oracle, game_id, p1, p1_deck, p2, p2_deck, debug);
+    let mut game = GameState::new(oracle, game_id, p1, p1_deck, p2, p2_deck, debug);
     initialize_game::run(database.clone(), &mut game, None);
 
     game.shuffle_library(PlayerName::One);
     game.shuffle_library(PlayerName::Two);
     game
-}
-
-fn create_game(
-    oracle: Box<dyn Oracle>,
-    game_id: GameId,
-    p1: PlayerType,
-    p1_deck: Deck,
-    p2: PlayerType,
-    p2_deck: Deck,
-    debug: DebugConfiguration,
-) -> GameState {
-    let mut zones = Zones::default();
-    let turn = TurnData { active_player: PlayerName::One, turn_number: 0 };
-    create_cards_in_deck(oracle.as_ref(), &mut zones, p1_deck, PlayerName::One, turn);
-    create_cards_in_deck(oracle.as_ref(), &mut zones, p2_deck, PlayerName::Two, turn);
-
-    GameState {
-        id: game_id,
-        status: GameStatus::Setup,
-        step: GamePhaseStep::Untap,
-        turn,
-        priority: PlayerName::One,
-        passed: EnumSet::empty(),
-        configuration: GameConfiguration::new(PlayerName::One | PlayerName::Two, debug),
-        state_machines: StateMachines::default(),
-        players: Players::new(p1, p2, 20),
-        zones,
-        updates: None,
-        combat: None,
-        history: GameHistory::default(),
-        rng: Xoshiro256StarStar::seed_from_u64(3141592653589793),
-        undo_tracker: UndoTracker { enabled: true, undo: vec![] },
-        delegates: GameDelegates::default(),
-        state_based_events: Some(vec![]),
-        oracle_reference: Some(oracle),
-        agent_state: None,
-        current_agent_searcher: None,
-    }
-}
-
-fn create_cards_in_deck(
-    oracle: &dyn Oracle,
-    zones: &mut Zones,
-    deck: Deck,
-    owner: PlayerName,
-    turn: TurnData,
-) {
-    for (&id, &quantity) in &deck.cards {
-        for _ in 0..quantity {
-            zones.create_card_in_library(oracle.card(id), CardKind::Normal, owner, turn);
-        }
-    }
 }
 
 fn find_deck(name: DeckName) -> Deck {

@@ -72,7 +72,7 @@ impl<TState: GameStateNode + Send, TEvaluator: StateEvaluator<TState>> StateEval
             search_operation: Some(SearchOperation::EvaluateNode),
         }));
         loop {
-            match game.status() {
+            match game.game_status() {
                 GameStatus::Completed { .. } => {
                     return self.evaluator.evaluate(&game, player);
                 }
@@ -312,7 +312,7 @@ where
     /// ```
     #[instrument(level = "debug", skip_all)]
     fn tree_policy(&self, game: &mut TState, mut node_index: NodeIndex) -> NodeIndex {
-        while let GameStatus::InProgress { current_turn } = game.status() {
+        while let GameStatus::InProgress { current_turn } = game.game_status() {
             let actions = game.legal_actions(current_turn).collect::<HashSet<_>>();
             let explored = game
                 .state()

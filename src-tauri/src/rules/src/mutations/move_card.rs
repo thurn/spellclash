@@ -38,7 +38,7 @@ pub fn run(
     let id = id.card_id();
     debug!(?id, ?zone, "Moving card to zone");
     on_leave_zone(game, id, game.card(id.card_id()).zone);
-    game.zones.move_card(id, zone);
+    game.zones_mut().move_card(id, zone);
     on_enter_zone(game, id, zone);
     outcome::OK
 }
@@ -61,7 +61,7 @@ fn on_leave_zone(game: &mut GameState, card_id: CardId, zone: Zone) {
 }
 
 fn on_enter_zone(game: &mut GameState, card_id: CardId, zone: Zone) {
-    let turn = game.turn;
+    let turn = *game.turn();
     let card = game.card_mut(card_id);
     card.entered_current_zone = turn;
     match zone {

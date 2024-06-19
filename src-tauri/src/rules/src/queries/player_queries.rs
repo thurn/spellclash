@@ -20,7 +20,7 @@ use enumset::{enum_set, EnumSet};
 ///
 /// This may vary based on game configuration, e.g. in multiplayer games.
 pub fn next_player_after(game: &GameState, player: PlayerName) -> PlayerName {
-    match game.configuration.all_players.len() {
+    match game.configuration().all_players.len() {
         2 => match player {
             PlayerName::One => PlayerName::Two,
             PlayerName::Two => PlayerName::One,
@@ -45,28 +45,28 @@ pub fn next_player_after(game: &GameState, player: PlayerName) -> PlayerName {
 /// Returns the number of players currently participating in the provided game
 /// (i.e. who have not lost).
 pub fn player_count(game: &GameState) -> usize {
-    game.configuration.all_players.len()
+    game.configuration().all_players.len()
 }
 
 /// Returns the [next_player_after] the active player in this game.
 pub fn next_player(game: &GameState) -> PlayerName {
-    next_player_after(game, game.turn.active_player)
+    next_player_after(game, game.turn().active_player)
 }
 
 /// Returns the names of all players currently playing in the provided game
 /// (i.e. who have not lost)
 pub fn all_players(game: &GameState) -> EnumSet<PlayerName> {
-    game.configuration.all_players
+    game.configuration().all_players
 }
 
 /// Returns the set of players who are not currently taking their turn.
 pub fn inactive_players(game: &GameState) -> EnumSet<PlayerName> {
-    all_players(game).difference(EnumSet::only(game.turn.active_player))
+    all_players(game).difference(EnumSet::only(game.turn().active_player))
 }
 
 /// Returns the number of lands the indicated `player` can still play this turn.
 pub fn land_plays_remaining(game: &GameState, player: PlayerName) -> usize {
-    if game.turn.active_player == player {
+    if game.turn().active_player == player {
         1usize.saturating_sub(game.history_counters(player).lands_played)
     } else {
         0

@@ -42,7 +42,7 @@ use crate::rendering::card_view_context::CardViewContext;
 /// [ResponseBuilder] describing the visual game state.
 pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
     let cards = game
-        .zones
+        .zones()
         .all_cards()
         .filter(|c| !skip_sending_to_client(c))
         .map(|c| card_sync::card_view(builder, &CardViewContext::Game(c.printed(), game, c)))
@@ -59,10 +59,12 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
         cards,
         status_description: format!(
             "{:?}\nTurn {}\nPlayer {:?}",
-            game.step, game.turn.turn_number, game.turn.active_player
+            game.step(),
+            game.turn().turn_number,
+            game.turn().active_player
         ),
         card_drag_targets: card_drag_targets(builder, game),
-        state: if game.combat.is_some() {
+        state: if game.combat().is_some() {
             GameViewState::CombatActive
         } else {
             GameViewState::None
@@ -115,7 +117,7 @@ fn top_game_controls(
             UserAction::OpenPanel(GamePanelAddress::GameDebugPanel.into()),
         ),
     ];
-    if game.undo_tracker.enabled && !game.undo_tracker.undo.is_empty() {
+    if game.undo_tracker().enabled && !game.undo_tracker().undo.is_empty() {
         result.push(GameButtonView::new_default("Undo", DebugGameAction::Undo));
     }
     result.into_iter().map(GameControlView::Button).collect()
@@ -137,7 +139,7 @@ fn bottom_game_controls(
     let mut result = vec![];
     if legal_actions::can_take_action(game, player, &GameAction::PassPriority) {
         if game.stack().is_empty() {
-            let next = match game.step {
+            let next = match game.step() {
                 GamePhaseStep::Upkeep => "To Draw",
                 GamePhaseStep::Draw => "To Main",
                 GamePhaseStep::PreCombatMain => "Continue",
@@ -161,7 +163,7 @@ fn bottom_game_controls(
         player,
         &GameAction::CombatAction(CombatAction::ConfirmAttackers),
     ) {
-        if let Some(CombatState::ProposingAttackers(attackers)) = &game.combat {
+        if let Some(CombatState::ProposingAttackers(attackers)) = &game.combat() {
             let count = attackers.proposed_attacks.len();
             result.push(GameButtonView::new_primary(
                 format!("{} Attacker{}", count, if count == 1 { "" } else { "s" }),
@@ -174,7 +176,7 @@ fn bottom_game_controls(
         player,
         &GameAction::CombatAction(CombatAction::ConfirmBlockers),
     ) {
-        if let Some(CombatState::ProposingBlockers(blockers)) = &game.combat {
+        if let Some(CombatState::ProposingBlockers(blockers)) = &game.combat() {
             let count = blockers.proposed_blocks.len();
             result.push(GameButtonView::new_primary(
                 format!("{} Blocker{}", count, if count == 1 { "" } else { "s" }),

@@ -37,11 +37,11 @@ use crate::action_handlers::prompt_actions::PromptExecutionResult;
 /// Sends a new [Prompt] to the player and blocks until they respond with a
 /// [PromptResponse].
 pub fn send(game: &mut GameState, mut prompt: Prompt) -> PromptResult<PromptResponse> {
-    let agent_player = game.current_agent_searcher.unwrap_or(prompt.player);
+    let agent_player = game.current_search_agent().unwrap_or(prompt.player);
     if let (Some(agent), Some(prompt_agent)) =
         (game.player(agent_player).agent(), game.player(agent_player).prompt_agent())
     {
-        let ongoing = game.current_agent_searcher.is_some();
+        let ongoing = game.current_search_agent().is_some();
         loop {
             let action = if ongoing {
                 agent.incremental_prompt_action(game, &prompt, prompt.player)
@@ -61,8 +61,7 @@ pub fn send(game: &mut GameState, mut prompt: Prompt) -> PromptResult<PromptResp
         let kind = prompt.prompt_type.kind();
         info!(immediate = true, ?kind, "Sending prompt");
         let (sender, receiver) = oneshot::channel();
-        game.updates
-            .as_ref()
+        game.updates()
             .expect("PromptChannel")
             .send(GameUpdate::new(game).prompt(prompt).response_channel(sender))
             .expect("Unable to send prompt, receiver has dropped");

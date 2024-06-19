@@ -56,13 +56,13 @@ pub fn execute(
     }
 
     if !options.skip_undo_tracking
-        && game.undo_tracker.enabled
+        && game.undo_tracker().enabled
         && action != GameAction::DebugAction(DebugGameAction::Undo)
     {
         let mut clone = game.clone();
-        clone.undo_tracker.enabled = false;
-        clone.undo_tracker.undo = vec![];
-        game.undo_tracker.undo.push(Box::new(clone));
+        clone.undo_tracker_mut().enabled = false;
+        clone.undo_tracker_mut().undo = vec![];
+        game.undo_tracker_mut().undo.push(Box::new(clone));
     }
 
     match action {

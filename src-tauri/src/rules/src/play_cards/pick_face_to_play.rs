@@ -83,7 +83,7 @@ fn can_play_as(game: &GameState, card: &CardState, face: &PrintedCardFace) -> Op
             }
         }
         PlayCardTiming::Instant => {
-            if game.priority == player {
+            if game.priority() == player {
                 return Some(result);
             }
         }
@@ -101,9 +101,9 @@ fn can_play_as(game: &GameState, card: &CardState, face: &PrintedCardFace) -> Op
 /// their main phase, with the stack empty, while they have priority.
 fn in_main_phase_with_stack_empty(game: &GameState, player: PlayerName) -> bool {
     game.stack().is_empty()
-        && game.step.is_main_phase()
-        && game.turn.active_player == player
-        && game.priority == player
+        && game.step().is_main_phase()
+        && game.turn().active_player == player
+        && game.priority() == player
 }
 
 /// Returns a [CanPlayAs] for a card solely based on its card types.

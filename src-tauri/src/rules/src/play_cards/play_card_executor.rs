@@ -52,7 +52,7 @@ pub fn execute_plan(
         // > characteristics of the spell as it's cast are applied, then the spell becomes cast.
         // > Any abilities that trigger when a spell is cast or put onto the stack trigger at this
         // > time. If the spell's controller had priority before casting it, they get priority.
-        game.passed.clear();
+        game.passed_mut().clear();
         if !game.player(player).options.hold_priority {
             // Automatically pass priority after putting something on the stack.
             priority::pass(game, player)?;

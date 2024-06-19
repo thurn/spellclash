@@ -33,7 +33,7 @@ use crate::queries::{card_queries, combat_queries, player_queries};
 /// > the active player continuously since the turn began.
 /// <https://yawgatog.com/resources/magic-rules/#R5081a>
 pub fn can_attack(game: &GameState, card_id: CardId) -> Flag {
-    let turn = game.turn;
+    let turn = *game.turn();
     let card = game.card(card_id);
     let types = card_queries::card_types(game, card_id);
     let mut result = Flag::new();
@@ -44,7 +44,7 @@ pub fn can_attack(game: &GameState, card_id: CardId) -> Flag {
     result = result.add_condition(Source::Game, types.contains(CardType::Creature));
     result = result.add_condition(Source::Game, !types.contains(CardType::Battle));
 
-    game.delegates.can_attack_target.query_any(
+    game.delegates().can_attack_target.query_any(
         game,
         attack_targets(game).map(|target| CanAttackTarget { card_id, target }),
         result,
@@ -67,7 +67,7 @@ pub fn legal_attackers(game: &GameState, player: PlayerName) -> impl Iterator<It
 pub fn can_block(game: &GameState, card_id: CardId) -> bool {
     let card = game.card(card_id);
     let types = card_queries::card_types(game, card_id);
-    card.controller != game.turn.active_player
+    card.controller != game.turn().active_player
         && card.tapped_state != TappedState::Tapped
         && types.contains(CardType::Creature)
         && !types.contains(CardType::Battle)
@@ -117,7 +117,7 @@ pub enum CombatRole {
 /// Returns this entity's current [CombatRole], if any.
 #[must_use]
 pub fn role(game: &GameState, entity: EntityId) -> Option<CombatRole> {
-    match &game.combat {
+    match &game.combat() {
         None => None,
         Some(CombatState::ProposingAttackers(attackers)) => {
             if attackers.proposed_attacks.contains(entity) {

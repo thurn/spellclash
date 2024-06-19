@@ -37,7 +37,7 @@ use crate::queries::{card_queries, player_queries};
 /// which occur at the start of this step. Increments the turn number and active
 /// player when transitioning to the Untap step.
 pub fn advance(game: &mut GameState) -> Outcome {
-    let step = enum_iterator::next(&game.step).unwrap_or(GamePhaseStep::Untap);
+    let step = enum_iterator::next(&game.step()).unwrap_or(GamePhaseStep::Untap);
     match step {
         GamePhaseStep::Untap => untap(game),
         GamePhaseStep::Upkeep => upkeep(game),
@@ -56,18 +56,18 @@ pub fn advance(game: &mut GameState) -> Outcome {
 }
 
 fn begin_step(game: &mut GameState, step: GamePhaseStep) {
-    game.step = step;
-    game.priority = game.turn.active_player;
-    game.passed.clear();
+    *game.step_mut() = step;
+    *game.priority_mut() = game.turn().active_player;
+    game.passed_mut().clear();
 }
 
 fn untap(game: &mut GameState) -> Outcome {
     begin_step(game, GamePhaseStep::Untap);
-    let next = player_queries::next_player_after(game, game.turn.active_player);
+    let next = player_queries::next_player_after(game, game.turn().active_player);
     if next == PlayerName::One {
-        game.turn.turn_number += 1;
+        game.turn_mut().turn_number += 1;
     }
-    game.turn.active_player = next;
+    game.turn_mut().active_player = next;
 
     // > 502.3. Third, the active player determines which permanents they control
     // > will untap. Then they untap them all simultaneously. This turn-based action
@@ -99,7 +99,7 @@ fn draw(game: &mut GameState) -> Outcome {
     // > 504.1. First, the active player draws a card. This turn-based action
     // doesn't use the stack.
     // <https://yawgatog.com/resources/magic-rules/#R5041>
-    library::draw(game, Source::Game, game.turn.active_player)
+    library::draw(game, Source::Game, game.turn().active_player)
 }
 
 fn pre_combat_main(game: &mut GameState) -> Outcome {
@@ -123,7 +123,7 @@ fn declare_attackers(game: &mut GameState) -> Outcome {
     // > active player continuously since the turn began.
     // <https://yawgatog.com/resources/magic-rules/#R5081>
 
-    game.combat = Some(CombatState::ProposingAttackers(ProposedAttackers {
+    *game.combat_mut() = Some(CombatState::ProposingAttackers(ProposedAttackers {
         proposed_attacks: AttackerMap::default(),
         selected_attackers: HashSet::new(),
     }));
@@ -145,10 +145,10 @@ fn declare_blockers(game: &mut GameState) -> Outcome {
     // > protect.
     // <https://yawgatog.com/resources/magic-rules/#R5091>
     let next = player_queries::next_player(game);
-    let Some(CombatState::ConfirmedAttackers(attackers)) = game.combat.take() else {
+    let Some(CombatState::ConfirmedAttackers(attackers)) = game.combat_mut().take() else {
         panic!("Not in the 'ConfirmedAttackers' state");
     };
-    game.combat = Some(CombatState::ProposingBlockers(ProposedBlockers {
+    *game.combat_mut() = Some(CombatState::ProposingBlockers(ProposedBlockers {
         defender: next,
         attackers,
         selected_blockers: HashSet::new(),
@@ -171,7 +171,7 @@ pub enum CombatDamageAssignment {
 
 fn combat_damage(game: &mut GameState) -> Outcome {
     begin_step(game, GamePhaseStep::CombatDamage);
-    let Some(CombatState::ConfirmedBlockers(blockers)) = &game.combat else {
+    let Some(CombatState::ConfirmedBlockers(blockers)) = game.combat() else {
         panic!("Not in the 'ConfirmedBlockers' state");
     };
 
@@ -270,7 +270,7 @@ fn end_combat(game: &mut GameState) -> Outcome {
 
 fn post_combat_main(game: &mut GameState) -> Outcome {
     begin_step(game, GamePhaseStep::PostCombatMain);
-    game.combat = None;
+    *game.combat_mut() = None;
     outcome::OK
 }
 

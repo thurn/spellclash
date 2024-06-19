@@ -103,7 +103,7 @@ where
     }
 
     fn pick_action(&self, deadline: Instant, node: &TNode) -> TNode::Action {
-        let player = match node.status() {
+        let player = match node.game_status() {
             GameStatus::InProgress { current_turn } => current_turn,
             _ => panic!("Game is over"),
         };
