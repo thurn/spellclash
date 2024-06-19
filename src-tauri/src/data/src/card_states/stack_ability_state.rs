@@ -21,7 +21,8 @@ use crate::core::primitives::{
 };
 use crate::delegates::scope::Scope;
 
-/// Represents the state of a triggered or activated ability on the stack.
+/// Represents the state of a triggered or activated ability which has triggered
+/// or is on the stack
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StackAbilityState {
     /// ID of this ability.
@@ -32,6 +33,13 @@ pub struct StackAbilityState {
     /// Do not mutate this field directly, use the methods on the [Zones] struct
     /// instead.
     pub entity_id: EntityId,
+
+    /// True if this ability has been placed on the stack.
+    ///
+    /// Activated abilities are created directly on the stack. Triggered
+    /// abilities are moved to the stack the next time a player gains priority
+    /// after they trigger.
+    pub placed_on_stack: bool,
 
     /// The player who this ability belongs to, who initially created it.
     pub owner: PlayerName,

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 pub mod card_delegate_list;
+pub mod event_delegate_list;
 pub mod flag;
 pub mod game_delegates;
 pub mod has_delegates;

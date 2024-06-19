@@ -25,13 +25,13 @@ use crate::delegates::stores_delegates::StoresDelegates;
 
 /// Function to query some value during game execution.
 pub trait QueryFn<TData: HasDelegates, TArg, TResult>:
-    Fn(&TData, <TData as HasDelegates>::ScopeType, &TArg, TResult) -> TResult + Clone + Send + 'static
+    Fn(&TData, <TData as HasDelegates>::ScopeType, &TArg, TResult) -> TResult + Copy + Send + 'static
 {
 }
 
 impl<F, TData: HasDelegates, TArg, TResult> QueryFn<TData, TArg, TResult> for F where
     F: Fn(&TData, <TData as HasDelegates>::ScopeType, &TArg, TResult) -> TResult
-        + Clone
+        + Copy
         + Send
         + 'static
 {
@@ -47,7 +47,7 @@ dyn_clone::clone_trait_object!(<TData: HasDelegates, TArg, TResult> QueryFnWrapp
 
 impl<TData: HasDelegates, TArg, TResult, F> QueryFnWrapper<TData, TArg, TResult> for F
 where
-    F: Fn(&TData, TData::ScopeType, &TArg, TResult) -> TResult + Clone + Send,
+    F: Fn(&TData, TData::ScopeType, &TArg, TResult) -> TResult + Copy + Send,
 {
     fn invoke(
         &self,

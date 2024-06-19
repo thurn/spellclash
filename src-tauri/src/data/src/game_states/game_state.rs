@@ -35,7 +35,7 @@ use crate::core::primitives::{
     StackItemId, UserId, Zone,
 };
 use crate::decks::deck::Deck;
-use crate::delegates::game_delegates::GameDelegates;
+use crate::delegates::game_delegates::{GameDelegates, GameStateChanged};
 use crate::game_states::combat_state::CombatState;
 use crate::game_states::game_step::GamePhaseStep;
 use crate::game_states::history_data::{GameHistory, HistoryCounters, HistoryEvent};
@@ -128,6 +128,7 @@ impl GameState {
 
     /// Mutable equivalent of [Self::status].
     pub fn status_mut(&mut self) -> &mut GameStatus {
+        self.will_mutate();
         &mut self.status
     }
 
@@ -141,6 +142,7 @@ impl GameState {
 
     /// Mutable equivalent of [Self::step].
     pub fn step_mut(&mut self) -> &mut GamePhaseStep {
+        self.will_mutate();
         &mut self.step
     }
 
@@ -155,6 +157,7 @@ impl GameState {
 
     /// Mutable equivalent of [Self::turn].
     pub fn turn_mut(&mut self) -> &mut TurnData {
+        self.will_mutate();
         &mut self.turn
     }
 
@@ -174,6 +177,7 @@ impl GameState {
 
     /// Mutable equivalent of [Self::priority].
     pub fn priority_mut(&mut self) -> &mut PlayerName {
+        self.will_mutate();
         &mut self.priority
     }
 
@@ -190,6 +194,7 @@ impl GameState {
 
     /// Mutable equivalent of [Self::passed].
     pub fn passed_mut(&mut self) -> &mut EnumSet<PlayerName> {
+        self.will_mutate();
         &mut self.passed
     }
 
@@ -205,6 +210,7 @@ impl GameState {
 
     /// Mutable equivalent of [Self::players].
     pub fn players_mut(&mut self) -> &mut Players {
+        self.will_mutate();
         &mut self.players
     }
 
@@ -216,6 +222,7 @@ impl GameState {
 
     /// Mutable equivalent of [Self::zones].
     pub fn zones_mut(&mut self) -> &mut Zones {
+        self.will_mutate();
         &mut self.zones
     }
 
@@ -240,6 +247,7 @@ impl GameState {
 
     /// Mutable equivalent of [Self::combat].
     pub fn combat_mut(&mut self) -> &mut Option<CombatState> {
+        self.will_mutate();
         &mut self.combat
     }
 
@@ -347,6 +355,7 @@ impl GameState {
 
     /// Shuffles the order of cards in a player's library
     pub fn shuffle_library(&mut self, player: PlayerName) {
+        self.will_mutate();
         self.zones.shuffle_library(player, &mut self.rng)
     }
 
@@ -390,6 +399,14 @@ impl GameState {
         } else {
             self.state_based_events = Some(vec![event]);
         }
+    }
+
+    fn will_mutate(&mut self) {
+        let _ = self
+            .delegates()
+            .state_triggered_abilities
+            .invoke_with(self, &GameStateChanged)
+            .run(self);
     }
 }
 

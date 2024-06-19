@@ -116,7 +116,8 @@ pub struct Zones {
     /// All cards and card-like objects in the current game
     all_cards: SlotMap<CardId, CardState>,
 
-    /// Triggered or activated abilities which are currently on the stack.
+    /// Triggered or activated abilities which have triggered or are currently
+    /// on the stack.
     stack_abilities: SlotMap<StackAbilityId, StackAbilityState>,
 
     /// Next object id to use for zone moves.
@@ -240,7 +241,7 @@ impl Zones {
         self.all_cards.values()
     }
 
-    /// Mutable version of [Self::all_cards][
+    /// Mutable version of [Self::all_cards]
     pub fn all_cards_mut(&mut self) -> impl Iterator<Item = &mut CardState> {
         self.all_cards.values_mut()
     }
@@ -309,8 +310,7 @@ impl Zones {
 
     /// Changes the controller for a card.
     ///
-    /// Panics if this card was not found in the
-    /// 'battlefield_controlled' set.
+    /// Panics if this card was not found in the `battlefield_controlled` set.
     pub fn change_controller(
         &mut self,
         _source: impl HasSource,

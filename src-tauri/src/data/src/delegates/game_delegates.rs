@@ -19,6 +19,7 @@ use enumset::EnumSet;
 use crate::card_states::zones::ZoneQueries;
 use crate::core::primitives::{AbilityId, CardId, HasCardId, PlayerName, Zone};
 use crate::delegates::card_delegate_list::CardDelegateList;
+use crate::delegates::event_delegate_list::EventDelegateList;
 use crate::delegates::flag::Flag;
 use crate::delegates::stores_delegates::StoresDelegates;
 use crate::game_states::combat_state::AttackTarget;
@@ -36,14 +37,22 @@ impl HasCardId for CanAttackTarget {
     }
 }
 
+pub struct GameStateChanged;
+
 #[derive(Default, Clone)]
 pub struct GameDelegates {
+    /// Invoked every time game state changes.
+    ///
+    /// Warning: This is extremely expensive!
+    pub state_triggered_abilities: EventDelegateList<GameState, GameStateChanged>,
+
     /// Can a creature attack the indicated target?
     pub can_attack_target: CardDelegateList<GameState, CanAttackTarget, Flag>,
 }
 
 impl GameDelegates {
     pub fn apply_writes(&mut self, id: AbilityId, zones: EnumSet<Zone>) {
+        self.state_triggered_abilities.apply_writes(id, zones);
         self.can_attack_target.apply_writes(id, zones);
     }
 }

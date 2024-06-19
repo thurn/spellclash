@@ -18,11 +18,17 @@ use data::card_definitions::ability_definition::StaticAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 use data::core::primitives::Zone;
+use utils::outcome;
 
 pub fn dandan() -> CardDefinition {
-    CardDefinition::new(card_name::DANDAN).ability(
-        StaticAbility::new().delegate(Zone::Battlefield, |d| {
-            attack_restrictions::cannot_attack_unless_defender_controls(d, card_predicates::island)
-        }),
-    )
+    CardDefinition::new(card_name::DANDAN).ability(StaticAbility::new().delegate(
+        Zone::Battlefield,
+        |d| {
+            attack_restrictions::cannot_attack_unless_defender_controls(d, card_predicates::island);
+            d.state_triggered_abilities.any(|_g, _s, _data| {
+                eprintln!("On state changed");
+                outcome::OK
+            });
+        },
+    ))
 }
