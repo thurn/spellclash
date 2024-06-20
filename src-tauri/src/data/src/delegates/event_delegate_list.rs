@@ -62,15 +62,10 @@ pub struct StoredEventDelegate<TData: HasDelegates, TArg> {
     event_fn: BoxedEventFn<TData, TArg>,
 }
 
+#[derive(Clone)]
 pub struct EventDelegateList<TData: HasDelegates, TArg> {
     current: Vec<BoxedEventFn<TData, TArg>>,
     delegates: Vec<StoredEventDelegate<TData, TArg>>,
-}
-
-impl<TData: HasDelegates, TArg> Clone for EventDelegateList<TData, TArg> {
-    fn clone(&self) -> Self {
-        Self { current: self.current.clone(), delegates: vec![] }
-    }
 }
 
 impl<TData: HasDelegates, TArg> EventDelegateList<TData, TArg> {

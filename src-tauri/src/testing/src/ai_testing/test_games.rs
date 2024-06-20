@@ -58,7 +58,7 @@ pub fn create(deck_name: DeckName) -> GameState {
     card_list::initialize();
     let database = SqliteDatabase::new(paths::get_data_dir());
     let mut game = new_game::create(
-        database,
+        database.clone(),
         GameId(Uuid::new_v4()),
         PlayerType::None,
         deck_name,

@@ -334,6 +334,16 @@ impl Zones {
         self.libraries.cards_mut(player.player_name()).make_contiguous().shuffle(rng);
     }
 
+    pub fn update_debug_info(&mut self) {
+        self.hands.update_debug_info(&self.all_cards);
+        self.battlefield_controlled.update_debug_info(&self.all_cards);
+        self.battlefield_owned.update_debug_info(&self.all_cards);
+        self.graveyards.update_debug_info(&self.all_cards);
+        self.exile.update_debug_info(&self.all_cards);
+        self.command_zone.update_debug_info(&self.all_cards);
+        self.outside_the_game_zone.update_debug_info(&self.all_cards);
+    }
+
     fn remove_from_zone(&mut self, owner: PlayerName, card_id: CardId, zone: Zone) {
         match zone {
             Zone::Hand => self.hands.remove(card_id, owner),
@@ -405,6 +415,8 @@ impl Zones {
 struct UnorderedZone {
     player1: HashSet<CardId>,
     player2: HashSet<CardId>,
+    p1_debug: HashSet<String>,
+    p2_debug: HashSet<String>,
 }
 
 impl UnorderedZone {
@@ -433,12 +445,37 @@ impl UnorderedZone {
             panic!("Card {card_id:?} not found");
         }
     }
+
+    pub fn update_debug_info(&mut self, all_cards: &SlotMap<CardId, CardState>) {
+        self.p1_debug = self
+            .player1
+            .iter()
+            .map(|&id| {
+                all_cards
+                    .get(id)
+                    .map(|c| c.displayed_name().to_string())
+                    .unwrap_or_else(|| "Unknown".to_string())
+            })
+            .collect();
+        self.p2_debug = self
+            .player2
+            .iter()
+            .map(|&id| {
+                all_cards
+                    .get(id)
+                    .map(|c| c.displayed_name().to_string())
+                    .unwrap_or_else(|| "Unknown".to_string())
+            })
+            .collect();
+    }
 }
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 struct OrderedZone {
     player1: VecDeque<CardId>,
     player2: VecDeque<CardId>,
+    p1_debug: Vec<String>,
+    p2_debug: Vec<String>,
 }
 
 impl OrderedZone {
@@ -470,5 +507,28 @@ impl OrderedZone {
         } else {
             panic!("Card not found {card_id:?}");
         }
+    }
+
+    pub fn update_debug_info(&mut self, all_cards: &SlotMap<CardId, CardState>) {
+        self.p1_debug = self
+            .player1
+            .iter()
+            .map(|&id| {
+                all_cards
+                    .get(id)
+                    .map(|c| c.displayed_name().to_string())
+                    .unwrap_or_else(|| "Unknown".to_string())
+            })
+            .collect();
+        self.p2_debug = self
+            .player2
+            .iter()
+            .map(|&id| {
+                all_cards
+                    .get(id)
+                    .map(|c| c.displayed_name().to_string())
+                    .unwrap_or_else(|| "Unknown".to_string())
+            })
+            .collect();
     }
 }

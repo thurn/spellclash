@@ -25,6 +25,7 @@ use rules::mutations::move_card;
 use utils::outcome;
 
 static RUNNING: AtomicBool = AtomicBool::new(false);
+
 pub fn dandan() -> CardDefinition {
     CardDefinition::new(card_name::DANDAN).ability(StaticAbility::new().delegate(
         Zone::Battlefield,

@@ -129,7 +129,7 @@ pub fn random_playout_evaluator(c: &mut Criterion) {
     let error_subscriber = tracing_subscriber::fmt().with_max_level(Level::ERROR).finish();
     subscriber::with_default(error_subscriber, || {
         group.bench_function("all_dandans", |b| {
-            b.iter(|| evaluator.evaluate(&game, PlayerName::One))
+            b.iter(|| evaluator.evaluate(&game, PlayerName::One));
         });
     });
 }
