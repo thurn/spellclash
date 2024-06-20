@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+pub mod function_types;
 pub mod numerics;
 pub mod panel_address;
 pub mod primitives;

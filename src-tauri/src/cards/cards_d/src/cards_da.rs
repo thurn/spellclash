@@ -15,9 +15,33 @@
 use abilities::predicates::card_predicates;
 use abilities::restrictions::attack_restrictions;
 use abilities::triggers::state_triggers;
+use data::card_definitions::ability_choices::{
+    AbilityChoiceBuilder, AbilityTarget, AbilityTargetPredicate, AbilityTargetQuantity,
+};
+use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
+use data::core::primitives::{CardType, Zone};
+use enumset::EnumSet;
 use rules::mutations::permanents;
+use rules::queries::card_queries;
+use utils::outcome;
+
+pub fn dance_of_the_skywise() -> CardDefinition {
+    CardDefinition::new(card_name::DANCE_OF_THE_SKYWISE).ability(
+        SpellAbility::new()
+            .target(AbilityTarget {
+                quantity: AbilityTargetQuantity::Exactly(1),
+                predicate: AbilityTargetPredicate::Card(
+                    EnumSet::only(Zone::Battlefield),
+                    Box::new(|g, _, id| {
+                        card_queries::card_types(g, id).contains(CardType::Creature)
+                    }),
+                ),
+            })
+            .effects(|g, s| outcome::OK),
+    )
+}
 
 pub fn dandan() -> CardDefinition {
     CardDefinition::new(card_name::DANDAN)

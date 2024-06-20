@@ -14,11 +14,10 @@
 
 use data::card_definitions::ability_definition::{AbilityBuilder, StaticAbility};
 use data::card_states::zones::ZoneQueries;
+use data::core::function_types::CardPredicate;
 use data::core::primitives::Zone;
 use data::delegates::game_delegates::GameDelegates;
 use rules::queries::combat_queries;
-
-use crate::core::types::CardPredicate;
 
 /// Prevent this creature from attacking unless the defending player controls a
 /// permanent matching this predicate.

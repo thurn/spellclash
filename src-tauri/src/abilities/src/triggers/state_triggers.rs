@@ -14,6 +14,7 @@
 
 use data::card_definitions::ability_definition::{AbilityBuilder, TriggeredAbility};
 use data::card_states::zones::ZoneQueries;
+use data::core::function_types::{CardMutation, CardPredicate};
 use data::core::primitives::{HasCardId, HasSource, Zone};
 use data::delegates::game_delegates::GameDelegates;
 use data::delegates::scope::Scope;
@@ -21,8 +22,6 @@ use data::game_states::game_state::GameState;
 use rules::mutations::triggers::TriggerExt;
 use utils::outcome;
 use utils::outcome::Outcome;
-
-use crate::core::types::{CardMutation, CardPredicate};
 
 /// If this card's controller controls no permanents matching `predicate`,
 /// applies `mutation` to it.

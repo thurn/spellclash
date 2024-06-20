@@ -13,6 +13,7 @@ pub fn initialize() {
     DEFINITIONS.insert(cards_c::cards_ca::canopy_gorger);
     DEFINITIONS.insert(cards_c::cards_ce::centaur_courser);
     DEFINITIONS.insert(cards_c::cards_cr::craw_wurm);
+    DEFINITIONS.insert(cards_d::cards_da::dance_of_the_skywise);
     DEFINITIONS.insert(cards_d::cards_da::dandan);
     DEFINITIONS.insert(cards_e::cards_el::elvish_warrior);
     DEFINITIONS.insert(cards_e::cards_el::elvish_ranger);

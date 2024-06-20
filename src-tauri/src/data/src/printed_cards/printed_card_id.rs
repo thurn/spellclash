@@ -95,3 +95,5 @@ pub const PHERES_BAND_CENTAURS: PrintedCardId =
     PrintedCardId(uuid!("2168fcf4-cf87-4ab8-9710-6ec672750a9a"));
 pub const BRAINSTORM: PrintedCardId = PrintedCardId(uuid!("84479779-d570-4eee-9982-f6e918b4d75b"));
 pub const DANDAN: PrintedCardId = PrintedCardId(uuid!("ac2e32d0-f172-4934-9d73-1bc2ab86586e"));
+pub const DANCE_OF_THE_SKYWISE: PrintedCardId =
+    PrintedCardId(uuid!("c548d140-3d81-4b33-9985-87703d316a83"));
