@@ -136,11 +136,17 @@ pub struct GameState {
     #[serde(skip)]
     pub oracle_reference: Option<Box<dyn Oracle>>,
 
+    /// State for an active AI agent, if any
     #[serde(skip)]
     pub agent_state: Option<AgentState<PlayerName, AgentAction>>,
 
+    /// AI agent currently performing a search for an action to take.
     #[serde(skip)]
-    pub current_agent_searcher: Option<PlayerName>,
+    pub current_search_agent: Option<PlayerName>,
+
+    /// True if the game is currently checking for state-triggered abilities.
+    #[serde(skip)]
+    pub checking_state_triggered_abilities: bool,
 }
 
 impl GameState {

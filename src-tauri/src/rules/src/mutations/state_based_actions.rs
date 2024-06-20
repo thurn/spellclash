@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::cell::Cell;
+
 use data::card_states::zones::ZoneQueries;
 use data::core::numerics::{LifeValue, Toughness};
 use data::core::primitives::{Source, Zone};
@@ -29,6 +31,8 @@ use crate::queries::{card_queries, player_queries};
 /// Checks for state-based actions to perform in the provided game state.
 #[instrument(name = "state_based_actions_run", level = "debug", skip(game))]
 pub fn run(game: &mut GameState) -> Outcome {
+    check_state_triggered_abilities(game)?;
+
     // > 704.3. Whenever a player would get priority (see rule 117, "Timing and
     // > Priority"), the game checks for any of the listed conditions for
     // > state-based actions, then performs all applicable state-based actions
@@ -83,6 +87,39 @@ pub fn run(game: &mut GameState) -> Outcome {
     if !lost.is_empty() {
         game.status =
             GameStatus::GameOver { winners: player_queries::all_players(game).difference(lost) };
+    }
+
+    outcome::OK
+}
+
+/// Checks for state-triggered abilities to fire.
+///
+/// > 603.8. Some triggered abilities trigger when a game state (such as a
+/// > player controlling no permanents of a particular card type) is true,
+/// > rather than triggering when an event occurs. These abilities trigger as
+/// > soon as the game state matches the condition. They'll go onto the stack at
+/// > the next available opportunity. These are called state triggers. (Note
+/// > that state triggers aren't the same as state-based actions.) A
+/// > state-triggered ability doesn't trigger again until the ability has
+/// > resolved, has been countered, or has otherwise left the stack. Then, if
+/// > the object with the ability is still in the same zone and the game state
+/// > still matches its trigger condition, the ability will trigger again.
+///
+/// Per the rules, state triggered abilities can be triggered after *any*
+/// mutation to game state, but I tried doing that and it's ludicrously
+/// expensive. Instead, we just check for state-triggered abilities as part of
+/// the state-based actions check and can insert ad-hoc checks into game effects
+/// that seem likely to produce conditions *during* their execution that are not
+/// visible *afterwards*, e.g. flicker effects. It's not perfect, but this is
+/// probably the only reasonable way to handle it.
+pub fn check_state_triggered_abilities(game: &mut GameState) -> Outcome {
+    if !game.delegates.state_triggered_abilities.is_empty()
+        && !game.checking_state_triggered_abilities
+    {
+        // Only run the check if it's not already running to prevent infinite loops.
+        game.checking_state_triggered_abilities = true;
+        game.delegates.state_triggered_abilities.invoke_with(game, &()).run(game)?;
+        game.checking_state_triggered_abilities = false;
     }
 
     outcome::OK

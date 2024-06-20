@@ -39,9 +39,7 @@ impl HasCardId for CanAttackTarget {
 
 #[derive(Default, Clone)]
 pub struct GameDelegates {
-    /// Invoked every time game state changes.
-    ///
-    /// Warning: This is extremely expensive!
+    /// Invoked every time game state-triggered abilities are checked.
     pub state_triggered_abilities: EventDelegateList<GameState, ()>,
 
     /// Can a creature attack the indicated target?
