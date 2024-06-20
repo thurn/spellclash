@@ -12,20 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::cell::Cell;
 use std::collections::{HashSet, VecDeque};
 use std::sync::Arc;
 
 use ai_core::core::agent_state::AgentState;
 use enumset::EnumSet;
-use rand::SeedableRng;
 use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};
 
 use crate::actions::agent_action::AgentAction;
 use crate::actions::game_action::GameAction;
 use crate::actions::user_action::UserAction;
-use crate::card_states::card_kind::CardKind;
 use crate::card_states::card_state::CardState;
 use crate::card_states::stack_ability_state::StackAbilityState;
 use crate::card_states::zones::{ZoneQueries, Zones};
@@ -35,7 +32,6 @@ use crate::core::primitives::{
     CardId, EntityId, GameId, HasCardId, HasPlayerName, HasSource, PlayerName, StackAbilityId,
     StackItemId, UserId, Zone,
 };
-use crate::decks::deck::Deck;
 use crate::delegates::game_delegates::GameDelegates;
 use crate::game_states::combat_state::CombatState;
 use crate::game_states::game_step::GamePhaseStep;
@@ -43,7 +39,7 @@ use crate::game_states::history_data::{GameHistory, HistoryCounters, HistoryEven
 use crate::game_states::oracle::Oracle;
 use crate::game_states::state_based_event::StateBasedEvent;
 use crate::game_states::undo_tracker::UndoTracker;
-use crate::player_states::player_state::{PlayerQueries, PlayerState, PlayerType, Players};
+use crate::player_states::player_state::{PlayerQueries, PlayerState, Players};
 use crate::prompts::game_update::UpdateChannel;
 use crate::prompts::prompt::Prompt;
 use crate::state_machines::state_machine_data::StateMachines;
@@ -52,119 +48,24 @@ use crate::state_machines::state_machine_data::StateMachines;
 /// larger session of the spellclash game client).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GameState {
-    id: GameId,
-    status: GameStatus,
-    step: GamePhaseStep,
-    turn: TurnData,
-    priority: PlayerName,
-    passed: EnumSet<PlayerName>,
-    configuration: GameConfiguration,
-    state_machines: StateMachines,
-    players: Players,
-    zones: Zones,
-    #[serde(skip)]
-    updates: Option<UpdateChannel>,
-    combat: Option<CombatState>,
-    history: GameHistory,
-    rng: Xoshiro256StarStar,
-    undo_tracker: UndoTracker,
-    #[serde(skip)]
-    delegates: GameDelegates,
-    state_based_events: Option<Vec<StateBasedEvent>>,
-    #[serde(skip)]
-    oracle_reference: Option<Box<dyn Oracle>>,
-    #[serde(skip)]
-    agent_state: Option<AgentState<PlayerName, AgentAction>>,
-    #[serde(skip)]
-    current_search_agent: Option<PlayerName>,
-}
-
-thread_local! {
-    static RUNNING_STATE_TRIGGERED_ABILITIES: Cell<bool> = Cell::new(false);
-}
-
-impl GameState {
-    pub fn new(
-        oracle: Box<dyn Oracle>,
-        id: GameId,
-        p1: PlayerType,
-        p1_deck: Deck,
-        p2: PlayerType,
-        p2_deck: Deck,
-        debug: DebugConfiguration,
-    ) -> Self {
-        let mut zones = Zones::default();
-        let turn = TurnData { active_player: PlayerName::One, turn_number: 0 };
-        create_cards_in_deck(oracle.as_ref(), &mut zones, p1_deck, PlayerName::One, turn);
-        create_cards_in_deck(oracle.as_ref(), &mut zones, p2_deck, PlayerName::Two, turn);
-        GameState {
-            id,
-            status: GameStatus::Setup,
-            step: GamePhaseStep::Untap,
-            turn: TurnData { active_player: PlayerName::One, turn_number: 0 },
-            priority: PlayerName::One,
-            passed: EnumSet::empty(),
-            configuration: GameConfiguration::new(PlayerName::One | PlayerName::Two, debug),
-            state_machines: StateMachines::default(),
-            players: Players::new(p1, p2, 20),
-            zones,
-            updates: None,
-            combat: None,
-            history: GameHistory::default(),
-            rng: Xoshiro256StarStar::seed_from_u64(3141592653589793),
-            undo_tracker: UndoTracker { enabled: true, undo: vec![] },
-            delegates: GameDelegates::default(),
-            state_based_events: Some(vec![]),
-            oracle_reference: Some(oracle),
-            agent_state: None,
-            current_search_agent: None,
-        }
-    }
-
     /// Unique ID for this game
-    pub fn id(&self) -> GameId {
-        self.id
-    }
+    pub id: GameId,
 
     /// Status of the game: whether it is starting, is ongoing, or has ended.
-    pub fn status(&self) -> &GameStatus {
-        &self.status
-    }
-
-    /// Mutable equivalent of [Self::status].
-    pub fn status_mut(&mut self) -> &mut GameStatus {
-        self.on_mutate();
-        &mut self.status
-    }
+    pub status: GameStatus,
 
     /// Current game phase step.
     ///
     /// If the game has not yet started, this will be "Untap". If the game has
     /// ended, this will be the step in which the game ended.
-    pub fn step(&self) -> GamePhaseStep {
-        self.step
-    }
-
-    /// Mutable equivalent of [Self::step].
-    pub fn step_mut(&mut self) -> &mut GamePhaseStep {
-        self.on_mutate();
-        &mut self.step
-    }
+    pub step: GamePhaseStep,
 
     /// Identifies the player whose turn it currently is and the current turn
     /// number.
     ///
     /// If the game has not yet started, this will be turn 0 for player one. If
     /// the game has ended, this will be the turn on which the game ended.
-    pub fn turn(&self) -> &TurnData {
-        &self.turn
-    }
-
-    /// Mutable equivalent of [Self::turn].
-    pub fn turn_mut(&mut self) -> &mut TurnData {
-        self.on_mutate();
-        &mut self.turn
-    }
+    pub turn: TurnData,
 
     /// Player who can currently take a game action.
     ///
@@ -176,162 +77,75 @@ impl GameState {
     /// If the game has not yet started, this will be player one. If the game
     /// has ended, this will be the player who held priority at the end of the
     /// game.
-    pub fn priority(&self) -> PlayerName {
-        self.priority
-    }
-
-    /// Mutable equivalent of [Self::priority].
-    pub fn priority_mut(&mut self) -> &mut PlayerName {
-        self.on_mutate();
-        &mut self.priority
-    }
-
-    pub fn oracle(&self) -> &dyn Oracle {
-        self.oracle_reference.as_ref().expect("Oracle reference not populated").as_ref()
-    }
+    pub priority: PlayerName,
 
     /// Players whose last game action was to pass priority. When all players
     /// pass priority, the current item on the stack resolves or the current
     /// game step ends.
-    pub fn passed(&self) -> &EnumSet<PlayerName> {
-        &self.passed
-    }
-
-    /// Mutable equivalent of [Self::passed].
-    pub fn passed_mut(&mut self) -> &mut EnumSet<PlayerName> {
-        self.on_mutate();
-        &mut self.passed
-    }
+    pub passed: EnumSet<PlayerName>,
 
     /// Options controlling overall gameplay
-    pub fn configuration(&self) -> &GameConfiguration {
-        &self.configuration
-    }
+    pub configuration: GameConfiguration,
+
+    /// Collection of state machines for handling resolution of multi-step game
+    /// updates.
+    pub state_machines: StateMachines,
 
     /// State for the players within this game
-    pub fn players(&self) -> &Players {
-        &self.players
-    }
-
-    /// Mutable equivalent of [Self::players].
-    pub fn players_mut(&mut self) -> &mut Players {
-        self.on_mutate();
-        &mut self.players
-    }
+    pub players: Players,
 
     /// Stores state for all cards and abilities in this game and tracks which
     /// game zone they are in.
-    pub fn zones(&self) -> &Zones {
-        &self.zones
-    }
-
-    /// Mutable equivalent of [Self::zones].
-    pub fn zones_mut(&mut self) -> &mut Zones {
-        self.on_mutate();
-        &mut self.zones
-    }
+    pub zones: Zones,
 
     /// Channel on which to send game updates.
     ///
     /// If no channel is provided here, game mutations will be applied silently
     /// without returning incremental updates.
-    pub fn updates(&self) -> Option<&UpdateChannel> {
-        self.updates.as_ref()
-    }
-
-    /// Mutable equivalent of [Self::updates]
-    pub fn updates_mut(&mut self) -> &mut Option<UpdateChannel> {
-        &mut self.updates
-    }
+    #[serde(skip)]
+    pub updates: Option<UpdateChannel>,
 
     /// State of creatures participating in the currently active combat phase,
     /// if any.
-    pub fn combat(&self) -> Option<&CombatState> {
-        self.combat.as_ref()
-    }
-
-    /// Mutable equivalent of [Self::combat].
-    pub fn combat_mut(&mut self) -> &mut Option<CombatState> {
-        self.on_mutate();
-        &mut self.combat
-    }
+    pub combat: Option<CombatState>,
 
     ///  History of events which have happened during this game. See
     /// [GameHistory].
-    pub fn history(&self) -> &GameHistory {
-        &self.history
-    }
-
-    /// Mutable equivalent of [Self::history].
-    pub fn history_mut(&mut self) -> &mut GameHistory {
-        &mut self.history
-    }
+    pub history: GameHistory,
 
     /// Random number generator to use for this game
-    pub fn rng(&self) -> &Xoshiro256StarStar {
-        &self.rng
-    }
-
-    /// Mutable equivalent of [Self::rng].
-    pub fn rng_mut(&mut self) -> &mut Xoshiro256StarStar {
-        &mut self.rng
-    }
+    pub rng: Xoshiro256StarStar,
 
     /// Handles state tracking for the 'undo' action.
-    pub fn undo_tracker(&self) -> &UndoTracker {
-        &self.undo_tracker
-    }
-
-    /// Mutable equivalent of [Self::undo_tracker].
-    pub fn undo_tracker_mut(&mut self) -> &mut UndoTracker {
-        &mut self.undo_tracker
-    }
+    pub undo_tracker: UndoTracker,
 
     /// Active Delegates for the game. See [GameDelegates].
-    pub fn delegates(&self) -> &GameDelegates {
-        &self.delegates
-    }
-
-    /// Mutable equivalent of [Self::delegates].
-    pub fn delegates_mut(&mut self) -> &mut GameDelegates {
-        &mut self.delegates
-    }
+    #[serde(skip)]
+    pub delegates: GameDelegates,
 
     /// Tracks events which have occurred since the last time state-based
     /// actions were checked which may trigger game mutations during the next
     /// state-based action check.
-    pub fn state_based_events(&self) -> Option<&Vec<StateBasedEvent>> {
-        self.state_based_events.as_ref()
-    }
-
-    /// Mutable equivalent of [Self::state_based_events].
-    pub fn state_based_events_mut(&mut self) -> &mut Option<Vec<StateBasedEvent>> {
-        &mut self.state_based_events
-    }
+    pub state_based_events: Option<Vec<StateBasedEvent>>,
 
     /// Reference to the Oracle card database to use with this game.
     ///
     /// This value is populated immediately after deserialization and should
     /// almost always be safe to unwrap. Instead of accessing this field, use
     /// the [Self::oracle] method.
-    pub fn internal_oracle_reference_mut(&mut self) -> &mut Option<Box<dyn Oracle>> {
-        &mut self.oracle_reference
-    }
+    #[serde(skip)]
+    pub oracle_reference: Option<Box<dyn Oracle>>,
 
-    pub fn agent_state(&self) -> Option<&AgentState<PlayerName, AgentAction>> {
-        self.agent_state.as_ref()
-    }
+    #[serde(skip)]
+    pub agent_state: Option<AgentState<PlayerName, AgentAction>>,
 
-    pub fn agent_state_mut(&mut self) -> &mut Option<AgentState<PlayerName, AgentAction>> {
-        &mut self.agent_state
-    }
+    #[serde(skip)]
+    pub current_agent_searcher: Option<PlayerName>,
+}
 
-    pub fn current_search_agent(&self) -> Option<PlayerName> {
-        self.current_search_agent
-    }
-
-    pub fn current_search_agent_mut(&mut self) -> &mut Option<PlayerName> {
-        &mut self.current_search_agent
+impl GameState {
+    pub fn oracle(&self) -> &dyn Oracle {
+        self.oracle_reference.as_ref().expect("Oracle reference not populated").as_ref()
     }
 
     /// Changes the controller for a card.
@@ -360,7 +174,6 @@ impl GameState {
 
     /// Shuffles the order of cards in a player's library
     pub fn shuffle_library(&mut self, player: PlayerName) {
-        self.on_mutate();
         self.zones.shuffle_library(player, &mut self.rng)
     }
 
@@ -403,34 +216,6 @@ impl GameState {
             events.push(event);
         } else {
             self.state_based_events = Some(vec![event]);
-        }
-    }
-
-    /// Invoked immediately before any mutation to the game state. Can also be
-    /// invoked manually after resolving a mutation action.
-    pub fn on_mutate(&mut self) {
-        if cfg!(debug_assertions) {
-            self.zones.update_debug_info();
-        }
-
-        // Check for state-triggered abilities.
-        //
-        // > 603.8. Some triggered abilities trigger when a game state (such as a player
-        // > controlling no permanents of a particular card type) is true, rather than
-        // > triggering when an event occurs.
-        //
-        // These can specifically trigger *while resolving* another effect.
-        if !self.delegates.state_triggered_abilities.is_empty()
-            && !RUNNING_STATE_TRIGGERED_ABILITIES.get()
-        {
-            // Only run the check if it's not already running to prevent infinite loops.
-            RUNNING_STATE_TRIGGERED_ABILITIES.set(true);
-
-            // Ignore return value, prompts within a state-triggered ability cannot be
-            // cancelled.
-            let _ = self.delegates.state_triggered_abilities.invoke_with(self, &()).run(self);
-
-            RUNNING_STATE_TRIGGERED_ABILITIES.set(false);
         }
     }
 }
@@ -599,18 +384,4 @@ pub struct DebugConfiguration {
 pub struct DebugActAsPlayer {
     pub id: UserId,
     pub name: PlayerName,
-}
-
-fn create_cards_in_deck(
-    oracle: &dyn Oracle,
-    zones: &mut Zones,
-    deck: Deck,
-    owner: PlayerName,
-    turn: TurnData,
-) {
-    for (&id, &quantity) in &deck.cards {
-        for _ in 0..quantity {
-            zones.create_card_in_library(oracle.card(id), CardKind::Normal, owner, turn);
-        }
-    }
 }

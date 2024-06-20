@@ -43,7 +43,7 @@ pub fn run(game: &mut GameState) -> Outcome {
     let mut lost = EnumSet::empty();
 
     loop {
-        let events = game.state_based_events_mut().take().unwrap_or_default();
+        let events = game.state_based_events.take().unwrap_or_default();
         if events.is_empty() {
             break;
         }
@@ -81,7 +81,7 @@ pub fn run(game: &mut GameState) -> Outcome {
     }
 
     if !lost.is_empty() {
-        *game.status_mut() =
+        game.status =
             GameStatus::GameOver { winners: player_queries::all_players(game).difference(lost) };
     }
 

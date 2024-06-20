@@ -50,7 +50,7 @@ impl TestGame {
 
     pub fn apply_to(self, game: &mut GameState) {
         if let Some(step) = self.step {
-            *game.step_mut() = step;
+            game.step = step;
         }
         self.p1.apply_to(game, PlayerName::One);
         self.p2.apply_to(game, PlayerName::Two);

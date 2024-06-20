@@ -22,10 +22,10 @@ use crate::oracle_impl::OracleImpl;
 /// loading oracle card definitions from the database as needed.
 pub fn populate(database: SqliteDatabase, game: &mut GameState) {
     let oracle = OracleImpl::new(database.clone());
-    for card in game.zones_mut().all_cards_mut() {
+    for card in game.zones.all_cards_mut() {
         card.printed_card_reference =
             Some(oracle.card(card.printed_card_id).printed_card_reference);
     }
 
-    *game.internal_oracle_reference_mut() = Some(Box::new(oracle));
+    game.oracle_reference = Some(Box::new(oracle));
 }

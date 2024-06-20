@@ -78,7 +78,7 @@ pub fn can_take_action(game: &GameState, player: PlayerName, game_action: &GameA
 ///
 /// If the game has ended, this will return None.
 pub fn next_to_act(game: &GameState, prompt: Option<&Prompt>) -> Option<PlayerName> {
-    if matches!(game.status(), GameStatus::GameOver { .. }) {
+    if matches!(game.status, GameStatus::GameOver { .. }) {
         return None;
     }
 
@@ -86,20 +86,20 @@ pub fn next_to_act(game: &GameState, prompt: Option<&Prompt>) -> Option<PlayerNa
         return Some(p.player);
     }
 
-    Some(match game.combat() {
-        Some(CombatState::ProposingAttackers(_)) => game.turn().active_player,
-        Some(CombatState::ConfirmedAttackers(_)) => game.priority(),
+    Some(match game.combat.as_ref() {
+        Some(CombatState::ProposingAttackers(_)) => game.turn.active_player,
+        Some(CombatState::ConfirmedAttackers(_)) => game.priority,
         Some(CombatState::ProposingBlockers(blockers)) => blockers.defender,
-        Some(CombatState::OrderingBlockers(_)) => game.turn().active_player,
-        Some(CombatState::ConfirmedBlockers(_)) => game.priority(),
-        None => game.priority(),
+        Some(CombatState::OrderingBlockers(_)) => game.turn.active_player,
+        Some(CombatState::ConfirmedBlockers(_)) => game.priority,
+        None => game.priority,
     })
 }
 
 /// Returns true if any player can currently take the action to pass
 /// priority.
 pub fn can_any_player_pass_priority(game: &GameState) -> bool {
-    match game.combat().map(|c| c.kind()) {
+    match game.combat.as_ref().map(|c| c.kind()) {
         Some(CombatStateKind::ProposingAttackers)
         | Some(CombatStateKind::ProposingBlockers)
         | Some(CombatStateKind::OrderingBlockers) => return false,
@@ -111,5 +111,5 @@ pub fn can_any_player_pass_priority(game: &GameState) -> bool {
 /// Returns true if the named player can currently take the action to pass
 /// priority.
 pub fn can_pass_priority(game: &GameState, player: PlayerName) -> bool {
-    can_any_player_pass_priority(game) && game.priority() == player
+    can_any_player_pass_priority(game) && game.priority == player
 }

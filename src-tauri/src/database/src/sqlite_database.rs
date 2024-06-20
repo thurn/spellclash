@@ -93,15 +93,15 @@ impl SqliteDatabase {
 
     pub fn write_game(&self, game: &GameState) {
         let data = ser::to_vec(game)
-            .unwrap_or_else(|e| panic!("Error serializing game {:?} {e:?}", game.id()));
+            .unwrap_or_else(|e| panic!("Error serializing game {:?} {e:?}", game.id));
         self.db()
             .execute(
                 "INSERT INTO games (id, data)
                  VALUES (?1, ?2)
                  ON CONFLICT(id) DO UPDATE SET data = ?2",
-                (&game.id().0, &data),
+                (&game.id.0, &data),
             )
-            .unwrap_or_else(|e| panic!("Error writing game to sqlite {:?} {e:?}", game.id()));
+            .unwrap_or_else(|e| panic!("Error writing game to sqlite {:?} {e:?}", game.id));
     }
 
     pub fn fetch_user(&self, id: UserId) -> Option<UserState> {

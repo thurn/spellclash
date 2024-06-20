@@ -42,7 +42,7 @@ where
 {
     fn select_action(&self, game: &GameState, player: primitives::PlayerName) -> GameAction {
         let mut copy = game.shallow_clone();
-        *copy.current_search_agent_mut() = Some(player);
+        copy.current_agent_searcher = Some(player);
         select_action_impl(self, copy, player).as_game_action()
     }
 
@@ -74,7 +74,7 @@ where
         player: primitives::PlayerName,
     ) -> PromptAction {
         let mut copy = game.shallow_clone();
-        *copy.current_search_agent_mut() = Some(player);
+        copy.current_agent_searcher = Some(player);
         let state = PromptStateNode { game: copy, prompt: Some(prompt.clone()) };
         select_action_impl(self, state, player).as_prompt_action()
     }

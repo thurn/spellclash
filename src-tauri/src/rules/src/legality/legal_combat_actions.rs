@@ -29,7 +29,7 @@ use crate::queries::combat_queries;
 /// other game actions.
 pub fn in_combat_prompt(game: &GameState, player: PlayerName) -> bool {
     matches!(
-        game.combat(),
+        &game.combat,
         Some(CombatState::ProposingAttackers(_))
             | Some(CombatState::ProposingBlockers(_))
             | Some(CombatState::OrderingBlockers(_))
@@ -49,7 +49,7 @@ pub fn append(
     actions: &mut Vec<GameAction>,
     options: LegalActions,
 ) {
-    match game.combat() {
+    match &game.combat {
         None => {}
         Some(CombatState::ProposingAttackers(ProposedAttackers {
             proposed_attacks,
@@ -70,7 +70,7 @@ pub fn append(
                     combat_queries::attack_targets(game)
                         .filter(|target| {
                             // Only include targets that all selected attackers can legally attack.
-                            game.delegates()
+                            game.delegates
                                 .can_attack_target
                                 .query_all(
                                     game,

@@ -28,18 +28,18 @@ use crate::steps::step;
 /// Panics if this player does not have priority.
 #[instrument(level = "debug", skip(game))]
 pub fn pass(game: &mut GameState, player: PlayerName) -> Outcome {
-    assert_eq!(game.priority(), player, "Player {player:?} does not have priority");
-    game.passed_mut().insert(player);
-    if game.passed().len() == game.configuration().all_players.len() {
-        game.passed_mut().clear();
-        *game.priority_mut() = game.active_player();
+    assert_eq!(game.priority, player, "Player {player:?} does not have priority");
+    game.passed.insert(player);
+    if game.passed.len() == game.configuration.all_players.len() {
+        game.passed.clear();
+        game.priority = game.active_player();
         if game.stack().is_empty() {
             step::advance(game)?;
         } else {
             resolve::resolve_top_of_stack(game)?;
         }
     } else {
-        *game.priority_mut() = player_queries::next_player_after(game, game.priority());
+        game.priority = player_queries::next_player_after(game, game.priority);
     }
 
     outcome::OK

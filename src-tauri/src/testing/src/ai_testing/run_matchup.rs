@@ -76,7 +76,7 @@ pub fn run_match(
     }
 
     loop {
-        match game.game_status() {
+        match game.status() {
             GameStatus::InProgress { current_turn } => {
                 let agent = if current_turn == PlayerName::One { &mut user } else { &mut opponent };
                 let deadline = Instant::now() + Duration::from_millis(move_time_ms);

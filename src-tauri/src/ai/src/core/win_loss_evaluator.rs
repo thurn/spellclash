@@ -21,7 +21,7 @@ pub struct WinLossEvaluator;
 
 impl<TNode: GameStateNode> StateEvaluator<TNode> for WinLossEvaluator {
     fn evaluate(&self, state: &TNode, player: TNode::PlayerName) -> i32 {
-        match state.game_status() {
+        match state.status() {
             GameStatus::InProgress { .. } => 0,
             GameStatus::Completed { winners } => {
                 if winners.contains(player) {

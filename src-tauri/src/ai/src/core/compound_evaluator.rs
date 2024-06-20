@@ -26,7 +26,7 @@ pub struct CompoundEvaluator<TNode: GameStateNode> {
 
 impl<TNode: GameStateNode> StateEvaluator<TNode> for CompoundEvaluator<TNode> {
     fn evaluate(&self, node: &TNode, player: TNode::PlayerName) -> i32 {
-        if let GameStatus::Completed { winners } = node.game_status() {
+        if let GameStatus::Completed { winners } = node.status() {
             return if winners.contains(player) { i32::MAX } else { i32::MIN };
         }
 

@@ -50,7 +50,7 @@ where
         evaluator: &E,
         player: N::PlayerName,
     ) -> N::Action {
-        assert!(matches!(node.game_status(), GameStatus::InProgress { .. }));
+        assert!(matches!(node.status(), GameStatus::InProgress { .. }));
         run_internal(deadline, node, evaluator, self.search_depth, player, i32::MIN, i32::MAX, true)
             .expect("Deadline exceeded")
             .action()
@@ -72,7 +72,7 @@ where
     N: GameStateNode,
     E: StateEvaluator<N>,
 {
-    match node.game_status() {
+    match node.status() {
         _ if depth == 0 => Ok(ScoredAction::new(evaluator.evaluate(node, player))),
         GameStatus::Completed { .. } => Ok(ScoredAction::new(evaluator.evaluate(node, player))),
         GameStatus::InProgress { current_turn } if current_turn == player => {

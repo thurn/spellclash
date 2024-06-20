@@ -32,7 +32,7 @@ use database::sqlite_database::SqliteDatabase;
 use oracle::card_database;
 
 pub fn run(database: SqliteDatabase, game: &mut GameState, update_channel: Option<UpdateChannel>) {
-    for previous in game.undo_tracker_mut().undo.iter_mut() {
+    for previous in game.undo_tracker.undo.iter_mut() {
         run(database.clone(), previous.as_mut(), None);
     }
     card_database::populate(database, game);
@@ -43,14 +43,14 @@ pub fn run(database: SqliteDatabase, game: &mut GameState, update_channel: Optio
         }
     }
 
-    *game.updates_mut() = update_channel;
+    game.updates = update_channel;
 
-    let all_card_ids = game.zones().all_cards().map(|card| card.id).collect::<Vec<_>>();
+    let all_card_ids = game.zones.all_cards().map(|card| card.id).collect::<Vec<_>>();
     for card_id in all_card_ids {
         for (number, ability) in definitions::get(game.card(card_id).card_name).all_abilities() {
             for delegate in &ability.delegates {
-                (delegate.run)(game.delegates_mut());
-                game.delegates_mut().apply_writes(AbilityId { card_id, number }, delegate.zones);
+                (delegate.run)(&mut game.delegates);
+                game.delegates.apply_writes(AbilityId { card_id, number }, delegate.zones);
             }
         }
     }

@@ -33,7 +33,7 @@ where
     TEvaluator: StateEvaluator<TNode>,
     TNode: GameStateNode,
 {
-    let player = match node.game_status() {
+    let player = match node.status() {
         GameStatus::InProgress { current_turn } => current_turn,
         _ => panic!("Game is over"),
     };

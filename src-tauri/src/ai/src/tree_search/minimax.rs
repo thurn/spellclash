@@ -57,7 +57,7 @@ where
     N: GameStateNode,
     E: StateEvaluator<N>,
 {
-    match node.game_status() {
+    match node.status() {
         _ if depth == 0 => ScoredAction::new(evaluator.evaluate(node, player)),
         GameStatus::Completed { .. } => ScoredAction::new(evaluator.evaluate(node, player)),
         GameStatus::InProgress { current_turn } if current_turn == player => {

@@ -82,8 +82,8 @@ pub fn create(database: SqliteDatabase, client: &mut Client, action: NewGameActi
         );
     }
 
-    user.activity = UserActivity::Playing(game.id());
-    client.data.scene = SceneIdentifier::Game(game.id());
+    user.activity = UserActivity::Playing(game.id);
+    client.data.scene = SceneIdentifier::Game(game.id);
     let state = DisplayState::default();
     let commands = render::connect(&game, game.find_player_name(user.id), &state);
 

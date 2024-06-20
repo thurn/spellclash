@@ -68,7 +68,7 @@ fn add_selected_attacker(game: &mut GameState, source: Source, card_id: Attacker
     // targets.
     let requires_target = combat_queries::attack_targets(game).nth(1).is_some();
 
-    let Some(CombatState::ProposingAttackers(attackers)) = game.combat_mut() else {
+    let Some(CombatState::ProposingAttackers(attackers)) = &mut game.combat else {
         panic!("Not in the 'ProposingAttackers' state");
     };
     if requires_target {
@@ -89,7 +89,7 @@ fn set_selected_attackers_target(
     source: Source,
     target: AttackTarget,
 ) -> Outcome {
-    let Some(CombatState::ProposingAttackers(attackers)) = game.combat_mut() else {
+    let Some(CombatState::ProposingAttackers(attackers)) = &mut game.combat else {
         panic!("Not in the 'ProposingAttackers' state");
     };
 
@@ -104,7 +104,7 @@ fn set_selected_attackers_target(
 /// See [CombatAction::RemoveAttacker].
 #[instrument(level = "debug", skip(game))]
 fn remove_attacker(game: &mut GameState, source: Source, card_id: AttackerId) -> Outcome {
-    let Some(CombatState::ProposingAttackers(attackers)) = game.combat_mut() else {
+    let Some(CombatState::ProposingAttackers(attackers)) = &mut game.combat else {
         panic!("Not in the 'ProposingAttackers' state");
     };
     attackers.selected_attackers.remove(&card_id);
@@ -117,13 +117,13 @@ fn remove_attacker(game: &mut GameState, source: Source, card_id: AttackerId) ->
 /// See [CombatAction::ConfirmAttackers].
 #[instrument(level = "debug", skip(game))]
 fn confirm_attackers(game: &mut GameState, source: Source) -> Outcome {
-    let Some(CombatState::ProposingAttackers(attackers)) = game.combat_mut().take() else {
+    let Some(CombatState::ProposingAttackers(attackers)) = game.combat.take() else {
         panic!("Not in the 'ProposingAttackers' state");
     };
     for attacker in attackers.proposed_attacks.all() {
         permanents::tap(game, Source::Game, game.card_entity_id(attacker))?;
     }
-    *game.combat_mut() = Some(CombatState::ConfirmedAttackers(attackers.proposed_attacks));
+    game.combat = Some(CombatState::ConfirmedAttackers(attackers.proposed_attacks));
     outcome::OK
 }
 
@@ -132,7 +132,7 @@ fn confirm_attackers(game: &mut GameState, source: Source) -> Outcome {
 /// See [CombatAction::AddSelectedBlocker].
 #[instrument(level = "debug", skip(game))]
 fn add_selected_blocker(game: &mut GameState, source: Source, card_id: BlockerId) -> Outcome {
-    let Some(CombatState::ProposingBlockers(blockers)) = game.combat_mut() else {
+    let Some(CombatState::ProposingBlockers(blockers)) = &mut game.combat else {
         panic!("Not in the 'ProposingBlockers' state");
     };
     if let Some(id) = blockers.attackers.exactly_one() {
@@ -153,7 +153,7 @@ fn set_selected_blockers_target(
     source: Source,
     attacker: AttackerId,
 ) -> Outcome {
-    let Some(CombatState::ProposingBlockers(blockers)) = game.combat_mut() else {
+    let Some(CombatState::ProposingBlockers(blockers)) = &mut game.combat else {
         panic!("Not in the 'ProposingBlockers' state");
     };
 
@@ -168,7 +168,7 @@ fn set_selected_blockers_target(
 /// See [CombatAction::RemoveBlocker].
 #[instrument(level = "debug", skip(game))]
 fn remove_blocker(game: &mut GameState, source: Source, card_id: BlockerId) -> Outcome {
-    let Some(CombatState::ProposingBlockers(blockers)) = game.combat_mut() else {
+    let Some(CombatState::ProposingBlockers(blockers)) = &mut game.combat else {
         panic!("Not in the 'ProposingBlockers' state");
     };
     blockers.selected_blockers.remove(&card_id);
@@ -181,7 +181,7 @@ fn remove_blocker(game: &mut GameState, source: Source, card_id: BlockerId) -> O
 /// See [CombatAction::ConfirmBlockers].
 #[instrument(level = "debug", skip(game))]
 fn confirm_blockers(game: &mut GameState, source: Source) -> Outcome {
-    let Some(CombatState::ProposingBlockers(blockers)) = game.combat_mut().take() else {
+    let Some(CombatState::ProposingBlockers(blockers)) = game.combat.take() else {
         panic!("Not in the 'ProposingBlockers' state");
     };
     let mut attackers_to_blockers = HashMap::new();
@@ -192,7 +192,7 @@ fn confirm_blockers(game: &mut GameState, source: Source) -> Outcome {
         // TODO: Figure out some kind of default ordering for blockers
         attackers_to_blockers.entry(attackers[0]).or_insert_with(Vec::new).push(blocker_id);
     }
-    *game.combat_mut() = Some(CombatState::OrderingBlockers(BlockerMap {
+    game.combat = Some(CombatState::OrderingBlockers(BlockerMap {
         attackers: blockers.attackers,
         blocked_attackers: attackers_to_blockers,
         reverse_lookup: blockers.proposed_blocks,
@@ -211,7 +211,7 @@ fn order_blocker(
     blocker_id: BlockerId,
     position: usize,
 ) -> Outcome {
-    let Some(CombatState::OrderingBlockers(blockers)) = game.combat_mut() else {
+    let Some(CombatState::OrderingBlockers(blockers)) = &mut game.combat else {
         panic!("Not in the 'OrderingBlockers' state");
     };
     let entry = blockers
@@ -228,9 +228,9 @@ fn order_blocker(
 /// See [CombatAction::ConfirmBlockerOrder].
 #[instrument(level = "debug", skip(game))]
 fn confirm_blocker_order(game: &mut GameState, source: Source) -> Outcome {
-    let Some(CombatState::OrderingBlockers(blockers)) = game.combat_mut().take() else {
+    let Some(CombatState::OrderingBlockers(blockers)) = game.combat.take() else {
         panic!("Not in the 'OrderingBlockers' state");
     };
-    *game.combat_mut() = Some(CombatState::ConfirmedBlockers(blockers));
+    game.combat = Some(CombatState::ConfirmedBlockers(blockers));
     outcome::OK
 }

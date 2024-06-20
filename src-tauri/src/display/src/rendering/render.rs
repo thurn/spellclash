@@ -28,13 +28,13 @@ pub fn connect(game: &GameState, player: PlayerName, display_state: &DisplayStat
         animate: false,
         is_final_update: true,
         display_state,
-        reveal_all_cards: game.configuration().debug.reveal_all_cards,
-        act_as_player: game.configuration().debug.act_as_player,
+        reveal_all_cards: game.configuration.debug.reveal_all_cards,
+        act_as_player: game.configuration.debug.act_as_player,
         allow_actions: AllowActions::Yes,
     });
     sync::run(&mut builder, game);
 
-    if let GameStatus::GameOver { winners } = game.status() {
+    if let GameStatus::GameOver { winners } = game.status {
         builder.commands.push(Command::DisplayGameMessage(DisplayGameMessageCommand {
             message: if winners.contains(builder.display_as_player()) {
                 GameMessage::Victory
@@ -59,15 +59,15 @@ pub fn render_updates(
         animate: true,
         is_final_update: false,
         display_state,
-        reveal_all_cards: game.configuration().debug.reveal_all_cards,
-        act_as_player: game.configuration().debug.act_as_player,
+        reveal_all_cards: game.configuration.debug.reveal_all_cards,
+        act_as_player: game.configuration.debug.act_as_player,
         allow_actions,
     });
 
     builder.response_state.is_final_update = true;
     sync::run(&mut builder, game);
 
-    if let GameStatus::GameOver { winners } = game.status() {
+    if let GameStatus::GameOver { winners } = game.status {
         builder.commands.push(Command::DisplayGameMessage(DisplayGameMessageCommand {
             message: if winners.contains(builder.display_as_player()) {
                 GameMessage::Victory

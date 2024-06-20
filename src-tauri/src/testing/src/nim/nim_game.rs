@@ -144,7 +144,7 @@ impl GameStateNode for NimState {
         Self { agent_state: None, piles: self.piles.clone(), turn: self.turn }
     }
 
-    fn game_status(&self) -> GameStatus<NimPlayer> {
+    fn status(&self) -> GameStatus<NimPlayer> {
         if all_piles().iter().all(|pile| self.piles[pile] == 0) {
             GameStatus::Completed {
                 winners: match self.turn {
@@ -166,7 +166,7 @@ impl GameStateNode for NimState {
     }
 
     fn execute_action(&mut self, player: NimPlayer, action: NimAction) {
-        assert_eq!(self.game_status(), GameStatus::InProgress { current_turn: player });
+        assert_eq!(self.status(), GameStatus::InProgress { current_turn: player });
         assert!(action.amount <= self.piles[&action.pile]);
         self.piles.entry(action.pile).and_modify(|amount| *amount -= action.amount);
         self.turn = match player {

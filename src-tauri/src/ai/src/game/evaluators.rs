@@ -25,7 +25,7 @@ pub struct CustomHeuristicEvaluator;
 
 impl StateEvaluator<GameState> for CustomHeuristicEvaluator {
     fn evaluate(&self, game: &GameState, player: primitives::PlayerName) -> i32 {
-        match game.status() {
+        match game.status {
             GameStatus::Playing => {
                 let life = (game.player(player).life
                     - game.player(player_queries::next_player_after(game, player)).life)

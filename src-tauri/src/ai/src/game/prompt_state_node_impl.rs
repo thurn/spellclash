@@ -40,11 +40,9 @@ impl GameStateNode for PromptStateNode {
         Self { game: self.game.shallow_clone(), prompt: self.prompt.clone() }
     }
 
-    fn game_status(&self) -> GameStatus<primitives::PlayerName> {
-        match self.game.status() {
-            game_state::GameStatus::GameOver { winners } => {
-                GameStatus::Completed { winners: *winners }
-            }
+    fn status(&self) -> GameStatus<primitives::PlayerName> {
+        match self.game.status {
+            game_state::GameStatus::GameOver { winners } => GameStatus::Completed { winners },
             _ => GameStatus::InProgress {
                 current_turn: legal_actions::next_to_act(&self.game, self.prompt.as_ref()).unwrap(),
             },

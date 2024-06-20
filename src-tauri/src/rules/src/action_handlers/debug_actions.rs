@@ -34,12 +34,12 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction
     match action {
         DebugGameAction::Undo => {
             debug!(?player, "(Debug) Undoing last action");
-            let mut undo_list = game.undo_tracker().undo.clone();
+            let mut undo_list = game.undo_tracker.undo.clone();
             let Some(mut previous) = undo_list.pop() else {
                 panic!("No undo state available");
             };
-            previous.undo_tracker_mut().enabled = true;
-            previous.undo_tracker_mut().undo = undo_list;
+            previous.undo_tracker.enabled = true;
+            previous.undo_tracker.undo = undo_list;
             *game = *previous;
         }
         DebugGameAction::SetLifeTotal(target) => {

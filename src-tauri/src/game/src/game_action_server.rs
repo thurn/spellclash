@@ -63,13 +63,13 @@ pub fn connect(
 ) {
     let game = requests::fetch_game(database, game_id, None);
     let player_name = game.find_player_name(user.id);
-    let game_id = game.id();
-    info!(?user.id, ?game_id, "Connected to game");
+
+    info!(?user.id, ?game.id, "Connected to game");
     let commands = render::connect(&game, player_name, &get_display_state());
     let client = Client {
         data: ClientData {
             user_id: user.id,
-            scene: SceneIdentifier::Game(game.id()),
+            scene: SceneIdentifier::Game(game.id),
             id: Uuid::new_v4(),
         },
         channel: response_channel,
@@ -165,7 +165,7 @@ pub fn handle_game_action_internal(
 ) {
     let mut current_player = game.find_player_name(client.data.user_id);
 
-    if let Some(act_as) = game.configuration().debug.act_as_player {
+    if let Some(act_as) = game.configuration.debug.act_as_player {
         // Override player we are acting as for debugging purposes
         if Some(act_as.name) == legal_actions::next_to_act(game, None) {
             current_player = act_as.name;
@@ -253,9 +253,10 @@ const ATTACK_STEPS: EnumSet<GamePhaseStep> = enum_set!(
 /// Returns a game action (like passing priority) a player should automatically
 /// take based on their stops and other configured options.
 pub fn auto_pass_action(game: &GameState, player: PlayerName) -> Option<GameAction> {
-    let is_active_player = game.turn().active_player == player;
+    let is_active_player = game.turn.active_player == player;
     let empty_combat = game
-        .combat()
+        .combat
+        .as_ref()
         .and_then(|c| c.confirmed_attackers())
         .map(|attackers| attackers.is_empty())
         .unwrap_or_default();
@@ -263,15 +264,15 @@ pub fn auto_pass_action(game: &GameState, player: PlayerName) -> Option<GameActi
     if legal_actions::can_pass_priority(game, player) {
         if game.stack().is_empty() {
             if (is_active_player
-                && !game.player(player).options.active_turn_stops.contains(game.step()))
+                && !game.player(player).options.active_turn_stops.contains(game.step))
                 || (!is_active_player
-                    && !game.player(player).options.inactive_turn_stops.contains(game.step()))
+                    && !game.player(player).options.inactive_turn_stops.contains(game.step))
             {
                 // Stack is empty with no stop set, automatically pass
                 return Some(GameAction::PassPriority);
             }
 
-            if ATTACK_STEPS.contains(game.step()) && empty_combat {
+            if ATTACK_STEPS.contains(game.step) && empty_combat {
                 // A stop is set for combat, but there are no attackers, automatically pass
                 return Some(GameAction::PassPriority);
             }
@@ -280,8 +281,8 @@ pub fn auto_pass_action(game: &GameState, player: PlayerName) -> Option<GameActi
                 && legal_actions::compute(game, player, LegalActions { for_human_player: true })
                     .len()
                     <= 1
-                && !(is_active_player && ALWAYS_STOP_ACTIVE.contains(game.step())
-                    || !is_active_player && ALWAYS_STOP_INACTIVE.contains(game.step()))
+                && !(is_active_player && ALWAYS_STOP_ACTIVE.contains(game.step)
+                    || !is_active_player && ALWAYS_STOP_INACTIVE.contains(game.step))
             {
                 // No possible actions and we're not in an "always stop" step, automatically
                 // pass
