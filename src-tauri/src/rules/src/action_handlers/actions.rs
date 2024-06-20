@@ -75,7 +75,7 @@ pub fn execute(
     if legal_actions::can_any_player_pass_priority(game) {
         // If any player has priority as a result of this game action, check state-based
         // actions.
-        state_based_actions::run(game)?;
+        state_based_actions::on_will_receive_priority(game)?;
     }
 
     outcome::OK

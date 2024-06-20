@@ -58,7 +58,7 @@ pub struct EventDelegateList<TData: HasDelegates, TArg> {
 }
 
 impl<TData: HasDelegates, TArg> EventDelegateList<TData, TArg> {
-    pub fn any(
+    pub fn whenever(
         &mut self,
         value: impl Fn(&mut TData, <TData as HasDelegates>::ScopeType, &TArg) -> Outcome
             + Copy

@@ -16,21 +16,21 @@ use std::cell::Cell;
 
 use data::card_states::zones::ZoneQueries;
 use data::core::numerics::{LifeValue, Toughness};
-use data::core::primitives::{Source, Zone};
+use data::core::primitives::{Source, StackItemId, Zone};
 use data::game_states::game_state::{GameState, GameStatus};
 use data::game_states::state_based_event::StateBasedEvent;
 use data::player_states::player_state::PlayerQueries;
 use enumset::EnumSet;
 use tracing::instrument;
 use utils::outcome;
-use utils::outcome::Outcome;
+use utils::outcome::{Outcome, OutcomeWithResult};
 
 use crate::mutations::move_card;
 use crate::queries::{card_queries, player_queries};
 
-/// Checks for state-based actions to perform in the provided game state.
+/// Runs actions immediately before a player receives priority
 #[instrument(name = "state_based_actions_run", level = "debug", skip(game))]
-pub fn run(game: &mut GameState) -> Outcome {
+pub fn on_will_receive_priority(game: &mut GameState) -> Outcome {
     check_state_triggered_abilities(game)?;
 
     // > 704.3. Whenever a player would get priority (see rule 117, "Timing and
@@ -43,9 +43,26 @@ pub fn run(game: &mut GameState) -> Outcome {
     // > performed as the result of a check and no triggered abilities are waiting
     // > to be put on the stack, the appropriate player gets priority
     // <https://yawgatog.com/resources/magic-rules/#R7043>
+    loop {
+        let applied_action = state_based_actions(game)?;
+        let ability_triggered = add_triggers_to_stack(game)?;
+        if !applied_action && !ability_triggered {
+            break;
+        }
+    }
 
+    outcome::OK
+}
+
+/// Runs state-based actions. Returns 'true' if any action was performed.
+fn state_based_actions(game: &mut GameState) -> OutcomeWithResult<bool> {
+    // > 117.5. Each time a player would get priority, the game first performs all
+    // > applicable state-based actions as a single event (see rule 704,
+    // > "State-Based Actions"), then repeats this process until no state-based
+    // > actions are performed.
+    // <https://yawgatog.com/resources/magic-rules/#R1175>
     let mut lost = EnumSet::empty();
-
+    let mut performed_action = false;
     loop {
         let events = game.state_based_events.take().unwrap_or_default();
         if events.is_empty() {
@@ -57,10 +74,12 @@ pub fn run(game: &mut GameState) -> Outcome {
                 StateBasedEvent::LifeTotalDecrease(player) => {
                     if game.player(player).life <= 0 {
                         lost.insert(player);
+                        performed_action = true;
                     }
                 }
                 StateBasedEvent::DrawFromEmptyLibrary(player) => {
                     lost.insert(player);
+                    performed_action = true;
                 }
                 StateBasedEvent::GainedPoisonCounters(_) => {}
                 StateBasedEvent::TokenLeftBattlefield(_) => {}
@@ -68,15 +87,18 @@ pub fn run(game: &mut GameState) -> Outcome {
                 StateBasedEvent::CreatureToughnessChanged(card_id) => {
                     if card_queries::toughness(game, card_id) <= 0 {
                         move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
+                        performed_action = true;
                     }
                 }
                 StateBasedEvent::CreatureDamaged(card_id) => {
                     if game.card(card_id).damage as i64 >= card_queries::toughness(game, card_id) {
                         move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
+                        performed_action = true;
                     }
                 }
                 StateBasedEvent::CreatureDamagedByDeathtouch(card_id) => {
                     move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
+                    performed_action = true;
                 }
                 StateBasedEvent::PlaneswalkerLostLoyalty(_) => {}
                 StateBasedEvent::LegendaryPermanentEntered(_) => {}
@@ -88,8 +110,27 @@ pub fn run(game: &mut GameState) -> Outcome {
         game.status =
             GameStatus::GameOver { winners: player_queries::all_players(game).difference(lost) };
     }
+    Ok(performed_action)
+}
 
-    outcome::OK
+/// Moves triggered abilities to the stack.
+///
+/// Returns true if an ability was placed on the stack in this way.
+fn add_triggers_to_stack(game: &mut GameState) -> OutcomeWithResult<bool> {
+    // > Then triggered abilities are put on the stack (see rule 603, "Handling
+    // > Triggered Abilities"). These steps repeat in order until no further
+    // > state-based actions are performed and no abilities trigger.
+    // <https://yawgatog.com/resources/magic-rules/#R1175>
+    let mut triggered = vec![];
+    for ability in game.zones.all_stack_abilities_mut() {
+        if !ability.placed_on_stack {
+            ability.placed_on_stack = true;
+            triggered.push(StackItemId::StackAbility(ability.id));
+        }
+    }
+    let ability_triggered = !triggered.is_empty();
+    game.zones.add_abilities_to_stack(triggered);
+    Ok(ability_triggered)
 }
 
 /// Checks for state-triggered abilities to fire.

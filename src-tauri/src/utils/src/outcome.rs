@@ -24,6 +24,9 @@ pub type Outcome = Result<(), HaltCondition>;
 /// Outcome which wraps a return value
 pub type PromptResult<T> = Result<T, HaltCondition>;
 
+/// Outcome which wraps a return value
+pub type OutcomeWithResult<T> = Result<T, HaltCondition>;
+
 /// Continue execution.
 pub const OK: Outcome = Ok(());
 

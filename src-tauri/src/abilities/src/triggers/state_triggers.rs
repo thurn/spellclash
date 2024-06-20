@@ -28,7 +28,7 @@ pub fn when_controls_no(
 ) -> impl AbilityBuilder {
     TriggeredAbility::new()
         .condition(Zone::Battlefield, move |d| {
-            d.state_triggered_abilities.any(move |g, s, _| {
+            d.state_triggered_abilities.whenever(move |g, s, _| {
                 if !g.battlefield(s.controller).iter().any(|&card_id| predicate(g, s, card_id)) {
                     mutation(g, s.source(), s.card_id())?;
                 }

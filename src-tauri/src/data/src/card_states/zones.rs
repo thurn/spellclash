@@ -30,8 +30,8 @@ use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::card_states::stack_ability_state::StackAbilityState;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
-    CardId, EntityId, HasCardId, HasPlayerName, HasSource, ObjectId, PlayerName, StackAbilityId,
-    StackItemId, Zone, ALL_POSSIBLE_PLAYERS,
+    AbilityId, CardId, EntityId, HasCardId, HasPlayerName, HasSource, ObjectId, PlayerName,
+    StackAbilityId, StackItemId, Zone, ALL_POSSIBLE_PLAYERS,
 };
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::GameState;
@@ -246,6 +246,16 @@ impl Zones {
         self.all_cards.values_mut()
     }
 
+    /// Returns all currently known stack abilities in an undefined order
+    pub fn all_stack_abilities(&self) -> impl Iterator<Item = &StackAbilityState> {
+        self.stack_abilities.values()
+    }
+
+    /// Mutable version of [Self::all_stack_abilities]
+    pub fn all_stack_abilities_mut(&mut self) -> impl Iterator<Item = &mut StackAbilityState> {
+        self.stack_abilities.values_mut()
+    }
+
     /// Creates a new named card, owned & controlled by the `owner` player in
     /// the player's library.
     ///
@@ -282,12 +292,38 @@ impl Zones {
         });
 
         self.add_to_zone(owner, id, Zone::Library);
-        let entity_id = self.new_entity_id(id);
+        let entity_id = self.new_card_entity_id(id);
 
         let card = &mut self.all_cards[id];
         card.id = id;
         card.entity_id = entity_id;
         card
+    }
+
+    /// Creates a new triggered ability.
+    ///
+    /// The ability is owned & controlled by the `owner` player and has the
+    /// provided targets. The resulting ability is *not* placed on the stack
+    /// immediately, this is handled the next time a player would receive
+    /// priority.
+    pub fn create_triggered_ability(
+        &mut self,
+        oracle_ability_id: AbilityId,
+        owner: PlayerName,
+        targets: Vec<EntityId>,
+    ) -> &StackAbilityState {
+        let id = self.stack_abilities.insert(StackAbilityState {
+            id: StackAbilityId::default(),
+            oracle_ability_id,
+            placed_on_stack: false,
+            owner,
+            controller: owner,
+            targets,
+        });
+
+        let ability = &mut self.stack_abilities[id];
+        ability.id = id;
+        ability
     }
 
     /// Moves a card to a new zone, updates indices, and assigns a new
@@ -302,10 +338,15 @@ impl Zones {
         let owner = self.card_mut(card_id).owner;
         self.remove_from_zone(owner, card_id, old_zone);
         self.add_to_zone(owner, card_id, zone);
-        let entity_id = self.new_entity_id(card_id);
+        let entity_id = self.new_card_entity_id(card_id);
         let card = self.card_mut(card_id);
         card.zone = zone;
         card.entity_id = entity_id;
+    }
+
+    /// Adds a list of items to the top of the stack in the given order.
+    pub fn add_abilities_to_stack(&mut self, mut ids: Vec<StackItemId>) {
+        self.stack.append(&mut ids);
     }
 
     /// Changes the controller for a card.
@@ -404,7 +445,7 @@ impl Zones {
         }
     }
 
-    fn new_entity_id(&mut self, card_id: CardId) -> EntityId {
+    fn new_card_entity_id(&mut self, card_id: CardId) -> EntityId {
         let result = self.next_object_id;
         self.next_object_id = ObjectId(result.0 + 1);
         EntityId::Card(card_id, result)

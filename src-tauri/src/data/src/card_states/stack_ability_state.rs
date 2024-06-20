@@ -18,6 +18,7 @@ use serde::{Deserialize, Serialize};
 use crate::card_states::zones::Zones;
 use crate::core::primitives::{
     AbilityId, CardId, EntityId, HasCardId, HasController, HasEntityId, HasPlayerName, PlayerName,
+    StackAbilityId,
 };
 use crate::delegates::scope::Scope;
 
@@ -25,14 +26,11 @@ use crate::delegates::scope::Scope;
 /// or is on the stack
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StackAbilityState {
-    /// ID of this ability.
-    pub ability_id: AbilityId,
+    /// ID of this ability on the stack.
+    pub id: StackAbilityId,
 
-    /// Entity ID for this ability.
-    ///
-    /// Do not mutate this field directly, use the methods on the [Zones] struct
-    /// instead.
-    pub entity_id: EntityId,
+    /// Identifies this ability within its parent card's oracle text.
+    pub oracle_ability_id: AbilityId,
 
     /// True if this ability has been placed on the stack.
     ///
@@ -53,13 +51,13 @@ pub struct StackAbilityState {
 
 impl HasCardId for StackAbilityState {
     fn card_id(&self) -> CardId {
-        self.ability_id.card_id
+        self.oracle_ability_id.card_id
     }
 }
 
 impl HasEntityId for StackAbilityState {
     fn entity_id(&self) -> EntityId {
-        self.entity_id
+        EntityId::StackAbility(self.id)
     }
 }
 

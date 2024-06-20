@@ -211,7 +211,7 @@ impl AbilityBuilder for ActivatedAbility<WithCosts, WithEffects> {
     }
 }
 
-pub struct NoCondition;
+pub struct NoTrigger;
 pub struct WithCondition(pub Delegate);
 
 /// Builder for triggered abilities.
@@ -224,14 +224,14 @@ pub struct WithCondition(pub Delegate);
 /// > otherwise leaves the stack.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R1133c>
-pub struct TriggeredAbility<TCondition, TEffects> {
+pub struct TriggeredAbility<TTrigger, TEffects> {
     effects: TEffects,
     delegates: Vec<Delegate>,
     requirements: Vec<AbilityRequirement>,
-    _phantom: PhantomData<TCondition>,
+    _phantom: PhantomData<TTrigger>,
 }
 
-impl TriggeredAbility<NoCondition, NoEffects> {
+impl TriggeredAbility<NoTrigger, NoEffects> {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self { effects: NoEffects, delegates: vec![], requirements: vec![], _phantom: PhantomData }
