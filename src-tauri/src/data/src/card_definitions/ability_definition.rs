@@ -30,14 +30,12 @@ pub type EffectFn = fn(&mut GameState, Scope) -> Outcome;
 /// A predicate to apply to a delegate activation.
 pub type RequirementFn = fn(&GameState, Scope) -> bool;
 
-pub type DelegateCreationFn = fn(&mut GameDelegates);
-
 pub struct Delegate {
     /// [Zone]s in which this delegate should be active.
     pub zones: EnumSet<Zone>,
 
     /// Function to populate callbacks for this delegate
-    pub run: DelegateCreationFn,
+    pub run: Box<dyn Fn(&mut GameDelegates) + Send + Sync + 'static>,
 }
 
 /// Defines the game rules for an ability.
@@ -119,14 +117,14 @@ impl SpellAbility<NoEffects> {
 }
 
 impl SpellAbility<WithEffects> {
-    /// Adds a new [DelegateCreationFn] to this ability. See [GameDelegates] for
-    /// more information.
+    /// Adds a new delegate creation function to this ability. See
+    /// [GameDelegates] for more information.
     pub fn delegate(
         mut self,
         zones: impl Into<EnumSet<Zone>>,
-        delegate: DelegateCreationFn,
+        delegate: impl Fn(&mut GameDelegates) + 'static + Copy + Send + Sync,
     ) -> Self {
-        self.delegates.push(Delegate { zones: zones.into(), run: delegate });
+        self.delegates.push(Delegate { zones: zones.into(), run: Box::new(delegate) });
         self
     }
 }
@@ -189,14 +187,14 @@ impl ActivatedAbility<WithCosts, NoEffects> {
 }
 
 impl ActivatedAbility<WithCosts, WithEffects> {
-    /// Adds a new [DelegateCreationFn] to this ability. See [GameDelegates] for
-    /// more information.
+    /// Adds a new delegate creation function to this ability. See
+    /// [GameDelegates] for more information.
     pub fn delegate(
         mut self,
         zones: impl Into<EnumSet<Zone>>,
-        delegate: DelegateCreationFn,
+        delegate: impl Fn(&mut GameDelegates) + 'static + Copy + Send + Sync,
     ) -> Self {
-        self.delegates.push(Delegate { zones: zones.into(), run: delegate });
+        self.delegates.push(Delegate { zones: zones.into(), run: Box::new(delegate) });
         self
     }
 }
@@ -246,11 +244,11 @@ impl TriggeredAbility<NoCondition, NoEffects> {
     pub fn condition(
         self,
         zones: impl Into<EnumSet<Zone>>,
-        delegate: DelegateCreationFn,
+        delegate: impl Fn(&mut GameDelegates) + 'static + Copy + Send + Sync,
     ) -> TriggeredAbility<WithCondition, NoEffects> {
         TriggeredAbility {
             effects: NoEffects,
-            delegates: vec![Delegate { zones: zones.into(), run: delegate }],
+            delegates: vec![Delegate { zones: zones.into(), run: Box::new(delegate) }],
             requirements: self.requirements,
             _phantom: PhantomData,
         }
@@ -281,14 +279,14 @@ impl TriggeredAbility<WithCondition, NoEffects> {
 }
 
 impl TriggeredAbility<WithCondition, WithEffects> {
-    /// Adds a new [DelegateCreationFn] to this ability. See [GameDelegates] for
-    /// more information.
+    /// Adds a new delegate creation function to this ability. See
+    /// [GameDelegates] for more information.
     pub fn delegate(
         mut self,
         zones: impl Into<EnumSet<Zone>>,
-        delegate: DelegateCreationFn,
+        delegate: impl Fn(&mut GameDelegates) + 'static + Copy + Send + Sync,
     ) -> Self {
-        self.delegates.push(Delegate { zones: zones.into(), run: delegate });
+        self.delegates.push(Delegate { zones: zones.into(), run: Box::new(delegate) });
         self
     }
 }
@@ -323,14 +321,14 @@ impl StaticAbility {
         Self { delegates: vec![] }
     }
 
-    /// Adds a new [DelegateCreationFn] to this ability. See [GameDelegates] for
-    /// more information.
+    /// Adds a new delegate creation function to this ability. See
+    /// [GameDelegates] for more information.
     pub fn delegate(
         mut self,
         zones: impl Into<EnumSet<Zone>>,
-        delegate: DelegateCreationFn,
+        delegate: impl Fn(&mut GameDelegates) + 'static + Copy + Send + Sync,
     ) -> Self {
-        self.delegates.push(Delegate { zones: zones.into(), run: delegate });
+        self.delegates.push(Delegate { zones: zones.into(), run: Box::new(delegate) });
         self
     }
 }

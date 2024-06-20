@@ -26,18 +26,7 @@ use crate::delegates::scope::Scope;
 use crate::delegates::stores_delegates::StoresDelegates;
 use crate::game_states::game_state::GameState;
 
-/// Function to query some value during game execution.
-pub trait EventFn<TData: HasDelegates, TArg>:
-    Fn(&mut TData, <TData as HasDelegates>::ScopeType, &TArg) -> Outcome + Copy + Send + 'static
-{
-}
-
-impl<F, TData: HasDelegates, TArg> EventFn<TData, TArg> for F where
-    F: Fn(&mut TData, <TData as HasDelegates>::ScopeType, &TArg) -> Outcome + Copy + Send + 'static
-{
-}
-
-/// Wrapper around [EventFn] to enable closures to be cloned.
+/// Wrapper around event functions to enable closures to be cloned.
 pub trait EventFnWrapper<TData: HasDelegates, TArg>: DynClone + Send {
     fn invoke(&self, data: &mut TData, scope: TData::ScopeType, arg: &TArg) -> Outcome;
 }
@@ -69,7 +58,14 @@ pub struct EventDelegateList<TData: HasDelegates, TArg> {
 }
 
 impl<TData: HasDelegates, TArg> EventDelegateList<TData, TArg> {
-    pub fn any(&mut self, value: impl EventFn<TData, TArg>) {
+    pub fn any(
+        &mut self,
+        value: impl Fn(&mut TData, <TData as HasDelegates>::ScopeType, &TArg) -> Outcome
+            + Copy
+            + Send
+            + Sync
+            + 'static,
+    ) {
         self.current.push(Box::new(value));
     }
 

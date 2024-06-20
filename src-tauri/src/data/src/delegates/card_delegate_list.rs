@@ -23,21 +23,7 @@ use crate::delegates::has_delegates::HasDelegates;
 use crate::delegates::scope::Scope;
 use crate::delegates::stores_delegates::StoresDelegates;
 
-/// Function to query some value during game execution.
-pub trait QueryFn<TData: HasDelegates, TArg, TResult>:
-    Fn(&TData, <TData as HasDelegates>::ScopeType, &TArg, TResult) -> TResult + Copy + Send + 'static
-{
-}
-
-impl<F, TData: HasDelegates, TArg, TResult> QueryFn<TData, TArg, TResult> for F where
-    F: Fn(&TData, <TData as HasDelegates>::ScopeType, &TArg, TResult) -> TResult
-        + Copy
-        + Send
-        + 'static
-{
-}
-
-/// Wrapper around [QueryFn] to enable closures to be cloned.
+/// Wrapper around query functions to enable closures to be cloned.
 trait QueryFnWrapper<TData: HasDelegates, TArg, TResult>: DynClone + Send {
     fn invoke(&self, data: &TData, scope: TData::ScopeType, arg: &TArg, result: TResult)
         -> TResult;
@@ -83,11 +69,25 @@ pub struct CardDelegateList<TData: HasDelegates, TArg: HasCardId, TResult> {
 }
 
 impl<TData: HasDelegates, TArg: HasCardId, TResult> CardDelegateList<TData, TArg, TResult> {
-    pub fn this(&mut self, value: impl QueryFn<TData, TArg, TResult>) {
+    pub fn this(
+        &mut self,
+        value: impl Fn(&TData, <TData as HasDelegates>::ScopeType, &TArg, TResult) -> TResult
+            + Copy
+            + Send
+            + Sync
+            + 'static,
+    ) {
         self.current.push((CardDelegateExecution::This, Box::new(value)));
     }
 
-    pub fn any(&mut self, value: impl QueryFn<TData, TArg, TResult>) {
+    pub fn any(
+        &mut self,
+        value: impl Fn(&TData, <TData as HasDelegates>::ScopeType, &TArg, TResult) -> TResult
+            + Copy
+            + Send
+            + Sync
+            + 'static,
+    ) {
         self.current.push((CardDelegateExecution::Any, Box::new(value)));
     }
 

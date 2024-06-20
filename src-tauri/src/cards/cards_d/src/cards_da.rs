@@ -14,26 +14,15 @@
 
 use abilities::predicates::card_predicates;
 use abilities::restrictions::attack_restrictions;
-use data::card_definitions::ability_definition::StaticAbility;
+use abilities::triggers::state_triggers;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{HasCardId, HasSource, Zone};
-use rules::mutations::move_card;
-use utils::outcome;
+use rules::mutations::permanents;
 
 pub fn dandan() -> CardDefinition {
-    CardDefinition::new(card_name::DANDAN).ability(StaticAbility::new().delegate(
-        Zone::Battlefield,
-        |d| {
-            attack_restrictions::cannot_attack_unless_defender_controls(d, card_predicates::island);
-            d.state_triggered_abilities.any(|g, s, _| {
-                if !g.battlefield(s.controller).iter().any(|&id| card_predicates::island(g, s, id))
-                {
-                    move_card::run(g, s.source(), s.card_id(), Zone::Graveyard)?;
-                }
-                outcome::OK
-            });
-        },
-    ))
+    CardDefinition::new(card_name::DANDAN)
+        .ability(attack_restrictions::cannot_attack_unless_defender_controls(
+            card_predicates::island,
+        ))
+        .ability(state_triggers::when_controls_no(card_predicates::island, permanents::sacrifice))
 }

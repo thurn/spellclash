@@ -23,6 +23,8 @@ use tracing::debug;
 use utils::outcome;
 use utils::outcome::Outcome;
 
+use crate::mutations::move_card;
+
 /// Turns the [Face] face of this card up and reveals it to all players.
 pub fn turn_face_up(game: &mut GameState, _source: Source, card: CardId, face: Face) -> Outcome {
     let card = game.card_mut(card);
@@ -64,4 +66,9 @@ pub fn deal_damage(
     game.card_mut(card_id).damage += damage;
     game.add_state_based_event(StateBasedEvent::CreatureDamaged(card_id));
     outcome::OK
+}
+
+/// Sacrifices a permanent.
+pub fn sacrifice(game: &mut GameState, source: Source, card_id: CardId) -> Outcome {
+    move_card::run(game, source, card_id, Zone::Graveyard)
 }
