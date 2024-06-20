@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+mod ability_sync;
 pub mod animations;
 pub mod card_sync;
 pub mod card_view_context;

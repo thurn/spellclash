@@ -191,7 +191,7 @@ fn can_drag(builder: &ResponseBuilder, game: &GameState, card: &CardState) -> bo
     false
 }
 
-fn card_image(card_id: PrintedCardId, face: Face) -> String {
+pub fn card_image(card_id: PrintedCardId, face: Face) -> String {
     let id = card_id.0.to_string();
     let dir1 = id.chars().next().unwrap();
     let dir2 = id.chars().nth(1).unwrap();

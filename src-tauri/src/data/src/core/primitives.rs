@@ -175,6 +175,16 @@ new_key_type! {
     pub struct StackAbilityId;
 }
 
+impl StackAbilityId {
+    pub fn from_ffi_value(value: u64) -> Self {
+        KeyData::from_ffi(value).into()
+    }
+
+    pub fn to_ffi_value(&self) -> u64 {
+        self.data().as_ffi()
+    }
+}
+
 /// An identifier for any game entity.
 ///
 /// This is generally anything which can be a target: a player, card while it
@@ -200,7 +210,7 @@ pub enum EntityId {
 pub struct ObjectId(pub u64);
 
 impl ObjectId {
-    /// Returns this ObjectId to a float, for use as a sorting key in the
+    /// Returns this ObjectId as a float, for use as a sorting key in the
     /// display layer.
     ///
     /// It's fine that we lose some precision here since it's only a visual

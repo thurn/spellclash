@@ -15,17 +15,16 @@
 use std::marker::PhantomData;
 
 use enumset::EnumSet;
+use utils::outcome;
 use utils::outcome::Outcome;
 
 use crate::core::primitives::Zone;
 use crate::costs::cost::Cost;
+use crate::delegates::event_delegate_list::EventDelegateList;
 #[allow(unused)] // Used in docs
 use crate::delegates::game_delegates::GameDelegates;
 use crate::delegates::scope::Scope;
 use crate::game_states::game_state::GameState;
-
-/// A function to produce a list of requested mutations to [GameState].
-pub type EffectFn = fn(&mut GameState, Scope) -> Outcome;
 
 /// A predicate to apply to a delegate activation.
 pub type RequirementFn = fn(&GameState, Scope) -> bool;
@@ -37,6 +36,8 @@ pub struct Delegate {
     /// Function to populate callbacks for this delegate
     pub run: Box<dyn Fn(&mut GameDelegates) + Send + Sync + 'static>,
 }
+
+pub type EffectFn = Box<dyn Fn(&mut GameState, Scope) -> Outcome + 'static + Send + Sync>;
 
 /// Defines the game rules for an ability.
 ///
@@ -53,13 +54,11 @@ pub struct AbilityDefinition {
     ///
     /// Note that static abilities do not resolve via the stack and thus have no
     /// effects.
-    pub effects: Option<EffectFn>,
+    pub effect: Option<EffectFn>,
     /// Event listeners for this ability
     pub delegates: Vec<Delegate>,
     /// Costs to activate an activated ability
     pub costs: Vec<Cost>,
-    /// Requirements for a triggered ability to trigger
-    pub requirements: Vec<AbilityRequirement>,
 }
 
 pub trait AbilityBuilder {
@@ -111,8 +110,11 @@ impl SpellAbility<NoEffects> {
     }
 
     /// Effects when this spell resolves.
-    pub fn effects(self, effects: EffectFn) -> SpellAbility<WithEffects> {
-        SpellAbility { effects: WithEffects(effects), delegates: self.delegates }
+    pub fn effects(
+        self,
+        effect: impl Fn(&mut GameState, Scope) -> Outcome + 'static + Copy + Send + Sync,
+    ) -> SpellAbility<WithEffects> {
+        SpellAbility { effects: WithEffects(Box::new(effect)), delegates: self.delegates }
     }
 }
 
@@ -133,10 +135,9 @@ impl AbilityBuilder for SpellAbility<WithEffects> {
     fn build(self) -> AbilityDefinition {
         AbilityDefinition {
             ability_type: AbilityType::Spell,
-            effects: Some(self.effects.0),
+            effect: Some(self.effects.0),
             delegates: self.delegates,
             costs: vec![],
-            requirements: vec![],
         }
     }
 }
@@ -177,10 +178,13 @@ impl ActivatedAbility<NoCosts, NoEffects> {
 
 impl ActivatedAbility<WithCosts, NoEffects> {
     /// Effects when this ability resolves.
-    pub fn effects(self, effects: EffectFn) -> ActivatedAbility<WithCosts, WithEffects> {
+    pub fn effects(
+        self,
+        effects: impl Fn(&mut GameState, Scope) -> Outcome + 'static + Copy + Send + Sync,
+    ) -> ActivatedAbility<WithCosts, WithEffects> {
         ActivatedAbility {
             costs: self.costs,
-            effects: WithEffects(effects),
+            effects: WithEffects(Box::new(effects)),
             delegates: self.delegates,
         }
     }
@@ -192,7 +196,7 @@ impl ActivatedAbility<WithCosts, WithEffects> {
     pub fn delegate(
         mut self,
         zones: impl Into<EnumSet<Zone>>,
-        delegate: impl Fn(&mut GameDelegates) + 'static + Copy + Send + Sync,
+        delegate: impl Fn(&mut GameDelegates) + 'static + Send + Sync,
     ) -> Self {
         self.delegates.push(Delegate { zones: zones.into(), run: Box::new(delegate) });
         self
@@ -203,16 +207,12 @@ impl AbilityBuilder for ActivatedAbility<WithCosts, WithEffects> {
     fn build(self) -> AbilityDefinition {
         AbilityDefinition {
             ability_type: AbilityType::Activated,
-            effects: Some(self.effects.0),
+            effect: Some(self.effects.0),
             delegates: self.delegates,
             costs: self.costs.0,
-            requirements: vec![],
         }
     }
 }
-
-pub struct NoTrigger;
-pub struct WithCondition(pub Delegate);
 
 /// Builder for triggered abilities.
 ///
@@ -224,61 +224,27 @@ pub struct WithCondition(pub Delegate);
 /// > otherwise leaves the stack.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R1133c>
-pub struct TriggeredAbility<TTrigger, TEffects> {
-    effects: TEffects,
+pub struct TriggeredAbility<TEffects> {
     delegates: Vec<Delegate>,
-    requirements: Vec<AbilityRequirement>,
-    _phantom: PhantomData<TTrigger>,
+    effects: TEffects,
 }
 
-impl TriggeredAbility<NoTrigger, NoEffects> {
+impl TriggeredAbility<NoEffects> {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        Self { effects: NoEffects, delegates: vec![], requirements: vec![], _phantom: PhantomData }
+        Self { delegates: vec![], effects: NoEffects }
     }
 
-    /// Condition for this ability to trigger.
-    ///
-    /// This is just a normal .delegate() call, but the expectation is that it
-    /// will be used to apply an effect to trigger the ability.
-    pub fn condition(
-        self,
-        zones: impl Into<EnumSet<Zone>>,
-        delegate: impl Fn(&mut GameDelegates) + 'static + Copy + Send + Sync,
-    ) -> TriggeredAbility<WithCondition, NoEffects> {
-        TriggeredAbility {
-            effects: NoEffects,
-            delegates: vec![Delegate { zones: zones.into(), run: Box::new(delegate) }],
-            requirements: self.requirements,
-            _phantom: PhantomData,
-        }
-    }
-}
-
-impl<T> TriggeredAbility<WithCondition, T> {
-    /// Adds a requirement for this ability to fire.
-    ///
-    /// The requirement is checked on creation and optionally on resolution, see
-    /// [RequirementTiming].
-    pub fn requirement(mut self, timing: RequirementTiming, predicate: RequirementFn) -> Self {
-        self.requirements.push(AbilityRequirement { predicate, timing });
-        self
-    }
-}
-
-impl TriggeredAbility<WithCondition, NoEffects> {
     /// Effects when this ability resolves.
-    pub fn effects(self, effects: EffectFn) -> TriggeredAbility<WithCondition, WithEffects> {
-        TriggeredAbility {
-            effects: WithEffects(effects),
-            delegates: self.delegates,
-            requirements: self.requirements,
-            _phantom: PhantomData,
-        }
+    pub fn effects(
+        self,
+        effects: impl Fn(&mut GameState, Scope) -> Outcome + 'static + Copy + Send + Sync,
+    ) -> TriggeredAbility<WithEffects> {
+        TriggeredAbility { delegates: self.delegates, effects: WithEffects(Box::new(effects)) }
     }
 }
 
-impl TriggeredAbility<WithCondition, WithEffects> {
+impl<TEffects> TriggeredAbility<TEffects> {
     /// Adds a new delegate creation function to this ability. See
     /// [GameDelegates] for more information.
     pub fn delegate(
@@ -291,14 +257,13 @@ impl TriggeredAbility<WithCondition, WithEffects> {
     }
 }
 
-impl AbilityBuilder for TriggeredAbility<WithCondition, WithEffects> {
+impl AbilityBuilder for TriggeredAbility<WithEffects> {
     fn build(self) -> AbilityDefinition {
         AbilityDefinition {
             ability_type: AbilityType::Triggered,
-            effects: Some(self.effects.0),
+            effect: Some(self.effects.0),
             delegates: self.delegates,
             costs: vec![],
-            requirements: self.requirements,
         }
     }
 }
@@ -337,16 +302,15 @@ impl AbilityBuilder for StaticAbility {
     fn build(self) -> AbilityDefinition {
         AbilityDefinition {
             ability_type: AbilityType::Static,
-            effects: None,
+            effect: None,
             delegates: self.delegates,
             costs: vec![],
-            requirements: vec![],
         }
     }
 }
 
 /// Represents the possible types of ability
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AbilityType {
     Spell,
     Activated,

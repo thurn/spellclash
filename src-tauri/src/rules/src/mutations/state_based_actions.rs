@@ -154,12 +154,12 @@ fn add_triggers_to_stack(game: &mut GameState) -> OutcomeWithResult<bool> {
 /// visible *afterwards*, e.g. flicker effects. It's not perfect, but this is
 /// probably the only reasonable way to handle it.
 pub fn check_state_triggered_abilities(game: &mut GameState) -> Outcome {
-    if !game.delegates.state_triggered_abilities.is_empty()
+    if !game.delegates.state_triggered_ability.is_empty()
         && !game.checking_state_triggered_abilities
     {
         // Only run the check if it's not already running to prevent infinite loops.
         game.checking_state_triggered_abilities = true;
-        game.delegates.state_triggered_abilities.invoke_with(game, &()).run(game)?;
+        game.delegates.state_triggered_ability.invoke_with(game, &()).run(game)?;
         game.checking_state_triggered_abilities = false;
     }
 

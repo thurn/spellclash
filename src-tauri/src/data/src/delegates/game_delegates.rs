@@ -40,7 +40,7 @@ impl HasCardId for CanAttackTarget {
 #[derive(Default, Clone)]
 pub struct GameDelegates {
     /// Invoked every time game state-triggered abilities are checked.
-    pub state_triggered_abilities: EventDelegateList<GameState, ()>,
+    pub state_triggered_ability: EventDelegateList<GameState, ()>,
 
     /// Can a creature attack the indicated target?
     pub can_attack_target: CardDelegateList<GameState, CanAttackTarget, Flag>,
@@ -48,7 +48,7 @@ pub struct GameDelegates {
 
 impl GameDelegates {
     pub fn apply_writes(&mut self, id: AbilityId, zones: EnumSet<Zone>) {
-        self.state_triggered_abilities.apply_writes(id, zones);
+        self.state_triggered_ability.apply_writes(id, zones);
         self.can_attack_target.apply_writes(id, zones);
     }
 }

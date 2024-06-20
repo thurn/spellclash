@@ -15,7 +15,7 @@
 use data::actions::user_action::UserAction;
 use data::card_states::card_state::{CardFacing, TappedState};
 use data::core::numerics::Damage;
-use data::core::primitives::{CardId, HasCardId};
+use data::core::primitives::{CardId, HasCardId, StackAbilityId};
 use data::printed_cards::layout::{CardLayout, FaceLayout};
 use data::prompts::select_order_prompt::CardOrderLocation;
 use serde::{Deserialize, Serialize};
@@ -74,15 +74,32 @@ pub struct CardView {
 /// language.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
-pub struct ClientCardId(pub String);
+pub enum ClientCardId {
+    CardId(String),
+    StackAbilityId(String),
+}
 
 impl ClientCardId {
     pub fn new(card_id: CardId) -> Self {
-        Self(card_id.to_ffi_value().to_string())
+        Self::CardId(card_id.to_ffi_value().to_string())
+    }
+
+    pub fn new_for_stack_ability(stack_ability_id: StackAbilityId) -> Self {
+        Self::StackAbilityId(stack_ability_id.to_ffi_value().to_string())
     }
 
     pub fn to_card_id(&self) -> CardId {
-        CardId::from_ffi_value(self.0.parse().expect("Invalid client card ID"))
+        let ClientCardId::CardId(id) = self else {
+            panic!("Expected card ID");
+        };
+        CardId::from_ffi_value(id.parse().expect("Invalid client card ID"))
+    }
+
+    pub fn to_stack_ability_id(&self) -> StackAbilityId {
+        let ClientCardId::StackAbilityId(id) = self else {
+            panic!("Expected stack ability ID");
+        };
+        StackAbilityId::from_ffi_value(id.parse().expect("Invalid client stack ability ID"))
     }
 }
 

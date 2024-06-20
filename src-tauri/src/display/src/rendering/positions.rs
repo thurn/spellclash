@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use data::card_states::card_state::CardState;
+use data::card_states::stack_ability_state::StackAbilityState;
 use data::core::primitives::{CardId, CardType, EntityId, PlayerName, Zone};
 use data::game_states::game_state::GameState;
 use data::prompts::prompt::PromptType;
@@ -56,6 +57,11 @@ pub fn for_card(card: &CardState, position: Position) -> ObjectPosition {
         EntityId::StackAbility(..) => 0.0,
     };
 
+    ObjectPosition { position, sorting_key, sorting_sub_key: 0.0 }
+}
+
+pub fn for_stack_ability(ability: &StackAbilityState, position: Position) -> ObjectPosition {
+    let sorting_key = ability.object_id.as_sorting_key();
     ObjectPosition { position, sorting_key, sorting_sub_key: 0.0 }
 }
 

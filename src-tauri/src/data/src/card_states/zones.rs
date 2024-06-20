@@ -308,13 +308,15 @@ impl Zones {
     /// priority.
     pub fn create_triggered_ability(
         &mut self,
-        oracle_ability_id: AbilityId,
+        ability_id: AbilityId,
         owner: PlayerName,
         targets: Vec<EntityId>,
     ) -> &StackAbilityState {
+        let object_id = self.new_object_id();
         let id = self.stack_abilities.insert(StackAbilityState {
             id: StackAbilityId::default(),
-            oracle_ability_id,
+            ability_id,
+            object_id,
             placed_on_stack: false,
             owner,
             controller: owner,
@@ -324,6 +326,23 @@ impl Zones {
         let ability = &mut self.stack_abilities[id];
         ability.id = id;
         ability
+    }
+
+    /// Remove the [StackAbilityState] with the given ID, if it exists.
+    ///
+    /// This updates the underlying data store *and* the list of items on the
+    /// stack.
+    pub fn remove_stack_ability(&mut self, stack_ability_id: StackAbilityId) {
+        if let Some((i, _)) = self
+            .stack
+            .iter()
+            .enumerate()
+            .rev()
+            .find(|(_, &id)| id == StackItemId::StackAbility(stack_ability_id))
+        {
+            self.stack.remove(i);
+        }
+        self.stack_abilities.remove(stack_ability_id);
     }
 
     /// Moves a card to a new zone, updates indices, and assigns a new
@@ -445,10 +464,14 @@ impl Zones {
         }
     }
 
-    fn new_card_entity_id(&mut self, card_id: CardId) -> EntityId {
+    fn new_object_id(&mut self) -> ObjectId {
         let result = self.next_object_id;
         self.next_object_id = ObjectId(result.0 + 1);
-        EntityId::Card(card_id, result)
+        result
+    }
+
+    fn new_card_entity_id(&mut self, card_id: CardId) -> EntityId {
+        EntityId::Card(card_id, self.new_object_id())
     }
 }
 

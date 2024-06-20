@@ -16,7 +16,11 @@ use data::card_definitions::ability_definition::{AbilityBuilder, TriggeredAbilit
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{HasCardId, HasSource, Zone};
 use data::delegates::game_delegates::GameDelegates;
+use data::delegates::scope::Scope;
+use data::game_states::game_state::GameState;
+use rules::mutations::triggers::TriggerExt;
 use utils::outcome;
+use utils::outcome::Outcome;
 
 use crate::core::types::{CardMutation, CardPredicate};
 
@@ -27,13 +31,10 @@ pub fn when_controls_no(
     mutation: impl CardMutation,
 ) -> impl AbilityBuilder {
     TriggeredAbility::new()
-        .condition(Zone::Battlefield, move |d| {
-            d.state_triggered_abilities.whenever(move |g, s, _| {
-                if !g.battlefield(s.controller).iter().any(|&card_id| predicate(g, s, card_id)) {
-                    mutation(g, s.source(), s.card_id())?;
-                }
-                outcome::OK
+        .delegate(Zone::Battlefield, move |d| {
+            d.state_triggered_ability.trigger_if_not_on_stack(move |g, s, _| {
+                !g.battlefield(s.controller).iter().any(|&card_id| predicate(g, s, card_id))
             })
         })
-        .effects(|_, _| outcome::OK)
+        .effects(move |g, s| mutation(g, s.source(), s.card_id()))
 }

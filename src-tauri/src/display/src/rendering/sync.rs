@@ -35,18 +35,25 @@ use crate::core::game_view::{
     GameButtonView, GameControlView, GameView, GameViewState, PlayerView, TextInputView,
 };
 use crate::core::response_builder::ResponseBuilder;
-use crate::rendering::card_sync;
 use crate::rendering::card_view_context::CardViewContext;
+use crate::rendering::{ability_sync, card_sync};
 
 /// Converts a [GameState] into a series of commands inside the provided
 /// [ResponseBuilder] describing the visual game state.
 pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
-    let cards = game
+    let mut cards = game
         .zones
         .all_cards()
         .filter(|c| !skip_sending_to_client(c))
         .map(|c| card_sync::card_view(builder, &CardViewContext::Game(c.printed(), game, c)))
         .collect::<Vec<_>>();
+    cards.append(
+        &mut game
+            .zones
+            .all_stack_abilities()
+            .map(|a| ability_sync::stack_ability_view(builder, game.card(a.ability_id.card_id), a))
+            .collect(),
+    );
 
     let display_state = builder.response_state.display_state;
     builder.push_game_view(GameView {

@@ -54,4 +54,11 @@ impl CardDefinition {
     pub fn all_abilities(&self) -> impl Iterator<Item = (AbilityNumber, &AbilityDefinition)> {
         self.abilities.iter().enumerate().map(|(i, a)| (AbilityNumber(i), a))
     }
+
+    /// Looks up an ability by its [AbilityNumber].
+    pub fn get_ability(&self, ability_number: AbilityNumber) -> &AbilityDefinition {
+        self.abilities.get(ability_number.0).unwrap_or_else(|| {
+            panic!("Card {:?} does not have ability {}", self.name, ability_number.0)
+        })
+    }
 }

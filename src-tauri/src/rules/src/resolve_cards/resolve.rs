@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use data::card_definitions::ability_definition::AbilityType;
 use data::card_definitions::definitions;
 use data::card_states::card_kind::CardKind;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{AbilityId, Source, StackItemId, Zone};
+use data::core::primitives::{AbilityId, CardId, Source, StackAbilityId, StackItemId, Zone};
 use data::delegates::has_delegates::HasDelegates;
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
@@ -35,16 +36,25 @@ use crate::queries::card_queries;
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R608>
 pub fn resolve_top_of_stack(game: &mut GameState) -> Outcome {
-    let Some(StackItemId::Card(card_id)) = game.stack().last().copied() else {
-        return outcome::OK;
-    };
-    debug!(?card_id, "Resolving top of stack");
+    match game.stack().last().copied() {
+        Some(StackItemId::Card(card_id)) => resolve_top_card_of_stack(game, card_id),
+        Some(StackItemId::StackAbility(stack_ability_id)) => {
+            resolve_top_ability_of_stack(game, stack_ability_id)
+        }
+        _ => outcome::OK,
+    }
+}
 
+fn resolve_top_card_of_stack(game: &mut GameState, card_id: CardId) -> Outcome {
+    debug!(?card_id, "Resolving top card of stack");
     let definition = definitions::get(game.card(card_id).card_name);
     for (ability_number, ability) in definition.all_abilities() {
-        if let Some(effect) = ability.effects {
-            let ability_id = AbilityId { card_id, number: ability_number };
-            effect(game, game.create_scope(ability_id))?;
+        if ability.ability_type == AbilityType::Spell {
+            // Resolve spell abilities
+            if let Some(effect) = &ability.effect {
+                let ability_id = AbilityId { card_id, number: ability_number };
+                effect(game, game.create_scope(ability_id))?;
+            }
         }
     }
 
@@ -75,5 +85,17 @@ pub fn resolve_top_of_stack(game: &mut GameState) -> Outcome {
         move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
     }
 
+    outcome::OK
+}
+
+fn resolve_top_ability_of_stack(game: &mut GameState, stack_ability_id: StackAbilityId) -> Outcome {
+    debug!(?stack_ability_id, "Resolving top ability of stack");
+    let ability_id = game.stack_ability(stack_ability_id).ability_id;
+    let ability_definition =
+        definitions::get(game.card(ability_id.card_id).card_name).get_ability(ability_id.number);
+    if let Some(effect) = &ability_definition.effect {
+        effect(game, game.create_scope(ability_id))?;
+    }
+    game.zones.remove_stack_ability(stack_ability_id);
     outcome::OK
 }

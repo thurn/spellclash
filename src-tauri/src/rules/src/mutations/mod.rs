@@ -18,3 +18,4 @@ pub mod permanents;
 pub mod players;
 pub mod priority;
 pub mod state_based_actions;
+pub mod triggers;
