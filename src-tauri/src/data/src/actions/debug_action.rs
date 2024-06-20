@@ -24,6 +24,7 @@ pub enum DebugGameAction {
     Undo,
     SetLifeTotal(PlayerName),
     RevealHand(PlayerName),
+    DestroyAllLands(PlayerName),
 }
 
 impl From<DebugGameAction> for GameAction {

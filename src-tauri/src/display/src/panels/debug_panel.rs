@@ -29,6 +29,7 @@ pub fn render(_game: &GameState, _player: PlayerName) -> ModalPanel {
             buttons: vec![
                 button("P2 Life", DebugGameAction::SetLifeTotal(PlayerName::Two)),
                 button("Reveal P2 Hand", DebugGameAction::RevealHand(PlayerName::Two)),
+                button("Destroy P1 Lands", DebugGameAction::DestroyAllLands(PlayerName::One)),
             ],
         }),
     }

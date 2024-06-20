@@ -128,7 +128,7 @@ impl GameState {
 
     /// Mutable equivalent of [Self::status].
     pub fn status_mut(&mut self) -> &mut GameStatus {
-        self.will_mutate();
+        self.check_state_triggered_abilities();
         &mut self.status
     }
 
@@ -142,7 +142,7 @@ impl GameState {
 
     /// Mutable equivalent of [Self::step].
     pub fn step_mut(&mut self) -> &mut GamePhaseStep {
-        self.will_mutate();
+        self.check_state_triggered_abilities();
         &mut self.step
     }
 
@@ -157,7 +157,7 @@ impl GameState {
 
     /// Mutable equivalent of [Self::turn].
     pub fn turn_mut(&mut self) -> &mut TurnData {
-        self.will_mutate();
+        self.check_state_triggered_abilities();
         &mut self.turn
     }
 
@@ -177,7 +177,7 @@ impl GameState {
 
     /// Mutable equivalent of [Self::priority].
     pub fn priority_mut(&mut self) -> &mut PlayerName {
-        self.will_mutate();
+        self.check_state_triggered_abilities();
         &mut self.priority
     }
 
@@ -194,7 +194,7 @@ impl GameState {
 
     /// Mutable equivalent of [Self::passed].
     pub fn passed_mut(&mut self) -> &mut EnumSet<PlayerName> {
-        self.will_mutate();
+        self.check_state_triggered_abilities();
         &mut self.passed
     }
 
@@ -210,7 +210,7 @@ impl GameState {
 
     /// Mutable equivalent of [Self::players].
     pub fn players_mut(&mut self) -> &mut Players {
-        self.will_mutate();
+        self.check_state_triggered_abilities();
         &mut self.players
     }
 
@@ -222,7 +222,7 @@ impl GameState {
 
     /// Mutable equivalent of [Self::zones].
     pub fn zones_mut(&mut self) -> &mut Zones {
-        self.will_mutate();
+        self.check_state_triggered_abilities();
         &mut self.zones
     }
 
@@ -247,7 +247,7 @@ impl GameState {
 
     /// Mutable equivalent of [Self::combat].
     pub fn combat_mut(&mut self) -> &mut Option<CombatState> {
-        self.will_mutate();
+        self.check_state_triggered_abilities();
         &mut self.combat
     }
 
@@ -355,7 +355,7 @@ impl GameState {
 
     /// Shuffles the order of cards in a player's library
     pub fn shuffle_library(&mut self, player: PlayerName) {
-        self.will_mutate();
+        self.check_state_triggered_abilities();
         self.zones.shuffle_library(player, &mut self.rng)
     }
 
@@ -401,7 +401,7 @@ impl GameState {
         }
     }
 
-    fn will_mutate(&mut self) {
+    pub fn check_state_triggered_abilities(&mut self) {
         let _ = self
             .delegates()
             .state_triggered_abilities

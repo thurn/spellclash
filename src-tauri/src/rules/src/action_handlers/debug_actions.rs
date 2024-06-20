@@ -16,7 +16,7 @@ use data::actions::debug_action::DebugGameAction;
 use data::actions::game_action::GameAction;
 use data::card_states::zones::ZoneQueries;
 use data::core::numerics::LifeValue;
-use data::core::primitives::{PlayerName, Source};
+use data::core::primitives::{CardType, PlayerName, Source, Zone};
 use data::game_states::game_state::GameState;
 use data::player_states::player_state::PlayerQueries;
 use data::prompts::pick_number_prompt::PickNumberPrompt;
@@ -25,8 +25,9 @@ use tracing::{debug, instrument};
 use utils::outcome;
 use utils::outcome::Outcome;
 
-use crate::mutations::players;
+use crate::mutations::{move_card, players};
 use crate::prompt_handling::prompts;
+use crate::queries::card_queries;
 
 #[instrument(level = "debug", skip(game))]
 pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction) -> Outcome {
@@ -53,6 +54,13 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction
         DebugGameAction::RevealHand(target) => {
             for card_id in game.hand(target).clone() {
                 game.card_mut(card_id).revealed_to.insert(player);
+            }
+        }
+        DebugGameAction::DestroyAllLands(target) => {
+            for card_id in game.battlefield(target).clone() {
+                if card_queries::card_types(game, card_id).contains(CardType::Land) {
+                    move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
+                }
             }
         }
     }

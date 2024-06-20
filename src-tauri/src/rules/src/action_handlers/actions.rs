@@ -78,6 +78,8 @@ pub fn execute(
         state_based_actions::run(game)?;
     }
 
+    game.check_state_triggered_abilities();
+
     outcome::OK
 }
 
