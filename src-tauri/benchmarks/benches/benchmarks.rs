@@ -25,6 +25,7 @@ use data::actions::game_action::GameAction;
 use data::card_definitions::card_name;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::PlayerName;
+use data::decks::deck_name;
 use rules::action_handlers::actions;
 use rules::action_handlers::actions::ExecuteAction;
 use rules::legality::legal_actions;
@@ -119,7 +120,15 @@ pub fn random_playout_evaluator(c: &mut Criterion) {
         RandomPlayoutEvaluator { evaluator: WinLossEvaluator, phantom_data: PhantomData };
     let error_subscriber = tracing_subscriber::fmt().with_max_level(Level::ERROR).finish();
     subscriber::with_default(error_subscriber, || {
-        group.bench_function("random_playout_evaluator", |b| {
+        group.bench_function("green_vanilla", |b| {
+            b.iter(|| evaluator.evaluate(&game, PlayerName::One))
+        });
+    });
+
+    let game = test_games::create(deck_name::ALL_DANDANS);
+    let error_subscriber = tracing_subscriber::fmt().with_max_level(Level::ERROR).finish();
+    subscriber::with_default(error_subscriber, || {
+        group.bench_function("all_dandans", |b| {
             b.iter(|| evaluator.evaluate(&game, PlayerName::One))
         });
     });

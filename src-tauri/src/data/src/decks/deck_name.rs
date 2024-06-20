@@ -20,4 +20,5 @@ use uuid::{uuid, Uuid};
 pub struct DeckName(pub Uuid);
 
 pub const GREEN_VANILLA: DeckName = DeckName(uuid!("9eefebd4-25c0-4f46-91ab-6b3efff302e4"));
+pub const ALL_DANDANS: DeckName = DeckName(uuid!("73af6e3b-822e-4294-affc-d2e6a96e9c54"));
 pub const DANDAN: DeckName = DeckName(uuid!("c66ab7d9-5016-4d27-b1a1-6af8336af986"));
