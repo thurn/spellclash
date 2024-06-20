@@ -40,6 +40,7 @@ pub fn stack_ability_view(
                 rules_text: Some("Hello".to_string()),
             },
             status: None,
+            is_ability: true,
             click_action: None,
             can_drag: false,
             face_b: None,

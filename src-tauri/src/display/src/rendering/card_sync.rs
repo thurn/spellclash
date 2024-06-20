@@ -52,6 +52,7 @@ pub fn card_view(builder: &ResponseBuilder, context: &CardViewContext) -> CardVi
             image: card_image(context.printed_card_id(), context.image_face()),
             face: card_face(&context.printed().face),
             status: context.query_or(None, |game, card| card_status(builder, game, card)),
+            is_ability: false,
             click_action: context.query_or(None, |game, card| card_action(builder, game, card)),
             can_drag: context.query_or(false, |game, card| can_drag(builder, game, card)),
             face_b: context.printed().face_b.as_ref().map(card_face),

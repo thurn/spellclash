@@ -120,6 +120,9 @@ pub struct RevealedCardView {
     /// Visual status of this card
     pub status: Option<RevealedCardStatus>,
 
+    /// True if this card represents an ability
+    pub is_ability: bool,
+
     /// Action to take when this card is clicked, if any.
     pub click_action: Option<UserAction>,
 

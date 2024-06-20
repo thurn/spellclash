@@ -50,6 +50,9 @@ export function RevealedCard({ revealed }: Props): ReactNode {
   } else if (revealed.status != null && 'alocking' in revealed.status) {
     borderClass = 'border-2 border-purple-300';
     label = revealed.status.blocking;
+  } else if (revealed.isAbility) {
+    borderClass = 'border-2 border-pink-300';
+    label = 'ability';
   }
 
   if (revealed.canDrag) {

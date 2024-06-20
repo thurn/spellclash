@@ -126,7 +126,7 @@ export type CardView = {
  * Serialized u64, represented as string because JavaScript is a silly
  * language.
  */
-export type ClientCardId = string;
+export type ClientCardId = { cardId: string } | { stackAbilityId: string };
 /**
  * Standard parameters for a client request & response
  */
@@ -476,6 +476,10 @@ export type RevealedCardView = {
    * Visual status of this card
    */
   status: RevealedCardStatus | null;
+  /**
+   * True if this card represents an ability
+   */
+  isAbility: boolean;
   /**
    * Action to take when this card is clicked, if any.
    */
