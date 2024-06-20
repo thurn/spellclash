@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::cell::Cell;
 use std::collections::{HashSet, VecDeque};
 use std::sync::Arc;
 
@@ -75,7 +76,11 @@ pub struct GameState {
     #[serde(skip)]
     agent_state: Option<AgentState<PlayerName, AgentAction>>,
     #[serde(skip)]
-    current_agent_searcher: Option<PlayerName>,
+    current_search_agent: Option<PlayerName>,
+}
+
+thread_local! {
+    static RUNNING_STATE_TRIGGERED_ABILITIES: Cell<bool> = Cell::new(false);
 }
 
 impl GameState {
@@ -112,7 +117,7 @@ impl GameState {
             state_based_events: Some(vec![]),
             oracle_reference: Some(oracle),
             agent_state: None,
-            current_agent_searcher: None,
+            current_search_agent: None,
         }
     }
 
@@ -135,7 +140,7 @@ impl GameState {
     /// Current game phase step.
     ///
     /// If the game has not yet started, this will be "Untap". If the game has
-    /// ended, this will be the step in which the game ended.    
+    /// ended, this will be the step in which the game ended.
     pub fn step(&self) -> GamePhaseStep {
         self.step
     }
@@ -150,7 +155,7 @@ impl GameState {
     /// number.
     ///
     /// If the game has not yet started, this will be turn 0 for player one. If
-    /// the game has ended, this will be the turn on which the game ended.    
+    /// the game has ended, this will be the turn on which the game ended.
     pub fn turn(&self) -> &TurnData {
         &self.turn
     }
@@ -272,7 +277,7 @@ impl GameState {
         &mut self.rng
     }
 
-    /// Handles state tracking for the 'undo' action.    
+    /// Handles state tracking for the 'undo' action.
     pub fn undo_tracker(&self) -> &UndoTracker {
         &self.undo_tracker
     }
@@ -322,11 +327,11 @@ impl GameState {
     }
 
     pub fn current_search_agent(&self) -> Option<PlayerName> {
-        self.current_agent_searcher
+        self.current_search_agent
     }
 
     pub fn current_search_agent_mut(&mut self) -> &mut Option<PlayerName> {
-        &mut self.current_agent_searcher
+        &mut self.current_search_agent
     }
 
     /// Changes the controller for a card.
@@ -407,7 +412,26 @@ impl GameState {
         if cfg!(debug_assertions) {
             self.zones.update_debug_info();
         }
-        let _ = self.delegates().state_triggered_abilities.invoke_with(self, &()).run(self);
+
+        // Check for state-triggered abilities.
+        //
+        // > 603.8. Some triggered abilities trigger when a game state (such as a player
+        // > controlling no permanents of a particular card type) is true, rather than
+        // > triggering when an event occurs.
+        //
+        // These can specifically trigger *while resolving* another effect.
+        if !self.delegates.state_triggered_abilities.is_empty()
+            && !RUNNING_STATE_TRIGGERED_ABILITIES.get()
+        {
+            // Only run the check if it's not already running to prevent infinite loops.
+            RUNNING_STATE_TRIGGERED_ABILITIES.set(true);
+
+            // Ignore return value, prompts within a state-triggered ability cannot be
+            // cancelled.
+            let _ = self.delegates.state_triggered_abilities.invoke_with(self, &()).run(self);
+
+            RUNNING_STATE_TRIGGERED_ABILITIES.set(false);
+        }
     }
 }
 
