@@ -13,9 +13,10 @@
 // limitations under the License.
 
 use enumset::EnumSet;
+use utils::outcome::Outcome;
 
 use crate::core::function_types::{CardPredicateFn, PlayerPredicateFn, StackAbilityPredicateFn};
-use crate::core::primitives::{EntityId, PlayerName, StackItemId, Zone};
+use crate::core::primitives::{CardId, EntityId, PlayerName, StackItemId, Zone};
 use crate::delegates::scope::Scope;
 use crate::game_states::game_state::GameState;
 
@@ -46,11 +47,14 @@ pub enum AbilityTargetQuantity {
 
 /// Possible restrictions on the targets of an ability
 pub enum AbilityTargetPredicate {
-    /// Target a player matching a predicate from a set of players.
-    Player(EnumSet<PlayerName>, PlayerPredicateFn),
-
     /// Target cards matching a predicate in a set of zones.
-    Card(EnumSet<Zone>, CardPredicateFn),
+    Card(CardAbilityTarget),
+
+    /// Target a player matching a predicate from a set of players.
+    Player(PlayerAbilityTarget),
+
+    /// Target cards or players matching these predicates
+    CardOrPlayer(CardOrPlayerAbilityTarget),
 
     /// Target an ability on the stack matching a predicate
     StackAbility(StackAbilityPredicateFn),
@@ -59,16 +63,112 @@ pub enum AbilityTargetPredicate {
     AnyOf(Vec<AbilityTargetPredicate>),
 }
 
+pub struct CardAbilityTarget {
+    pub zones: EnumSet<Zone>,
+    pub predicate: CardPredicateFn,
+}
+
+pub struct PlayerAbilityTarget {
+    pub players: EnumSet<PlayerName>,
+    pub predicate: PlayerPredicateFn,
+}
+
+pub struct CardOrPlayerAbilityTarget {
+    pub card_target: CardAbilityTarget,
+    pub player_target: PlayerAbilityTarget,
+}
+
+#[derive(Clone, Copy, Eq, PartialEq, Debug)]
+pub enum CardOrPlayer {
+    Card(CardId),
+    Player(PlayerName),
+}
+
 pub trait AbilityChoiceBuilder: Sized {
     #[doc(hidden)]
     fn get_choices_mut(&mut self) -> &mut AbilityChoices;
 
-    /// Add a target for this ability.
+    /// Adds a single target card for this ability.
     ///
-    /// This method should be called once for each instance of the word 'target'
-    /// in the ability's oracle text.
-    fn target(mut self, target: impl Into<AbilityTarget>) -> Self {
-        self.get_choices_mut().targets.push(target.into());
-        self
+    /// The ID of the card that is targeted will be passed as a parameter to the
+    /// effect function.
+    fn target_card(
+        mut self,
+        target: impl Into<CardAbilityTarget>,
+    ) -> SingleCardTargetAbilityBuilder<Self> {
+        self.get_choices_mut().targets.push(AbilityTarget {
+            quantity: AbilityTargetQuantity::Exactly(1),
+            predicate: AbilityTargetPredicate::Card(target.into()),
+        });
+        SingleCardTargetAbilityBuilder { builder: self }
+    }
+
+    /// Adds a single target player for this ability.
+    ///
+    /// The name of the chosen player will be passed as a parameter to the
+    /// effect function.
+    fn target_player(
+        mut self,
+        target: impl Into<PlayerAbilityTarget>,
+    ) -> SinglePlayerTargetAbilityBuilder<Self> {
+        self.get_choices_mut().targets.push(AbilityTarget {
+            quantity: AbilityTargetQuantity::Exactly(1),
+            predicate: AbilityTargetPredicate::Player(target.into()),
+        });
+        SinglePlayerTargetAbilityBuilder { builder: self }
+    }
+
+    /// Adds a single target card or player for this ability.
+    ///
+    /// The ID of the chosen card or name of the chosen player will be passed as
+    /// a parameter to the effect function.
+    fn target_card_or_player(
+        mut self,
+        target: impl Into<CardOrPlayerAbilityTarget>,
+    ) -> SingleCardOrPlayerTargetAbilityBuilder<Self> {
+        self.get_choices_mut().targets.push(AbilityTarget {
+            quantity: AbilityTargetQuantity::Exactly(1),
+            predicate: AbilityTargetPredicate::CardOrPlayer(target.into()),
+        });
+        SingleCardOrPlayerTargetAbilityBuilder { builder: self }
+    }
+}
+
+pub struct SingleCardTargetAbilityBuilder<TResult: AbilityChoiceBuilder> {
+    pub builder: TResult,
+}
+
+impl<TResult: AbilityChoiceBuilder> SingleCardTargetAbilityBuilder<TResult> {
+    pub fn effect(
+        self,
+        effect: impl Fn(&mut GameState, Scope, CardId) -> Outcome + 'static + Copy + Send + Sync,
+    ) -> TResult {
+        self.builder
+    }
+}
+
+pub struct SinglePlayerTargetAbilityBuilder<TResult: AbilityChoiceBuilder> {
+    pub builder: TResult,
+}
+
+impl<TResult: AbilityChoiceBuilder> SinglePlayerTargetAbilityBuilder<TResult> {
+    pub fn effect(
+        self,
+        effect: impl Fn(&mut GameState, Scope, PlayerName) -> Outcome + 'static + Copy + Send + Sync,
+    ) -> TResult {
+        self.builder
+    }
+}
+
+pub struct SingleCardOrPlayerTargetAbilityBuilder<TResult: AbilityChoiceBuilder> {
+    pub builder: TResult,
+}
+
+impl<TResult: AbilityChoiceBuilder> SingleCardOrPlayerTargetAbilityBuilder<TResult> {
+    pub fn effect(
+        self,
+        effect: impl Fn(&mut GameState, Scope, CardOrPlayer) -> Outcome + 'static + Copy + Send + Sync,
+    ) -> TResult {
+        self.builder
     }
 }

@@ -20,7 +20,7 @@ use data::delegates::game_delegates::GameDelegates;
 use rules::queries::combat_queries;
 
 /// Prevent this creature from attacking unless the defending player controls a
-/// permanent matching this predicate.
+/// permanent matching the given predicate.
 pub fn cannot_attack_unless_defender_controls(
     predicate: impl CardPredicate,
 ) -> impl AbilityBuilder {

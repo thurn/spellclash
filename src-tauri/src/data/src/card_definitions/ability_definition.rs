@@ -80,39 +80,39 @@ pub struct WithEffects(pub EffectFn);
 /// > rule 113.6.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R1133a>
-pub struct SpellAbility<TEffects> {
-    effects: TEffects,
+pub struct SpellAbility {
+    effect: Option<EffectFn>,
     choices: AbilityChoices,
     delegates: Vec<Delegate>,
 }
 
-impl SpellAbility<NoEffects> {
+impl SpellAbility {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        Self { effects: NoEffects, delegates: vec![], choices: AbilityChoices::default() }
+        Self { effect: None, delegates: vec![], choices: AbilityChoices::default() }
     }
 
-    /// Effects when this spell resolves.
-    pub fn effects(
+    /// Effect when this spell resolves.
+    pub fn effect(
         self,
         effect: impl Fn(&mut GameState, Scope) -> Outcome + 'static + Copy + Send + Sync,
-    ) -> SpellAbility<WithEffects> {
+    ) -> SpellAbility {
         SpellAbility {
             choices: self.choices,
-            effects: WithEffects(Box::new(effect)),
+            effect: Some(Box::new(effect)),
             delegates: self.delegates,
         }
     }
 }
 
-impl AbilityChoiceBuilder for SpellAbility<NoEffects> {
+impl AbilityChoiceBuilder for SpellAbility {
     #[doc(hidden)]
     fn get_choices_mut(&mut self) -> &mut AbilityChoices {
         &mut self.choices
     }
 }
 
-impl SpellAbility<WithEffects> {
+impl SpellAbility {
     /// Adds a new delegate creation function to this ability. See
     /// [GameDelegates] for more information.
     pub fn delegate(
@@ -125,12 +125,12 @@ impl SpellAbility<WithEffects> {
     }
 }
 
-impl AbilityBuilder for SpellAbility<WithEffects> {
+impl AbilityBuilder for SpellAbility {
     fn build(self) -> AbilityDefinition {
         AbilityDefinition {
             ability_type: AbilityType::Spell,
             choices: self.choices,
-            effect: Some(self.effects.0),
+            effect: self.effect,
             delegates: self.delegates,
             costs: vec![],
         }

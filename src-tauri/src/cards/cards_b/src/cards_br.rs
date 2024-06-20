@@ -22,7 +22,7 @@ use rules::mutations::library;
 use rules::prompt_handling::prompts;
 
 pub fn brainstorm() -> CardDefinition {
-    CardDefinition::new(card_name::BRAINSTORM).ability(SpellAbility::new().effects(|g, s| {
+    CardDefinition::new(card_name::BRAINSTORM).ability(SpellAbility::new().effect(|g, s| {
         library::draw_cards(g, s, s.controller, 3)?;
         let cards = prompts::select_ordered_from(
             g,
