@@ -16,7 +16,7 @@ use std::iter;
 
 use data::card_states::card_state::TappedState;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, CardType, EntityId, PlayerName, Source};
+use data::core::primitives::{CardId, CardType, EntityId, HasController, PlayerName, Source};
 use data::delegates::flag::Flag;
 use data::delegates::game_delegates::CanAttackTarget;
 use data::game_states::combat_state::{AttackTarget, BlockerMap, CombatState, ProposedAttackers};
@@ -39,7 +39,7 @@ pub fn can_attack(game: &GameState, card_id: CardId) -> Flag {
     let mut result = Flag::new();
     result = result.add_condition(Source::Game, card.last_changed_control != turn);
     result = result.add_condition(Source::Game, card.entered_current_zone != turn);
-    result = result.add_condition(Source::Game, card.controller == turn.active_player);
+    result = result.add_condition(Source::Game, card.controller() == turn.active_player);
     result = result.add_condition(Source::Game, card.tapped_state == TappedState::Untapped);
     result = result.add_condition(Source::Game, types.contains(CardType::Creature));
     result = result.add_condition(Source::Game, !types.contains(CardType::Battle));
@@ -67,7 +67,7 @@ pub fn legal_attackers(game: &GameState, player: PlayerName) -> impl Iterator<It
 pub fn can_block(game: &GameState, card_id: CardId) -> bool {
     let card = game.card(card_id);
     let types = card_queries::card_types(game, card_id);
-    card.controller != game.turn.active_player
+    card.controller() != game.turn.active_player
         && card.tapped_state != TappedState::Tapped
         && types.contains(CardType::Creature)
         && !types.contains(CardType::Battle)
@@ -177,7 +177,7 @@ pub fn defending_player(game: &GameState, target: AttackTarget) -> PlayerName {
     match target {
         AttackTarget::Player(player) => player,
         AttackTarget::Planeswalker(entity) | AttackTarget::Battle(entity) => {
-            game.card_entity(entity).unwrap().controller
+            game.card_entity(entity).unwrap().controller()
         }
     }
 }

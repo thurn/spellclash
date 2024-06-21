@@ -16,7 +16,7 @@ use std::collections::HashMap;
 
 use data::card_states::play_card_plan::{ManaPaymentPlan, PlayCardPlan};
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, ManaColor, Source};
+use data::core::primitives::{CardId, HasController, ManaColor, Source};
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandSubtype;
 use data::printed_cards::mana_cost::ManaCostItem;
@@ -45,7 +45,7 @@ pub fn mana_payment(
     card_id: CardId,
     plan: &PlayCardPlan,
 ) -> Option<ManaPaymentPlan> {
-    let controller = game.card(card_id).controller;
+    let controller = game.card(card_id).controller();
 
     let mut lands: LandAbilityMap = HashMap::new();
     for card in game.battlefield(controller) {

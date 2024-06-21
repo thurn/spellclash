@@ -153,18 +153,6 @@ impl GameState {
         self.oracle_reference.as_ref().expect("Oracle reference not populated").as_ref()
     }
 
-    /// Changes the controller for a card.
-    ///
-    /// Panics if this card was not found on the battlefield.
-    pub fn change_controller(
-        &mut self,
-        source: impl HasSource,
-        id: impl HasCardId,
-        controller: PlayerName,
-    ) {
-        self.zones.change_controller(source, id, controller, self.turn)
-    }
-
     /// Makes a clone of this game state suitable suitable for use in display
     /// or simulation logic, but which omits undo tracking information, agent
     /// state, and the ability to process incremental visual updates.

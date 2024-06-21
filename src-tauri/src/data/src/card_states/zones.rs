@@ -30,8 +30,8 @@ use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::card_states::stack_ability_state::StackAbilityState;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
-    AbilityId, CardId, EntityId, HasCardId, HasPlayerName, HasSource, ObjectId, PlayerName,
-    StackAbilityId, StackItemId, Zone, ALL_POSSIBLE_PLAYERS,
+    AbilityId, CardId, EntityId, HasCardId, HasController, HasPlayerName, HasSource, ObjectId,
+    PlayerName, StackAbilityId, StackItemId, Zone, ALL_POSSIBLE_PLAYERS,
 };
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::GameState;
@@ -275,7 +275,7 @@ impl Zones {
             printed_card_id: reference.identifier,
             kind,
             owner,
-            controller: owner,
+            control_changing_effects: vec![],
             zone: Zone::Library,
             facing: CardFacing::FaceDown,
             cast_as: EnumSet::empty(),
@@ -382,7 +382,7 @@ impl Zones {
             Zone::Battlefield => Box::new(self.battlefield(player).iter().copied()),
             Zone::Stack => Box::new(self.stack.iter().filter_map(move |id| {
                 let id = id.card_id()?;
-                if self.card(id).controller == player {
+                if self.card(id).controller() == player {
                     Some(id)
                 } else {
                     None
@@ -399,24 +399,26 @@ impl Zones {
         self.stack.iter().filter_map(move |id| id.stack_ability_id())
     }
 
-    /// Changes the controller for a card.
+    /// Marks a controller change for a card.
     ///
-    /// Panics if this card was not found in the `battlefield_controlled` set.
-    pub fn change_controller(
+    /// Do not invoke this method directly, use the `change_controller` module
+    /// instead.
+    ///
+    /// Has no effect if this card is not on the battlefield. Panics if this
+    /// card *is* on the battlefield but was not found in the
+    /// `battlefield_controlled` set.
+    pub fn on_controller_changed(
         &mut self,
         _source: impl HasSource,
         id: impl HasCardId,
-        controller: PlayerName,
+        old_controller: PlayerName,
+        new_controller: PlayerName,
         current_turn: TurnData,
     ) {
         let card_id = id.card_id();
-        let card = self.card_mut(card_id);
-        card.last_changed_control = current_turn;
-        let old_controller = card.controller;
-        card.controller = controller;
-        if card.zone == Zone::Battlefield && old_controller != controller {
+        if self.card(card_id).zone == Zone::Battlefield && old_controller != new_controller {
             self.battlefield_controlled.remove(card_id, old_controller);
-            self.battlefield_controlled.cards_mut(controller).insert(card_id);
+            self.battlefield_controlled.cards_mut(new_controller).insert(card_id);
         }
     }
 

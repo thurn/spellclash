@@ -15,7 +15,9 @@
 use data::card_definitions::ability_choices::CardOrPlayer;
 use data::card_definitions::ability_definition::EffectFn;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{AbilityId, CardId, EntityId, PlayerName};
+use data::core::primitives::{
+    AbilityId, CardId, EntityId, PlayerName, StackAbilityId, StackItemId,
+};
 use data::delegates::has_delegates::HasDelegates;
 use data::game_states::game_state::GameState;
 use utils::outcome;
@@ -24,10 +26,11 @@ use utils::outcome::{Outcome, OutcomeWithResult};
 pub fn run(
     game: &mut GameState,
     ability_id: AbilityId,
+    stack_ability_id: Option<StackAbilityId>,
     targets: Vec<EntityId>,
     effect: &EffectFn,
 ) -> Outcome {
-    let scope = game.create_scope(ability_id);
+    let scope = game.create_scope(ability_id, stack_ability_id);
     match effect {
         EffectFn::NoEffect => outcome::OK,
         EffectFn::Untargeted(function) => function(game, scope),

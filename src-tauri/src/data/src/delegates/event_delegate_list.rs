@@ -120,7 +120,7 @@ impl<'a, TData: HasDelegates, TArg> EventDelegateInvoker<'a, TData, TArg> {
 
     pub fn run(&self, data: &mut TData) -> Outcome {
         for stored in &self.delegates {
-            let scope = data.create_scope(stored.ability_id);
+            let scope = data.create_scope(stored.ability_id, None);
             stored.event_fn.invoke(data, scope, self.arg)?;
         }
         outcome::OK

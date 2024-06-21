@@ -22,7 +22,9 @@ use data::card_definitions::ability_definition::AbilityType;
 use data::card_definitions::definitions;
 use data::card_states::play_card_plan::{PlayAs, PlayCardPlan, PlayCardTiming};
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{AbilityId, CardId, EntityId, HasEntityId, PlayerName, Source, Zone};
+use data::core::primitives::{
+    AbilityId, CardId, EntityId, HasController, HasEntityId, PlayerName, Source, Zone,
+};
 use data::delegates::has_delegates::HasDelegates;
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
@@ -56,7 +58,7 @@ pub fn execute(
 
     let prompt_lists = targeted_abilities(game, card_id)
         .map(|(ability_id, target)| {
-            let scope = game.create_scope(ability_id);
+            let scope = game.create_scope(ability_id, None);
             valid_targets(game, scope, &target.predicate)
                 .map(|entity_id| Choice { entity_id })
                 .collect::<Vec<_>>()
@@ -88,7 +90,7 @@ pub fn can_play_card(
     card_id: CardId,
 ) -> bool {
     let card = game.card(card_id);
-    if card.controller != player || card.zone != Zone::Hand {
+    if card.controller() != player || card.zone != Zone::Hand {
         return false;
     }
 
@@ -158,7 +160,7 @@ fn valid_target_lists(
         .filter(|(_, ability)| ability.ability_type == AbilityType::Spell)
         .flat_map(move |(number, ability)| {
             ability.choices.targets.iter().flat_map(move |target| {
-                let scope = game.create_scope(AbilityId { card_id, number });
+                let scope = game.create_scope(AbilityId { card_id, number }, None);
                 assert_eq!(
                     target.quantity,
                     AbilityTargetQuantity::Exactly(1),

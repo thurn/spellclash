@@ -16,7 +16,7 @@ use data::card_states::card_kind::CardKind;
 use data::card_states::card_state::CardState;
 use data::card_states::play_card_plan::{ManaPaymentPlan, PlayAs, PlayCardPlan, PlayCardTiming};
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, CardType, PlayerName, Source};
+use data::core::primitives::{CardId, CardType, HasController, PlayerName, Source};
 use data::game_states::game_state::GameState;
 use data::printed_cards::layout::CardLayout;
 use data::printed_cards::printed_card::{Face, PrintedCardFace};
@@ -51,7 +51,7 @@ pub fn play_as(game: &GameState, source: Source, card_id: CardId) -> Vec<PlayCar
 /// Returns a [CanPlayAs] indicating whether a [PlayerName] can play a given
 /// [PrintedCardFace] of a [CardState] in the current [GameState].
 fn can_play_as(game: &GameState, card: &CardState, face: &PrintedCardFace) -> Option<PlayAs> {
-    let player = card.controller;
+    let player = card.controller();
     let result = can_play_as_for_types(face);
     match result.timing {
         PlayCardTiming::Land => {

@@ -16,7 +16,9 @@ use data::card_states::card_kind::CardKind;
 use data::card_states::card_state::{CardFacing, TappedState};
 use data::card_states::zones::ZoneQueries;
 use data::core::numerics::Damage;
-use data::core::primitives::{CardId, EntityId, HasCardId, HasSource, Zone, ALL_POSSIBLE_PLAYERS};
+use data::core::primitives::{
+    CardId, EntityId, HasCardId, HasController, HasSource, Zone, ALL_POSSIBLE_PLAYERS,
+};
 use data::game_states::game_state::{GameState, TurnData};
 use data::game_states::state_based_event::StateBasedEvent;
 use tracing::debug;
@@ -37,7 +39,14 @@ pub fn run(
 ) -> Outcome {
     let id = id.card_id();
     debug!(?id, ?zone, "Moving card to zone");
-    on_leave_zone(game, id, game.card(id.card_id()).zone);
+    let old = game.card(id.card_id()).zone;
+    on_leave_zone(game, id, old);
+
+    if !(old == Zone::Stack && zone == Zone::Battlefield) {
+        // Control-changing effects persist from the stack to the battlefield.
+        game.card_mut(id).control_changing_effects.clear();
+    }
+
     game.zones.move_card(id, zone);
     on_enter_zone(game, id, zone);
     outcome::OK
@@ -64,12 +73,13 @@ fn on_enter_zone(game: &mut GameState, card_id: CardId, zone: Zone) {
     let turn = game.turn;
     let card = game.card_mut(card_id);
     card.entered_current_zone = turn;
+
     match zone {
         Zone::Stack | Zone::Battlefield | Zone::Graveyard => {
             card.revealed_to = ALL_POSSIBLE_PLAYERS;
         }
         Zone::Hand => {
-            let controller = card.controller;
+            let controller = card.controller();
             card.revealed_to.insert(controller);
             card.facing = CardFacing::FaceDown;
         }

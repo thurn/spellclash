@@ -105,7 +105,7 @@ impl<TData: HasDelegates, TArg: HasCardId, TResult> CardDelegateList<TData, TArg
                 continue;
             }
 
-            let scope = data.create_scope(stored.ability_id);
+            let scope = data.create_scope(stored.ability_id, None);
             result = stored.query_fn.invoke(data, scope, arg, result);
         }
         result

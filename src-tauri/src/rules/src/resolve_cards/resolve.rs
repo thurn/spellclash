@@ -55,6 +55,7 @@ fn resolve_top_card_of_stack(game: &mut GameState, card_id: CardId) -> Outcome {
             invoke_effect::run(
                 game,
                 ability_id,
+                None,
                 game.card(card_id).targets.clone(),
                 &ability.effect,
             )?;
@@ -99,6 +100,7 @@ fn resolve_top_ability_of_stack(game: &mut GameState, stack_ability_id: StackAbi
     invoke_effect::run(
         game,
         ability_id,
+        Some(stack_ability_id),
         game.stack_ability(stack_ability_id).targets.clone(),
         &ability_definition.effect,
     )?;

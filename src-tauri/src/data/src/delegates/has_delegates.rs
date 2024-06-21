@@ -15,7 +15,9 @@
 use std::fmt::Debug;
 
 use crate::card_states::zones::ZoneQueries;
-use crate::core::primitives::{AbilityId, CardId, Zone};
+use crate::core::primitives::{
+    AbilityId, CardId, HasController, StackAbilityId, StackItemId, Zone,
+};
 use crate::delegates::scope::Scope;
 use crate::game_states::game_state::GameState;
 
@@ -25,7 +27,11 @@ pub trait HasDelegates {
 
     fn current_zone(&self, card_id: CardId) -> Zone;
 
-    fn create_scope(&self, ability_id: AbilityId) -> Self::ScopeType;
+    fn create_scope(
+        &self,
+        ability_id: AbilityId,
+        stack_ability_id: Option<StackAbilityId>,
+    ) -> Self::ScopeType;
 }
 
 impl HasDelegates for GameState {
@@ -35,7 +41,15 @@ impl HasDelegates for GameState {
         self.card(card_id).zone
     }
 
-    fn create_scope(&self, ability_id: AbilityId) -> Self::ScopeType {
-        Scope { controller: self.card(ability_id).controller, ability_id }
+    fn create_scope(
+        &self,
+        ability_id: AbilityId,
+        stack_ability_id: Option<StackAbilityId>,
+    ) -> Self::ScopeType {
+        let controller = match stack_ability_id {
+            Some(stack_ability_id) => self.stack_ability(stack_ability_id).controller,
+            _ => self.card(ability_id).controller(),
+        };
+        Scope { controller, ability_id }
     }
 }

@@ -28,13 +28,13 @@ use enumset::EnumSet;
 use utils::outcome;
 use utils::outcome::Outcome;
 
-use crate::mutations::{library, permanents, players};
+use crate::mutations::{change_controller, library, permanents, players, state_based_actions};
 use crate::queries::{card_queries, player_queries};
 
 /// Advances the game state to the indicated `step`.
 ///
-/// Primary entry point for the game state machine. Performs all action_handlers
-/// for exiting the previous [GamePhaseStep] and then performs action_handlers
+/// Primary entry point for the game state machine. Performs all actions
+/// for exiting the previous [GamePhaseStep] and then performs actions
 /// which occur at the start of this step. Increments the turn number and active
 /// player when transitioning to the Untap step.
 pub fn advance(game: &mut GameState) -> Outcome {
@@ -287,25 +287,37 @@ fn cleanup(game: &mut GameState) -> Outcome {
     // > maximum hand size (normally seven), they discard enough cards to reduce
     // > their hand size to that number. This turn-based action doesn't use the
     // > stack.
+    //
+    // <https://yawgatog.com/resources/magic-rules/#R5141>
 
-    // > 514.2. Second, the following action_handlers happen simultaneously: all
-    // > damage
-    // > marked on permanents (including phased-out permanents) is removed and all
-    // > "until end of turn" and "this turn" effects end. This turn-based action
-    // > doesn't use the stack.
+    // > 514.2. Second, the following actions happen simultaneously: all
+    // > damage marked on permanents (including phased-out permanents) is removed
+    // > and all "until end of turn" and "this turn" effects end. This turn-based
+    // > action doesn't use the stack.
+    //
+    // <https://yawgatog.com/resources/magic-rules/#R5142>
+    for card in game.zones.all_cards_mut() {
+        card.damage = 0;
+    }
+
+    for (scope, target_id) in game.this_turn.take_control_changing_effects() {
+        change_controller::remove_control(game, scope, target_id)?;
+    }
     game.this_turn = ThisTurnState::default();
 
     // > 514.3. Normally, no player receives priority during the cleanup step, so no
     // > spells can be cast and no abilities can be activated. However, this rule is
     // > subject to the following exception:
-    // > 514.3a. At this point, the game checks to see if any state-based
-    // > action_handlers
+    //
+    // > 514.3a. At this point, the game checks to see if any state-based action
     // > would be performed and/or any triggered abilities are waiting to be put
     // > onto the stack (including those that trigger "at the beginning of the next
-    // > cleanup step"). If so, those state-based action_handlers are performed,
-    // > then those
-    // > triggered abilities are put on the stack, then the active player gets
-    // > priority.
+    // > cleanup step"). If so, those state-based actions are performed,
+    // > then those triggered abilities are put on the stack, then the active player
+    // > gets priority.
+    //
     // https://yawgatog.com/resources/magic-rules/#R5143
+    state_based_actions::on_will_receive_priority(game)?;
+
     advance(game)
 }

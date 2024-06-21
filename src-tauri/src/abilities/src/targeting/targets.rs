@@ -14,7 +14,7 @@
 
 use data::card_definitions::ability_choices::{CardAbilityTarget, PlayerSet};
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardType, Zone, ALL_POSSIBLE_PLAYERS};
+use data::core::primitives::{CardType, HasController, Zone, ALL_POSSIBLE_PLAYERS};
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use enumset::EnumSet;
@@ -38,7 +38,7 @@ pub fn creature_opponent_controls() -> CardAbilityTarget {
         players: PlayerSet::Opponents,
         predicate: Box::new(|g, s, id| {
             card_queries::card_types(g, id).contains(CardType::Creature)
-                && g.card(id).controller != s.controller
+                && g.card(id).controller() != s.controller
         }),
     }
 }

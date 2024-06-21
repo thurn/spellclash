@@ -26,8 +26,8 @@ use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::card_states::zones::Zones;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
-    CardId, EntityId, HasCardId, HasController, HasEntityId, HasPlayerName, ObjectId, PlayerName,
-    Zone,
+    AbilityId, CardId, EntityId, HasCardId, HasController, HasEntityId, HasPlayerName, ObjectId,
+    PlayerName, Zone,
 };
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::{GameState, TurnData};
@@ -77,16 +77,18 @@ pub struct CardState {
     /// See <https://yawgatog.com/resources/magic-rules/#R1083>
     pub owner: PlayerName,
 
-    /// The player who can currently make decisions about this card.
+    /// Effects which are applying to this card to change its controller.
     ///
-    /// For cards which are not currently on the battlefield or on the stack,
-    /// this will be the card's owner.
+    /// The topmost effect represents the current controller. Use the
+    /// [Self::controller] method to compute this.
     ///
-    /// Do not mutate this field directly, use [GameState::change_controller] or
-    /// a higher-level function instead.
+    /// Each effect is tagged with the ability ID that created it, and abilities
+    /// are responsible for removing effects they create when their durations
+    /// expire.
     ///
-    /// See <https://yawgatog.com/resources/magic-rules/#R1084>
-    pub controller: PlayerName,
+    /// Do not mutate this field directly, use the `change_controller` module
+    /// instead.
+    pub control_changing_effects: Vec<ControlChangingEffect>,
 
     /// Current game zone location for this card.
     ///
@@ -153,7 +155,7 @@ pub struct CardState {
     /// Turn on which this card gained its current controller.
     ///
     /// Used to e.g. determine whether creatures can attack in combat. Do not
-    /// mutate this field directly, use [GameState::change_controller] instead.
+    /// mutate this field directly, use the `change_controller` module instead.
     pub last_changed_control: TurnData,
 
     /// Printed Card associated with this card. Use the [Self::printed] method
@@ -197,8 +199,14 @@ impl HasPlayerName for CardState {
 }
 
 impl HasController for CardState {
+    /// The player who can currently make decisions about this card.
+    ///
+    /// For cards which are not currently on the battlefield or on the stack,
+    /// this will be the card's owner.
+    ///
+    /// See <https://yawgatog.com/resources/magic-rules/#R1084>
     fn controller(&self) -> PlayerName {
-        self.controller
+        self.control_changing_effects.last().map_or(self.owner, |c| c.controller)
     }
 }
 
@@ -247,4 +255,11 @@ pub enum CardFacing {
 
     /// The indicated card face is currently up
     FaceUp(Face),
+}
+
+/// Represents an effect which changes the controller of a card.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct ControlChangingEffect {
+    pub ability_id: AbilityId,
+    pub controller: PlayerName,
 }

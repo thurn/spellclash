@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+pub mod change_controller;
 pub mod library;
 pub mod move_card;
 pub mod permanents;

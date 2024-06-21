@@ -18,10 +18,23 @@ use crate::core::primitives::{
     AbilityId, AbilityNumber, CardId, HasCardId, HasSource, PlayerName, Source,
 };
 
-/// Identifies the context in which an event delegate is currently executing
+/// Identifies the context in which an event function or event delegate is
+/// currently executing
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct Scope {
+    /// The controller for this ability or the card that created this ability.
+    ///
+    /// In an effect function, this is the controller of the effect on the
+    /// stack. In a delegate callback, this is the controller of the card.
+    ///
+    /// This is *usually* what you want, but note that you can get into trouble
+    /// relying on this in an activated or triggered ability that needs to
+    /// create its own delegate callbacks, since those callbacks will see their
+    /// card's controller, *not* the controller of the ability that
+    /// created them.
     pub controller: PlayerName,
+
+    /// The identifier for the ability definition that is executing.
     pub ability_id: AbilityId,
 }
 
