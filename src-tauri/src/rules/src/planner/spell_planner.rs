@@ -14,7 +14,7 @@
 
 use std::collections::HashMap;
 
-use data::card_states::play_card_plan::{CastSpellChoices, ManaPaymentPlan};
+use data::card_states::play_card_plan::{ManaPaymentPlan, PlayCardPlan};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, ManaColor, Source};
 use data::game_states::game_state::GameState;
@@ -33,7 +33,7 @@ type LandAbilityMap = HashMap<ManaColor, Vec<(CardId, SubtypeCount)>>;
 ///
 /// The spell payment planner takes a card which the controller would like to
 /// cast. It returns a suggested way in which the card's mana costs could be
-/// paid. A [CastSpellChoices] is provided to describe choices the user made
+/// paid. A [PlayCardPlan] is provided to describe choices the user made
 /// while putting this spell on the stack.
 ///
 /// None is returned if the planner failed to find a legal combination of
@@ -43,7 +43,7 @@ pub fn mana_payment(
     game: &GameState,
     _source: Source,
     card_id: CardId,
-    choices: &CastSpellChoices,
+    plan: &PlayCardPlan,
 ) -> Option<ManaPaymentPlan> {
     let controller = game.card(card_id).controller;
 
@@ -57,7 +57,7 @@ pub fn mana_payment(
     }
     lands.values_mut().for_each(|v| v.sort_by_key(|(_, subtypes)| *subtypes));
 
-    let cost = card_queries::mana_cost_for_casting_card(game, card_id, choices);
+    let cost = card_queries::mana_cost_for_casting_card(game, card_id, plan);
     let mut result = ManaPaymentPlan::default();
     for item in cost.items {
         add_land_for_item(&mut result, &mut lands, item)?;

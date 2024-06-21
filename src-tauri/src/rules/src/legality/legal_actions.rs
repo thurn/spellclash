@@ -23,7 +23,7 @@ use data::printed_cards::printed_card::Face;
 use data::prompts::prompt::Prompt;
 use tracing::instrument;
 
-use crate::legality::{can_pay_mana_cost, legal_combat_actions};
+use crate::legality::legal_combat_actions;
 use crate::play_cards::{pick_face_to_play, play_card};
 
 #[derive(Debug, Clone, Copy)]

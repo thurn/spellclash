@@ -22,12 +22,74 @@ use crate::printed_cards::printed_card::Face;
 
 /// Describes a proposed series of a choices for a user to play a card as part
 /// of the "play card" game action.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlayCardPlan {
-    /// Choices the user has selected to play this card if it is a spell
-    pub spell_choices: CastSpellChoices,
+    /// The face or faces of this card which the player is casting and the
+    /// timing restriction used for playing this card.
+    ///
+    /// This will be a single face for most cards, but split cards with the
+    /// "Fuse" ability can be cast using multiple faces at once.
+    pub play_as: PlayAs,
+
+    /// Modal choices for this spell
+    ///
+    /// > 601.2b. If the spell is modal, the player announces the mode choice
+    /// > (see rule 700.2).
+    /// <https://yawgatog.com/resources/magic-rules/#R6012b>
+    pub modes: EnumSet<ModalChoice>,
+
+    /// Identifies an ability which provides an alternative cost which will be
+    /// used to cast this spell
+    pub alternative_cost: Option<Scope>,
+
+    /// Identifies abilities adding additional choices the caster has chosen for
+    /// this spell, such as optional costs like Kicker.
+    ///
+    /// > 601.2b. If the spell has alternative or additional costs that will be
+    /// > paid as it's being cast such as buyback or kicker costs (see rules
+    /// > 118.8 and 118.9), the player announces their intentions to pay any or
+    /// > all of those costs (see rule 601.2f). A player can't apply two
+    /// > alternative methods of casting or two alternative costs to a single
+    /// > spell.
+    /// <https://yawgatog.com/resources/magic-rules/#R6012b>
+    pub additional_choices: Vec<CastSpellPlanAdditionalChoice>,
+
+    /// The chosen value for an "X" variable in a spell's casting cost
+    ///
+    /// > 601.2b. If the spell has a variable cost that will be paid as it's
+    /// > being cast (such as an {X} in its mana cost; see rule 107.3), the
+    /// > player announces the value of that variable. If the value of that
+    /// > variable is defined in the text of the spell by a choice that player
+    /// > would make later in the announcement or resolution of the spell, that
+    /// > player makes that choice at this time instead of that later time.
+    /// <https://yawgatog.com/resources/magic-rules/#R6012b>
+    pub variable: Option<ManaValue>,
+
+    /// Targets the player has chosen for this spell
+    ///
+    /// > 601.2c. The player announces their choice of an appropriate object or
+    /// > player for each target the spell requires ... The same target can't be
+    /// > chosen multiple times for any one instance of the word "target" on the
+    /// > spell.
+    /// <https://yawgatog.com/resources/magic-rules/#R6012c>
+    pub targets: Vec<EntityId>,
+
     /// How the user will pay mana costs for this card if it is a spell
     pub mana_payment: ManaPaymentPlan,
+}
+
+impl PlayCardPlan {
+    pub fn new(play_as: PlayAs) -> Self {
+        Self {
+            play_as,
+            modes: EnumSet::new(),
+            alternative_cost: None,
+            additional_choices: Vec::new(),
+            variable: None,
+            targets: Vec::new(),
+            mana_payment: ManaPaymentPlan::default(),
+        }
+    }
 }
 
 /// Describes a user's proposed plan for paying mana costs for a spell.
@@ -63,7 +125,7 @@ pub struct PlayAs {
     pub faces: EnumSet<Face>,
 
     /// Timing restriction on playing this card
-    pub play_as: PlayCardTiming,
+    pub timing: PlayCardTiming,
 }
 
 impl PlayAs {
@@ -71,68 +133,6 @@ impl PlayAs {
     /// being played.
     pub fn single_face(&self) -> Face {
         self.faces.iter().next().expect("Expected exactly one face")
-    }
-}
-
-/// Choices a player may make while placing a spell on the stack
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CastSpellChoices {
-    /// The face or faces of this card which the player is casting and the
-    /// timing restriction used for playing this card.
-    ///
-    /// This will be a single face for most cards, but split cards with the
-    /// "Fuse" ability can be cast using multiple faces at once.
-    pub play_as: PlayAs,
-    /// Targets the player has chosen for this spell
-    ///
-    /// > 601.2c. The player announces their choice of an appropriate object or
-    /// > player for each target the spell requires ... The same target can't be
-    /// > chosen multiple times for any one instance of the word "target" on the
-    /// > spell.
-    /// <https://yawgatog.com/resources/magic-rules/#R6012c>
-    pub targets: Vec<EntityId>,
-    /// Modal choices for this spell
-    ///
-    /// > 601.2b. If the spell is modal, the player announces the mode choice
-    /// > (see rule 700.2).
-    /// <https://yawgatog.com/resources/magic-rules/#R6012b>
-    pub modes: EnumSet<ModalChoice>,
-    /// Identifies an ability which provides an alternative cost which will be
-    /// used to cast this spell
-    pub alternative_cost: Option<Scope>,
-    /// Identifies abilities adding additional choices the caster has chosen for
-    /// this spell, such as optional costs like Kicker.
-    ///
-    /// > 601.2b. If the spell has alternative or additional costs that will be
-    /// > paid as it's being cast such as buyback or kicker costs (see rules
-    /// > 118.8 and 118.9), the player announces their intentions to pay any or
-    /// > all of those costs (see rule 601.2f). A player can't apply two
-    /// > alternative methods of casting or two alternative costs to a single
-    /// > spell.
-    /// <https://yawgatog.com/resources/magic-rules/#R6012b>
-    pub additional_choices: Vec<CastSpellPlanAdditionalChoice>,
-    /// The chosen value for an "X" variable in a spell's casting cost
-    ///
-    /// > 601.2b. If the spell has a variable cost that will be paid as it's
-    /// > being cast (such as an {X} in its mana cost; see rule 107.3), the
-    /// > player announces the value of that variable. If the value of that
-    /// > variable is defined in the text of the spell by a choice that player
-    /// > would make later in the announcement or resolution of the spell, that
-    /// > player makes that choice at this time instead of that later time.
-    /// <https://yawgatog.com/resources/magic-rules/#R6012b>
-    pub variable: Option<ManaValue>,
-}
-
-impl Default for CastSpellChoices {
-    fn default() -> Self {
-        Self {
-            play_as: PlayAs { faces: EnumSet::empty(), play_as: PlayCardTiming::Sorcery },
-            targets: Vec::new(),
-            modes: EnumSet::empty(),
-            alternative_cost: None,
-            additional_choices: Vec::new(),
-            variable: None,
-        }
     }
 }
 

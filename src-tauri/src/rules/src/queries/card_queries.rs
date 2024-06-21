@@ -14,7 +14,7 @@
 
 use std::iter;
 
-use data::card_states::play_card_plan::CastSpellChoices;
+use data::card_states::play_card_plan::PlayCardPlan;
 use data::card_states::zones::ZoneQueries;
 use data::core::numerics::{Power, Toughness};
 use data::core::primitives::{CardId, CardType, Zone};
@@ -115,7 +115,7 @@ pub fn land_subtypes(game: &GameState, card_id: CardId) -> EnumSet<LandSubtype> 
 }
 
 /// Returns the current [ManaCost] that needs to be paid to cast the [CardId]
-/// card using the provided [CastSpellChoices]. Cost items are sorted in
+/// card using the provided [PlayCardPlan]. Cost items are sorted in
 /// [ManaCostItem] order.
 ///
 /// Panics if invalid choices are selected, e.g. if the selected card
@@ -123,10 +123,9 @@ pub fn land_subtypes(game: &GameState, card_id: CardId) -> EnumSet<LandSubtype> 
 pub fn mana_cost_for_casting_card(
     game: &GameState,
     card_id: CardId,
-    choices: &CastSpellChoices,
+    plan: &PlayCardPlan,
 ) -> ManaCost {
-    let mut cost =
-        game.card(card_id).printed().face(choices.play_as.single_face()).mana_cost.clone();
+    let mut cost = game.card(card_id).printed().face(plan.play_as.single_face()).mana_cost.clone();
     cost.items.sort();
     cost
 }

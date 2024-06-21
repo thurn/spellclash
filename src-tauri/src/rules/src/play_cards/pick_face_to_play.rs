@@ -14,9 +14,7 @@
 
 use data::card_states::card_kind::CardKind;
 use data::card_states::card_state::CardState;
-use data::card_states::play_card_plan::{
-    CastSpellChoices, ManaPaymentPlan, PlayAs, PlayCardPlan, PlayCardTiming,
-};
+use data::card_states::play_card_plan::{ManaPaymentPlan, PlayAs, PlayCardPlan, PlayCardTiming};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, CardType, PlayerName, Source};
 use data::game_states::game_state::GameState;
@@ -24,16 +22,14 @@ use data::printed_cards::layout::CardLayout;
 use data::printed_cards::printed_card::{Face, PrintedCardFace};
 use enumset::EnumSet;
 
-use crate::play_cards::play_card::PlayCardStep;
-use crate::play_cards::play_card_choices::{PlayCardChoice, PlayCardChoicePrompt};
 use crate::queries::player_queries;
 
-pub fn run(
-    game: &GameState,
-    source: Source,
-    card_id: CardId,
-    plan: &PlayCardPlan,
-) -> PlayCardChoice {
+/// Returns a list of [PlayCardPlan] options describing valid choices of faces
+/// and timings to play of the indicated card.
+///
+/// The returned faces are selected for validity based solely on their timing
+/// restrictions and the intrinsic properties of the card layout.
+pub fn play_as(game: &GameState, source: Source, card_id: CardId) -> Vec<PlayCardPlan> {
     let mut valid_faces = vec![];
     let card = game.card(card_id);
     if let Some(play) = can_play_as(game, card, &card.printed().face) {
@@ -49,24 +45,7 @@ pub fn run(
         }
     };
 
-    match valid_faces[..] {
-        [] => PlayCardChoice::Invalid,
-        [play_face_as] => PlayCardChoice::Continue {
-            updated_plan: PlayCardPlan {
-                spell_choices: CastSpellChoices {
-                    play_as: play_face_as,
-                    ..plan.spell_choices.clone()
-                },
-                mana_payment: ManaPaymentPlan::default(),
-            },
-        },
-        _ => PlayCardChoice::Prompt {
-            optional: false,
-            prompt: PlayCardChoicePrompt::SelectFace {
-                valid_faces: valid_faces.iter().flat_map(|can_play| can_play.faces).collect(),
-            },
-        },
-    }
+    valid_faces.into_iter().map(PlayCardPlan::new).collect()
 }
 
 /// Returns a [CanPlayAs] indicating whether a [PlayerName] can play a given
@@ -74,7 +53,7 @@ pub fn run(
 fn can_play_as(game: &GameState, card: &CardState, face: &PrintedCardFace) -> Option<PlayAs> {
     let player = card.controller;
     let result = can_play_as_for_types(face);
-    match result.play_as {
+    match result.timing {
         PlayCardTiming::Land => {
             if in_main_phase_with_stack_empty(game, player)
                 && player_queries::land_plays_remaining(game, player) > 0
@@ -109,10 +88,10 @@ fn in_main_phase_with_stack_empty(game: &GameState, player: PlayerName) -> bool 
 /// Returns a [CanPlayAs] for a card solely based on its card types.
 fn can_play_as_for_types(face: &PrintedCardFace) -> PlayAs {
     if face.card_types.contains(CardType::Instant) {
-        PlayAs { faces: EnumSet::only(face.face_identifier), play_as: PlayCardTiming::Instant }
+        PlayAs { faces: EnumSet::only(face.face_identifier), timing: PlayCardTiming::Instant }
     } else if face.card_types.contains(CardType::Land) {
-        PlayAs { faces: EnumSet::only(face.face_identifier), play_as: PlayCardTiming::Land }
+        PlayAs { faces: EnumSet::only(face.face_identifier), timing: PlayCardTiming::Land }
     } else {
-        PlayAs { faces: EnumSet::only(face.face_identifier), play_as: PlayCardTiming::Sorcery }
+        PlayAs { faces: EnumSet::only(face.face_identifier), timing: PlayCardTiming::Sorcery }
     }
 }

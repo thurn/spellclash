@@ -14,7 +14,7 @@
 
 use std::iter;
 
-use data::card_states::play_card_plan::PlayCardPlan;
+use data::card_states::play_card_plan::{PlayAs, PlayCardPlan, PlayCardTiming};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, PlayerName, Source, Zone};
 use data::game_states::game_state::GameState;
@@ -22,8 +22,8 @@ use enum_iterator::Sequence;
 use tracing::instrument;
 use utils::outcome::Outcome;
 
-use crate::play_cards::play_card_choices::{PlayCardChoice, PlayCardChoicePrompt};
-use crate::play_cards::{play_card_choices, play_card_executor};
+use crate::planner::spell_planner;
+use crate::play_cards::{pick_face_to_play, play_card_executor};
 
 /// Plays a card.
 ///
@@ -37,7 +37,11 @@ pub fn execute(
     source: Source,
     card_id: CardId,
 ) -> Outcome {
-    let plan = prompt_for_play_card_plan(game, source, card_id);
+    let mut plans = pick_face_to_play::play_as(game, source, card_id);
+    assert_eq!(plans.len(), 1, "TODO: handle multiple faces");
+    let mut plan = plans.remove(0);
+    plan.mana_payment = spell_planner::mana_payment(game, source, card_id, &plan)
+        .expect("Unable to pay mana for card");
     play_card_executor::execute_plan(game, player, card_id, source, plan)
 }
 
@@ -60,142 +64,31 @@ pub fn can_play_card(
         return false;
     }
 
-    can_play_card_in_step(game, source, card_id, &PlayCardPlan::default(), PlayCardStep::ChooseFace)
+    pick_face_to_play::play_as(game, source, card_id)
+        .into_iter()
+        .any(|plan| can_play_card_as(game, source, card_id, plan))
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Sequence)]
-pub enum PlayCardStep {
-    /// Pick a face of the card to play, e.g. for adventures, split cards, mdfcs
-    ChooseFace,
-
-    /// Choose an optional alternate cost to pay
-    SelectAlternateCost,
-
-    /// Choose modes for a modal card
-    SelectModes,
-
-    /// Choose any optional additional costs to pay
-    SelectAdditionalCosts,
-
-    /// Choose any number of cards in hand to splice with this card
-    Splice,
-
-    /// Pick legal targets for the card. Having zero available targets may or
-    /// may not be an error depending on the text.
-    PickTargets,
-
-    /// Pick the value of an "X" variable in the cost of a spell, if it's not
-    /// determined by the rules text or target selection.
-    SelectVariable,
-
-    /// Activate mana abilities to pay for this card.
-    PayMana,
-
-    /// Pick options to pay any non-mana costs for this card.
-    PayNonManaCosts,
-}
-
-/// Show a series of prompts to the player trying to play a card in order to
-/// construct a valid [PlayCardPlan] to play this card.
-///
-/// Panics if the user makes choices which result in no legal way to
-/// play this card.
-fn prompt_for_play_card_plan(game: &GameState, source: Source, card_id: CardId) -> PlayCardPlan {
-    let mut plan = PlayCardPlan::default();
-    for step in enum_iterator::all::<PlayCardStep>() {
-        loop {
-            let choice = play_card_choices::choice_for_step(game, source, card_id, &plan, step);
-            match choice {
-                PlayCardChoice::Continue { updated_plan } => {
-                    plan = updated_plan;
-                    break;
-                }
-                PlayCardChoice::Invalid => {
-                    panic!("Cannot legally play {card_id:?} in step {step:?}");
-                }
-                PlayCardChoice::Prompt { optional, prompt } => {
-                    show_prompt_and_add_to_plan(game, card_id, source, optional, prompt, &mut plan);
-                }
-            }
-        }
-    }
-
-    plan
-}
-
-/// Show the player a [PlayCardChoicePrompt] and record the choice made in the
-/// provided [PlayCardPlan].
-fn show_prompt_and_add_to_plan(
-    _game: &GameState,
-    _card_id: CardId,
-    _source: Source,
-    _optional: bool,
-    prompt: PlayCardChoicePrompt,
-    plan: &mut PlayCardPlan,
-) {
-}
-
-/// Recursively performs a depth-first search of all possible [PlayCardPlan]s
-/// based on a provided partially-constructed [PlayCardPlan] to see if any of
-/// them result in a legal set of choices which would allow the provided card to
-/// be played.
-fn can_play_card_in_step(
+/// Recursively verify whether a [PlayCardPlan] could allow a card to be played
+/// when populated with a face to play & timing value.
+pub fn can_play_card_as(
     game: &GameState,
     source: Source,
     card_id: CardId,
-    plan: &PlayCardPlan,
-    step: PlayCardStep,
+    plan: PlayCardPlan,
 ) -> bool {
-    let choice = play_card_choices::choice_for_step(game, source, card_id, plan, step);
-
-    match choice {
-        PlayCardChoice::Continue { updated_plan } => {
-            // Advance to next step or return true if we are at the end
-            return step.next().map_or(true, |next| {
-                can_play_card_in_step(game, source, card_id, &updated_plan, next)
-            });
-        }
-        PlayCardChoice::Invalid => {
-            // A choice is required in this step, but no legal option is available.
-            return false;
-        }
-        PlayCardChoice::Prompt { optional, prompt } => {
-            if optional {
-                // If the choice is optional, try skipping it.
-                let advance = step
-                    .next()
-                    .map_or(true, |next| can_play_card_in_step(game, source, card_id, plan, next));
-                if advance {
-                    return true;
-                }
-            }
-
-            for plan in legal_plans_for_prompt(game, card_id, source, plan, prompt) {
-                if can_play_card_in_step(game, source, card_id, &plan, step) {
-                    return true;
-                }
-            }
-        }
+    match plan.play_as.timing {
+        PlayCardTiming::Land => true,
+        _ => can_pay_mana_costs(game, source, card_id, plan),
     }
-
-    // No legal plan exists
-    false
 }
 
-/// Returns an iterator over possible extensions of the provided [PlayCardPlan]
-/// for a [PlayCardChoicePrompt].
-///
-/// This will return one [PlayCardPlan] per option available in the prompt.
-fn legal_plans_for_prompt(
-    _game: &GameState,
-    _card_id: CardId,
-    _source: Source,
-    current: &PlayCardPlan,
-    prompt: PlayCardChoicePrompt,
-) -> Box<dyn Iterator<Item = PlayCardPlan>> {
-    if let PlayCardChoicePrompt::PayMana { mana_payment_plan } = prompt {
-        Box::new(iter::once(PlayCardPlan { mana_payment: mana_payment_plan, ..current.clone() }))
-    } else {
-        Box::new(iter::empty())
-    }
+fn can_pay_mana_costs(
+    game: &GameState,
+    source: Source,
+    card_id: CardId,
+    plan: PlayCardPlan,
+) -> bool {
+    let mana_payment_plan = spell_planner::mana_payment(game, source, card_id, &plan);
+    mana_payment_plan.is_some()
 }

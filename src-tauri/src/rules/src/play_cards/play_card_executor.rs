@@ -37,13 +37,13 @@ pub fn execute_plan(
         permanents::tap(game, source, *land)?;
     }
 
-    if plan.spell_choices.play_as.play_as == PlayCardTiming::Land {
+    if plan.play_as.timing == PlayCardTiming::Land {
         game.history_counters_mut(player).lands_played += 1;
-        let face = plan.spell_choices.play_as.single_face();
+        let face = plan.play_as.single_face();
         permanents::turn_face_up(game, source, card_id, face)?;
         move_card::run(game, source, card_id, Zone::Battlefield)?;
     } else {
-        game.card_mut(card_id).cast_as = plan.spell_choices.play_as.faces;
+        game.card_mut(card_id).cast_as = plan.play_as.faces;
         move_card::run(game, source, card_id, Zone::Stack)?;
 
         // Once a card is played, abilities trigger and then a new priority round is created:
