@@ -20,7 +20,7 @@ use crate::core::primitives::{
     AbilityId, CardId, EntityId, HasCardId, HasController, HasEntityId, HasPlayerName, ObjectId,
     PlayerName, StackAbilityId,
 };
-use crate::delegates::scope::Scope;
+use crate::delegates::scope::DelegateScope;
 
 /// Represents the state of a triggered or activated ability which has triggered
 /// or is on the stack

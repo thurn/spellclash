@@ -16,7 +16,7 @@ use data::card_states::zones::ZoneQueries;
 use data::core::primitives::HasCardId;
 use data::delegates::card_delegate_list::CardDelegateList;
 use data::delegates::event_delegate_list::EventDelegateList;
-use data::delegates::scope::Scope;
+use data::delegates::scope::DelegateScope;
 use data::game_states::game_state::GameState;
 use utils::outcome;
 
@@ -28,7 +28,11 @@ pub trait QueryExt<TArg, TResult> {
     /// event.
     fn this_turn(
         &mut self,
-        transformation: impl Fn(&GameState, Scope, TResult) -> TResult + Copy + Send + Sync + 'static,
+        transformation: impl Fn(&GameState, DelegateScope, TResult) -> TResult
+            + Copy
+            + Send
+            + Sync
+            + 'static,
     );
 }
 
@@ -37,7 +41,11 @@ impl<TArg: HasCardId, TResult> QueryExt<TArg, TResult>
 {
     fn this_turn(
         &mut self,
-        transformation: impl Fn(&GameState, Scope, TResult) -> TResult + Copy + Send + Sync + 'static,
+        transformation: impl Fn(&GameState, DelegateScope, TResult) -> TResult
+            + Copy
+            + Send
+            + Sync
+            + 'static,
     ) {
         self.any(move |g, s, arg, mut result| {
             for _ in 0..g.this_turn.application_count(s.ability_id, g.card(arg).entity_id) {

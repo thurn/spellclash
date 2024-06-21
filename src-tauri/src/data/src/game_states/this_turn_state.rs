@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 
 use crate::core::primitives::{AbilityId, CardId, EntityId, ObjectId};
-use crate::delegates::scope::Scope;
+use crate::delegates::scope::{DelegateScope, EffectScope};
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct EffectOrigin {
@@ -39,7 +39,7 @@ pub struct ThisTurnState {
 
     /// List of control-changing effects to automatically clean up at end of
     /// turn.
-    control_changing_effects: Option<Vec<(Scope, CardId)>>,
+    control_changing_effects: Option<Vec<(EffectScope, CardId)>>,
 }
 
 impl ThisTurnState {
@@ -59,12 +59,12 @@ impl ThisTurnState {
 
     /// Returns & removes the list of control-changing effects to automatically
     /// clean up at end of turn
-    pub fn take_control_changing_effects(&mut self) -> Vec<(Scope, CardId)> {
+    pub fn take_control_changing_effects(&mut self) -> Vec<(EffectScope, CardId)> {
         self.control_changing_effects.take().unwrap_or_default()
     }
 
     /// Adds a control-changing effect to automatically clean up at end of turn.
-    pub fn add_control_changing_effect(&mut self, scope: Scope, card_id: CardId) {
+    pub fn add_control_changing_effect(&mut self, scope: EffectScope, card_id: CardId) {
         self.control_changing_effects.get_or_insert_with(Vec::new).push((scope, card_id));
     }
 }

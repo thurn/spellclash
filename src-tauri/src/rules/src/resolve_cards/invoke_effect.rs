@@ -30,7 +30,7 @@ pub fn run(
     targets: Vec<EntityId>,
     effect: &EffectFn,
 ) -> Outcome {
-    let scope = game.create_scope(ability_id, stack_ability_id);
+    let scope = game.create_effect_scope(ability_id, stack_ability_id);
     match effect {
         EffectFn::NoEffect => outcome::OK,
         EffectFn::Untargeted(function) => function(game, scope),

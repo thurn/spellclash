@@ -15,18 +15,19 @@
 use data::card_states::card_state::ControlChangingEffect;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{AbilityId, CardId, HasController, HasSource, PlayerName};
-use data::delegates::scope::Scope;
+use data::delegates::scope::{DelegateScope, EffectScope};
 use data::game_states::game_state::GameState;
 use utils::outcome;
 use utils::outcome::Outcome;
 
-/// Causes the controller of [Scope] to gain control of the [CardId] card.
+/// Causes the controller of [EffectScope] to gain control of the [CardId]
+/// card.
 ///
 /// The caller of this function is responsible for removing this status via
 /// [remove_control] if it ends. The effect will also automatically end if this
 /// card changes zones, except for a transition from the stack to the
 /// battlefield.
-pub fn gain_control(game: &mut GameState, scope: Scope, card_id: CardId) -> Outcome {
+pub fn gain_control(game: &mut GameState, scope: EffectScope, card_id: CardId) -> Outcome {
     let current = game.card(card_id).controller();
     if current != scope.controller {
         game.zones.on_controller_changed(
@@ -48,14 +49,18 @@ pub fn gain_control(game: &mut GameState, scope: Scope, card_id: CardId) -> Outc
 /// Gains control of the [CardId] card as described in [gain_control] for the
 /// duration of the current turn. This effect is automatically ended in the
 /// cleanup step.
-pub fn gain_control_this_turn(game: &mut GameState, scope: Scope, card_id: CardId) -> Outcome {
+pub fn gain_control_this_turn(
+    game: &mut GameState,
+    scope: EffectScope,
+    card_id: CardId,
+) -> Outcome {
     game.this_turn.add_control_changing_effect(scope, card_id);
     gain_control(game, scope, card_id)
 }
 
 /// Removes all control-changing effects from the [CardId] card that were added
-/// by the [Scope] ability.
-pub fn remove_control(game: &mut GameState, scope: Scope, card_id: CardId) -> Outcome {
+/// by the [EffectScope] ability.
+pub fn remove_control(game: &mut GameState, scope: EffectScope, card_id: CardId) -> Outcome {
     let current = game.card(card_id).controller();
     game.card_mut(card_id)
         .control_changing_effects

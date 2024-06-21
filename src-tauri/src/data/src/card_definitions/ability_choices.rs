@@ -18,7 +18,7 @@ use utils::outcome::Outcome;
 use crate::card_definitions::ability_definition::EffectFn;
 use crate::core::function_types::{CardPredicateFn, PlayerPredicateFn, StackAbilityPredicateFn};
 use crate::core::primitives::{CardId, EntityId, PlayerName, StackItemId, Zone};
-use crate::delegates::scope::Scope;
+use crate::delegates::scope::{DelegateScope, EffectScope};
 use crate::game_states::game_state::GameState;
 
 /// Set of choices available to be made when placing an ability on the stack.
@@ -165,7 +165,7 @@ pub struct SingleCardTargetAbilityBuilder<TResult: AbilityChoiceBuilder> {
 impl<TResult: AbilityChoiceBuilder> SingleCardTargetAbilityBuilder<TResult> {
     pub fn effect(
         mut self,
-        effect: impl Fn(&mut GameState, Scope, CardId) -> Outcome + 'static + Copy + Send + Sync,
+        effect: impl Fn(&mut GameState, EffectScope, CardId) -> Outcome + 'static + Copy + Send + Sync,
     ) -> TResult {
         self.builder.set_effect_fn(EffectFn::SingleCardTarget(Box::new(effect)));
         self.builder
@@ -179,7 +179,11 @@ pub struct SinglePlayerTargetAbilityBuilder<TResult: AbilityChoiceBuilder> {
 impl<TResult: AbilityChoiceBuilder> SinglePlayerTargetAbilityBuilder<TResult> {
     pub fn effect(
         mut self,
-        effect: impl Fn(&mut GameState, Scope, PlayerName) -> Outcome + 'static + Copy + Send + Sync,
+        effect: impl Fn(&mut GameState, EffectScope, PlayerName) -> Outcome
+            + 'static
+            + Copy
+            + Send
+            + Sync,
     ) -> TResult {
         self.builder.set_effect_fn(EffectFn::SinglePlayerTarget(Box::new(effect)));
         self.builder
@@ -193,7 +197,11 @@ pub struct SingleCardOrPlayerTargetAbilityBuilder<TResult: AbilityChoiceBuilder>
 impl<TResult: AbilityChoiceBuilder> SingleCardOrPlayerTargetAbilityBuilder<TResult> {
     pub fn effect(
         mut self,
-        effect: impl Fn(&mut GameState, Scope, CardOrPlayer) -> Outcome + 'static + Copy + Send + Sync,
+        effect: impl Fn(&mut GameState, EffectScope, CardOrPlayer) -> Outcome
+            + 'static
+            + Copy
+            + Send
+            + Sync,
     ) -> TResult {
         self.builder.set_effect_fn(EffectFn::SingleCardOrPlayerTarget(Box::new(effect)));
         self.builder

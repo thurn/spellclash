@@ -20,8 +20,7 @@ use crate::core::primitives::{
 
 /// Identifies the context in which an event function or event delegate is
 /// currently executing
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub struct Scope {
+pub trait Scope: HasCardId {
     /// The controller for this ability or the card that created this ability.
     ///
     /// In an effect function, this is the controller of the effect on the
@@ -32,20 +31,60 @@ pub struct Scope {
     /// create its own delegate callbacks, since those callbacks will see their
     /// card's controller, *not* the controller of the ability that
     /// created them.
-    pub controller: PlayerName,
+    fn controller(&self) -> PlayerName;
 
     /// The identifier for the ability definition that is executing.
+    fn ability_id(&self) -> AbilityId;
+}
+
+/// Execution context for a delegate callback
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct DelegateScope {
+    pub controller: PlayerName,
     pub ability_id: AbilityId,
 }
 
-impl HasCardId for Scope {
+/// Execution context for an effect function
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct EffectScope {
+    pub controller: PlayerName,
+    pub ability_id: AbilityId,
+}
+
+impl Scope for DelegateScope {
+    fn controller(&self) -> PlayerName {
+        self.controller
+    }
+
+    fn ability_id(&self) -> AbilityId {
+        self.ability_id
+    }
+}
+
+impl HasCardId for DelegateScope {
     fn card_id(&self) -> CardId {
         self.ability_id.card_id
     }
 }
 
-impl HasSource for Scope {
+impl Scope for EffectScope {
+    fn controller(&self) -> PlayerName {
+        self.controller
+    }
+
+    fn ability_id(&self) -> AbilityId {
+        self.ability_id
+    }
+}
+
+impl HasCardId for EffectScope {
+    fn card_id(&self) -> CardId {
+        self.ability_id.card_id
+    }
+}
+
+impl<T: Scope> HasSource for T {
     fn source(&self) -> Source {
-        Source::Ability { controller: self.controller, ability_id: self.ability_id }
+        Source::Ability { controller: self.controller(), ability_id: self.ability_id() }
     }
 }

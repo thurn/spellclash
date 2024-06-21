@@ -26,7 +26,7 @@ use data::core::primitives::{
     AbilityId, CardId, EntityId, HasController, HasEntityId, PlayerName, Source, Zone,
 };
 use data::delegates::has_delegates::HasDelegates;
-use data::delegates::scope::Scope;
+use data::delegates::scope::DelegateScope;
 use data::game_states::game_state::GameState;
 use data::prompts::choice_prompt::Choice;
 use data::text_strings::Text;
@@ -58,7 +58,7 @@ pub fn execute(
 
     let prompt_lists = targeted_abilities(game, card_id)
         .map(|(ability_id, target)| {
-            let scope = game.create_scope(ability_id, None);
+            let scope = game.create_delegate_scope(ability_id);
             valid_targets(game, scope, &target.predicate)
                 .map(|entity_id| Choice { entity_id })
                 .collect::<Vec<_>>()
@@ -160,7 +160,7 @@ fn valid_target_lists(
         .filter(|(_, ability)| ability.ability_type == AbilityType::Spell)
         .flat_map(move |(number, ability)| {
             ability.choices.targets.iter().flat_map(move |target| {
-                let scope = game.create_scope(AbilityId { card_id, number }, None);
+                let scope = game.create_delegate_scope(AbilityId { card_id, number });
                 assert_eq!(
                     target.quantity,
                     AbilityTargetQuantity::Exactly(1),
@@ -173,7 +173,7 @@ fn valid_target_lists(
 
 fn valid_targets<'a>(
     game: &'a GameState,
-    scope: Scope,
+    scope: DelegateScope,
     target: &'a AbilityTargetPredicate,
 ) -> Box<dyn Iterator<Item = EntityId> + 'a> {
     match target {
@@ -200,7 +200,7 @@ fn valid_targets<'a>(
 
 fn valid_card_targets<'a>(
     game: &'a GameState,
-    scope: Scope,
+    scope: DelegateScope,
     target: &'a CardAbilityTarget,
 ) -> Box<dyn Iterator<Item = EntityId> + 'a> {
     Box::new(
@@ -219,7 +219,7 @@ fn valid_card_targets<'a>(
 
 fn valid_player_targets<'a>(
     game: &'a GameState,
-    scope: Scope,
+    scope: DelegateScope,
     target: &'a PlayerAbilityTarget,
 ) -> Box<dyn Iterator<Item = EntityId> + 'a> {
     Box::new(
@@ -231,7 +231,7 @@ fn valid_player_targets<'a>(
     )
 }
 
-fn players_in_set(game: &GameState, scope: Scope, set: PlayerSet) -> EnumSet<PlayerName> {
+fn players_in_set(game: &GameState, scope: DelegateScope, set: PlayerSet) -> EnumSet<PlayerName> {
     match set {
         PlayerSet::AllPlayers => player_queries::all_players(game),
         PlayerSet::You => EnumSet::only(scope.controller),

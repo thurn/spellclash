@@ -22,7 +22,7 @@ use utils::outcome::Outcome;
 use crate::core::primitives::{AbilityId, EntityId, HasCardId, Zone};
 use crate::delegates::flag::Flag;
 use crate::delegates::has_delegates::HasDelegates;
-use crate::delegates::scope::Scope;
+use crate::delegates::scope::DelegateScope;
 use crate::delegates::stores_delegates::StoresDelegates;
 use crate::game_states::game_state::GameState;
 
@@ -120,7 +120,7 @@ impl<'a, TData: HasDelegates, TArg> EventDelegateInvoker<'a, TData, TArg> {
 
     pub fn run(&self, data: &mut TData) -> Outcome {
         for stored in &self.delegates {
-            let scope = data.create_scope(stored.ability_id, None);
+            let scope = data.create_delegate_scope(stored.ability_id);
             stored.event_fn.invoke(data, scope, self.arg)?;
         }
         outcome::OK

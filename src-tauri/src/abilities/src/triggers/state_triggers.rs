@@ -19,7 +19,7 @@ use data::card_states::zones::ZoneQueries;
 use data::core::function_types::{CardMutation, CardPredicate};
 use data::core::primitives::{HasCardId, HasSource, Zone};
 use data::delegates::game_delegates::GameDelegates;
-use data::delegates::scope::Scope;
+use data::delegates::scope::DelegateScope;
 use data::game_states::game_state::GameState;
 use rules::mutations::trigger_extension::TriggerExt;
 use utils::outcome;

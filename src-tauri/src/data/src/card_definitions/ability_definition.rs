@@ -22,7 +22,7 @@ use crate::core::primitives::{CardId, EntityId, PlayerName, Zone, ALL_ZONES};
 use crate::costs::cost::Cost;
 #[allow(unused)] // Used in docs
 use crate::delegates::game_delegates::GameDelegates;
-use crate::delegates::scope::Scope;
+use crate::delegates::scope::{DelegateScope, EffectScope};
 use crate::game_states::game_state::GameState;
 
 /// An event callback function.
@@ -35,11 +35,12 @@ pub struct Delegate {
 }
 
 /// Function to apply the effects of of an ability to the game.
-pub type UntargetedEffectFn = Box<dyn Fn(&mut GameState, Scope) -> Outcome + 'static + Send + Sync>;
+pub type UntargetedEffectFn =
+    Box<dyn Fn(&mut GameState, EffectScope) -> Outcome + 'static + Send + Sync>;
 pub type TargetedEffectFn<T> =
-    Box<dyn Fn(&mut GameState, Scope, T) -> Outcome + 'static + Send + Sync>;
+    Box<dyn Fn(&mut GameState, EffectScope, T) -> Outcome + 'static + Send + Sync>;
 pub type MultipleTargetedEffectFn =
-    Box<dyn Fn(&mut GameState, Scope, &[EntityId]) -> Outcome + 'static + Send + Sync>;
+    Box<dyn Fn(&mut GameState, EffectScope, &[EntityId]) -> Outcome + 'static + Send + Sync>;
 
 pub enum EffectFn {
     NoEffect,
@@ -148,7 +149,7 @@ impl SpellAbility {
     /// Used only for untargeted effects. Add a target first if required.
     pub fn effect(
         self,
-        effect: impl Fn(&mut GameState, Scope) -> Outcome + 'static + Copy + Send + Sync,
+        effect: impl Fn(&mut GameState, EffectScope) -> Outcome + 'static + Copy + Send + Sync,
     ) -> SpellAbility {
         SpellAbility {
             choices: self.choices,
@@ -234,7 +235,7 @@ impl ActivatedAbility<WithCosts, NoEffects> {
     /// Effects when this ability resolves.
     pub fn effects(
         self,
-        effects: impl Fn(&mut GameState, Scope) -> Outcome + 'static + Copy + Send + Sync,
+        effects: impl Fn(&mut GameState, EffectScope) -> Outcome + 'static + Copy + Send + Sync,
     ) -> ActivatedAbility<WithCosts, WithEffects> {
         ActivatedAbility {
             costs: self.costs,
@@ -289,7 +290,7 @@ impl TriggeredAbility<NoEffects> {
     /// Effects when this ability resolves.
     pub fn effects(
         self,
-        effects: impl Fn(&mut GameState, Scope) -> Outcome + 'static + Copy + Send + Sync,
+        effects: impl Fn(&mut GameState, EffectScope) -> Outcome + 'static + Copy + Send + Sync,
     ) -> TriggeredAbility<WithEffects> {
         TriggeredAbility {
             delegates: self.delegates,

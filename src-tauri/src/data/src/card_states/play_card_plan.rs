@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::core::numerics::ManaValue;
 use crate::core::primitives::{CardId, EntityId};
-use crate::delegates::scope::Scope;
+use crate::delegates::scope::DelegateScope;
 use crate::printed_cards::printed_card::Face;
 
 /// Describes a proposed series of a choices for a user to play a card as part
@@ -40,7 +40,7 @@ pub struct PlayCardPlan {
 
     /// Identifies an ability which provides an alternative cost which will be
     /// used to cast this spell
-    pub alternative_cost: Option<Scope>,
+    pub alternative_cost: Option<DelegateScope>,
 
     /// Identifies abilities adding additional choices the caster has chosen for
     /// this spell, such as optional costs like Kicker.
@@ -107,7 +107,7 @@ pub struct ManaPaymentPlan {
     pub basic_land_abilities_to_activate: Vec<CardId>,
     /// Identifies mana abilities the player has chosen to activate in order to
     /// pay costs to cast this spell.
-    pub mana_abilities: Vec<Scope>,
+    pub mana_abilities: Vec<DelegateScope>,
 }
 
 /// Describes how a face of card can be played.
@@ -158,7 +158,7 @@ pub enum CastSpellPlanAdditionalChoice {
     /// Ability with an additional cost the player has *chosen* to pay for this
     /// spell, such as Kicker. Does not include additional costs the player is
     /// *forced* to pay.
-    AdditionalCostChoice(Scope),
+    AdditionalCostChoice(DelegateScope),
     /// Splice this spell with the indicated card
     ///
     /// > 601.2b. If the player wishes to splice any cards onto the spell (see

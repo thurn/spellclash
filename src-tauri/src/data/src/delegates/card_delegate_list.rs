@@ -20,7 +20,7 @@ use enumset::EnumSet;
 use crate::core::primitives::{AbilityId, EntityId, HasCardId, Zone};
 use crate::delegates::flag::Flag;
 use crate::delegates::has_delegates::HasDelegates;
-use crate::delegates::scope::Scope;
+use crate::delegates::scope::DelegateScope;
 use crate::delegates::stores_delegates::StoresDelegates;
 
 /// Wrapper around query functions to enable closures to be cloned.
@@ -105,7 +105,7 @@ impl<TData: HasDelegates, TArg: HasCardId, TResult> CardDelegateList<TData, TArg
                 continue;
             }
 
-            let scope = data.create_scope(stored.ability_id, None);
+            let scope = data.create_delegate_scope(stored.ability_id);
             result = stored.query_fn.invoke(data, scope, arg, result);
         }
         result

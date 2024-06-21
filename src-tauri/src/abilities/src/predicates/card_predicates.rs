@@ -13,12 +13,12 @@
 // limitations under the License.
 
 use data::core::primitives::CardId;
-use data::delegates::scope::Scope;
+use data::delegates::scope::DelegateScope;
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandSubtype;
 use rules::queries::card_queries;
 
 /// True if this card is an island.
-pub fn island(game: &GameState, _: Scope, card_id: CardId) -> bool {
+pub fn island(game: &GameState, _: DelegateScope, card_id: CardId) -> bool {
     card_queries::land_subtypes(game, card_id).contains(LandSubtype::Island)
 }

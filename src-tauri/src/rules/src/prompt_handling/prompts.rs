@@ -16,7 +16,7 @@ use std::collections::HashMap;
 
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, EntityId, PlayerName};
-use data::delegates::scope::Scope;
+use data::delegates::scope::{DelegateScope, Scope};
 use data::game_states::game_state::GameState;
 use data::player_states::player_state::{PlayerQueries, PlayerType};
 use data::prompts::choice_prompt::{Choice, ChoicePrompt};
@@ -138,7 +138,7 @@ pub fn pick_number(
 /// library.
 pub fn select_ordered_from<'a>(
     game: &mut GameState,
-    scope: Scope,
+    scope: impl Scope,
     text: Text,
     cards: impl IntoIterator<Item = &'a CardId>,
     quantity: usize,
@@ -146,7 +146,7 @@ pub fn select_ordered_from<'a>(
 ) -> PromptResult<Vec<CardId>> {
     Ok(select_order(
         game,
-        scope.controller,
+        scope.controller(),
         text,
         SelectOrderPrompt::new(hashmap! {
             CardOrderLocation::Unordered => cards.into_iter().copied().collect(),

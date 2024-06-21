@@ -15,7 +15,7 @@
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{AbilityId, PlayerName, StackItemId};
 use data::delegates::event_delegate_list::EventDelegateList;
-use data::delegates::scope::Scope;
+use data::delegates::scope::DelegateScope;
 use data::game_states::game_state::GameState;
 use utils::outcome;
 use utils::outcome::Outcome;
@@ -23,19 +23,19 @@ use utils::outcome::Outcome;
 pub trait TriggerExt<TArg> {
     fn trigger_if(
         &mut self,
-        predicate: impl Fn(&GameState, Scope, &TArg) -> bool + Copy + Send + Sync + 'static,
+        predicate: impl Fn(&GameState, DelegateScope, &TArg) -> bool + Copy + Send + Sync + 'static,
     );
 
     fn trigger_if_not_on_stack(
         &mut self,
-        predicate: impl Fn(&GameState, Scope, &TArg) -> bool + Copy + Send + Sync + 'static,
+        predicate: impl Fn(&GameState, DelegateScope, &TArg) -> bool + Copy + Send + Sync + 'static,
     );
 }
 
 impl<TArg> TriggerExt<TArg> for EventDelegateList<GameState, TArg> {
     fn trigger_if(
         &mut self,
-        predicate: impl Fn(&GameState, Scope, &TArg) -> bool + Copy + Send + Sync + 'static,
+        predicate: impl Fn(&GameState, DelegateScope, &TArg) -> bool + Copy + Send + Sync + 'static,
     ) {
         self.whenever(move |g, s, arg| {
             if predicate(g, s, arg) {
@@ -47,7 +47,7 @@ impl<TArg> TriggerExt<TArg> for EventDelegateList<GameState, TArg> {
 
     fn trigger_if_not_on_stack(
         &mut self,
-        predicate: impl Fn(&GameState, Scope, &TArg) -> bool + Copy + Send + Sync + 'static,
+        predicate: impl Fn(&GameState, DelegateScope, &TArg) -> bool + Copy + Send + Sync + 'static,
     ) {
         self.whenever(move |g, s, arg| {
             if predicate(g, s, arg) && !is_ability_on_stack(g, s.ability_id) {

@@ -15,21 +15,22 @@
 use utils::outcome::Outcome;
 
 use crate::core::primitives::{CardId, EntityId, PlayerName, Source, StackAbilityId};
-use crate::delegates::scope::Scope;
+use crate::delegates::scope::DelegateScope;
 use crate::game_states::game_state::GameState;
 
 /// Function which performs a boolean query on the state of a card.
 pub trait CardPredicate:
-    Fn(&GameState, Scope, CardId) -> bool + 'static + Copy + Send + Sync
+    Fn(&GameState, DelegateScope, CardId) -> bool + 'static + Copy + Send + Sync
 {
 }
 
 impl<F> CardPredicate for F where
-    F: Fn(&GameState, Scope, CardId) -> bool + 'static + Copy + Send + Sync
+    F: Fn(&GameState, DelegateScope, CardId) -> bool + 'static + Copy + Send + Sync
 {
 }
 
-pub type CardPredicateFn = Box<dyn Fn(&GameState, Scope, CardId) -> bool + 'static + Send + Sync>;
+pub type CardPredicateFn =
+    Box<dyn Fn(&GameState, DelegateScope, CardId) -> bool + 'static + Send + Sync>;
 
 /// Function which performs a boolean query on the state of a card.
 pub trait CardMutation:
@@ -46,27 +47,27 @@ pub type CardMutationFn =
     Box<dyn Fn(&mut GameState, Source, CardId) -> Outcome + 'static + Send + Sync>;
 
 pub trait PlayerPredicate:
-    Fn(&GameState, Scope, PlayerName) -> bool + 'static + Copy + Send + Sync
+    Fn(&GameState, DelegateScope, PlayerName) -> bool + 'static + Copy + Send + Sync
 {
 }
 
 impl<F> PlayerPredicate for F where
-    F: Fn(&GameState, Scope, PlayerName) -> bool + 'static + Copy + Send + Sync
+    F: Fn(&GameState, DelegateScope, PlayerName) -> bool + 'static + Copy + Send + Sync
 {
 }
 
 pub type PlayerPredicateFn =
-    Box<dyn Fn(&GameState, Scope, PlayerName) -> bool + 'static + Send + Sync>;
+    Box<dyn Fn(&GameState, DelegateScope, PlayerName) -> bool + 'static + Send + Sync>;
 
 pub trait StackAbilityPredicate:
-    Fn(&GameState, Scope, StackAbilityId) -> bool + 'static + Copy + Send + Sync
+    Fn(&GameState, DelegateScope, StackAbilityId) -> bool + 'static + Copy + Send + Sync
 {
 }
 
 impl<F> StackAbilityPredicate for F where
-    F: Fn(&GameState, Scope, StackAbilityId) -> bool + 'static + Copy + Send + Sync
+    F: Fn(&GameState, DelegateScope, StackAbilityId) -> bool + 'static + Copy + Send + Sync
 {
 }
 
 pub type StackAbilityPredicateFn =
-    Box<dyn Fn(&GameState, Scope, StackAbilityId) -> bool + 'static + Send + Sync>;
+    Box<dyn Fn(&GameState, DelegateScope, StackAbilityId) -> bool + 'static + Send + Sync>;
