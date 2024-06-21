@@ -76,3 +76,4 @@ pub const CANOPY_GORGER: CardName = CardName(uuid!("1d614b37-d578-4f35-8fd8-3c78
 pub const VASTWOOD_GORGER: CardName = CardName(uuid!("a17a86a3-9f9c-4e09-93e6-e543a70733bc"));
 pub const PHERES_BAND_CENTAURS: CardName = CardName(uuid!("4aebea34-a05b-4626-97bc-f15fa177ef05"));
 pub const DANCE_OF_THE_SKYWISE: CardName = CardName(uuid!("5ab0ab9b-c143-4315-8983-f645fb21f8b3"));
+pub const RAY_OF_COMMAND: CardName = CardName(uuid!("adf41d29-403d-4936-9689-3148d103e700"));

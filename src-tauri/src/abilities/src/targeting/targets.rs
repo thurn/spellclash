@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use data::card_definitions::ability_choices::CardAbilityTarget;
+use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardType, Zone};
 use enumset::EnumSet;
 use rules::queries::card_queries;
@@ -23,6 +24,17 @@ pub fn creature() -> CardAbilityTarget {
         zones: EnumSet::only(Zone::Battlefield),
         predicate: Box::new(|g, _, id| {
             card_queries::card_types(g, id).contains(CardType::Creature)
+        }),
+    }
+}
+
+/// Target a creature an opponent controls
+pub fn creature_opponent_controls() -> CardAbilityTarget {
+    CardAbilityTarget {
+        zones: EnumSet::only(Zone::Battlefield),
+        predicate: Box::new(|g, s, id| {
+            card_queries::card_types(g, id).contains(CardType::Creature)
+                && g.card(id).controller != s.controller
         }),
     }
 }

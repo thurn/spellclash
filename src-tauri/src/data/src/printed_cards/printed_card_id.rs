@@ -97,3 +97,5 @@ pub const BRAINSTORM: PrintedCardId = PrintedCardId(uuid!("84479779-d570-4eee-99
 pub const DANDAN: PrintedCardId = PrintedCardId(uuid!("ac2e32d0-f172-4934-9d73-1bc2ab86586e"));
 pub const DANCE_OF_THE_SKYWISE: PrintedCardId =
     PrintedCardId(uuid!("c548d140-3d81-4b33-9985-87703d316a83"));
+pub const RAY_OF_COMMAND: PrintedCardId =
+    PrintedCardId(uuid!("638abe5f-2a8a-42ca-bcdf-a52a3df66946"));
