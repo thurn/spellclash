@@ -19,4 +19,5 @@ use serde::{Deserialize, Serialize};
 pub enum Text {
     HandToTopOfLibraryPrompt,
     SelectNumber,
+    SelectTarget,
 }

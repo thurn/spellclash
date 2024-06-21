@@ -30,9 +30,6 @@ pub struct ChoicePrompt<T> {
 /// A single option a user can select in a [ChoicePrompt].
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Choice<T> {
-    /// A label to display for the choice
-    pub label: Text,
-
     /// The game entity associated with this choice.
     ///
     /// The UI will display a choice button attached to this object. If this
