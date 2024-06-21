@@ -51,13 +51,7 @@ fn resolve_top_card_of_stack(game: &mut GameState, card_id: CardId) -> Outcome {
     for (ability_number, ability) in definition.iterate_abilities() {
         if ability.ability_type == AbilityType::Spell {
             let ability_id = AbilityId { card_id, number: ability_number };
-            invoke_effect::run(
-                game,
-                ability_id,
-                None,
-                game.card(card_id).targets.clone(),
-                &ability.effect,
-            )?;
+            invoke_effect::run(game, ability_id, None, &ability.effect)?;
         }
     }
 
@@ -96,13 +90,7 @@ fn resolve_top_ability_of_stack(game: &mut GameState, stack_ability_id: StackAbi
     let ability_id = game.stack_ability(stack_ability_id).ability_id;
     let ability_definition =
         definitions::get(game.card(ability_id.card_id).card_name).get_ability(ability_id.number);
-    invoke_effect::run(
-        game,
-        ability_id,
-        Some(stack_ability_id),
-        game.stack_ability(stack_ability_id).targets.clone(),
-        &ability_definition.effect,
-    )?;
+    invoke_effect::run(game, ability_id, Some(stack_ability_id), &ability_definition.effect)?;
     game.zones.remove_stack_ability(stack_ability_id);
     outcome::OK
 }

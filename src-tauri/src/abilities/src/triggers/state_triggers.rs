@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use data::card_definitions::ability_choices::AbilityChoiceBuilder;
 use data::card_definitions::ability_definition::{
     AbilityBuilder, AbilityDelegateBuilder, TriggeredAbility,
 };
@@ -37,5 +38,5 @@ pub fn when_controls_no(
                 !g.battlefield(s.controller).iter().any(|&card_id| predicate(g, s, card_id))
             })
         })
-        .effects(move |g, s| mutation(g, s.source(), s.card_id()))
+        .effect(move |g, s| mutation(g, s.source(), s.card_id()))
 }

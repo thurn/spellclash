@@ -28,54 +28,15 @@ pub fn run(
     game: &mut GameState,
     ability_id: AbilityId,
     stack_ability_id: Option<StackAbilityId>,
-    targets: Vec<EntityId>,
-    effect: &EffectFn,
+    effect: &Option<EffectFn>,
 ) -> Outcome {
-    let controller = match stack_ability_id {
-        Some(stack_ability_id) => game.stack_ability(stack_ability_id).controller,
-        _ => game.card(ability_id).controller(),
-    };
-    let scope = EffectScope { controller, ability_id, effect_id: game.new_effect_id() };
-
-    match effect {
-        EffectFn::NoEffect => outcome::OK,
-        EffectFn::Untargeted(function) => function(game, scope),
-        EffectFn::SingleCardTarget(function) => {
-            if let Some(card_id) = single_card(game, &targets) {
-                function(game, scope, card_id)
-            } else {
-                outcome::OK
-            }
-        }
-        EffectFn::SinglePlayerTarget(fun) => {
-            if let Some(player) = single_player(&targets) {
-                fun(game, scope, player)
-            } else {
-                outcome::OK
-            }
-        }
-        EffectFn::SingleCardOrPlayerTarget(fun) => {
-            if let Some(card_id) = single_card(game, &targets) {
-                fun(game, scope, CardOrPlayer::Card(card_id))
-            } else if let Some(player) = single_player(&targets) {
-                fun(game, scope, CardOrPlayer::Player(player))
-            } else {
-                outcome::OK
-            }
-        }
-        EffectFn::Targeted(function) => function(game, scope, &targets),
+    if let Some(function) = effect {
+        let controller = match stack_ability_id {
+            Some(stack_ability_id) => game.stack_ability(stack_ability_id).controller,
+            _ => game.card(ability_id).controller(),
+        };
+        let scope = EffectScope { controller, ability_id, effect_id: game.new_effect_id() };
+        function(game, scope)?;
     }
-}
-
-fn single_card(game: &GameState, targets: &[EntityId]) -> Option<CardId> {
-    let entity = targets.first().copied()?;
-    game.card_entity(entity).map(|c| c.id)
-}
-
-fn single_player(targets: &[EntityId]) -> Option<PlayerName> {
-    let entity = targets.first().copied()?;
-    match entity {
-        EntityId::Player(player) => Some(player),
-        _ => None,
-    }
+    outcome::OK
 }

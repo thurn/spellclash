@@ -35,21 +35,24 @@ pub struct Delegate {
 }
 
 /// Function to apply the effects of of an ability to the game.
-pub type UntargetedEffectFn =
-    Box<dyn Fn(&mut GameState, EffectScope) -> Outcome + 'static + Send + Sync>;
-pub type TargetedEffectFn<T> =
-    Box<dyn Fn(&mut GameState, EffectScope, T) -> Outcome + 'static + Send + Sync>;
-pub type MultipleTargetedEffectFn =
-    Box<dyn Fn(&mut GameState, EffectScope, &[EntityId]) -> Outcome + 'static + Send + Sync>;
+// pub type UntargetedEffectFn =
+//     Box<dyn Fn(&mut GameState, EffectScope) -> Outcome + 'static + Send +
+// Sync>; pub type TargetedEffectFn<T> =
+//     Box<dyn Fn(&mut GameState, EffectScope, T) -> Outcome + 'static + Send +
+// Sync>; pub type MultipleTargetedEffectFn =
+//     Box<dyn Fn(&mut GameState, EffectScope, &[EntityId]) -> Outcome + 'static
+// + Send + Sync>;
+//
+// pub enum EffectFn {
+//     NoEffect,
+//     Untargeted(UntargetedEffectFn),
+//     SingleCardTarget(TargetedEffectFn<CardId>),
+//     SinglePlayerTarget(TargetedEffectFn<PlayerName>),
+//     SingleCardOrPlayerTarget(TargetedEffectFn<CardOrPlayer>),
+//     Targeted(MultipleTargetedEffectFn),
+// }
 
-pub enum EffectFn {
-    NoEffect,
-    Untargeted(UntargetedEffectFn),
-    SingleCardTarget(TargetedEffectFn<CardId>),
-    SinglePlayerTarget(TargetedEffectFn<PlayerName>),
-    SingleCardOrPlayerTarget(TargetedEffectFn<CardOrPlayer>),
-    Targeted(MultipleTargetedEffectFn),
-}
+pub type EffectFn = Box<dyn Fn(&mut GameState, EffectScope) -> Outcome + 'static + Send + Sync>;
 
 /// Defines the game rules for an ability.
 ///
@@ -70,7 +73,7 @@ pub struct AbilityDefinition {
     ///
     /// Note that static abilities do not resolve via the stack and thus have no
     /// effects.
-    pub effect: EffectFn,
+    pub effect: Option<EffectFn>,
 
     /// Event listeners for this ability
     pub delegates: Vec<Delegate>,
@@ -133,7 +136,7 @@ pub struct WithEffects(pub EffectFn);
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R1133a>
 pub struct SpellAbility {
-    effect: EffectFn,
+    effect: Option<EffectFn>,
     choices: AbilityChoices,
     delegates: Vec<Delegate>,
 }
@@ -141,21 +144,7 @@ pub struct SpellAbility {
 impl SpellAbility {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        Self { effect: EffectFn::NoEffect, delegates: vec![], choices: AbilityChoices::default() }
-    }
-
-    /// Effect when this spell resolves.
-    ///
-    /// Used only for untargeted effects. Add a target first if required.
-    pub fn effect(
-        self,
-        effect: impl Fn(&mut GameState, EffectScope) -> Outcome + 'static + Copy + Send + Sync,
-    ) -> SpellAbility {
-        SpellAbility {
-            choices: self.choices,
-            effect: EffectFn::Untargeted(Box::new(effect)),
-            delegates: self.delegates,
-        }
+        Self { effect: None, delegates: vec![], choices: AbilityChoices::default() }
     }
 }
 
@@ -167,7 +156,7 @@ impl AbilityChoiceBuilder for SpellAbility {
 
     #[doc(hidden)]
     fn set_effect_fn(&mut self, effect: EffectFn) {
-        self.effect = effect;
+        self.effect = Some(effect);
     }
 }
 
@@ -202,63 +191,55 @@ pub struct WithCosts(pub Vec<Cost>);
 /// > otherwise leaves the stack.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R1133b>
-pub struct ActivatedAbility<TCosts, TEffects> {
+pub struct ActivatedAbility<TCosts> {
     costs: TCosts,
+    effect: Option<EffectFn>,
     choices: AbilityChoices,
-    effects: TEffects,
     delegates: Vec<Delegate>,
 }
 
-impl ActivatedAbility<NoCosts, NoEffects> {
+impl ActivatedAbility<NoCosts> {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        Self {
-            costs: NoCosts,
-            choices: AbilityChoices::default(),
-            effects: NoEffects,
-            delegates: vec![],
-        }
+        Self { costs: NoCosts, choices: AbilityChoices::default(), effect: None, delegates: vec![] }
     }
 
     /// Cost to activate this ability
-    pub fn cost(self, cost: Cost) -> ActivatedAbility<WithCosts, NoEffects> {
+    pub fn cost(self, cost: Cost) -> ActivatedAbility<WithCosts> {
         ActivatedAbility {
             costs: WithCosts(vec![cost]),
             choices: AbilityChoices::default(),
-            effects: NoEffects,
+            effect: None,
             delegates: self.delegates,
         }
     }
 }
 
-impl ActivatedAbility<WithCosts, NoEffects> {
-    /// Effects when this ability resolves.
-    pub fn effects(
-        self,
-        effects: impl Fn(&mut GameState, EffectScope) -> Outcome + 'static + Copy + Send + Sync,
-    ) -> ActivatedAbility<WithCosts, WithEffects> {
-        ActivatedAbility {
-            costs: self.costs,
-            choices: self.choices,
-            effects: WithEffects(EffectFn::Untargeted(Box::new(effects))),
-            delegates: self.delegates,
-        }
+impl AbilityChoiceBuilder for ActivatedAbility<WithCosts> {
+    #[doc(hidden)]
+    fn get_choices_mut(&mut self) -> &mut AbilityChoices {
+        &mut self.choices
+    }
+
+    #[doc(hidden)]
+    fn set_effect_fn(&mut self, effect: EffectFn) {
+        self.effect = Some(effect);
     }
 }
 
-impl AbilityDelegateBuilder for ActivatedAbility<WithCosts, WithEffects> {
+impl AbilityDelegateBuilder for ActivatedAbility<WithCosts> {
     #[doc(hidden)]
     fn get_delegates_mut(&mut self) -> &mut Vec<Delegate> {
         &mut self.delegates
     }
 }
 
-impl AbilityBuilder for ActivatedAbility<WithCosts, WithEffects> {
+impl AbilityBuilder for ActivatedAbility<WithCosts> {
     fn build(self) -> AbilityDefinition {
         AbilityDefinition {
             ability_type: AbilityType::Activated,
             choices: self.choices,
-            effect: self.effects.0,
+            effect: self.effect,
             delegates: self.delegates,
             costs: self.costs.0,
         }
@@ -275,32 +256,32 @@ impl AbilityBuilder for ActivatedAbility<WithCosts, WithEffects> {
 /// > otherwise leaves the stack.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R1133c>
-pub struct TriggeredAbility<TEffects> {
+pub struct TriggeredAbility {
     delegates: Vec<Delegate>,
+    effect: Option<EffectFn>,
     choices: AbilityChoices,
-    effects: TEffects,
 }
 
-impl TriggeredAbility<NoEffects> {
+impl TriggeredAbility {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        Self { delegates: vec![], choices: AbilityChoices::default(), effects: NoEffects }
-    }
-
-    /// Effects when this ability resolves.
-    pub fn effects(
-        self,
-        effects: impl Fn(&mut GameState, EffectScope) -> Outcome + 'static + Copy + Send + Sync,
-    ) -> TriggeredAbility<WithEffects> {
-        TriggeredAbility {
-            delegates: self.delegates,
-            choices: self.choices,
-            effects: WithEffects(EffectFn::Untargeted(Box::new(effects))),
-        }
+        Self { delegates: vec![], choices: AbilityChoices::default(), effect: None }
     }
 }
 
-impl<T> AbilityDelegateBuilder for TriggeredAbility<T> {
+impl AbilityChoiceBuilder for TriggeredAbility {
+    #[doc(hidden)]
+    fn get_choices_mut(&mut self) -> &mut AbilityChoices {
+        &mut self.choices
+    }
+
+    #[doc(hidden)]
+    fn set_effect_fn(&mut self, effect: EffectFn) {
+        self.effect = Some(effect);
+    }
+}
+
+impl AbilityDelegateBuilder for TriggeredAbility {
     #[doc(hidden)]
     fn get_delegates_mut(&mut self) -> &mut Vec<Delegate> {
         &mut self.delegates
@@ -312,12 +293,12 @@ impl<T> AbilityDelegateBuilder for TriggeredAbility<T> {
     }
 }
 
-impl AbilityBuilder for TriggeredAbility<WithEffects> {
+impl AbilityBuilder for TriggeredAbility {
     fn build(self) -> AbilityDefinition {
         AbilityDefinition {
             ability_type: AbilityType::Triggered,
             choices: self.choices,
-            effect: self.effects.0,
+            effect: self.effect,
             delegates: self.delegates,
             costs: vec![],
         }
@@ -360,7 +341,7 @@ impl AbilityBuilder for StaticAbility {
         AbilityDefinition {
             ability_type: AbilityType::Static,
             choices: AbilityChoices::default(),
-            effect: EffectFn::NoEffect,
+            effect: None,
             delegates: self.delegates,
             costs: vec![],
         }
