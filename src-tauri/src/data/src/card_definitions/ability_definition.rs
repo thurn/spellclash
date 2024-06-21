@@ -83,6 +83,33 @@ pub trait AbilityBuilder {
     fn build(self) -> AbilityDefinition;
 }
 
+pub trait AbilityDelegateBuilder: Sized {
+    #[doc(hidden)]
+    fn get_delegates_mut(&mut self) -> &mut Vec<Delegate>;
+
+    /// Adds a new [Delegate] to this ability which functions only on the
+    /// battlefield.
+    fn delegate(
+        mut self,
+        delegate: impl Fn(&mut GameDelegates) + 'static + Copy + Send + Sync,
+    ) -> Self {
+        self.get_delegates_mut()
+            .push(Delegate { zones: EnumSet::only(Zone::Battlefield), run: Box::new(delegate) });
+        self
+    }
+
+    /// Adds a new [Delegate] to this ability which functions in the provided
+    /// set of [Zone]s.
+    fn delegate_for(
+        mut self,
+        zones: impl Into<EnumSet<Zone>>,
+        delegate: impl Fn(&mut GameDelegates) + 'static + Copy + Send + Sync,
+    ) -> Self {
+        self.get_delegates_mut().push(Delegate { zones: zones.into(), run: Box::new(delegate) });
+        self
+    }
+}
+
 pub struct NoEffects;
 pub struct WithEffects(pub EffectFn);
 
@@ -134,16 +161,10 @@ impl AbilityChoiceBuilder for SpellAbility {
     }
 }
 
-impl SpellAbility {
-    /// Adds a new delegate creation function to this ability. See
-    /// [GameDelegates] for more information.
-    pub fn delegate(
-        mut self,
-        zones: impl Into<EnumSet<Zone>>,
-        delegate: impl Fn(&mut GameDelegates) + 'static + Copy + Send + Sync,
-    ) -> Self {
-        self.delegates.push(Delegate { zones: zones.into(), run: Box::new(delegate) });
-        self
+impl AbilityDelegateBuilder for SpellAbility {
+    #[doc(hidden)]
+    fn get_delegates_mut(&mut self) -> &mut Vec<Delegate> {
+        &mut self.delegates
     }
 }
 
@@ -215,16 +236,10 @@ impl ActivatedAbility<WithCosts, NoEffects> {
     }
 }
 
-impl ActivatedAbility<WithCosts, WithEffects> {
-    /// Adds a new delegate creation function to this ability. See
-    /// [GameDelegates] for more information.
-    pub fn delegate(
-        mut self,
-        zones: impl Into<EnumSet<Zone>>,
-        delegate: impl Fn(&mut GameDelegates) + 'static + Send + Sync,
-    ) -> Self {
-        self.delegates.push(Delegate { zones: zones.into(), run: Box::new(delegate) });
-        self
+impl AbilityDelegateBuilder for ActivatedAbility<WithCosts, WithEffects> {
+    #[doc(hidden)]
+    fn get_delegates_mut(&mut self) -> &mut Vec<Delegate> {
+        &mut self.delegates
     }
 }
 
@@ -275,16 +290,10 @@ impl TriggeredAbility<NoEffects> {
     }
 }
 
-impl<TEffects> TriggeredAbility<TEffects> {
-    /// Adds a new delegate creation function to this ability. See
-    /// [GameDelegates] for more information.
-    pub fn delegate(
-        mut self,
-        zones: impl Into<EnumSet<Zone>>,
-        delegate: impl Fn(&mut GameDelegates) + 'static + Copy + Send + Sync,
-    ) -> Self {
-        self.delegates.push(Delegate { zones: zones.into(), run: Box::new(delegate) });
-        self
+impl<T> AbilityDelegateBuilder for TriggeredAbility<T> {
+    #[doc(hidden)]
+    fn get_delegates_mut(&mut self) -> &mut Vec<Delegate> {
+        &mut self.delegates
     }
 }
 
@@ -317,16 +326,12 @@ impl StaticAbility {
     pub fn new() -> Self {
         Self { delegates: vec![] }
     }
+}
 
-    /// Adds a new delegate creation function to this ability. See
-    /// [GameDelegates] for more information.
-    pub fn delegate(
-        mut self,
-        zones: impl Into<EnumSet<Zone>>,
-        delegate: impl Fn(&mut GameDelegates) + 'static + Copy + Send + Sync,
-    ) -> Self {
-        self.delegates.push(Delegate { zones: zones.into(), run: Box::new(delegate) });
-        self
+impl AbilityDelegateBuilder for StaticAbility {
+    #[doc(hidden)]
+    fn get_delegates_mut(&mut self) -> &mut Vec<Delegate> {
+        &mut self.delegates
     }
 }
 

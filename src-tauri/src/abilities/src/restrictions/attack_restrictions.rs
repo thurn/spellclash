@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_definitions::ability_definition::{AbilityBuilder, StaticAbility};
+use data::card_definitions::ability_definition::{
+    AbilityBuilder, AbilityDelegateBuilder, StaticAbility,
+};
 use data::card_states::zones::ZoneQueries;
 use data::core::function_types::CardPredicate;
 use data::core::primitives::Zone;
@@ -24,7 +26,7 @@ use rules::queries::combat_queries;
 pub fn cannot_attack_unless_defender_controls(
     predicate: impl CardPredicate,
 ) -> impl AbilityBuilder {
-    StaticAbility::new().delegate(Zone::Battlefield, move |d| {
+    StaticAbility::new().delegate(move |d| {
         d.can_attack_target.this(move |g, s, data, current| {
             current.add_condition(
                 s,

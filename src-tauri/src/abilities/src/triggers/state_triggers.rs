@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_definitions::ability_definition::{AbilityBuilder, TriggeredAbility};
+use data::card_definitions::ability_definition::{
+    AbilityBuilder, AbilityDelegateBuilder, TriggeredAbility,
+};
 use data::card_states::zones::ZoneQueries;
 use data::core::function_types::{CardMutation, CardPredicate};
 use data::core::primitives::{HasCardId, HasSource, Zone};
@@ -30,7 +32,7 @@ pub fn when_controls_no(
     mutation: impl CardMutation,
 ) -> impl AbilityBuilder {
     TriggeredAbility::new()
-        .delegate(Zone::Battlefield, move |d| {
+        .delegate(move |d| {
             d.state_triggered_ability.trigger_if_not_on_stack(move |g, s, _| {
                 !g.battlefield(s.controller).iter().any(|&card_id| predicate(g, s, card_id))
             })

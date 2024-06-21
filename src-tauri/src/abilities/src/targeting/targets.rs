@@ -12,11 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![allow(unused_imports)]
-#![allow(unused_variables)]
+use data::card_definitions::ability_choices::CardAbilityTarget;
+use data::core::primitives::{CardType, Zone};
+use enumset::EnumSet;
+use rules::queries::card_queries;
 
-pub mod mana;
-pub mod predicates;
-pub mod restrictions;
-pub mod targeting;
-pub mod triggers;
+/// Target any creature on the battlefield
+pub fn creature() -> CardAbilityTarget {
+    CardAbilityTarget {
+        zones: EnumSet::only(Zone::Battlefield),
+        predicate: Box::new(|g, _, id| {
+            card_queries::card_types(g, id).contains(CardType::Creature)
+        }),
+    }
+}

@@ -96,7 +96,7 @@ pub trait AbilityChoiceBuilder: Sized {
     ///
     /// The ID of the card that is targeted will be passed as a parameter to the
     /// effect function.
-    fn target_card(
+    fn target(
         mut self,
         target: impl Into<CardAbilityTarget>,
     ) -> SingleCardTargetAbilityBuilder<Self> {
