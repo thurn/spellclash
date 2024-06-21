@@ -288,6 +288,13 @@ impl StackItemId {
             StackItemId::StackAbility(_) => None,
         }
     }
+
+    pub fn stack_ability_id(&self) -> Option<StackAbilityId> {
+        match self {
+            StackItemId::Card(_) => None,
+            StackItemId::StackAbility(stack_ability_id) => Some(*stack_ability_id),
+        }
+    }
 }
 
 /// A zone is a place where objects can be during the game.

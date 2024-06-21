@@ -368,6 +368,37 @@ impl Zones {
         self.stack.append(&mut ids);
     }
 
+    /// Returns an iterator over IDs of cards controlled by the [PlayerName]
+    /// player in the indicated [Zone].
+    pub fn cards_in_zone(
+        &self,
+        zone: Zone,
+        player: PlayerName,
+    ) -> Box<dyn Iterator<Item = CardId> + '_> {
+        match zone {
+            Zone::Hand => Box::new(self.hand(player).iter().copied()),
+            Zone::Graveyard => Box::new(self.graveyard(player).iter().copied()),
+            Zone::Library => Box::new(self.library(player).iter().copied()),
+            Zone::Battlefield => Box::new(self.battlefield(player).iter().copied()),
+            Zone::Stack => Box::new(self.stack.iter().filter_map(move |id| {
+                let id = id.card_id()?;
+                if self.card(id).controller == player {
+                    Some(id)
+                } else {
+                    None
+                }
+            })),
+            Zone::Exiled => Box::new(self.exile(player).iter().copied()),
+            Zone::Command => Box::new(self.command_zone(player).iter().copied()),
+            Zone::OutsideTheGame => Box::new(self.outside_the_game_zone(player).iter().copied()),
+        }
+    }
+
+    /// Iterator over all abilities currently on the stack.
+    pub fn abilities_on_stack(&self) -> impl Iterator<Item = StackAbilityId> + '_ {
+        self.stack.iter().filter_map(move |id| id.stack_ability_id())
+    }
+
     /// Changes the controller for a card.
     ///
     /// Panics if this card was not found in the `battlefield_controlled` set.
@@ -392,16 +423,6 @@ impl Zones {
     /// Shuffles the order of cards in a player's library
     pub fn shuffle_library(&mut self, player: impl HasPlayerName, rng: &mut Xoshiro256StarStar) {
         self.libraries.cards_mut(player.player_name()).make_contiguous().shuffle(rng);
-    }
-
-    pub fn update_debug_info(&mut self) {
-        self.hands.update_debug_info(&self.all_cards);
-        self.battlefield_controlled.update_debug_info(&self.all_cards);
-        self.battlefield_owned.update_debug_info(&self.all_cards);
-        self.graveyards.update_debug_info(&self.all_cards);
-        self.exile.update_debug_info(&self.all_cards);
-        self.command_zone.update_debug_info(&self.all_cards);
-        self.outside_the_game_zone.update_debug_info(&self.all_cards);
     }
 
     fn remove_from_zone(&mut self, owner: PlayerName, card_id: CardId, zone: Zone) {
@@ -479,8 +500,6 @@ impl Zones {
 struct UnorderedZone {
     player1: HashSet<CardId>,
     player2: HashSet<CardId>,
-    p1_debug: HashSet<String>,
-    p2_debug: HashSet<String>,
 }
 
 impl UnorderedZone {
@@ -509,37 +528,12 @@ impl UnorderedZone {
             panic!("Card {card_id:?} not found");
         }
     }
-
-    pub fn update_debug_info(&mut self, all_cards: &SlotMap<CardId, CardState>) {
-        self.p1_debug = self
-            .player1
-            .iter()
-            .map(|&id| {
-                all_cards
-                    .get(id)
-                    .map(|c| c.displayed_name().to_string())
-                    .unwrap_or_else(|| "Unknown".to_string())
-            })
-            .collect();
-        self.p2_debug = self
-            .player2
-            .iter()
-            .map(|&id| {
-                all_cards
-                    .get(id)
-                    .map(|c| c.displayed_name().to_string())
-                    .unwrap_or_else(|| "Unknown".to_string())
-            })
-            .collect();
-    }
 }
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 struct OrderedZone {
     player1: VecDeque<CardId>,
     player2: VecDeque<CardId>,
-    p1_debug: Vec<String>,
-    p2_debug: Vec<String>,
 }
 
 impl OrderedZone {
@@ -571,28 +565,5 @@ impl OrderedZone {
         } else {
             panic!("Card not found {card_id:?}");
         }
-    }
-
-    pub fn update_debug_info(&mut self, all_cards: &SlotMap<CardId, CardState>) {
-        self.p1_debug = self
-            .player1
-            .iter()
-            .map(|&id| {
-                all_cards
-                    .get(id)
-                    .map(|c| c.displayed_name().to_string())
-                    .unwrap_or_else(|| "Unknown".to_string())
-            })
-            .collect();
-        self.p2_debug = self
-            .player2
-            .iter()
-            .map(|&id| {
-                all_cards
-                    .get(id)
-                    .map(|c| c.displayed_name().to_string())
-                    .unwrap_or_else(|| "Unknown".to_string())
-            })
-            .collect();
     }
 }

@@ -40,6 +40,7 @@ pub struct AbilityTarget {
 
 /// Number of matching objects that can be selected as targets for one
 /// predicate.
+#[derive(Clone, Copy, Eq, PartialEq, Debug)]
 pub enum AbilityTargetQuantity {
     AnyNumber,
     Exactly(usize),
@@ -64,8 +65,27 @@ pub enum AbilityTargetPredicate {
     AnyOf(Vec<AbilityTargetPredicate>),
 }
 
+#[derive(Clone, Copy, Eq, PartialEq, Debug)]
+pub enum PlayerSet {
+    /// Search the set of all players in the game
+    AllPlayers,
+
+    /// Search the cards controlled by this ability's controller
+    You,
+
+    /// Search the set of opponents of this ability's controller
+    Opponents,
+}
+
+/// A target for an ability that targets a card.
 pub struct CardAbilityTarget {
+    /// Zones to search for the target card
     pub zones: EnumSet<Zone>,
+
+    /// Players whose cards should be searched
+    pub players: PlayerSet,
+
+    /// Predicate that must be satisfied by the selected card
     pub predicate: CardPredicateFn,
 }
 

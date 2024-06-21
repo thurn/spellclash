@@ -47,7 +47,8 @@ pub fn run(database: SqliteDatabase, game: &mut GameState, update_channel: Optio
 
     let all_card_ids = game.zones.all_cards().map(|card| card.id).collect::<Vec<_>>();
     for card_id in all_card_ids {
-        for (number, ability) in definitions::get(game.card(card_id).card_name).all_abilities() {
+        for (number, ability) in definitions::get(game.card(card_id).card_name).iterate_abilities()
+        {
             for delegate in &ability.delegates {
                 (delegate.run)(&mut game.delegates);
                 game.delegates.apply_writes(AbilityId { card_id, number }, delegate.zones);

@@ -49,7 +49,7 @@ pub fn resolve_top_of_stack(game: &mut GameState) -> Outcome {
 fn resolve_top_card_of_stack(game: &mut GameState, card_id: CardId) -> Outcome {
     debug!(?card_id, "Resolving top card of stack");
     let definition = definitions::get(game.card(card_id).card_name);
-    for (ability_number, ability) in definition.all_abilities() {
+    for (ability_number, ability) in definition.iterate_abilities() {
         if ability.ability_type == AbilityType::Spell {
             let ability_id = AbilityId { card_id, number: ability_number };
             invoke_effect::run(

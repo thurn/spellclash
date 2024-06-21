@@ -14,16 +14,26 @@
 
 use std::iter;
 
+use data::card_definitions::ability_choices::{
+    AbilityTarget, AbilityTargetPredicate, AbilityTargetQuantity, CardAbilityTarget,
+    PlayerAbilityTarget, PlayerSet,
+};
+use data::card_definitions::ability_definition::AbilityType;
+use data::card_definitions::definitions;
 use data::card_states::play_card_plan::{PlayAs, PlayCardPlan, PlayCardTiming};
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, PlayerName, Source, Zone};
+use data::core::primitives::{AbilityId, CardId, PlayerName, Source, Zone};
+use data::delegates::has_delegates::HasDelegates;
+use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use enum_iterator::Sequence;
+use enumset::EnumSet;
 use tracing::instrument;
 use utils::outcome::Outcome;
 
 use crate::planner::spell_planner;
 use crate::play_cards::{pick_face_to_play, play_card_executor};
+use crate::queries::player_queries;
 
 /// Plays a card.
 ///
@@ -69,7 +79,7 @@ pub fn can_play_card(
         .any(|plan| can_play_card_as(game, source, card_id, plan))
 }
 
-/// Recursively verify whether a [PlayCardPlan] could allow a card to be played
+/// Check whether a [PlayCardPlan] could allow a card to be played
 /// when populated with a face to play & timing value.
 pub fn can_play_card_as(
     game: &GameState,
@@ -79,7 +89,87 @@ pub fn can_play_card_as(
 ) -> bool {
     match plan.play_as.timing {
         PlayCardTiming::Land => true,
-        _ => can_pay_mana_costs(game, source, card_id, plan),
+        _ => can_pick_targets(game, source, card_id, plan),
+    }
+}
+
+/// Check whether a [PlayCardPlan] could allow a card to be played
+/// with valid targets.
+pub fn can_pick_targets(
+    game: &GameState,
+    source: Source,
+    card_id: CardId,
+    plan: PlayCardPlan,
+) -> bool {
+    for (number, ability) in definitions::get(game.card(card_id).card_name).iterate_abilities() {
+        if ability.ability_type == AbilityType::Spell {
+            for target in &ability.choices.targets {
+                let scope = game.create_scope(AbilityId { card_id, number });
+                assert_eq!(
+                    target.quantity,
+                    AbilityTargetQuantity::Exactly(1),
+                    "TODO: handle multiple targets"
+                );
+                if !valid_target_exists(game, scope, &target.predicate) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    can_pay_mana_costs(game, source, card_id, plan)
+}
+
+fn valid_target_exists(game: &GameState, scope: Scope, target: &AbilityTargetPredicate) -> bool {
+    match target {
+        AbilityTargetPredicate::Card(data) => valid_card_target_exists(game, scope, data),
+        AbilityTargetPredicate::Player(data) => valid_player_target_exists(game, scope, data),
+        AbilityTargetPredicate::CardOrPlayer(data) => {
+            valid_card_target_exists(game, scope, &data.card_target)
+                || valid_player_target_exists(game, scope, &data.player_target)
+        }
+        AbilityTargetPredicate::StackAbility(predicate) => {
+            game.zones.abilities_on_stack().any(|id| predicate(game, scope, id))
+        }
+        AbilityTargetPredicate::AnyOf(predicate_list) => {
+            predicate_list.iter().any(|predicate| valid_target_exists(game, scope, predicate))
+        }
+    }
+}
+
+fn valid_card_target_exists(game: &GameState, scope: Scope, target: &CardAbilityTarget) -> bool {
+    for zone in target.zones.iter() {
+        for player in players_in_set(game, scope, target.players) {
+            for card_id in game.zones.cards_in_zone(zone, player) {
+                if (target.predicate)(game, scope, card_id) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    false
+}
+
+fn valid_player_target_exists(
+    game: &GameState,
+    scope: Scope,
+    target: &PlayerAbilityTarget,
+) -> bool {
+    for player in target.players.iter() {
+        if (target.predicate)(game, scope, player) {
+            return true;
+        }
+    }
+
+    false
+}
+
+fn players_in_set(game: &GameState, scope: Scope, set: PlayerSet) -> EnumSet<PlayerName> {
+    match set {
+        PlayerSet::AllPlayers => player_queries::all_players(game),
+        PlayerSet::You => EnumSet::only(scope.controller),
+        PlayerSet::Opponents => player_queries::all_opponents(game, scope.controller),
     }
 }
 

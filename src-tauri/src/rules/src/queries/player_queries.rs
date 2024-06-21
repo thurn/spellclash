@@ -59,6 +59,12 @@ pub fn all_players(game: &GameState) -> EnumSet<PlayerName> {
     game.configuration.all_players
 }
 
+/// Returns the names of all players currently playing in the provided game
+/// who are opponents of the provided player.
+pub fn all_opponents(game: &GameState, player: PlayerName) -> EnumSet<PlayerName> {
+    game.configuration.all_players.difference(EnumSet::only(player))
+}
+
 /// Returns the set of players who are not currently taking their turn.
 pub fn inactive_players(game: &GameState) -> EnumSet<PlayerName> {
     all_players(game).difference(EnumSet::only(game.turn.active_player))

@@ -12,16 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_definitions::ability_choices::CardAbilityTarget;
+use data::card_definitions::ability_choices::{CardAbilityTarget, PlayerSet};
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardType, Zone};
+use data::core::primitives::{CardType, Zone, ALL_POSSIBLE_PLAYERS};
+use data::delegates::scope::Scope;
+use data::game_states::game_state::GameState;
 use enumset::EnumSet;
-use rules::queries::card_queries;
+use rules::queries::{card_queries, player_queries};
 
 /// Target any creature on the battlefield
 pub fn creature() -> CardAbilityTarget {
     CardAbilityTarget {
         zones: EnumSet::only(Zone::Battlefield),
+        players: PlayerSet::AllPlayers,
         predicate: Box::new(|g, _, id| {
             card_queries::card_types(g, id).contains(CardType::Creature)
         }),
@@ -32,6 +35,7 @@ pub fn creature() -> CardAbilityTarget {
 pub fn creature_opponent_controls() -> CardAbilityTarget {
     CardAbilityTarget {
         zones: EnumSet::only(Zone::Battlefield),
+        players: PlayerSet::Opponents,
         predicate: Box::new(|g, s, id| {
             card_queries::card_types(g, id).contains(CardType::Creature)
                 && g.card(id).controller != s.controller

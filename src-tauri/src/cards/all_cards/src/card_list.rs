@@ -35,7 +35,7 @@ pub fn initialize() {
     DEFINITIONS.insert(cards_p::cards_ph::pheres_band_centaurs);
     DEFINITIONS.insert(cards_p::cards_pr::primordial_wurm);
     DEFINITIONS.insert(cards_q::cards_qu::quilled_slagwurm);
-    DEFINITIONS.insert(cards_r::cards_ra::dance_of_the_skywise);
+    DEFINITIONS.insert(cards_r::cards_ra::ray_of_command);
     DEFINITIONS.insert(cards_r::cards_ru::rumbling_baloth);
     DEFINITIONS.insert(cards_s::cards_sc::scaled_wurm);
     DEFINITIONS.insert(cards_s::cards_si::silverback_ape);
