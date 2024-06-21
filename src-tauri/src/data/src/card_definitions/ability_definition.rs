@@ -15,8 +15,10 @@
 use enumset::EnumSet;
 use utils::outcome::Outcome;
 
-use crate::card_definitions::ability_choices::{AbilityChoiceBuilder, AbilityChoices};
-use crate::core::primitives::Zone;
+use crate::card_definitions::ability_choices::{
+    AbilityChoiceBuilder, AbilityChoices, CardOrPlayer,
+};
+use crate::core::primitives::{CardId, EntityId, PlayerName, Zone};
 use crate::costs::cost::Cost;
 #[allow(unused)] // Used in docs
 use crate::delegates::game_delegates::GameDelegates;
@@ -33,7 +35,20 @@ pub struct Delegate {
 }
 
 /// Function to apply the effects of of an ability to the game.
-pub type EffectFn = Box<dyn Fn(&mut GameState, Scope) -> Outcome + 'static + Send + Sync>;
+pub type UntargetedEffectFn = Box<dyn Fn(&mut GameState, Scope) -> Outcome + 'static + Send + Sync>;
+pub type TargetedEffectFn<T> =
+    Box<dyn Fn(&mut GameState, Scope, T) -> Outcome + 'static + Send + Sync>;
+pub type MultipleTargetedEffectFn =
+    Box<dyn Fn(&mut GameState, Scope, &[EntityId]) -> Outcome + 'static + Send + Sync>;
+
+pub enum EffectFn {
+    NoEffect,
+    Untargeted(UntargetedEffectFn),
+    SingleCardTarget(TargetedEffectFn<CardId>),
+    SinglePlayerTarget(TargetedEffectFn<PlayerName>),
+    SingleCardOrPlayerTarget(TargetedEffectFn<CardOrPlayer>),
+    Targeted(MultipleTargetedEffectFn),
+}
 
 /// Defines the game rules for an ability.
 ///
@@ -54,7 +69,7 @@ pub struct AbilityDefinition {
     ///
     /// Note that static abilities do not resolve via the stack and thus have no
     /// effects.
-    pub effect: Option<EffectFn>,
+    pub effect: EffectFn,
 
     /// Event listeners for this ability
     pub delegates: Vec<Delegate>,
@@ -81,7 +96,7 @@ pub struct WithEffects(pub EffectFn);
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R1133a>
 pub struct SpellAbility {
-    effect: Option<EffectFn>,
+    effect: EffectFn,
     choices: AbilityChoices,
     delegates: Vec<Delegate>,
 }
@@ -89,17 +104,19 @@ pub struct SpellAbility {
 impl SpellAbility {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        Self { effect: None, delegates: vec![], choices: AbilityChoices::default() }
+        Self { effect: EffectFn::NoEffect, delegates: vec![], choices: AbilityChoices::default() }
     }
 
     /// Effect when this spell resolves.
+    ///
+    /// Used only for untargeted effects. Add a target first if required.
     pub fn effect(
         self,
         effect: impl Fn(&mut GameState, Scope) -> Outcome + 'static + Copy + Send + Sync,
     ) -> SpellAbility {
         SpellAbility {
             choices: self.choices,
-            effect: Some(Box::new(effect)),
+            effect: EffectFn::Untargeted(Box::new(effect)),
             delegates: self.delegates,
         }
     }
@@ -109,6 +126,11 @@ impl AbilityChoiceBuilder for SpellAbility {
     #[doc(hidden)]
     fn get_choices_mut(&mut self) -> &mut AbilityChoices {
         &mut self.choices
+    }
+
+    #[doc(hidden)]
+    fn set_effect_fn(&mut self, effect: EffectFn) {
+        self.effect = effect;
     }
 }
 
@@ -187,7 +209,7 @@ impl ActivatedAbility<WithCosts, NoEffects> {
         ActivatedAbility {
             costs: self.costs,
             choices: self.choices,
-            effects: WithEffects(Box::new(effects)),
+            effects: WithEffects(EffectFn::Untargeted(Box::new(effects))),
             delegates: self.delegates,
         }
     }
@@ -211,7 +233,7 @@ impl AbilityBuilder for ActivatedAbility<WithCosts, WithEffects> {
         AbilityDefinition {
             ability_type: AbilityType::Activated,
             choices: self.choices,
-            effect: Some(self.effects.0),
+            effect: self.effects.0,
             delegates: self.delegates,
             costs: self.costs.0,
         }
@@ -248,7 +270,7 @@ impl TriggeredAbility<NoEffects> {
         TriggeredAbility {
             delegates: self.delegates,
             choices: self.choices,
-            effects: WithEffects(Box::new(effects)),
+            effects: WithEffects(EffectFn::Untargeted(Box::new(effects))),
         }
     }
 }
@@ -271,7 +293,7 @@ impl AbilityBuilder for TriggeredAbility<WithEffects> {
         AbilityDefinition {
             ability_type: AbilityType::Triggered,
             choices: self.choices,
-            effect: Some(self.effects.0),
+            effect: self.effects.0,
             delegates: self.delegates,
             costs: vec![],
         }
@@ -313,7 +335,7 @@ impl AbilityBuilder for StaticAbility {
         AbilityDefinition {
             ability_type: AbilityType::Static,
             choices: AbilityChoices::default(),
-            effect: None,
+            effect: EffectFn::NoEffect,
             delegates: self.delegates,
             costs: vec![],
         }

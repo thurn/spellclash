@@ -15,6 +15,7 @@
 use enumset::EnumSet;
 use utils::outcome::Outcome;
 
+use crate::card_definitions::ability_definition::EffectFn;
 use crate::core::function_types::{CardPredicateFn, PlayerPredicateFn, StackAbilityPredicateFn};
 use crate::core::primitives::{CardId, EntityId, PlayerName, StackItemId, Zone};
 use crate::delegates::scope::Scope;
@@ -88,6 +89,9 @@ pub trait AbilityChoiceBuilder: Sized {
     #[doc(hidden)]
     fn get_choices_mut(&mut self) -> &mut AbilityChoices;
 
+    #[doc(hidden)]
+    fn set_effect_fn(&mut self, effect: EffectFn);
+
     /// Adds a single target card for this ability.
     ///
     /// The ID of the card that is targeted will be passed as a parameter to the
@@ -140,9 +144,10 @@ pub struct SingleCardTargetAbilityBuilder<TResult: AbilityChoiceBuilder> {
 
 impl<TResult: AbilityChoiceBuilder> SingleCardTargetAbilityBuilder<TResult> {
     pub fn effect(
-        self,
+        mut self,
         effect: impl Fn(&mut GameState, Scope, CardId) -> Outcome + 'static + Copy + Send + Sync,
     ) -> TResult {
+        self.builder.set_effect_fn(EffectFn::SingleCardTarget(Box::new(effect)));
         self.builder
     }
 }
@@ -153,9 +158,10 @@ pub struct SinglePlayerTargetAbilityBuilder<TResult: AbilityChoiceBuilder> {
 
 impl<TResult: AbilityChoiceBuilder> SinglePlayerTargetAbilityBuilder<TResult> {
     pub fn effect(
-        self,
+        mut self,
         effect: impl Fn(&mut GameState, Scope, PlayerName) -> Outcome + 'static + Copy + Send + Sync,
     ) -> TResult {
+        self.builder.set_effect_fn(EffectFn::SinglePlayerTarget(Box::new(effect)));
         self.builder
     }
 }
@@ -166,9 +172,10 @@ pub struct SingleCardOrPlayerTargetAbilityBuilder<TResult: AbilityChoiceBuilder>
 
 impl<TResult: AbilityChoiceBuilder> SingleCardOrPlayerTargetAbilityBuilder<TResult> {
     pub fn effect(
-        self,
+        mut self,
         effect: impl Fn(&mut GameState, Scope, CardOrPlayer) -> Outcome + 'static + Copy + Send + Sync,
     ) -> TResult {
+        self.builder.set_effect_fn(EffectFn::SingleCardOrPlayerTarget(Box::new(effect)));
         self.builder
     }
 }

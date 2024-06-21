@@ -27,6 +27,7 @@ use utils::outcome::Outcome;
 
 use crate::mutations::{move_card, permanents};
 use crate::queries::card_queries;
+use crate::resolve_cards::invoke_effect;
 
 /// Resolve the top item on the stack and apply its effects. Has no effect if
 /// the stack is empty.
@@ -50,11 +51,13 @@ fn resolve_top_card_of_stack(game: &mut GameState, card_id: CardId) -> Outcome {
     let definition = definitions::get(game.card(card_id).card_name);
     for (ability_number, ability) in definition.all_abilities() {
         if ability.ability_type == AbilityType::Spell {
-            // Resolve spell abilities
-            if let Some(effect) = &ability.effect {
-                let ability_id = AbilityId { card_id, number: ability_number };
-                effect(game, game.create_scope(ability_id))?;
-            }
+            let ability_id = AbilityId { card_id, number: ability_number };
+            invoke_effect::run(
+                game,
+                ability_id,
+                game.card(card_id).targets.clone(),
+                &ability.effect,
+            )?;
         }
     }
 
@@ -93,9 +96,12 @@ fn resolve_top_ability_of_stack(game: &mut GameState, stack_ability_id: StackAbi
     let ability_id = game.stack_ability(stack_ability_id).ability_id;
     let ability_definition =
         definitions::get(game.card(ability_id.card_id).card_name).get_ability(ability_id.number);
-    if let Some(effect) = &ability_definition.effect {
-        effect(game, game.create_scope(ability_id))?;
-    }
+    invoke_effect::run(
+        game,
+        ability_id,
+        game.stack_ability(stack_ability_id).targets.clone(),
+        &ability_definition.effect,
+    )?;
     game.zones.remove_stack_ability(stack_ability_id);
     outcome::OK
 }

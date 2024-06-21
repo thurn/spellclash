@@ -27,7 +27,7 @@ use utils::outcome;
 
 pub fn dance_of_the_skywise() -> CardDefinition {
     CardDefinition::new(card_name::DANCE_OF_THE_SKYWISE).ability(
-        SpellAbility::new().target_card(target_creature()).effect(|g, s, target| outcome::OK),
+        SpellAbility::new().target_card(target_creature()).effect(|_g, _s, _target| outcome::OK),
     )
 }
 
