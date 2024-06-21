@@ -33,7 +33,6 @@ use data::game_states::oracle::Oracle;
 use data::game_states::undo_tracker::UndoTracker;
 use data::player_states::player_state::{PlayerType, Players};
 use data::printed_cards::printed_card_id;
-use data::state_machines::state_machine_data::StateMachines;
 use data::users::user_state::UserActivity;
 use database::sqlite_database::SqliteDatabase;
 use display::commands::scene_identifier::SceneIdentifier;

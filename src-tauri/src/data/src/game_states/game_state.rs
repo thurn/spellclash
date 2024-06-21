@@ -38,11 +38,11 @@ use crate::game_states::game_step::GamePhaseStep;
 use crate::game_states::history_data::{GameHistory, HistoryCounters, HistoryEvent};
 use crate::game_states::oracle::Oracle;
 use crate::game_states::state_based_event::StateBasedEvent;
+use crate::game_states::this_turn_state::ThisTurnState;
 use crate::game_states::undo_tracker::UndoTracker;
 use crate::player_states::player_state::{PlayerQueries, PlayerState, Players};
 use crate::prompts::game_update::UpdateChannel;
 use crate::prompts::prompt::Prompt;
-use crate::state_machines::state_machine_data::StateMachines;
 
 /// This is the state of a single ongoing game of Magic (i.e. one duel, not a
 /// larger session of the spellclash game client).
@@ -87,10 +87,6 @@ pub struct GameState {
     /// Options controlling overall gameplay
     pub configuration: GameConfiguration,
 
-    /// Collection of state machines for handling resolution of multi-step game
-    /// updates.
-    pub state_machines: StateMachines,
-
     /// State for the players within this game
     pub players: Players,
 
@@ -127,6 +123,9 @@ pub struct GameState {
     /// actions were checked which may trigger game mutations during the next
     /// state-based action check.
     pub state_based_events: Option<Vec<StateBasedEvent>>,
+
+    /// State which persists for the duration of the current turn.
+    pub this_turn: ThisTurnState,
 
     /// Reference to the Oracle card database to use with this game.
     ///

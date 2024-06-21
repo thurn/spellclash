@@ -537,8 +537,10 @@ dependencies = [
 name = "cards_g"
 version = "0.0.0"
 dependencies = [
+ "abilities",
  "data",
  "rules",
+ "utils",
 ]
 
 [[package]]

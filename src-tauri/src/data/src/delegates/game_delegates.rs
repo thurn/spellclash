@@ -17,6 +17,7 @@ use std::fmt::{Debug, Formatter};
 use enumset::EnumSet;
 
 use crate::card_states::zones::ZoneQueries;
+use crate::core::numerics::{Power, Toughness};
 use crate::core::primitives::{AbilityId, CardId, HasCardId, PlayerName, Zone};
 use crate::delegates::card_delegate_list::CardDelegateList;
 use crate::delegates::event_delegate_list::EventDelegateList;
@@ -44,12 +45,24 @@ pub struct GameDelegates {
 
     /// Can a creature attack the indicated target?
     pub can_attack_target: CardDelegateList<GameState, CanAttackTarget, Flag>,
+
+    /// Queries the power value for a card.
+    ///
+    /// This may be invoked for a card in any zone.
+    pub power: CardDelegateList<GameState, CardId, Power>,
+
+    /// Queries the toughness value for a card.
+    ///
+    /// This may be invoked for a card in any zone.
+    pub toughness: CardDelegateList<GameState, CardId, Toughness>,
 }
 
 impl GameDelegates {
     pub fn apply_writes(&mut self, id: AbilityId, zones: EnumSet<Zone>) {
         self.state_triggered_ability.apply_writes(id, zones);
         self.can_attack_target.apply_writes(id, zones);
+        self.power.apply_writes(id, zones);
+        self.toughness.apply_writes(id, zones);
     }
 }
 

@@ -99,3 +99,5 @@ pub const DANCE_OF_THE_SKYWISE: PrintedCardId =
     PrintedCardId(uuid!("c548d140-3d81-4b33-9985-87703d316a83"));
 pub const RAY_OF_COMMAND: PrintedCardId =
     PrintedCardId(uuid!("638abe5f-2a8a-42ca-bcdf-a52a3df66946"));
+pub const GIANT_GROWTH: PrintedCardId =
+    PrintedCardId(uuid!("6b712e6e-eb48-4a71-b95d-ce343966b236"));

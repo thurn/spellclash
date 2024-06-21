@@ -15,6 +15,7 @@
 #![allow(unused_imports)]
 #![allow(unused_variables)]
 
+pub mod core;
 pub mod mana;
 pub mod predicates;
 pub mod restrictions;

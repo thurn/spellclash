@@ -23,6 +23,7 @@ use data::game_states::combat_state::{
 };
 use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
+use data::game_states::this_turn_state::ThisTurnState;
 use enumset::EnumSet;
 use utils::outcome;
 use utils::outcome::Outcome;
@@ -292,6 +293,7 @@ fn cleanup(game: &mut GameState) -> Outcome {
     // > marked on permanents (including phased-out permanents) is removed and all
     // > "until end of turn" and "this turn" effects end. This turn-based action
     // > doesn't use the stack.
+    game.this_turn = ThisTurnState::default();
 
     // > 514.3. Normally, no player receives priority during the cleanup step, so no
     // > spells can be cast and no abilities can be activated. However, this rule is

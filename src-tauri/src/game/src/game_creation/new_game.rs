@@ -25,10 +25,10 @@ use data::game_states::game_state::{
 use data::game_states::game_step::GamePhaseStep;
 use data::game_states::history_data::GameHistory;
 use data::game_states::oracle::Oracle;
+use data::game_states::this_turn_state::ThisTurnState;
 use data::game_states::undo_tracker::UndoTracker;
 use data::player_states::player_state::{PlayerType, Players};
 use data::printed_cards::printed_card_id;
-use data::state_machines::state_machine_data::StateMachines;
 use database::sqlite_database::SqliteDatabase;
 use enumset::EnumSet;
 use maplit::hashmap;
@@ -112,7 +112,6 @@ fn create_game(
         priority: PlayerName::One,
         passed: EnumSet::empty(),
         configuration: GameConfiguration::new(PlayerName::One | PlayerName::Two, debug),
-        state_machines: StateMachines::default(),
         players: Players::new(p1, p2, 20),
         zones,
         updates: None,
@@ -122,6 +121,7 @@ fn create_game(
         undo_tracker: UndoTracker { enabled: true, undo: vec![] },
         delegates: GameDelegates::default(),
         state_based_events: Some(vec![]),
+        this_turn: ThisTurnState::default(),
         oracle_reference: Some(oracle),
         agent_state: None,
         current_search_agent: None,
@@ -191,6 +191,14 @@ fn find_deck(name: DeckName) -> Deck {
             cards: hashmap! {
                 printed_card_id::ISLAND => 30,
                 printed_card_id::DANDAN => 30,
+            },
+        },
+        deck_name::GRIZZLY_BEAR_GIANT_GROWTH => Deck {
+            colors: EnumSet::only(Color::Blue),
+            cards: hashmap! {
+                printed_card_id::FOREST => 20,
+                printed_card_id::GRIZZLY_BEARS => 20,
+                printed_card_id::GIANT_GROWTH => 20,
             },
         },
         deck_name::DANDAN => Deck {

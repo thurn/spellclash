@@ -312,6 +312,8 @@ pub enum Zone {
     OutsideTheGame,
 }
 
+pub const ALL_ZONES: EnumSet<Zone> = EnumSet::ALL;
+
 impl Zone {
     /// Is this zone a public zone?
     ///

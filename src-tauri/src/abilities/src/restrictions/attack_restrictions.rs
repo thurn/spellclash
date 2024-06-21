@@ -26,7 +26,7 @@ use rules::queries::combat_queries;
 pub fn cannot_attack_unless_defender_controls(
     predicate: impl CardPredicate,
 ) -> impl AbilityBuilder {
-    StaticAbility::new().delegate(move |d| {
+    StaticAbility::new().delegates(move |d| {
         d.can_attack_target.this(move |g, s, data, current| {
             current.add_condition(
                 s,

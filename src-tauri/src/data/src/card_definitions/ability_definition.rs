@@ -18,7 +18,7 @@ use utils::outcome::Outcome;
 use crate::card_definitions::ability_choices::{
     AbilityChoiceBuilder, AbilityChoices, CardOrPlayer,
 };
-use crate::core::primitives::{CardId, EntityId, PlayerName, Zone};
+use crate::core::primitives::{CardId, EntityId, PlayerName, Zone, ALL_ZONES};
 use crate::costs::cost::Cost;
 #[allow(unused)] // Used in docs
 use crate::delegates::game_delegates::GameDelegates;
@@ -87,20 +87,29 @@ pub trait AbilityDelegateBuilder: Sized {
     #[doc(hidden)]
     fn get_delegates_mut(&mut self) -> &mut Vec<Delegate>;
 
-    /// Adds a new [Delegate] to this ability which functions only on the
-    /// battlefield.
-    fn delegate(
+    #[doc(hidden)]
+    fn get_default_zones() -> EnumSet<Zone> {
+        ALL_ZONES
+    }
+
+    /// Adds new [Delegate]s to this ability which functions only for the
+    /// default zones.
+    ///
+    /// For a static ability or triggered ability, these delegates will function
+    /// only on the battlefield. For a spell ability or activated ability, these
+    /// delegates will function in all zones.
+    fn delegates(
         mut self,
         delegate: impl Fn(&mut GameDelegates) + 'static + Copy + Send + Sync,
     ) -> Self {
         self.get_delegates_mut()
-            .push(Delegate { zones: EnumSet::only(Zone::Battlefield), run: Box::new(delegate) });
+            .push(Delegate { zones: Self::get_default_zones(), run: Box::new(delegate) });
         self
     }
 
-    /// Adds a new [Delegate] to this ability which functions in the provided
+    /// Adds new [Delegate]s to this ability which function in the provided
     /// set of [Zone]s.
-    fn delegate_for(
+    fn delegates_for(
         mut self,
         zones: impl Into<EnumSet<Zone>>,
         delegate: impl Fn(&mut GameDelegates) + 'static + Copy + Send + Sync,
@@ -295,6 +304,11 @@ impl<T> AbilityDelegateBuilder for TriggeredAbility<T> {
     fn get_delegates_mut(&mut self) -> &mut Vec<Delegate> {
         &mut self.delegates
     }
+
+    #[doc(hidden)]
+    fn get_default_zones() -> EnumSet<Zone> {
+        EnumSet::only(Zone::Battlefield)
+    }
 }
 
 impl AbilityBuilder for TriggeredAbility<WithEffects> {
@@ -332,6 +346,11 @@ impl AbilityDelegateBuilder for StaticAbility {
     #[doc(hidden)]
     fn get_delegates_mut(&mut self) -> &mut Vec<Delegate> {
         &mut self.delegates
+    }
+
+    #[doc(hidden)]
+    fn get_default_zones() -> EnumSet<Zone> {
+        EnumSet::only(Zone::Battlefield)
     }
 }
 

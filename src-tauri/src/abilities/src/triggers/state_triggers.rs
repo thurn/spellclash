@@ -21,7 +21,7 @@ use data::core::primitives::{HasCardId, HasSource, Zone};
 use data::delegates::game_delegates::GameDelegates;
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
-use rules::mutations::triggers::TriggerExt;
+use rules::mutations::trigger_extension::TriggerExt;
 use utils::outcome;
 use utils::outcome::Outcome;
 
@@ -32,7 +32,7 @@ pub fn when_controls_no(
     mutation: impl CardMutation,
 ) -> impl AbilityBuilder {
     TriggeredAbility::new()
-        .delegate(move |d| {
+        .delegates(move |d| {
             d.state_triggered_ability.trigger_if_not_on_stack(move |g, s, _| {
                 !g.battlefield(s.controller).iter().any(|&card_id| predicate(g, s, card_id))
             })

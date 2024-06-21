@@ -26,7 +26,8 @@ use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::card_states::zones::Zones;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
-    CardId, EntityId, HasCardId, HasController, HasEntityId, HasPlayerName, PlayerName, Zone,
+    CardId, EntityId, HasCardId, HasController, HasEntityId, HasPlayerName, ObjectId, PlayerName,
+    Zone,
 };
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::{GameState, TurnData};
@@ -163,6 +164,18 @@ pub struct CardState {
     /// this value by calling the [Self::printed] method.
     #[serde(skip)]
     pub printed_card_reference: Option<Arc<PrintedCard>>,
+}
+
+impl CardState {
+    /// Returns the [ObjectId] for this card.
+    ///
+    /// Panics if this card was assigned an invalid entity id.
+    pub fn object_id(&self) -> ObjectId {
+        match self.entity_id {
+            EntityId::Card(_, id) => id,
+            _ => panic!("Card was assigned an invalid entity id"),
+        }
+    }
 }
 
 impl HasCardId for CardState {

@@ -23,6 +23,7 @@ pub fn initialize() {
     DEFINITIONS.insert(cards_g::card_go::golden_bear);
     DEFINITIONS.insert(cards_g::card_go::gorilla_warrior);
     DEFINITIONS.insert(cards_g::cards_ga::garruks_gorehorn);
+    DEFINITIONS.insert(cards_g::cards_gi::giant_growth);
     DEFINITIONS.insert(cards_g::cards_gi::gigantosaurus);
     DEFINITIONS.insert(cards_g::cards_gr::grizzly_bears);
     DEFINITIONS.insert(cards_g::cards_gr::grizzled_outrider);

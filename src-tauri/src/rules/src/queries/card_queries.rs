@@ -135,7 +135,7 @@ pub fn mana_cost_for_casting_card(
 /// See [characteristic_faces] for more information.
 pub fn power(game: &GameState, card_id: CardId) -> Power {
     let characteristic = characteristic_faces(game, card_id);
-    match characteristic[..] {
+    let result = match characteristic[..] {
         [] => {
             // > 708.2a. If a face-up permanent is turned face down by a spell or ability that
             // > doesn't list any characteristics for that object, it becomes a 2/2 face-down
@@ -145,10 +145,12 @@ pub fn power(game: &GameState, card_id: CardId) -> Power {
         }
         [face] => match face.power {
             Some(PrintedPower::Number(p)) => p,
-            _ => todo!("Implement support for non-numeric power"),
+            _ => 0,
         },
         _ => panic!("Cannot compute power for card with multiple active faces"),
-    }
+    };
+
+    game.delegates.power.query(game, &card_id, result)
 }
 
 /// Computes the current toughness on card's characteristic faces.
@@ -156,7 +158,7 @@ pub fn power(game: &GameState, card_id: CardId) -> Power {
 /// See [characteristic_faces] for more information.
 pub fn toughness(game: &GameState, card_id: CardId) -> Toughness {
     let characteristic = characteristic_faces(game, card_id);
-    match characteristic[..] {
+    let result = match characteristic[..] {
         [] => {
             // > 708.2a. If a face-up permanent is turned face down by a spell or ability that
             // > doesn't list any characteristics for that object, it becomes a 2/2 face-down
@@ -166,8 +168,10 @@ pub fn toughness(game: &GameState, card_id: CardId) -> Toughness {
         }
         [face] => match face.toughness {
             Some(PrintedToughness::Number(t)) => t,
-            _ => todo!("Implement support for non-numeric toughness"),
+            _ => 0,
         },
         _ => panic!("Cannot compute toughness for card with multiple active faces"),
-    }
+    };
+
+    game.delegates.toughness.query(game, &card_id, result)
 }
