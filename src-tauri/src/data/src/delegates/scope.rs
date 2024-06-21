@@ -40,7 +40,9 @@ pub trait Scope: HasCardId {
 /// Execution context for a delegate callback
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct DelegateScope {
+    /// The controller of the card that created this delegate.
     pub controller: PlayerName,
+
     pub ability_id: AbilityId,
 }
 

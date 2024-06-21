@@ -117,6 +117,10 @@ pub struct GameState {
     pub undo_tracker: UndoTracker,
 
     /// Active Delegates for the game. See [GameDelegates].
+    ///
+    /// Do not mutate the set of delegates directly from an effect function or
+    /// callback. Prefer to add top-level delegates as part of your ability
+    /// definition.
     #[serde(skip)]
     pub delegates: GameDelegates,
 
