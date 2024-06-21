@@ -14,7 +14,7 @@
 
 use data::card_states::card_kind::CardKind;
 use data::card_states::zones::Zones;
-use data::core::primitives::{Color, GameId, PlayerName, Source, UserId};
+use data::core::primitives::{Color, EffectId, GameId, PlayerName, Source, UserId};
 use data::decks::deck::Deck;
 use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
@@ -122,6 +122,7 @@ fn create_game(
         delegates: GameDelegates::default(),
         state_based_events: Some(vec![]),
         this_turn: ThisTurnState::default(),
+        next_effect_id: EffectId(1),
         oracle_reference: Some(oracle),
         agent_state: None,
         current_search_agent: None,

@@ -32,6 +32,7 @@ use crate::core::primitives::{
     CardId, EntityId, GameId, HasCardId, HasPlayerName, HasSource, PlayerName, StackAbilityId,
     StackItemId, UserId, Zone,
 };
+use crate::core::primitives::{EffectId, ObjectId};
 use crate::delegates::game_delegates::GameDelegates;
 use crate::game_states::combat_state::CombatState;
 use crate::game_states::game_step::GamePhaseStep;
@@ -127,6 +128,12 @@ pub struct GameState {
     /// State which persists for the duration of the current turn.
     pub this_turn: ThisTurnState,
 
+    /// Stores the [EffectId] which will be returned next from
+    /// [Self::new_effect_id].
+    ///
+    /// Do not access this field directly.
+    pub next_effect_id: EffectId,
+
     /// Reference to the Oracle card database to use with this game.
     ///
     /// This value is populated immediately after deserialization and should
@@ -210,6 +217,16 @@ impl GameState {
         } else {
             self.state_based_events = Some(vec![event]);
         }
+    }
+
+    /// Returns a new unique [EffectId] for use in this game.
+    ///
+    /// Please attempt to have less than eighteen quintillion effects in a
+    /// single game.
+    pub fn new_effect_id(&mut self) -> EffectId {
+        let result = self.next_effect_id;
+        self.next_effect_id = EffectId(result.0 + 1);
+        result
     }
 }
 

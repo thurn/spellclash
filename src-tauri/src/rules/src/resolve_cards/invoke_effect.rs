@@ -16,9 +16,10 @@ use data::card_definitions::ability_choices::CardOrPlayer;
 use data::card_definitions::ability_definition::EffectFn;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{
-    AbilityId, CardId, EntityId, PlayerName, StackAbilityId, StackItemId,
+    AbilityId, CardId, EntityId, HasController, PlayerName, StackAbilityId, StackItemId,
 };
 use data::delegates::has_delegates::HasDelegates;
+use data::delegates::scope::EffectScope;
 use data::game_states::game_state::GameState;
 use utils::outcome;
 use utils::outcome::{Outcome, OutcomeWithResult};
@@ -30,7 +31,12 @@ pub fn run(
     targets: Vec<EntityId>,
     effect: &EffectFn,
 ) -> Outcome {
-    let scope = game.create_effect_scope(ability_id, stack_ability_id);
+    let controller = match stack_ability_id {
+        Some(stack_ability_id) => game.stack_ability(stack_ability_id).controller,
+        _ => game.card(ability_id).controller(),
+    };
+    let scope = EffectScope { controller, ability_id, effect_id: game.new_effect_id() };
+
     match effect {
         EffectFn::NoEffect => outcome::OK,
         EffectFn::Untargeted(function) => function(game, scope),

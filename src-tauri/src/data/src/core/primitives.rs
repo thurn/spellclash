@@ -196,30 +196,6 @@ pub enum EntityId {
     StackAbility(StackAbilityId),
 }
 
-/// An identifier for a card or ability while it is in a given zone. A new
-/// object ID is assigned each time a card changes zones, meaning that it can be
-/// used for targeting effects that end when the card changes zones.
-///
-/// > 109.1. An object is an ability on the stack, a card, a copy of a card, a
-/// > token, a spell, a permanent, or an emblem.
-///
-/// See <https://yawgatog.com/resources/magic-rules/#R1091>
-#[derive(
-    Debug, Clone, Copy, Default, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize,
-)]
-pub struct ObjectId(pub u64);
-
-impl ObjectId {
-    /// Returns this ObjectId as a float, for use as a sorting key in the
-    /// display layer.
-    ///
-    /// It's fine that we lose some precision here since it's only a visual
-    /// effect.
-    pub fn as_sorting_key(&self) -> f64 {
-        self.0 as f64
-    }
-}
-
 pub const PLAYER_ONE_ID: EntityId = EntityId::Player(PlayerName::One);
 pub const PLAYER_TWO_ID: EntityId = EntityId::Player(PlayerName::Two);
 pub const PLAYER_THREE_ID: EntityId = EntityId::Player(PlayerName::Three);
@@ -245,6 +221,39 @@ impl HasEntityId for PlayerName {
         }
     }
 }
+
+/// An identifier for a card or ability while it is in a given zone. A new
+/// object ID is assigned each time a card changes zones, meaning that it can be
+/// used for targeting effects that end when the card changes zones.
+///
+/// > 109.1. An object is an ability on the stack, a card, a copy of a card, a
+/// > token, a spell, a permanent, or an emblem.
+///
+/// See <https://yawgatog.com/resources/magic-rules/#R1091>
+#[derive(
+    Debug, Clone, Copy, Default, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize,
+)]
+pub struct ObjectId(pub u64);
+
+impl ObjectId {
+    /// Returns this ObjectId as a float, for use as a sorting key in the
+    /// display layer.
+    ///
+    /// It's fine that we lose some precision here since it's only a visual
+    /// effect.
+    pub fn as_sorting_key(&self) -> f64 {
+        self.0 as f64
+    }
+}
+
+/// A unique identifier for an effect.
+///
+/// Each instance of an effect function resolving as a spell ability, activated
+/// ability, or triggered ability gets its own ID.
+#[derive(
+    Debug, Clone, Copy, Default, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize,
+)]
+pub struct EffectId(pub u64);
 
 /// Identifies an ability within the set of abilities of a card.
 ///

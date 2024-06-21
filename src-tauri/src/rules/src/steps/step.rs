@@ -300,8 +300,8 @@ fn cleanup(game: &mut GameState) -> Outcome {
         card.damage = 0;
     }
 
-    for (scope, target_id) in game.this_turn.take_control_changing_effects() {
-        change_controller::remove_control(game, scope, target_id)?;
+    for (effect_id, target_id) in game.this_turn.take_control_changing_effects() {
+        change_controller::remove_control(game, effect_id, target_id)?;
     }
     game.this_turn = ThisTurnState::default();
 

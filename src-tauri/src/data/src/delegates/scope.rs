@@ -15,7 +15,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::core::primitives::{
-    AbilityId, AbilityNumber, CardId, HasCardId, HasSource, PlayerName, Source,
+    AbilityId, AbilityNumber, CardId, EffectId, HasCardId, HasSource, PlayerName, Source,
 };
 
 /// Identifies the context in which an event function or event delegate is
@@ -49,6 +49,9 @@ pub struct DelegateScope {
 pub struct EffectScope {
     pub controller: PlayerName,
     pub ability_id: AbilityId,
+
+    /// Unique identifier for this instance of the effect function resolving.
+    pub effect_id: EffectId,
 }
 
 impl Scope for DelegateScope {

@@ -16,15 +16,12 @@ use data::card_states::zones::ZoneQueries;
 use data::core::primitives::CardId;
 use data::delegates::scope::{DelegateScope, EffectScope};
 use data::game_states::game_state::GameState;
-use data::game_states::this_turn_state::EffectOrigin;
 use utils::outcome;
 use utils::outcome::Outcome;
 
 /// Marks a card as applying an effect to the given target card until the end of
 /// the current turn.
 pub fn this_turn(game: &mut GameState, scope: EffectScope, target: CardId) -> Outcome {
-    let origin =
-        EffectOrigin { ability_id: scope.ability_id, object_id: game.card(scope).object_id() };
-    game.this_turn.add_effect(origin, game.card(target).entity_id);
+    game.this_turn.add_effect(scope, game.card(target).entity_id);
     outcome::OK
 }

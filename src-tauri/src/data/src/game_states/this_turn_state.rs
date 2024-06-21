@@ -17,14 +17,8 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 
-use crate::core::primitives::{AbilityId, CardId, EntityId, ObjectId};
+use crate::core::primitives::{AbilityId, CardId, EffectId, EntityId};
 use crate::delegates::scope::{DelegateScope, EffectScope};
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-pub struct EffectOrigin {
-    pub ability_id: AbilityId,
-    pub object_id: ObjectId,
-}
 
 /// Stores a state mapping for effects that persist until the end of the current
 /// turn.
@@ -33,25 +27,26 @@ pub struct EffectOrigin {
 #[serde_as]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ThisTurnState {
-    /// List of effects active this turn affecting each entity.
+    /// Map from entities to lists of effects active this turn affecting that
+    /// entity.
     #[serde_as(as = "Vec<(_, _)>")]
-    effects: HashMap<EntityId, Vec<EffectOrigin>>,
+    effects: HashMap<EntityId, Vec<EffectScope>>,
 
     /// List of control-changing effects to automatically clean up at end of
     /// turn.
-    control_changing_effects: Option<Vec<(EffectScope, CardId)>>,
+    control_changing_effects: Option<Vec<(EffectId, CardId)>>,
 }
 
 impl ThisTurnState {
     /// Marks a new effect which persists until end of turn for a given
-    /// [EffectOrigin].
-    pub fn add_effect(&mut self, origin: EffectOrigin, target: EntityId) {
-        self.effects.entry(target).or_default().push(origin);
+    /// [EffectScope].
+    pub fn add_effect(&mut self, scope: EffectScope, target: EntityId) {
+        self.effects.entry(target).or_default().push(scope);
     }
 
     /// Returns the number of times the [AbilityId] ability has been applied to
     /// the provided target entity this turn.
-    pub fn application_count(&self, ability_id: AbilityId, target: EntityId) -> usize {
+    pub fn effect_count(&self, ability_id: AbilityId, target: EntityId) -> usize {
         self.effects
             .get(&target)
             .map_or(0, |e| e.iter().filter(|e| e.ability_id == ability_id).count())
@@ -59,12 +54,12 @@ impl ThisTurnState {
 
     /// Returns & removes the list of control-changing effects to automatically
     /// clean up at end of turn
-    pub fn take_control_changing_effects(&mut self) -> Vec<(EffectScope, CardId)> {
+    pub fn take_control_changing_effects(&mut self) -> Vec<(EffectId, CardId)> {
         self.control_changing_effects.take().unwrap_or_default()
     }
 
     /// Adds a control-changing effect to automatically clean up at end of turn.
-    pub fn add_control_changing_effect(&mut self, scope: EffectScope, card_id: CardId) {
-        self.control_changing_effects.get_or_insert_with(Vec::new).push((scope, card_id));
+    pub fn add_control_changing_effect(&mut self, effect_id: EffectId, card_id: CardId) {
+        self.control_changing_effects.get_or_insert_with(Vec::new).push((effect_id, card_id));
     }
 }

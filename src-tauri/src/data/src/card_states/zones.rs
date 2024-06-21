@@ -409,7 +409,6 @@ impl Zones {
     /// `battlefield_controlled` set.
     pub fn on_controller_changed(
         &mut self,
-        _source: impl HasSource,
         id: impl HasCardId,
         old_controller: PlayerName,
         new_controller: PlayerName,

@@ -48,7 +48,7 @@ impl<TArg: HasCardId, TResult> QueryExt<TArg, TResult>
             + 'static,
     ) {
         self.any(move |g, s, arg, mut result| {
-            for _ in 0..g.this_turn.application_count(s.ability_id, g.card(arg).entity_id) {
+            for _ in 0..g.this_turn.effect_count(s.ability_id, g.card(arg).entity_id) {
                 result = transformation(g, s, result);
             }
             result

@@ -14,7 +14,7 @@
 
 use data::card_states::card_state::ControlChangingEffect;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{AbilityId, CardId, HasController, HasSource, PlayerName};
+use data::core::primitives::{AbilityId, CardId, EffectId, HasController, HasSource, PlayerName};
 use data::delegates::scope::{DelegateScope, EffectScope};
 use data::game_states::game_state::GameState;
 use utils::outcome;
@@ -30,16 +30,10 @@ use utils::outcome::Outcome;
 pub fn gain_control(game: &mut GameState, scope: EffectScope, card_id: CardId) -> Outcome {
     let current = game.card(card_id).controller();
     if current != scope.controller {
-        game.zones.on_controller_changed(
-            scope.source(),
-            card_id,
-            current,
-            scope.controller,
-            game.turn,
-        );
+        game.zones.on_controller_changed(card_id, current, scope.controller, game.turn);
         game.card_mut(card_id).last_changed_control = game.turn;
         game.card_mut(card_id).control_changing_effects.push(ControlChangingEffect {
-            ability_id: scope.ability_id,
+            effect_id: scope.effect_id,
             controller: scope.controller,
         });
     }
@@ -54,20 +48,18 @@ pub fn gain_control_this_turn(
     scope: EffectScope,
     card_id: CardId,
 ) -> Outcome {
-    game.this_turn.add_control_changing_effect(scope, card_id);
+    game.this_turn.add_control_changing_effect(scope.effect_id, card_id);
     gain_control(game, scope, card_id)
 }
 
 /// Removes all control-changing effects from the [CardId] card that were added
-/// by the [EffectScope] ability.
-pub fn remove_control(game: &mut GameState, scope: EffectScope, card_id: CardId) -> Outcome {
+/// by the given [EffectId].
+pub fn remove_control(game: &mut GameState, effect_id: EffectId, card_id: CardId) -> Outcome {
     let current = game.card(card_id).controller();
-    game.card_mut(card_id)
-        .control_changing_effects
-        .retain(|effect| effect.ability_id != scope.ability_id);
+    game.card_mut(card_id).control_changing_effects.retain(|effect| effect.effect_id != effect_id);
     let new = game.card(card_id).controller();
     if current != new {
-        game.zones.on_controller_changed(scope.source(), card_id, current, new, game.turn);
+        game.zones.on_controller_changed(card_id, current, new, game.turn);
         game.card_mut(card_id).last_changed_control = game.turn;
     }
     outcome::OK

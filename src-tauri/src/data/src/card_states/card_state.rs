@@ -26,8 +26,8 @@ use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::card_states::zones::Zones;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
-    AbilityId, CardId, EntityId, HasCardId, HasController, HasEntityId, HasPlayerName, ObjectId,
-    PlayerName, Zone,
+    AbilityId, CardId, EffectId, EntityId, HasCardId, HasController, HasEntityId, HasPlayerName,
+    ObjectId, PlayerName, Zone,
 };
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::{GameState, TurnData};
@@ -260,6 +260,6 @@ pub enum CardFacing {
 /// Represents an effect which changes the controller of a card.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct ControlChangingEffect {
-    pub ability_id: AbilityId,
+    pub effect_id: EffectId,
     pub controller: PlayerName,
 }
