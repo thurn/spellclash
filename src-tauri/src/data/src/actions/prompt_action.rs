@@ -17,7 +17,7 @@ use specta::Type;
 
 use crate::actions::game_action::GameAction;
 use crate::actions::user_action::UserAction;
-use crate::core::primitives::CardId;
+use crate::core::primitives::{CardId, EntityId};
 use crate::prompts::select_order_prompt::CardOrderLocation;
 
 /// Action to respond to a prompt within an ongoing game
@@ -32,6 +32,9 @@ pub enum PromptAction {
     /// this location. The card currently occupying this location will be pushed
     /// towards the end of the list (right).
     SelectOrder(CardId, CardOrderLocation, usize),
+
+    /// Pick a single entity from a set of choices.
+    SelectEntity(EntityId),
 
     /// Confirm selected card choices on a card selection prompt
     SubmitCardSelection,

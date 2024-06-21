@@ -143,6 +143,7 @@ pub struct RevealedCardView {
 #[serde(rename_all = "camelCase")]
 pub enum RevealedCardStatus {
     Selected,
+    CanSelect,
     CanPlay,
     Attacking(String),
     Blocking(String),

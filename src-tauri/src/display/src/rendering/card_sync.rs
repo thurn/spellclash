@@ -21,7 +21,7 @@ use data::core::primitives::{PlayerName, Source};
 use data::game_states::game_state::GameState;
 use data::printed_cards::printed_card::{Face, PrintedCardFace};
 use data::printed_cards::printed_card_id::PrintedCardId;
-use data::prompts::prompt::PromptType;
+use data::prompts::prompt::{Prompt, PromptType};
 use data::prompts::select_order_prompt::CardOrderLocation;
 use rules::legality::legal_actions;
 use rules::play_cards::play_card;
@@ -90,7 +90,7 @@ fn card_status(
     card: &CardState,
 ) -> Option<RevealedCardStatus> {
     if let Some(prompt) = builder.current_prompt() {
-        return None;
+        return prompt_card_status(builder, game, prompt, card);
     }
 
     if play_card::can_play_card(game, builder.act_as_player(game), Source::Game, card.id)
@@ -126,6 +126,20 @@ fn card_status(
     }
 }
 
+fn prompt_card_status(
+    builder: &ResponseBuilder,
+    game: &GameState,
+    prompt: &Prompt,
+    card: &CardState,
+) -> Option<RevealedCardStatus> {
+    if let PromptType::EntityChoice(choice) = &prompt.prompt_type {
+        if choice.choices.iter().any(|c| c.entity_id == card.entity_id) {
+            return Some(RevealedCardStatus::CanSelect);
+        }
+    }
+    None
+}
+
 fn card_action(
     builder: &ResponseBuilder,
     game: &GameState,
@@ -138,7 +152,7 @@ fn card_action(
     }
 
     if let Some(prompt) = builder.current_prompt() {
-        return None;
+        return prompt_card_action(builder, game, prompt, card);
     }
 
     if play_card::can_play_card(game, player, Source::Game, card.id) {
@@ -176,6 +190,20 @@ fn card_action(
     } else {
         None
     }
+}
+
+fn prompt_card_action(
+    builder: &ResponseBuilder,
+    game: &GameState,
+    prompt: &Prompt,
+    card: &CardState,
+) -> Option<UserAction> {
+    if let PromptType::EntityChoice(choice) = &prompt.prompt_type {
+        if choice.choices.iter().any(|c| c.entity_id == card.entity_id) {
+            return Some(PromptAction::SelectEntity(card.entity_id).into());
+        }
+    }
+    None
 }
 
 fn can_drag(builder: &ResponseBuilder, game: &GameState, card: &CardState) -> bool {

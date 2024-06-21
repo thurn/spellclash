@@ -42,7 +42,7 @@ pub struct Prompt {
 #[strum_discriminants(name(PromptTypeKind))]
 pub enum PromptType {
     /// A blocking choice for a player to pick one of a list of entities before
-    /// any other game action_handlers can occur.
+    /// any other game actions can occur.
     EntityChoice(ChoicePrompt<EntityId>),
 
     /// A prompt for a player to select and/or reorder cards

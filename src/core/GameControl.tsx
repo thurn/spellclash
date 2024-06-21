@@ -28,5 +28,7 @@ export function GameControl({
     return <GameButton button={control.button} className={className} />;
   } else if ('textInput' in control) {
     return <TextInput input={control.textInput} className={className} />;
+  } else if ('text' in control) {
+    return <div className={className}>{control.text}</div>;
   }
 }

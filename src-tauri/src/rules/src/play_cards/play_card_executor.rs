@@ -44,6 +44,7 @@ pub fn execute_plan(
         move_card::run(game, source, card_id, Zone::Battlefield)?;
     } else {
         game.card_mut(card_id).cast_as = plan.play_as.faces;
+        game.card_mut(card_id).targets = plan.targets;
         move_card::run(game, source, card_id, Zone::Stack)?;
 
         // Once a card is played, abilities trigger and then a new priority round is created:

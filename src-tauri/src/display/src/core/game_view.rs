@@ -59,6 +59,7 @@ pub struct GameView {
 pub enum GameControlView {
     Button(GameButtonView),
     TextInput(TextInputView),
+    Text(String),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Type)]

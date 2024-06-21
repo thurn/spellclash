@@ -44,6 +44,8 @@ export function RevealedCard({ revealed }: Props): ReactNode {
     borderClass = 'border-2 border-amber-300';
   } else if (revealed.status === 'selected') {
     borderClass = 'border-2 border-lime-300';
+  } else if (revealed.status === 'canSelect') {
+    borderClass = 'border-2 border-orange-600';
   } else if (revealed.status != null && 'attacking' in revealed.status) {
     borderClass = 'border-2 border-teal-300';
     label = revealed.status.attacking;

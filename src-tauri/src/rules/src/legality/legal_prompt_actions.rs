@@ -35,7 +35,10 @@ pub fn compute(prompt: &Prompt, player: PlayerName, options: LegalActions) -> Ve
             (*minimum..=*maximum).map(PromptAction::PickNumber).collect()
         }
         PromptType::SelectOrder(select_order) => select_order_prompt_actions(select_order, options),
-        _ => vec![],
+        PromptType::EntityChoice(data) => {
+            data.choices.iter().map(|choice| PromptAction::SelectEntity(choice.entity_id)).collect()
+        }
+        PromptType::PlayCards(_) => todo!("Implement this"),
     }
 }
 

@@ -231,7 +231,10 @@ export type GameButtonKind =
    */
   | 'default';
 export type GameButtonView = { label: string; action: unknown; kind: GameButtonKind };
-export type GameControlView = { button: GameButtonView } | { textInput: TextInputView };
+export type GameControlView =
+  | { button: GameButtonView }
+  | { textInput: TextInputView }
+  | { text: string };
 /**
  * Unique identifier for a game
  */
@@ -453,6 +456,7 @@ export type RevealedCardFace = {
 };
 export type RevealedCardStatus =
   | 'selected'
+  | 'canSelect'
   | 'canPlay'
   | { attacking: string }
   | { blocking: string };

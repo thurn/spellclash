@@ -204,7 +204,7 @@ fn bottom_game_controls(
 fn prompt_view(state: &DisplayState, prompt: &Prompt, player: PlayerName) -> Vec<GameControlView> {
     match &prompt.prompt_type {
         PromptType::EntityChoice(_) => {
-            vec![]
+            vec![GameControlView::Text("Pick Entity".to_string())]
         }
         PromptType::SelectOrder(_) => {
             if legal_prompt_actions::can_take_action(

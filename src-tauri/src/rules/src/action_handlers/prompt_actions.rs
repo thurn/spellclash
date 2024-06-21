@@ -44,6 +44,9 @@ pub fn execute(prompt: Prompt, action: PromptAction) -> PromptExecutionResult {
         PromptAction::SelectOrder(card_id, location, index) => {
             select_order(prompt, card_id, location, index)
         }
+        PromptAction::SelectEntity(entity_id) => {
+            PromptExecutionResult::PromptResponse(PromptResponse::EntityChoice(entity_id))
+        }
         PromptAction::SubmitCardSelection => {
             let PromptType::SelectOrder(prompt_data) = prompt.prompt_type else {
                 panic!("Expected SelectOrder prompt type");

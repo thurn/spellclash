@@ -20,12 +20,14 @@ use data::card_definitions::ability_choices::AbilityChoiceBuilder;
 use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use rules::mutations::permanents;
-use utils::outcome;
+use data::core::primitives::{HasSource, Zone};
+use rules::mutations::{move_card, permanents};
 
 pub fn dance_of_the_skywise() -> CardDefinition {
     CardDefinition::new(card_name::DANCE_OF_THE_SKYWISE).ability(
-        SpellAbility::new().target(targets::creature()).effect(|_g, _s, _target| outcome::OK),
+        SpellAbility::new()
+            .target(targets::creature())
+            .effect(|g, s, target| move_card::run(g, s.source(), target, Zone::Graveyard)),
     )
 }
 
