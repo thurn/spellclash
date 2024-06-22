@@ -102,11 +102,18 @@ impl<TData: HasDelegates, TArg: ToCardId, TResult> CardDelegateList<TData, TArg,
                 continue;
             }
 
-            if !stored.zones.contains(data.current_zone(stored.ability_id.card_id)) {
+            let Some(zone) = data.current_zone(stored.ability_id.card_id) else {
+                continue;
+            };
+
+            if !stored.zones.contains(zone) {
                 continue;
             }
 
-            let scope = data.create_delegate_scope(stored.ability_id);
+            let Some(scope) = data.create_delegate_scope(stored.ability_id) else {
+                continue;
+            };
+
             result = stored.query_fn.invoke(data, scope, arg, result);
         }
         result

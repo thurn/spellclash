@@ -226,11 +226,11 @@ impl HasZones for GameState {
 }
 
 impl ZoneQueries for GameState {
-    fn card(&self, id: impl ToCardId) -> &CardState {
+    fn card(&self, id: impl ToCardId) -> Option<&CardState> {
         self.zones.card(id)
     }
 
-    fn card_mut(&mut self, id: impl ToCardId) -> &mut CardState {
+    fn card_mut(&mut self, id: impl ToCardId) -> Option<&mut CardState> {
         self.zones.card_mut(id)
     }
 

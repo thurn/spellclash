@@ -76,7 +76,11 @@ impl<TData: HasDelegates, TArg> EventDelegateList<TData, TArg> {
     ) -> EventDelegateInvoker<'a, TData, TArg> {
         let mut result: Vec<StoredEventDelegate<TData, TArg>> = vec![];
         for stored in &self.delegates {
-            if !stored.zones.contains(data.current_zone(stored.ability_id.card_id)) {
+            let Some(zone) = data.current_zone(stored.ability_id.card_id) else {
+                continue;
+            };
+
+            if !stored.zones.contains(zone) {
                 continue;
             }
             result.push(StoredEventDelegate {
@@ -120,7 +124,9 @@ impl<'a, TData: HasDelegates, TArg> EventDelegateInvoker<'a, TData, TArg> {
 
     pub fn run(&self, data: &mut TData) -> Outcome {
         for stored in &self.delegates {
-            let scope = data.create_delegate_scope(stored.ability_id);
+            let Some(scope) = data.create_delegate_scope(stored.ability_id) else {
+                continue;
+            };
             stored.event_fn.invoke(data, scope, self.arg)?;
         }
         outcome::OK

@@ -26,9 +26,12 @@ pub trait HasDelegates {
     type EffectScopeType: Copy + Clone + Debug;
     type ScopeType: Copy + Clone + Debug;
 
-    fn current_zone(&self, card_id: CardId) -> Zone;
+    /// Returns the current Zone for a [CardId].
+    ///
+    /// Returns None if this card does not exist.
+    fn current_zone(&self, card_id: CardId) -> Option<Zone>;
 
-    fn create_delegate_scope(&self, ability_id: AbilityId) -> Self::ScopeType;
+    fn create_delegate_scope(&self, ability_id: AbilityId) -> Option<Self::ScopeType>;
 
     fn game_state(&self) -> &GameState;
 }
@@ -37,12 +40,12 @@ impl HasDelegates for GameState {
     type EffectScopeType = EffectScope;
     type ScopeType = DelegateScope;
 
-    fn current_zone(&self, card_id: CardId) -> Zone {
-        self.card(card_id).zone
+    fn current_zone(&self, card_id: CardId) -> Option<Zone> {
+        Some(self.card(card_id)?.zone)
     }
 
-    fn create_delegate_scope(&self, ability_id: AbilityId) -> Self::ScopeType {
-        DelegateScope { controller: self.card(ability_id).controller(), ability_id }
+    fn create_delegate_scope(&self, ability_id: AbilityId) -> Option<Self::ScopeType> {
+        Some(DelegateScope { controller: self.card(ability_id)?.controller(), ability_id })
     }
 
     fn game_state(&self) -> &GameState {

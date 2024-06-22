@@ -46,10 +46,10 @@ pub trait ZoneQueries {
     /// Looks up the state for a card.
     ///
     /// Panics if this Card ID does not exist.
-    fn card(&self, id: impl ToCardId) -> &CardState;
+    fn card(&self, id: impl ToCardId) -> Option<&CardState>;
 
     /// Mutable equivalent of [Self::card]
-    fn card_mut(&mut self, id: impl ToCardId) -> &mut CardState;
+    fn card_mut(&mut self, id: impl ToCardId) -> Option<&mut CardState>;
 
     /// Returns the [CardState] for a [PermanentId].
     ///
@@ -72,7 +72,7 @@ pub trait ZoneQueries {
     ///
     /// If this card is not a permanent, returns None.
     fn permanent_id_for_card(&self, card_id: CardId) -> Option<PermanentId> {
-        self.card(card_id).permanent_id()
+        self.card(card_id)?.permanent_id()
     }
 
     /// Returns the [CardState] for an [EntityId].
@@ -238,14 +238,12 @@ impl Default for Zones {
 }
 
 impl ZoneQueries for Zones {
-    fn card(&self, id: impl ToCardId) -> &CardState {
-        let card_id = id.card_id(self).expect("Card not found");
-        &self.all_cards[card_id]
+    fn card(&self, id: impl ToCardId) -> Option<&CardState> {
+        self.all_cards.get(id.card_id(self)?)
     }
 
-    fn card_mut(&mut self, id: impl ToCardId) -> &mut CardState {
-        let card_id = id.card_id(self).expect("Card not found");
-        &mut self.all_cards[card_id]
+    fn card_mut(&mut self, id: impl ToCardId) -> Option<&mut CardState> {
+        self.all_cards.get_mut(id.card_id(self)?)
     }
 
     fn permanent(&self, id: PermanentId) -> Option<&CardState> {
@@ -273,7 +271,7 @@ impl ZoneQueries for Zones {
     fn card_entity(&self, id: EntityId) -> Option<&CardState> {
         match id {
             EntityId::Card(card_id, _) => {
-                let card = self.card(card_id);
+                let card = self.card(card_id)?;
                 if card.entity_id == id {
                     Some(card)
                 } else {
@@ -287,7 +285,7 @@ impl ZoneQueries for Zones {
     fn card_entity_mut(&mut self, id: EntityId) -> Option<&mut CardState> {
         match id {
             EntityId::Card(card_id, _) => {
-                let card = self.card_mut(card_id);
+                let card = self.card_mut(card_id)?;
                 if card.entity_id == id {
                     Some(card)
                 } else {
@@ -458,20 +456,19 @@ impl Zones {
     ///
     /// The card is added as the top card of the target zone if it is ordered.
     ///
-    /// Panics if this card was not found in its previous zone.
-    pub fn move_card(&mut self, id: impl ToCardId, zone: Zone) {
-        let Some(card_id) = id.card_id(self) else {
-            return;
-        };
-
-        let old_zone = self.card_mut(card_id).zone;
-        let owner = self.card_mut(card_id).owner;
+    /// Returns None if this card was not found in the previous zone.
+    pub fn move_card(&mut self, id: impl ToCardId, zone: Zone) -> Option<()> {
+        let card = self.card_mut(id)?;
+        let card_id = card.id;
+        let old_zone = card.zone;
+        let owner = card.owner;
         self.remove_from_zone(owner, card_id, old_zone);
         let entity_id = self.new_card_entity_id(card_id);
-        let card = self.card_mut(card_id);
+        let card = self.card_mut(card_id).expect("Card not found");
         card.zone = zone;
         card.entity_id = entity_id;
         self.add_to_zone(owner, card_id, zone);
+        Some(())
     }
 
     /// Adds a list of items to the top of the stack in the given order.
@@ -497,7 +494,7 @@ impl Zones {
             ),
             Zone::Stack => Box::new(self.stack.iter().filter_map(move |id| {
                 let id = id.card_id()?;
-                if self.card(id).controller() == player {
+                if self.card(id)?.controller() == player {
                     Some(id)
                 } else {
                     None
@@ -519,26 +516,24 @@ impl Zones {
     /// Do not invoke this method directly, use the `change_controller` module
     /// instead.
     ///
-    /// Has no effect if this card is not on the battlefield. Panics if this
-    /// card *is* on the battlefield but was not found in the
-    /// `battlefield_controlled` set.
+    /// Returns None if this card does not exist.
     pub fn on_controller_changed(
         &mut self,
         id: impl ToCardId,
         old_controller: PlayerName,
         new_controller: PlayerName,
         current_turn: TurnData,
-    ) {
-        let Some(card_id) = id.card_id(self) else {
-            return;
-        };
+    ) -> Option<()> {
+        let card = self.card(id)?;
 
-        if let Some(permanent_id) = self.permanent_id_for_card(card_id) {
-            if self.card(card_id).zone == Zone::Battlefield && old_controller != new_controller {
+        if let Some(permanent_id) = card.permanent_id() {
+            if card.zone == Zone::Battlefield && old_controller != new_controller {
                 self.battlefield_controlled.remove(permanent_id, old_controller);
                 self.battlefield_controlled.cards_mut(new_controller).insert(permanent_id);
             }
         }
+
+        Some(())
     }
 
     /// Shuffles the order of cards in a player's library

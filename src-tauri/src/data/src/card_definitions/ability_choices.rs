@@ -177,14 +177,14 @@ impl<TArg: 'static, TResult: AbilityChoiceBuilder> EffectAbilityBuilder<TArg, TR
 }
 
 fn card_target_builder(game: &GameState, scope: EffectScope) -> Option<CardId> {
-    match game.card(scope.card_id(game)?).targets.first() {
+    match game.card(scope)?.targets.first() {
         Some(EntityId::Card(card_id, _)) => Some(*card_id),
         _ => None,
     }
 }
 
 fn player_target_builder(game: &GameState, scope: EffectScope) -> Option<PlayerName> {
-    match game.card(scope).targets.first() {
+    match game.card(scope)?.targets.first() {
         Some(EntityId::Player(player_name)) => Some(*player_name),
         _ => None,
     }
