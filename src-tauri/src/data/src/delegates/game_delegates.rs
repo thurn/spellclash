@@ -23,18 +23,18 @@ use crate::delegates::card_delegate_list::CardDelegateList;
 use crate::delegates::event_delegate_list::EventDelegateList;
 use crate::delegates::flag::Flag;
 use crate::delegates::stores_delegates::StoresDelegates;
-use crate::game_states::combat_state::AttackTarget;
+use crate::game_states::combat_state::{AttackTarget, AttackerId};
 use crate::game_states::game_state::GameState;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub struct CanAttackTarget {
-    pub card_id: CardId,
+    pub attacker_id: AttackerId,
     pub target: AttackTarget,
 }
 
 impl HasCardId for CanAttackTarget {
     fn card_id(&self) -> CardId {
-        self.card_id
+        self.attacker_id.internal_card_id
     }
 }
 

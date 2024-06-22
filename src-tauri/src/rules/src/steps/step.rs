@@ -19,7 +19,7 @@ use data::core::numerics;
 use data::core::numerics::Damage;
 use data::core::primitives::{CardId, CardType, PlayerName, Source};
 use data::game_states::combat_state::{
-    AttackTarget, AttackerMap, CombatState, ProposedAttackers, ProposedBlockers,
+    AttackTarget, AttackerMap, BlockerId, CombatState, ProposedAttackers, ProposedBlockers,
 };
 use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
@@ -167,7 +167,7 @@ pub enum CombatDamageAssignment {
     Player(PlayerName, Damage),
     Planeswalker(PlayerName, Damage),
     Battle(PlayerName, Damage),
-    Creature(CardId, Damage),
+    Creature(BlockerId, Damage),
 }
 
 fn combat_damage(game: &mut GameState) -> Outcome {
@@ -181,34 +181,35 @@ fn combat_damage(game: &mut GameState) -> Outcome {
     // > blocking creature assigns its combat damage.
 
     let mut damage_assignments = vec![];
-    for (attacker, target) in blockers.attackers.all_targets() {
+    for (attacker_id, target) in blockers.attackers.all_targets() {
         // > 510.1a. Each attacking creature and each blocking creature assigns
         // > combat damage equal to its power. Creatures that would assign 0 or less
         // > damage this way don't assign combat damage at all.
         // <https://yawgatog.com/resources/magic-rules/#R5101>
 
-        let Some(attacker_id) = game.card_entity(*attacker).map(|c| c.id) else {
+        let Some(attacker_card_id) = game.card_id_for_permanent(*attacker_id) else {
             continue;
         };
 
-        if blockers.blocked_attackers.contains_key(attacker) {
-            let blockers = &blockers.blocked_attackers[attacker];
+        if blockers.blocked_attackers.contains_key(attacker_id) {
+            let blockers = &blockers.blocked_attackers[attacker_id];
             if blockers.len() != 1 {
                 // TODO: Implement support for multiple blockers
             }
-            let Some(blocker_id) = game.card_entity(blockers[0]).map(|c| c.id) else {
+            let blocker_id = blockers[0];
+            if game.card_id_for_permanent(blocker_id).is_none() {
                 continue;
             };
             damage_assignments.push(CombatDamageAssignment::Creature(
                 blocker_id,
-                numerics::power_to_damage(card_queries::power(game, attacker_id)),
+                numerics::power_to_damage(card_queries::power(game, attacker_card_id)),
             ));
         } else {
             match target {
                 AttackTarget::Player(player) => {
                     damage_assignments.push(CombatDamageAssignment::Player(
                         *player,
-                        numerics::power_to_damage(card_queries::power(game, attacker_id)),
+                        numerics::power_to_damage(card_queries::power(game, attacker_card_id)),
                     ));
                 }
                 _ => todo!("Implement attack target"),
@@ -225,15 +226,13 @@ fn combat_damage(game: &mut GameState) -> Outcome {
         if attackers.len() != 1 {
             todo!("Implement support for blocking multiple attackers");
         }
-        let Some(attacker_id) = game.card_entity(attackers[0]).map(|c| c.id) else {
-            continue;
-        };
-        let Some(blocker_id) = game.card_entity(*blocker_id).map(|c| c.id) else {
+        let attacker_id = attackers[0];
+        let Some(blocker_card_id) = game.card_id_for_permanent(*blocker_id) else {
             continue;
         };
         damage_assignments.push(CombatDamageAssignment::Creature(
             attacker_id,
-            numerics::power_to_damage(card_queries::power(game, blocker_id)),
+            numerics::power_to_damage(card_queries::power(game, blocker_card_id)),
         ));
     }
 
@@ -253,8 +252,8 @@ fn combat_damage(game: &mut GameState) -> Outcome {
             CombatDamageAssignment::Battle(player, damage) => {
                 todo!("Implement battle damage");
             }
-            CombatDamageAssignment::Creature(card_id, damage) => {
-                permanents::deal_damage(game, Source::Game, card_id, damage)?;
+            CombatDamageAssignment::Creature(creature_id, damage) => {
+                permanents::deal_damage(game, Source::Game, creature_id, damage)?;
             }
         }
     }

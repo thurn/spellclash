@@ -71,8 +71,11 @@ fn resolve_top_card_of_stack(game: &mut GameState, card_id: CardId) -> Outcome {
             } else {
                 panic!("Expected only a single face!");
             };
-            permanents::turn_face_up(game, Source::Game, card_id, face)?;
+
             move_card::run(game, Source::Game, card_id, Zone::Battlefield)?;
+            if let Some(permanent_id) = game.card(card_id).permanent_id() {
+                permanents::turn_face_up(game, Source::Game, permanent_id, face)?;
+            }
         } else {
             todo!("Implement targeting for permanents");
         }

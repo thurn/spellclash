@@ -27,7 +27,7 @@ use crate::card_states::zones::Zones;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
     AbilityId, CardId, EffectId, EntityId, HasCardId, HasController, HasEntityId, HasPlayerName,
-    ObjectId, PlayerName, Zone,
+    ObjectId, PermanentId, PlayerName, Zone,
 };
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::{GameState, TurnData};
@@ -176,6 +176,15 @@ impl CardState {
         match self.entity_id {
             EntityId::Card(_, id) => id,
             _ => panic!("Card was assigned an invalid entity id"),
+        }
+    }
+
+    /// Returns this card's [PermanentId] if it is on the battlefield.
+    pub fn permanent_id(&self) -> Option<PermanentId> {
+        if self.zone == Zone::Battlefield {
+            Some(PermanentId { object_id: self.object_id(), internal_card_id: self.id })
+        } else {
+            None
         }
     }
 }

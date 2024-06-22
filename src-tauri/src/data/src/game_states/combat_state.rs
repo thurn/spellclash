@@ -18,20 +18,20 @@ use enum_kinds::EnumKind;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 
-use crate::core::primitives::{CardId, EntityId, PlayerName};
+use crate::core::primitives::{CardId, EntityId, PermanentId, PlayerName};
 
 /// Entity which has been declared as an attacker
-pub type AttackerId = EntityId;
+pub type AttackerId = PermanentId;
 
 /// Entity which has been declared as a blocker
-pub type BlockerId = EntityId;
+pub type BlockerId = PermanentId;
 
 /// Possible entities a creature may attack
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum AttackTarget {
     Player(PlayerName),
-    Planeswalker(EntityId),
-    Battle(EntityId),
+    Planeswalker(PermanentId),
+    Battle(PermanentId),
 }
 
 /// Tracks the state of creatures participating in a combat phase

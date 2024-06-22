@@ -16,7 +16,7 @@ use enumset::{EnumSet, EnumSetType};
 use serde::{Deserialize, Serialize};
 
 use crate::core::numerics::ManaValue;
-use crate::core::primitives::{CardId, EntityId};
+use crate::core::primitives::{CardId, EntityId, PermanentId};
 use crate::delegates::scope::DelegateScope;
 use crate::printed_cards::printed_card::Face;
 
@@ -104,7 +104,7 @@ pub struct ManaPaymentPlan {
     /// > intrinsic ability "{T}: Add [mana symbol]," even if the text box
     /// > doesn't actually contain that text or the object has no text box.
     /// <https://yawgatog.com/resources/magic-rules/#R3056>
-    pub basic_land_abilities_to_activate: Vec<CardId>,
+    pub basic_land_abilities_to_activate: Vec<PermanentId>,
     /// Identifies mana abilities the player has chosen to activate in order to
     /// pay costs to cast this spell.
     pub mana_abilities: Vec<DelegateScope>,

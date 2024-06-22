@@ -246,6 +246,20 @@ impl ObjectId {
     }
 }
 
+/// Unique identifier for a permanent on the battlefield
+#[derive(
+    Debug, Clone, Copy, Default, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize,
+)]
+pub struct PermanentId {
+    pub object_id: ObjectId,
+
+    /// The underlying [CardId] for this permanent.
+    ///
+    /// Do not access this field directly, you must first validate that this
+    /// permanent ID still exists.
+    pub internal_card_id: CardId,
+}
+
 /// A unique identifier for an effect.
 ///
 /// Each instance of an effect function resolving as a spell ability, activated

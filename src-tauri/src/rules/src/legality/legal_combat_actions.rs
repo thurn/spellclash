@@ -58,11 +58,10 @@ pub fn append(
             extend_actions(
                 actions,
                 combat_queries::legal_attackers(game, player)
-                    .filter(|card_id| {
-                        !selected_attackers.contains(&game.card(card_id).entity_id)
-                            && !proposed_attacks.contains(game.card(card_id).entity_id)
+                    .filter(|id| {
+                        !selected_attackers.contains(&id) && !proposed_attacks.contains(*id)
                     })
-                    .map(|card_id| CombatAction::AddSelectedAttacker(game.card(card_id).entity_id)),
+                    .map(|id| CombatAction::AddSelectedAttacker(id)),
             );
             if !selected_attackers.is_empty() {
                 extend_actions(
@@ -75,7 +74,7 @@ pub fn append(
                                 .query_all(
                                     game,
                                     selected_attackers.iter().map(|&attacker| CanAttackTarget {
-                                        card_id: game.card_entity_id(attacker),
+                                        attacker_id: attacker,
                                         target: *target,
                                     }),
                                     Flag::new(),
@@ -102,11 +101,11 @@ pub fn append(
             extend_actions(
                 actions,
                 combat_queries::legal_blockers(game, player)
-                    .filter(|card_id| {
-                        !blockers.selected_blockers.contains(&game.card(card_id).entity_id)
-                            && !blockers.proposed_blocks.contains_key(&game.card(card_id).entity_id)
+                    .filter(|id| {
+                        !blockers.selected_blockers.contains(&id)
+                            && !blockers.proposed_blocks.contains_key(id)
                     })
-                    .map(|card_id| CombatAction::AddSelectedBlocker(game.card(card_id).entity_id)),
+                    .map(|id| CombatAction::AddSelectedBlocker(id)),
             );
             if !blockers.selected_blockers.is_empty() {
                 extend_actions(

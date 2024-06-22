@@ -14,9 +14,23 @@
 
 use utils::outcome::Outcome;
 
-use crate::core::primitives::{CardId, EntityId, PlayerName, Source, StackAbilityId};
+use crate::core::primitives::{CardId, EntityId, PermanentId, PlayerName, Source, StackAbilityId};
 use crate::delegates::scope::DelegateScope;
 use crate::game_states::game_state::GameState;
+
+/// Function which performs a boolean query on the state of a permanent.
+pub trait PermanentPredicate:
+    Fn(&GameState, DelegateScope, PermanentId) -> bool + 'static + Copy + Send + Sync
+{
+}
+
+impl<F> PermanentPredicate for F where
+    F: Fn(&GameState, DelegateScope, PermanentId) -> bool + 'static + Copy + Send + Sync
+{
+}
+
+pub type PermanentPredicateFn =
+    Box<dyn Fn(&GameState, DelegateScope, PermanentId) -> bool + 'static + Send + Sync>;
 
 /// Function which performs a boolean query on the state of a card.
 pub trait CardPredicate:
@@ -32,7 +46,20 @@ impl<F> CardPredicate for F where
 pub type CardPredicateFn =
     Box<dyn Fn(&GameState, DelegateScope, CardId) -> bool + 'static + Send + Sync>;
 
-/// Function which performs a boolean query on the state of a card.
+pub trait PermanentMutation:
+    Fn(&mut GameState, Source, PermanentId) -> Outcome + 'static + Copy + Send + Sync
+{
+}
+
+impl<F> PermanentMutation for F where
+    F: Fn(&mut GameState, Source, PermanentId) -> Outcome + 'static + Copy + Send + Sync
+{
+}
+
+pub type PermanentMutationFn =
+    Box<dyn Fn(&mut GameState, Source, PermanentId) -> Outcome + 'static + Send + Sync>;
+
+/// Function which performs a mutation on the state of a card.
 pub trait CardMutation:
     Fn(&mut GameState, Source, CardId) -> Outcome + 'static + Copy + Send + Sync
 {

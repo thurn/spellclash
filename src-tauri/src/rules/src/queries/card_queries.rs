@@ -17,7 +17,7 @@ use std::iter;
 use data::card_states::play_card_plan::PlayCardPlan;
 use data::card_states::zones::ZoneQueries;
 use data::core::numerics::{Power, Toughness};
-use data::core::primitives::{CardId, CardType, Zone};
+use data::core::primitives::{CardId, CardType, HasCardId, Zone};
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandSubtype;
 use data::printed_cards::layout::CardLayout;
@@ -103,14 +103,18 @@ pub fn characteristic_faces(game: &GameState, card_id: CardId) -> Vec<&PrintedCa
 /// Returns the set of current card types on a card's characteristic faces.
 ///
 /// See [characteristic_faces] for more information.
-pub fn card_types(game: &GameState, card_id: CardId) -> EnumSet<CardType> {
-    characteristic_faces(game, card_id).iter().flat_map(|face| face.card_types.iter()).collect()
+pub fn card_types(game: &GameState, card_id: impl HasCardId) -> EnumSet<CardType> {
+    characteristic_faces(game, card_id.card_id())
+        .iter()
+        .flat_map(|face| face.card_types.iter())
+        .collect()
 }
 
 /// Returns the set of current land subtypes on a card's characteristic faces.
 ///
 /// See [characteristic_faces] for more information.
-pub fn land_subtypes(game: &GameState, card_id: CardId) -> EnumSet<LandSubtype> {
+pub fn land_subtypes(game: &GameState, card_id: impl HasCardId) -> EnumSet<LandSubtype> {
+    let card_id = card_id.card_id();
     characteristic_faces(game, card_id).iter().flat_map(|face| face.subtypes.land.iter()).collect()
 }
 
@@ -130,7 +134,7 @@ pub fn mana_cost_for_casting_card(
     cost
 }
 
-/// Computes the current power on card's characteristic faces.
+/// Computes the current power on a card's characteristic faces.
 ///
 /// See [characteristic_faces] for more information.
 pub fn power(game: &GameState, card_id: CardId) -> Power {
@@ -156,7 +160,8 @@ pub fn power(game: &GameState, card_id: CardId) -> Power {
 /// Computes the current toughness on card's characteristic faces.
 ///
 /// See [characteristic_faces] for more information.
-pub fn toughness(game: &GameState, card_id: CardId) -> Toughness {
+pub fn toughness(game: &GameState, card_id: impl HasCardId) -> Toughness {
+    let card_id = card_id.card_id();
     let characteristic = characteristic_faces(game, card_id);
     let result = match characteristic[..] {
         [] => {

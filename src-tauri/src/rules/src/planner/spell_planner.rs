@@ -16,7 +16,7 @@ use std::collections::HashMap;
 
 use data::card_states::play_card_plan::{ManaPaymentPlan, PlayCardPlan};
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, HasController, ManaColor, Source};
+use data::core::primitives::{CardId, HasController, ManaColor, PermanentId, Source};
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandSubtype;
 use data::printed_cards::mana_cost::ManaCostItem;
@@ -27,7 +27,7 @@ use crate::queries::card_queries;
 // Map from mana colors to lists of card id which can produce that color of mana
 // and number of land subtypes that card has.
 type SubtypeCount = usize;
-type LandAbilityMap = HashMap<ManaColor, Vec<(CardId, SubtypeCount)>>;
+type LandAbilityMap = HashMap<ManaColor, Vec<(PermanentId, SubtypeCount)>>;
 
 /// Builds a plan for paying a spell's mana costs.
 ///
@@ -68,18 +68,20 @@ pub fn mana_payment(
 
 fn add_land_to_map(
     game: &GameState,
-    card_id: CardId,
+    land_id: PermanentId,
     lands: &mut LandAbilityMap,
     color: ManaColor,
     subtype: LandSubtype,
 ) {
+    let Some(card_id) = game.card_id_for_permanent(land_id) else {
+        return;
+    };
     if game.card(card_id).tapped_state.is_tapped() {
         return;
     }
-    let name = game.card(card_id).printed().face.displayed_name.clone();
     let subtypes = card_queries::land_subtypes(game, card_id);
     if subtypes.contains(subtype) {
-        lands.entry(color).or_default().push((card_id, subtypes.len()));
+        lands.entry(color).or_default().push((land_id, subtypes.len()));
     }
 }
 

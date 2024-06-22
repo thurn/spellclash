@@ -14,7 +14,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::core::primitives::{CardId, EntityId, PlayerName};
+use crate::core::primitives::{CardId, EntityId, PermanentId, PlayerName};
 
 /// Represents an event which *may* result in changes to the game state when
 /// state-based actions are checked.
@@ -28,9 +28,9 @@ pub enum StateBasedEvent {
     GainedPoisonCounters(PlayerName),
     TokenLeftBattlefield(CardId),
     CopyLeftStackOrBattlefield(CardId),
-    CreatureToughnessChanged(CardId),
-    CreatureDamaged(CardId),
-    CreatureDamagedByDeathtouch(CardId),
-    PlaneswalkerLostLoyalty(CardId),
-    LegendaryPermanentEntered(CardId),
+    CreatureToughnessChanged(PermanentId),
+    CreatureDamaged(PermanentId),
+    CreatureDamagedByDeathtouch(PermanentId),
+    PlaneswalkerLostLoyalty(PermanentId),
+    LegendaryPermanentEntered(PermanentId),
 }

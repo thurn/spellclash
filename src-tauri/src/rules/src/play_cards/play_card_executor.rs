@@ -40,8 +40,10 @@ pub fn execute_plan(
     if plan.play_as.timing == PlayCardTiming::Land {
         game.history_counters_mut(player).lands_played += 1;
         let face = plan.play_as.single_face();
-        permanents::turn_face_up(game, source, card_id, face)?;
         move_card::run(game, source, card_id, Zone::Battlefield)?;
+        if let Some(permanent_id) = game.card(card_id).permanent_id() {
+            permanents::turn_face_up(game, source, permanent_id, face)?;
+        }
     } else {
         game.card_mut(card_id).cast_as = plan.play_as.faces;
         game.card_mut(card_id).targets = plan.targets;

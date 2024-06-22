@@ -15,7 +15,7 @@
 use data::card_states::card_state::{CardFacing, TappedState};
 use data::card_states::zones::ZoneQueries;
 use data::core::numerics::Damage;
-use data::core::primitives::{CardId, Source, Zone, ALL_POSSIBLE_PLAYERS};
+use data::core::primitives::{CardId, PermanentId, Source, Zone, ALL_POSSIBLE_PLAYERS};
 use data::game_states::game_state::GameState;
 use data::game_states::state_based_event::StateBasedEvent;
 use data::printed_cards::printed_card::Face;
@@ -26,32 +26,27 @@ use utils::outcome::Outcome;
 use crate::mutations::move_card;
 
 /// Turns the [Face] face of this card up and reveals it to all players.
-pub fn turn_face_up(game: &mut GameState, _source: Source, card: CardId, face: Face) -> Outcome {
-    let card = game.card_mut(card);
-    card.facing = CardFacing::FaceUp(face);
-    card.revealed_to = ALL_POSSIBLE_PLAYERS;
+pub fn turn_face_up(game: &mut GameState, _source: Source, id: PermanentId, face: Face) -> Outcome {
+    if let Some(card) = game.permanent_mut(id) {
+        card.facing = CardFacing::FaceUp(face);
+        card.revealed_to = ALL_POSSIBLE_PLAYERS;
+    }
     outcome::OK
 }
 
-/// Taps a card.
-///
-/// Panics if this card is already tapped or this card is not on the
-/// battlefield.
-pub fn tap(game: &mut GameState, _source: Source, card_id: CardId) -> Outcome {
-    let card = game.card_mut(card_id);
-    assert_eq!(card.zone, Zone::Battlefield, "Card {card_id:?} is not on the battlefield");
-    assert_eq!(card.tapped_state, TappedState::Untapped, "Card {card_id:?} is already tapped");
-    card.tapped_state = TappedState::Tapped;
+/// Taps a permanent.
+pub fn tap(game: &mut GameState, _source: Source, id: PermanentId) -> Outcome {
+    if let Some(card) = game.permanent_mut(id) {
+        card.tapped_state = TappedState::Tapped;
+    }
     outcome::OK
 }
 
-/// Untaps a card
-///
-/// Panics if this card is not on the battlefield.
-pub fn untap(game: &mut GameState, _source: Source, card_id: CardId) -> Outcome {
-    let card = game.card_mut(card_id);
-    assert_eq!(card.zone, Zone::Battlefield, "Card {card_id:?} is not on the battlefield");
-    card.tapped_state = TappedState::Untapped;
+/// Untaps a permanent
+pub fn untap(game: &mut GameState, _source: Source, id: PermanentId) -> Outcome {
+    if let Some(card) = game.permanent_mut(id) {
+        card.tapped_state = TappedState::Untapped;
+    }
     outcome::OK
 }
 
@@ -59,16 +54,21 @@ pub fn untap(game: &mut GameState, _source: Source, card_id: CardId) -> Outcome 
 pub fn deal_damage(
     game: &mut GameState,
     source: Source,
-    card_id: CardId,
+    id: PermanentId,
     damage: Damage,
 ) -> Outcome {
-    debug!("Dealing {damage:?} damage to {card_id:?}");
-    game.card_mut(card_id).damage += damage;
-    game.add_state_based_event(StateBasedEvent::CreatureDamaged(card_id));
+    if let Some(card) = game.permanent_mut(id) {
+        debug!("Dealing {damage:?} damage to {id:?}");
+        card.damage += damage;
+        game.add_state_based_event(StateBasedEvent::CreatureDamaged(id));
+    }
     outcome::OK
 }
 
 /// Sacrifices a permanent.
-pub fn sacrifice(game: &mut GameState, source: Source, card_id: CardId) -> Outcome {
-    move_card::run(game, source, card_id, Zone::Graveyard)
+pub fn sacrifice(game: &mut GameState, source: Source, id: PermanentId) -> Outcome {
+    if let Some(card_id) = game.card_id_for_permanent(id) {
+        move_card::run(game, source, card_id, Zone::Graveyard)?;
+    }
+    outcome::OK
 }

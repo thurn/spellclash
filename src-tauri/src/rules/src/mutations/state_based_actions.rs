@@ -84,20 +84,28 @@ fn state_based_actions(game: &mut GameState) -> OutcomeWithResult<bool> {
                 StateBasedEvent::GainedPoisonCounters(_) => {}
                 StateBasedEvent::TokenLeftBattlefield(_) => {}
                 StateBasedEvent::CopyLeftStackOrBattlefield(_) => {}
-                StateBasedEvent::CreatureToughnessChanged(card_id) => {
-                    if card_queries::toughness(game, card_id) <= 0 {
-                        move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
-                        performed_action = true;
+                StateBasedEvent::CreatureToughnessChanged(permanent_id) => {
+                    if let Some(card_id) = game.card_id_for_permanent(permanent_id) {
+                        if card_queries::toughness(game, card_id) <= 0 {
+                            move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
+                            performed_action = true;
+                        }
                     }
                 }
-                StateBasedEvent::CreatureDamaged(card_id) => {
-                    if game.card(card_id).damage as i64 >= card_queries::toughness(game, card_id) {
-                        move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
-                        performed_action = true;
+                StateBasedEvent::CreatureDamaged(permanent_id) => {
+                    if let Some(card_id) = game.card_id_for_permanent(permanent_id) {
+                        if game.card(card_id).damage as i64
+                            >= card_queries::toughness(game, card_id)
+                        {
+                            move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
+                            performed_action = true;
+                        }
                     }
                 }
-                StateBasedEvent::CreatureDamagedByDeathtouch(card_id) => {
-                    move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
+                StateBasedEvent::CreatureDamagedByDeathtouch(permanent_id) => {
+                    if let Some(card_id) = game.card_id_for_permanent(permanent_id) {
+                        move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
+                    }
                     performed_action = true;
                 }
                 StateBasedEvent::PlaneswalkerLostLoyalty(_) => {}

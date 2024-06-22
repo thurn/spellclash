@@ -16,26 +16,34 @@ use std::iter;
 
 use data::card_states::card_state::TappedState;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, CardType, EntityId, HasController, PlayerName, Source};
+use data::core::primitives::{
+    CardId, CardType, EntityId, HasController, PermanentId, PlayerName, Source,
+};
 use data::delegates::flag::Flag;
 use data::delegates::game_delegates::CanAttackTarget;
-use data::game_states::combat_state::{AttackTarget, BlockerMap, CombatState, ProposedAttackers};
+use data::game_states::combat_state::{
+    AttackTarget, AttackerId, BlockerId, BlockerMap, CombatState, ProposedAttackers,
+};
 use data::game_states::game_state::GameState;
+use utils::bools;
 
 use crate::queries::{card_queries, combat_queries, player_queries};
 
-/// Returns true if the card with the provided [CardId] has any valid target to
-/// attack.
+/// Returns true if the card with the provided [AttackerId] has any valid
+/// target to attack.
 ///
 /// > 508.1a. The active player chooses which creatures that they control, if
 /// > any, will attack. The chosen creatures must be untapped, they can't also
 /// > be battles, and each one must either have haste or have been controlled by
 /// > the active player continuously since the turn began.
 /// <https://yawgatog.com/resources/magic-rules/#R5081a>
-pub fn can_attack(game: &GameState, card_id: CardId) -> Flag {
+pub fn can_attack(game: &GameState, attacker_id: AttackerId) -> Flag {
     let turn = game.turn;
-    let card = game.card(card_id);
-    let types = card_queries::card_types(game, card_id);
+    let Some(card) = game.permanent(attacker_id) else {
+        return Flag::locked_false();
+    };
+
+    let types = card_queries::card_types(game, card.id);
     let mut result = Flag::new();
     result = result.add_condition(Source::Game, card.last_changed_control != turn);
     result = result.add_condition(Source::Game, card.entered_current_zone != turn);
@@ -46,13 +54,16 @@ pub fn can_attack(game: &GameState, card_id: CardId) -> Flag {
 
     game.delegates.can_attack_target.query_any(
         game,
-        attack_targets(game).map(|target| CanAttackTarget { card_id, target }),
+        attack_targets(game).map(|target| CanAttackTarget { attacker_id, target }),
         result,
     )
 }
 
 /// Returns an iterator over all legal attackers for the provided player.
-pub fn legal_attackers(game: &GameState, player: PlayerName) -> impl Iterator<Item = CardId> + '_ {
+pub fn legal_attackers(
+    game: &GameState,
+    player: PlayerName,
+) -> impl Iterator<Item = AttackerId> + '_ {
     game.battlefield(player).iter().filter(|&&card_id| can_attack(game, card_id).value()).copied()
 }
 
@@ -64,9 +75,12 @@ pub fn legal_attackers(game: &GameState, player: PlayerName) -> impl Iterator<It
 /// > battles.
 /// <https://yawgatog.com/resources/magic-rules/#R5091a>
 #[must_use]
-pub fn can_block(game: &GameState, card_id: CardId) -> bool {
-    let card = game.card(card_id);
-    let types = card_queries::card_types(game, card_id);
+pub fn can_block(game: &GameState, blocker_id: BlockerId) -> bool {
+    let Some(card) = game.permanent(blocker_id) else {
+        return false;
+    };
+
+    let types = card_queries::card_types(game, card.id);
     card.controller() != game.turn.active_player
         && card.tapped_state != TappedState::Tapped
         && types.contains(CardType::Creature)
@@ -74,7 +88,10 @@ pub fn can_block(game: &GameState, card_id: CardId) -> bool {
 }
 
 /// Returns an iterator over all legal blockers for the provided player.
-pub fn legal_blockers(game: &GameState, player: PlayerName) -> impl Iterator<Item = CardId> + '_ {
+pub fn legal_blockers(
+    game: &GameState,
+    player: PlayerName,
+) -> impl Iterator<Item = BlockerId> + '_ {
     game.battlefield(player).iter().filter(|&&card_id| can_block(game, card_id)).copied()
 }
 
@@ -87,19 +104,29 @@ pub fn attack_targets(game: &GameState) -> impl Iterator<Item = AttackTarget> + 
             iter::once(AttackTarget::Player(player)).chain(
                 game.battlefield(player)
                     .iter()
-                    .filter(|&&card_id| {
-                        card_queries::card_types(game, card_id).contains(CardType::Planeswalker)
+                    .filter(|&&id| {
+                        bools::is_true(|| {
+                            Some(
+                                card_queries::card_types(game, game.card_id_for_permanent(id)?)
+                                    .contains(CardType::Planeswalker),
+                            )
+                        })
                     })
-                    .map(|&card_id| AttackTarget::Planeswalker(game.card(card_id).entity_id)),
+                    .map(|&id| AttackTarget::Planeswalker(id)),
             )
         })
         .chain(
             game.battlefield(game.active_player())
                 .iter()
-                .filter(|&&card_id| {
-                    card_queries::card_types(game, card_id).contains(CardType::Battle)
+                .filter(|&&id| {
+                    bools::is_true(|| {
+                        Some(
+                            card_queries::card_types(game, game.card_id_for_permanent(id)?)
+                                .contains(CardType::Battle),
+                        )
+                    })
                 })
-                .map(|&card_id| AttackTarget::Battle(game.card(card_id).entity_id)),
+                .map(|&id| AttackTarget::Battle(id)),
         )
 }
 
@@ -110,57 +137,63 @@ pub enum CombatRole {
     ProposedAttacker(AttackTarget),
     Attacker(AttackTarget),
     SelectedBlocker,
-    ProposedBlocker(EntityId),
-    Blocking { attacker: EntityId, order: usize },
+    ProposedBlocker(BlockerId),
+    Blocking { attacker: AttackerId, order: usize },
 }
 
 /// Returns this entity's current [CombatRole], if any.
 #[must_use]
-pub fn role(game: &GameState, entity: EntityId) -> Option<CombatRole> {
+pub fn role(game: &GameState, permanent_id: PermanentId) -> Option<CombatRole> {
     match &game.combat {
         None => None,
         Some(CombatState::ProposingAttackers(attackers)) => {
-            if attackers.proposed_attacks.contains(entity) {
-                Some(CombatRole::ProposedAttacker(attackers.proposed_attacks.get_target(entity)?))
-            } else if attackers.selected_attackers.contains(&entity) {
+            if attackers.proposed_attacks.contains(permanent_id) {
+                Some(CombatRole::ProposedAttacker(
+                    attackers.proposed_attacks.get_target(permanent_id)?,
+                ))
+            } else if attackers.selected_attackers.contains(&permanent_id) {
                 Some(CombatRole::SelectedAttacker)
             } else {
                 None
             }
         }
         Some(CombatState::ConfirmedAttackers(attackers)) => {
-            if attackers.contains(entity) {
-                Some(CombatRole::Attacker(attackers.get_target(entity)?))
+            if attackers.contains(permanent_id) {
+                Some(CombatRole::Attacker(attackers.get_target(permanent_id)?))
             } else {
                 None
             }
         }
         Some(CombatState::ProposingBlockers(blockers)) => {
-            if blockers.proposed_blocks.contains_key(&entity) {
-                Some(CombatRole::ProposedBlocker(blockers.proposed_blocks[&entity][0]))
-            } else if blockers.selected_blockers.contains(&entity) {
+            if blockers.proposed_blocks.contains_key(&permanent_id) {
+                Some(CombatRole::ProposedBlocker(blockers.proposed_blocks[&permanent_id][0]))
+            } else if blockers.selected_blockers.contains(&permanent_id) {
                 Some(CombatRole::SelectedBlocker)
-            } else if blockers.attackers.contains(entity) {
-                Some(CombatRole::Attacker(blockers.attackers.get_target(entity)?))
+            } else if blockers.attackers.contains(permanent_id) {
+                Some(CombatRole::Attacker(blockers.attackers.get_target(permanent_id)?))
             } else {
                 None
             }
         }
-        Some(CombatState::OrderingBlockers(blockers)) => role_in_blocker_map(entity, blockers),
-        Some(CombatState::ConfirmedBlockers(blockers)) => role_in_blocker_map(entity, blockers),
+        Some(CombatState::OrderingBlockers(blockers)) => {
+            role_in_blocker_map(permanent_id, blockers)
+        }
+        Some(CombatState::ConfirmedBlockers(blockers)) => {
+            role_in_blocker_map(permanent_id, blockers)
+        }
     }
 }
 
-fn role_in_blocker_map(entity: EntityId, blockers: &BlockerMap) -> Option<CombatRole> {
-    if blockers.attackers.contains(entity) {
-        Some(CombatRole::Attacker(blockers.attackers.get_target(entity)?))
-    } else if blockers.reverse_lookup.contains_key(&entity) {
-        let attacker_id = blockers.reverse_lookup[&entity][0];
+fn role_in_blocker_map(id: PermanentId, blockers: &BlockerMap) -> Option<CombatRole> {
+    if blockers.attackers.contains(id) {
+        Some(CombatRole::Attacker(blockers.attackers.get_target(id)?))
+    } else if blockers.reverse_lookup.contains_key(&id) {
+        let attacker_id = blockers.reverse_lookup[&id][0];
         Some(CombatRole::Blocking {
             attacker: attacker_id,
             order: blockers.blocked_attackers[&attacker_id]
                 .iter()
-                .position(|&id| id == entity)
+                .position(|&id| id == id)
                 .expect("Blocker not found in blocked_attackers"),
         })
     } else {
@@ -177,7 +210,7 @@ pub fn defending_player(game: &GameState, target: AttackTarget) -> PlayerName {
     match target {
         AttackTarget::Player(player) => player,
         AttackTarget::Planeswalker(entity) | AttackTarget::Battle(entity) => {
-            game.card_entity(entity).unwrap().controller()
+            game.permanent(entity).expect("Permanent no longer on battlefield").controller()
         }
     }
 }

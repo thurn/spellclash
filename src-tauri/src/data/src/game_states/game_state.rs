@@ -32,7 +32,7 @@ use crate::core::primitives::{
     CardId, EntityId, GameId, HasCardId, HasPlayerName, HasSource, PlayerName, StackAbilityId,
     StackItemId, UserId, Zone,
 };
-use crate::core::primitives::{EffectId, ObjectId};
+use crate::core::primitives::{EffectId, ObjectId, PermanentId};
 use crate::delegates::game_delegates::GameDelegates;
 use crate::game_states::ability_state::AbilityState;
 use crate::game_states::combat_state::CombatState;
@@ -228,6 +228,14 @@ impl ZoneQueries for GameState {
         self.zones.card_mut(id)
     }
 
+    fn permanent(&self, id: PermanentId) -> Option<&CardState> {
+        self.zones.permanent(id)
+    }
+
+    fn permanent_mut(&mut self, id: PermanentId) -> Option<&mut CardState> {
+        self.zones.permanent_mut(id)
+    }
+
     fn card_entity(&self, id: EntityId) -> Option<&CardState> {
         self.zones.card_entity(id)
     }
@@ -256,11 +264,11 @@ impl ZoneQueries for GameState {
         self.zones.graveyard(player)
     }
 
-    fn battlefield(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
+    fn battlefield(&self, player: impl HasPlayerName) -> &HashSet<PermanentId> {
         self.zones.battlefield(player)
     }
 
-    fn battlefield_owned(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
+    fn battlefield_owned(&self, player: impl HasPlayerName) -> &HashSet<PermanentId> {
         self.zones.battlefield_owned(player)
     }
 

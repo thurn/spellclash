@@ -13,6 +13,8 @@
 // limitations under the License.
 
 use std::collections::{HashSet, VecDeque};
+use std::fmt::Debug;
+use std::hash::Hash;
 
 use enumset::EnumSet;
 use log::debug;
@@ -31,7 +33,7 @@ use crate::card_states::stack_ability_state::StackAbilityState;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
     AbilityId, CardId, EntityId, HasCardId, HasController, HasPlayerName, HasSource, ObjectId,
-    PlayerName, StackAbilityId, StackItemId, Zone, ALL_POSSIBLE_PLAYERS,
+    PermanentId, PlayerName, StackAbilityId, StackItemId, Zone, ALL_POSSIBLE_PLAYERS,
 };
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::GameState;
@@ -46,6 +48,30 @@ pub trait ZoneQueries {
 
     /// Mutable equivalent of [Self::card]
     fn card_mut(&mut self, id: impl HasCardId) -> &mut CardState;
+
+    /// Returns the [CardState] for a [PermanentId].
+    ///
+    /// If this [PermanentId] is not valid, e.g. because the permanent it
+    /// represents is no longer on the battlefield, returns None.
+    fn permanent(&self, id: PermanentId) -> Option<&CardState>;
+
+    /// Mutable equivalent of [Self::permanent]
+    fn permanent_mut(&mut self, id: PermanentId) -> Option<&mut CardState>;
+
+    /// Returns the [CardId] for a [PermanentId].
+    ///
+    /// If this [PermanentId] is not valid, e.g. because the permanent it
+    /// represents is no longer on the battlefield, returns None.
+    fn card_id_for_permanent(&self, id: PermanentId) -> Option<CardId> {
+        self.permanent(id).map(|c| c.id)
+    }
+
+    /// Returns the [PermanentId] for a [CardId].
+    ///
+    /// If this card is not a permanent, returns None.
+    fn permanent_id_for_card(&self, card_id: CardId) -> Option<PermanentId> {
+        self.card(card_id).permanent_id()
+    }
 
     /// Returns the [CardState] for an [EntityId].
     ///
@@ -87,11 +113,19 @@ pub trait ZoneQueries {
 
     /// Returns the IDs of cards and card-like objects ***controlled*** by a
     /// player on the battlefield
-    fn battlefield(&self, player: impl HasPlayerName) -> &HashSet<CardId>;
+    fn battlefield(&self, player: impl HasPlayerName) -> &HashSet<PermanentId>;
+
+    /// Returns [CardId]s for cards controlled by a player on the battlefield
+    fn battlefield_card_ids(
+        &self,
+        player: impl HasPlayerName,
+    ) -> impl Iterator<Item = CardId> + '_ {
+        self.battlefield(player).iter().filter_map(move |&id| self.card_id_for_permanent(id))
+    }
 
     /// Returns the IDs of cards and card-like objects owned by a player on the
     /// battlefield
-    fn battlefield_owned(&self, player: impl HasPlayerName) -> &HashSet<CardId>;
+    fn battlefield_owned(&self, player: impl HasPlayerName) -> &HashSet<PermanentId>;
 
     /// Returns the IDs of cards and card-like objects owned by a player in
     /// exile
@@ -124,14 +158,14 @@ pub struct Zones {
     next_object_id: ObjectId,
 
     libraries: OrderedZone,
-    hands: UnorderedZone,
+    hands: UnorderedZone<CardId>,
     graveyards: OrderedZone,
-    battlefield_controlled: UnorderedZone,
-    battlefield_owned: UnorderedZone,
-    exile: UnorderedZone,
+    battlefield_controlled: UnorderedZone<PermanentId>,
+    battlefield_owned: UnorderedZone<PermanentId>,
+    exile: UnorderedZone<CardId>,
     stack: Vec<StackItemId>,
-    command_zone: UnorderedZone,
-    outside_the_game_zone: UnorderedZone,
+    command_zone: UnorderedZone<CardId>,
+    outside_the_game_zone: UnorderedZone<CardId>,
 }
 
 impl Default for Zones {
@@ -160,6 +194,28 @@ impl ZoneQueries for Zones {
 
     fn card_mut(&mut self, id: impl HasCardId) -> &mut CardState {
         &mut self.all_cards[id.card_id()]
+    }
+
+    fn permanent(&self, id: PermanentId) -> Option<&CardState> {
+        let card = self.all_cards.get(id.internal_card_id)?;
+        if card.object_id() == id.object_id {
+            Some(card)
+        } else {
+            None
+        }
+    }
+
+    fn permanent_mut(&mut self, id: PermanentId) -> Option<&mut CardState> {
+        let card = self.all_cards.get_mut(id.internal_card_id)?;
+        if card.object_id() == id.object_id {
+            Some(card)
+        } else {
+            None
+        }
+    }
+
+    fn card_id_for_permanent(&self, id: PermanentId) -> Option<CardId> {
+        self.permanent(id).map(|c| c.id)
     }
 
     fn card_entity(&self, id: EntityId) -> Option<&CardState> {
@@ -210,11 +266,11 @@ impl ZoneQueries for Zones {
         self.graveyards.cards(player.player_name())
     }
 
-    fn battlefield(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
+    fn battlefield(&self, player: impl HasPlayerName) -> &HashSet<PermanentId> {
         self.battlefield_controlled.cards(player.player_name())
     }
 
-    fn battlefield_owned(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
+    fn battlefield_owned(&self, player: impl HasPlayerName) -> &HashSet<PermanentId> {
         self.battlefield_owned.cards(player.player_name())
     }
 
@@ -356,11 +412,11 @@ impl Zones {
         let old_zone = self.card_mut(card_id).zone;
         let owner = self.card_mut(card_id).owner;
         self.remove_from_zone(owner, card_id, old_zone);
-        self.add_to_zone(owner, card_id, zone);
         let entity_id = self.new_card_entity_id(card_id);
         let card = self.card_mut(card_id);
         card.zone = zone;
         card.entity_id = entity_id;
+        self.add_to_zone(owner, card_id, zone);
     }
 
     /// Adds a list of items to the top of the stack in the given order.
@@ -379,7 +435,11 @@ impl Zones {
             Zone::Hand => Box::new(self.hand(player).iter().copied()),
             Zone::Graveyard => Box::new(self.graveyard(player).iter().copied()),
             Zone::Library => Box::new(self.library(player).iter().copied()),
-            Zone::Battlefield => Box::new(self.battlefield(player).iter().copied()),
+            Zone::Battlefield => Box::new(
+                self.battlefield(player)
+                    .iter()
+                    .map(|&id| self.card_id_for_permanent(id).expect("Permanent not found")),
+            ),
             Zone::Stack => Box::new(self.stack.iter().filter_map(move |id| {
                 let id = id.card_id()?;
                 if self.card(id).controller() == player {
@@ -415,9 +475,11 @@ impl Zones {
         current_turn: TurnData,
     ) {
         let card_id = id.card_id();
-        if self.card(card_id).zone == Zone::Battlefield && old_controller != new_controller {
-            self.battlefield_controlled.remove(card_id, old_controller);
-            self.battlefield_controlled.cards_mut(new_controller).insert(card_id);
+        if let Some(permanent_id) = self.permanent_id_for_card(card_id) {
+            if self.card(card_id).zone == Zone::Battlefield && old_controller != new_controller {
+                self.battlefield_controlled.remove(permanent_id, old_controller);
+                self.battlefield_controlled.cards_mut(new_controller).insert(permanent_id);
+            }
         }
     }
 
@@ -432,11 +494,15 @@ impl Zones {
             Zone::Graveyard => self.graveyards.remove(card_id, owner),
             Zone::Library => self.libraries.remove(card_id, owner),
             Zone::Battlefield => {
-                self.battlefield_owned.remove(card_id, owner);
-                if !self.battlefield_controlled.cards_mut(owner).remove(&card_id) {
+                let Some(permanent_id) = self.permanent_id_for_card(card_id) else {
+                    panic!("Card has no permanent id {card_id:?}")
+                };
+                self.battlefield_owned.remove(permanent_id, owner);
+                if !self.battlefield_controlled.cards_mut(owner).remove(&permanent_id) {
                     let mut removed = false;
                     for player in enum_iterator::all::<PlayerName>() {
-                        removed |= self.battlefield_controlled.cards_mut(player).remove(&card_id);
+                        removed |=
+                            self.battlefield_controlled.cards_mut(player).remove(&permanent_id);
                     }
                     if !removed {
                         panic!("Card not found {card_id:?} in controller set");
@@ -470,8 +536,11 @@ impl Zones {
             }
             Zone::Graveyard => self.graveyards.cards_mut(owner).push_back(card_id),
             Zone::Battlefield => {
-                self.battlefield_owned.cards_mut(owner).insert(card_id);
-                self.battlefield_controlled.cards_mut(owner).insert(card_id);
+                let Some(permanent_id) = self.permanent_id_for_card(card_id) else {
+                    panic!("Card has no permanent id {card_id:?}");
+                };
+                self.battlefield_owned.cards_mut(owner).insert(permanent_id);
+                self.battlefield_controlled.cards_mut(owner).insert(permanent_id);
             }
             Zone::Exiled => {
                 self.exile.cards_mut(owner).insert(card_id);
@@ -498,13 +567,13 @@ impl Zones {
 }
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
-struct UnorderedZone {
-    player1: HashSet<CardId>,
-    player2: HashSet<CardId>,
+struct UnorderedZone<T: Hash + Eq + PartialEq + Copy + Debug> {
+    player1: HashSet<T>,
+    player2: HashSet<T>,
 }
 
-impl UnorderedZone {
-    pub fn cards(&self, player_name: PlayerName) -> &HashSet<CardId> {
+impl<T: Hash + Eq + PartialEq + Copy + Debug> UnorderedZone<T> {
+    pub fn cards(&self, player_name: PlayerName) -> &HashSet<T> {
         match player_name {
             PlayerName::One => &self.player1,
             PlayerName::Two => &self.player2,
@@ -512,7 +581,7 @@ impl UnorderedZone {
         }
     }
 
-    pub fn cards_mut(&mut self, player_name: PlayerName) -> &mut HashSet<CardId> {
+    pub fn cards_mut(&mut self, player_name: PlayerName) -> &mut HashSet<T> {
         match player_name {
             PlayerName::One => &mut self.player1,
             PlayerName::Two => &mut self.player2,
@@ -523,7 +592,7 @@ impl UnorderedZone {
     /// Removes a card from this zone.
     ///
     /// Panics if this card is not present in this zone owned by `owner`.
-    pub fn remove(&mut self, card_id: CardId, owner: PlayerName) {
+    pub fn remove(&mut self, card_id: T, owner: PlayerName) {
         let removed = self.cards_mut(owner).remove(&card_id);
         if !removed {
             panic!("Card {card_id:?} not found");

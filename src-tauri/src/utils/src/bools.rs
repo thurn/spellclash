@@ -12,17 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, PermanentId};
-use data::delegates::scope::DelegateScope;
-use data::game_states::game_state::GameState;
-use data::printed_cards::card_subtypes::LandSubtype;
-use rules::queries::card_queries;
+/// Helper function to run a closure and return `true` if the result is
+/// `Some(true)`.
+pub fn is_true(function: impl FnOnce() -> Option<bool>) -> bool {
+    function().unwrap_or(false)
+}
 
-/// True if this card is an island.
-pub fn island(game: &GameState, _: DelegateScope, id: PermanentId) -> bool {
-    let Some(card_id) = game.card_id_for_permanent(id) else {
-        return false;
-    };
-    card_queries::land_subtypes(game, card_id).contains(LandSubtype::Island)
+/// Helper function to run a closure and return `true` if the result is
+/// `None` or `Some(false)`.
+pub fn is_false(function: impl FnOnce() -> Option<bool>) -> bool {
+    !is_true(function)
 }
