@@ -14,17 +14,27 @@
 
 use abilities::targeting::targets;
 use data::card_definitions::ability_choices::AbilityChoiceBuilder;
-use data::card_definitions::ability_definition::SpellAbility;
+use data::card_definitions::ability_definition::{AbilityDelegateBuilder, SpellAbility};
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::core::primitives::HasSource;
+use data::core::primitives::{CardId, HasSource};
+use data::game_states::effect_state::EffectState;
 use rules::mutations::{change_controller, permanents};
 
 pub fn ray_of_command() -> CardDefinition {
+    const STATE: EffectState<CardId> = EffectState::new(0);
     CardDefinition::new(card_name::RAY_OF_COMMAND).ability(
-        SpellAbility::new().target(targets::creature_opponent_controls()).effect(|g, s, target| {
-            permanents::untap(g, s.source(), target)?;
-            change_controller::gain_control_this_turn(g, s, target)
-        }),
+        SpellAbility::new()
+            .target(targets::creature_opponent_controls())
+            .effect(|g, s, target| {
+                STATE.store(g, s, target);
+                permanents::untap(g, s.source(), target)?;
+                change_controller::gain_control_this_turn(g, s, target)
+            })
+            .delegates(|d| {
+                d.can_attack_target.this(|g, s, target, current| {
+                    current.add_condition(s, target.card_id == STATE.get(g, s))
+                })
+            }),
     )
 }
