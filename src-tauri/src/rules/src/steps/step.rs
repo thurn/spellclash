@@ -300,10 +300,10 @@ fn cleanup(game: &mut GameState) -> Outcome {
         card.damage = 0;
     }
 
-    for (effect_id, target_id) in game.this_turn.take_control_changing_effects() {
+    for (effect_id, target_id) in game.ability_state.this_turn.take_control_changing_effects() {
         change_controller::remove_control(game, effect_id, target_id)?;
     }
-    game.this_turn = ThisTurnState::default();
+    game.ability_state.this_turn = ThisTurnState::default();
 
     // > 514.3. Normally, no player receives priority during the cleanup step, so no
     // > spells can be cast and no abilities can be activated. However, this rule is

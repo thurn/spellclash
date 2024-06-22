@@ -48,7 +48,7 @@ pub fn gain_control_this_turn(
     scope: EffectScope,
     card_id: CardId,
 ) -> Outcome {
-    game.this_turn.add_control_changing_effect(scope.effect_id, card_id);
+    game.ability_state.this_turn.add_control_changing_effect(scope.effect_id, card_id);
     gain_control(game, scope, card_id)
 }
 

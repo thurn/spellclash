@@ -35,7 +35,8 @@ pub fn run(
             Some(stack_ability_id) => game.stack_ability(stack_ability_id).controller,
             _ => game.card(ability_id).controller(),
         };
-        let scope = EffectScope { controller, ability_id, effect_id: game.new_effect_id() };
+        let scope =
+            EffectScope { controller, ability_id, effect_id: game.ability_state.new_effect_id() };
         function(game, scope)?;
     }
     outcome::OK

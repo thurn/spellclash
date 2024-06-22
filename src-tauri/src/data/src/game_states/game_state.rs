@@ -34,6 +34,7 @@ use crate::core::primitives::{
 };
 use crate::core::primitives::{EffectId, ObjectId};
 use crate::delegates::game_delegates::GameDelegates;
+use crate::game_states::ability_state::AbilityState;
 use crate::game_states::combat_state::CombatState;
 use crate::game_states::game_step::GamePhaseStep;
 use crate::game_states::history_data::{GameHistory, HistoryCounters, HistoryEvent};
@@ -95,6 +96,9 @@ pub struct GameState {
     /// game zone they are in.
     pub zones: Zones,
 
+    /// State associated with abilities in this game.
+    pub ability_state: AbilityState,
+
     /// Channel on which to send game updates.
     ///
     /// If no channel is provided here, game mutations will be applied silently
@@ -128,15 +132,6 @@ pub struct GameState {
     /// actions were checked which may trigger game mutations during the next
     /// state-based action check.
     pub state_based_events: Option<Vec<StateBasedEvent>>,
-
-    /// State which persists for the duration of the current turn.
-    pub this_turn: ThisTurnState,
-
-    /// Stores the [EffectId] which will be returned next from
-    /// [Self::new_effect_id].
-    ///
-    /// Do not access this field directly.
-    pub next_effect_id: EffectId,
 
     /// Reference to the Oracle card database to use with this game.
     ///
@@ -221,16 +216,6 @@ impl GameState {
         } else {
             self.state_based_events = Some(vec![event]);
         }
-    }
-
-    /// Returns a new unique [EffectId] for use in this game.
-    ///
-    /// Please attempt to have less than eighteen quintillion effects in a
-    /// single game.
-    pub fn new_effect_id(&mut self) -> EffectId {
-        let result = self.next_effect_id;
-        self.next_effect_id = EffectId(result.0 + 1);
-        result
     }
 }
 

@@ -19,6 +19,7 @@ use data::decks::deck::Deck;
 use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
 use data::delegates::game_delegates::GameDelegates;
+use data::game_states::ability_state::AbilityState;
 use data::game_states::game_state::{
     DebugConfiguration, GameConfiguration, GameState, GameStatus, TurnData,
 };
@@ -121,8 +122,7 @@ fn create_game(
         undo_tracker: UndoTracker { enabled: true, undo: vec![] },
         delegates: GameDelegates::default(),
         state_based_events: Some(vec![]),
-        this_turn: ThisTurnState::default(),
-        next_effect_id: EffectId(1),
+        ability_state: AbilityState::default(),
         oracle_reference: Some(oracle),
         agent_state: None,
         current_search_agent: None,
