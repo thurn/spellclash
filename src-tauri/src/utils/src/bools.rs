@@ -23,3 +23,22 @@ pub fn is_true(function: impl FnOnce() -> Option<bool>) -> bool {
 pub fn is_false(function: impl FnOnce() -> Option<bool>) -> bool {
     !is_true(function)
 }
+
+pub trait FilterSome: Iterator {
+    /// Creates an iterator which yields only items for which a given predicate
+    /// returns Some(true).
+    fn filter_some<P>(self, predicate: P) -> impl Iterator<Item = Self::Item>
+    where
+        Self: Sized,
+        P: FnMut(&Self::Item) -> Option<bool>;
+}
+
+impl<TIterator: Iterator> FilterSome for TIterator {
+    fn filter_some<P>(self, mut predicate: P) -> impl Iterator<Item = Self::Item>
+    where
+        Self: Sized,
+        P: FnMut(&Self::Item) -> Option<bool>,
+    {
+        self.filter(move |item| predicate(item) == Some(true))
+    }
+}

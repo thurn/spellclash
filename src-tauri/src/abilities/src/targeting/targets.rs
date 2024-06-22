@@ -26,7 +26,7 @@ pub fn creature() -> CardAbilityTarget {
         zones: EnumSet::only(Zone::Battlefield),
         players: PlayerSet::AllPlayers,
         predicate: Box::new(|g, _, id| {
-            card_queries::card_types(g, id).contains(CardType::Creature)
+            Some(card_queries::card_types(g, id).contains(CardType::Creature))
         }),
     }
 }
@@ -37,8 +37,10 @@ pub fn creature_opponent_controls() -> CardAbilityTarget {
         zones: EnumSet::only(Zone::Battlefield),
         players: PlayerSet::Opponents,
         predicate: Box::new(|g, s, id| {
-            card_queries::card_types(g, id).contains(CardType::Creature)
-                && g.card(id).controller() != s.controller
+            Some(
+                card_queries::card_types(g, id).contains(CardType::Creature)
+                    && g.card(id).controller() != s.controller,
+            )
         }),
     }
 }

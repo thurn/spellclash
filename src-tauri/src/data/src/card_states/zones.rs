@@ -30,11 +30,13 @@ use crate::card_states::card_state::{CardFacing, CardState, TappedState};
 use crate::card_states::counters::Counters;
 use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::card_states::stack_ability_state::StackAbilityState;
+use crate::core::function_types::CardPredicate;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
     AbilityId, CardId, EntityId, HasController, HasPlayerName, HasSource, ObjectId, PermanentId,
     PlayerName, StackAbilityId, StackItemId, Zone, ALL_POSSIBLE_PLAYERS,
 };
+use crate::delegates::scope::Scope;
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::GameState;
 use crate::game_states::game_state::TurnData;
@@ -157,6 +159,28 @@ impl ToCardId for CardId {
 
 pub trait HasZones {
     fn zones(&self) -> &Zones;
+}
+
+pub trait IterMatching<TId: ToCardId, TScope: Scope + 'static, TFn: CardPredicate<TId, TScope>> {
+    fn iter_matching<'a>(
+        &'a self,
+        game: &'a GameState,
+        scope: TScope,
+        predicate: TFn,
+    ) -> impl Iterator<Item = TId> + 'a;
+}
+
+impl<TId: ToCardId, TScope: Scope + 'static, TFn: CardPredicate<TId, TScope>>
+    IterMatching<TId, TScope, TFn> for HashSet<TId>
+{
+    fn iter_matching<'a>(
+        &'a self,
+        game: &'a GameState,
+        scope: TScope,
+        predicate: TFn,
+    ) -> impl Iterator<Item = TId> + 'a {
+        self.iter().filter(move |&&id| predicate(game, scope, id) == Some(true)).copied()
+    }
 }
 
 /// Stores the state & position of all cards and card-like objects
@@ -596,12 +620,12 @@ impl Zones {
 }
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
-struct UnorderedZone<T: Hash + Eq + PartialEq + Copy + Debug> {
+struct UnorderedZone<T: ToCardId + Hash + Eq + PartialEq + Debug> {
     player1: HashSet<T>,
     player2: HashSet<T>,
 }
 
-impl<T: Hash + Eq + PartialEq + Copy + Debug> UnorderedZone<T> {
+impl<T: ToCardId + Hash + Eq + PartialEq + Debug> UnorderedZone<T> {
     pub fn cards(&self, player_name: PlayerName) -> &HashSet<T> {
         match player_name {
             PlayerName::One => &self.player1,

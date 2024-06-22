@@ -89,7 +89,7 @@ pub struct CardAbilityTarget {
     pub players: PlayerSet,
 
     /// Predicate that must be satisfied by the selected card
-    pub predicate: CardPredicateFn,
+    pub predicate: CardPredicateFn<CardId, DelegateScope>,
 }
 
 pub struct PlayerAbilityTarget {

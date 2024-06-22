@@ -33,6 +33,7 @@ use data::text_strings::Text;
 use enum_iterator::Sequence;
 use enumset::EnumSet;
 use tracing::instrument;
+use utils::bools::FilterSome;
 use utils::outcome::Outcome;
 
 use crate::planner::spell_planner;
@@ -212,7 +213,7 @@ fn valid_card_targets<'a>(
                     .iter()
                     .flat_map(move |player| game.zones.cards_in_zone(zone, player))
             })
-            .filter(move |&card_id| (target.predicate)(game, scope, card_id))
+            .filter_some(move |&card_id| (target.predicate)(game, scope, card_id))
             .map(|card_id| game.card(card_id).entity_id),
     )
 }
