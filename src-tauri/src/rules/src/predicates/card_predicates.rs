@@ -12,17 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, PermanentId};
+use data::card_states::zones::{ToCardId, ZoneQueries};
+use data::core::primitives::{CardType, PermanentId};
 use data::delegates::scope::DelegateScope;
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandSubtype;
-use rules::queries::card_queries;
 
-/// True if this card is an island.
-pub fn island(game: &GameState, _: DelegateScope, id: PermanentId) -> bool {
-    let Some(card_id) = game.card_id_for_permanent(id) else {
-        return false;
-    };
-    card_queries::land_subtypes(game, card_id).contains(LandSubtype::Island)
+use crate::queries::card_queries;
+
+pub fn planeswalker(game: &GameState, id: impl ToCardId) -> Option<bool> {
+    Some(card_queries::card_types(game, id).contains(CardType::Planeswalker))
+}
+
+pub fn battle(game: &GameState, id: impl ToCardId) -> Option<bool> {
+    Some(card_queries::card_types(game, id).contains(CardType::Battle))
+}
+
+pub fn island(game: &GameState, _: DelegateScope, id: impl ToCardId) -> Option<bool> {
+    Some(card_queries::land_subtypes(game, id).contains(LandSubtype::Island))
 }

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use abilities::predicates::card_predicates;
 use abilities::restrictions::attack_restrictions;
 use abilities::targeting::targets;
 use abilities::triggers::state_triggers;
@@ -22,6 +21,7 @@ use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 use data::core::primitives::{HasSource, Zone};
 use rules::mutations::{move_card, permanents};
+use rules::predicates::card_predicates;
 
 pub fn dance_of_the_skywise() -> CardDefinition {
     CardDefinition::new(card_name::DANCE_OF_THE_SKYWISE).ability(

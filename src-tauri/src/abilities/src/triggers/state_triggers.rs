@@ -18,9 +18,9 @@ use data::card_definitions::ability_definition::{
 };
 use data::card_states::zones::ZoneQueries;
 use data::core::function_types::{
-    CardMutation, CardPredicate, PermanentMutation, PermanentPredicate,
+    CardMutation, CardPredicate, PermanentMutation, PermanentPredicate, ScopedCardPredicate,
 };
-use data::core::primitives::{HasSource, Zone};
+use data::core::primitives::{HasSource, PermanentId, Zone};
 use data::delegates::game_delegates::GameDelegates;
 use data::delegates::scope::DelegateScope;
 use data::game_states::game_state::GameState;
@@ -31,13 +31,13 @@ use utils::outcome::Outcome;
 /// If this card's controller controls no permanents matching `predicate`,
 /// applies `mutation` to it.
 pub fn when_controls_no(
-    predicate: impl PermanentPredicate,
+    predicate: impl ScopedCardPredicate<PermanentId, DelegateScope>,
     mutation: impl PermanentMutation,
 ) -> impl AbilityBuilder {
     TriggeredAbility::new()
         .delegates(move |d| {
             d.state_triggered_ability.trigger_if_not_on_stack(move |g, s, _| {
-                !g.battlefield(s.controller).iter().any(|&id| predicate(g, s, id))
+                !g.battlefield(s.controller).iter().any(|&id| predicate(g, s, id) == Some(true))
             })
         })
         .effect(move |g, s| {

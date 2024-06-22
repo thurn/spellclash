@@ -30,7 +30,7 @@ use crate::card_states::card_state::{CardFacing, CardState, TappedState};
 use crate::card_states::counters::Counters;
 use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::card_states::stack_ability_state::StackAbilityState;
-use crate::core::function_types::CardPredicate;
+use crate::core::function_types::ScopedCardPredicate;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
     AbilityId, CardId, EntityId, HasController, HasPlayerName, HasSource, ObjectId, PermanentId,
@@ -161,8 +161,13 @@ pub trait HasZones {
     fn zones(&self) -> &Zones;
 }
 
-pub trait IterMatching<TId: ToCardId, TScope: Scope + 'static, TFn: CardPredicate<TId, TScope>> {
-    fn iter_matching<'a>(
+pub trait IterMatchingScope<
+    TId: ToCardId,
+    TScope: Scope + 'static,
+    TFn: ScopedCardPredicate<TId, TScope>,
+>
+{
+    fn iter_matching_scoped<'a>(
         &'a self,
         game: &'a GameState,
         scope: TScope,
@@ -170,10 +175,10 @@ pub trait IterMatching<TId: ToCardId, TScope: Scope + 'static, TFn: CardPredicat
     ) -> impl Iterator<Item = TId> + 'a;
 }
 
-impl<TId: ToCardId, TScope: Scope + 'static, TFn: CardPredicate<TId, TScope>>
-    IterMatching<TId, TScope, TFn> for HashSet<TId>
+impl<TId: ToCardId, TScope: Scope + 'static, TFn: ScopedCardPredicate<TId, TScope>>
+    IterMatchingScope<TId, TScope, TFn> for HashSet<TId>
 {
-    fn iter_matching<'a>(
+    fn iter_matching_scoped<'a>(
         &'a self,
         game: &'a GameState,
         scope: TScope,

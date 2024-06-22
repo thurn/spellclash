@@ -17,7 +17,6 @@
 
 pub mod core;
 pub mod mana;
-pub mod predicates;
 pub mod restrictions;
 pub mod targeting;
 pub mod triggers;

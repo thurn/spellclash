@@ -15,6 +15,7 @@
 use std::iter;
 
 use data::card_states::card_state::TappedState;
+use data::card_states::iter_matching::IterMatching;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{
     CardId, CardType, EntityId, HasController, PermanentId, PlayerName, Source,
@@ -27,6 +28,7 @@ use data::game_states::combat_state::{
 use data::game_states::game_state::GameState;
 use utils::bools;
 
+use crate::predicates::card_predicates;
 use crate::queries::{card_queries, combat_queries, player_queries};
 
 /// Returns true if the card with the provided [AttackerId] has any valid
@@ -103,30 +105,14 @@ pub fn attack_targets(game: &GameState) -> impl Iterator<Item = AttackTarget> + 
         .flat_map(|player| {
             iter::once(AttackTarget::Player(player)).chain(
                 game.battlefield(player)
-                    .iter()
-                    .filter(|&&id| {
-                        bools::is_true(|| {
-                            Some(
-                                card_queries::card_types(game, game.card_id_for_permanent(id)?)
-                                    .contains(CardType::Planeswalker),
-                            )
-                        })
-                    })
-                    .map(|&id| AttackTarget::Planeswalker(id)),
+                    .iter_matching(game, card_predicates::planeswalker)
+                    .map(|id| AttackTarget::Planeswalker(id)),
             )
         })
         .chain(
             game.battlefield(game.active_player())
-                .iter()
-                .filter(|&&id| {
-                    bools::is_true(|| {
-                        Some(
-                            card_queries::card_types(game, game.card_id_for_permanent(id)?)
-                                .contains(CardType::Battle),
-                        )
-                    })
-                })
-                .map(|&id| AttackTarget::Battle(id)),
+                .iter_matching(game, card_predicates::battle)
+                .map(|id| AttackTarget::Battle(id)),
         )
 }
 

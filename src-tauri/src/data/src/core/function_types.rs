@@ -34,17 +34,31 @@ pub type PermanentPredicateFn =
     Box<dyn Fn(&GameState, DelegateScope, PermanentId) -> bool + 'static + Send + Sync>;
 
 /// Function which performs a boolean query on the state of a card.
-pub trait CardPredicate<TId: ToCardId, TScope: Scope>:
+pub trait CardPredicate<TId: ToCardId>:
+    Fn(&GameState, TId) -> Option<bool> + 'static + Copy + Send + Sync
+{
+}
+
+impl<TId: ToCardId, F> CardPredicate<TId> for F where
+    F: Fn(&GameState, TId) -> Option<bool> + 'static + Copy + Send + Sync
+{
+}
+
+pub type CardPredicateFn<TId> =
+    Box<dyn Fn(&GameState, TId) -> Option<bool> + 'static + Send + Sync>;
+
+/// Function which performs a boolean query on the state of a card.
+pub trait ScopedCardPredicate<TId: ToCardId, TScope: Scope>:
     Fn(&GameState, TScope, TId) -> Option<bool> + 'static + Copy + Send + Sync
 {
 }
 
-impl<TId: ToCardId, TScope: Scope, F> CardPredicate<TId, TScope> for F where
+impl<TId: ToCardId, TScope: Scope, F> ScopedCardPredicate<TId, TScope> for F where
     F: Fn(&GameState, TScope, TId) -> Option<bool> + 'static + Copy + Send + Sync
 {
 }
 
-pub type CardPredicateFn<TId, TScope> =
+pub type ScopedCardPredicateFn<TId, TScope> =
     Box<dyn Fn(&GameState, TScope, TId) -> Option<bool> + 'static + Send + Sync>;
 
 pub trait PermanentMutation:
