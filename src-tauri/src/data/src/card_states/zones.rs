@@ -32,8 +32,8 @@ use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::card_states::stack_ability_state::StackAbilityState;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
-    AbilityId, CardId, EntityId, HasCardId, HasController, HasPlayerName, HasSource, ObjectId,
-    PermanentId, PlayerName, StackAbilityId, StackItemId, Zone, ALL_POSSIBLE_PLAYERS,
+    AbilityId, CardId, EntityId, HasController, HasPlayerName, HasSource, ObjectId, PermanentId,
+    PlayerName, StackAbilityId, StackItemId, Zone, ALL_POSSIBLE_PLAYERS,
 };
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::GameState;
@@ -44,10 +44,10 @@ pub trait ZoneQueries {
     /// Looks up the state for a card.
     ///
     /// Panics if this Card ID does not exist.
-    fn card(&self, id: impl HasCardId) -> &CardState;
+    fn card(&self, id: impl ToCardId) -> &CardState;
 
     /// Mutable equivalent of [Self::card]
-    fn card_mut(&mut self, id: impl HasCardId) -> &mut CardState;
+    fn card_mut(&mut self, id: impl ToCardId) -> &mut CardState;
 
     /// Returns the [CardState] for a [PermanentId].
     ///
@@ -144,6 +144,21 @@ pub trait ZoneQueries {
     fn outside_the_game_zone(&self, player: impl HasPlayerName) -> &HashSet<CardId>;
 }
 
+/// Identifies a struct that can be converted into a [CardId].
+pub trait ToCardId: Copy {
+    fn card_id(&self, zones: &impl HasZones) -> Option<CardId>;
+}
+
+impl ToCardId for CardId {
+    fn card_id(&self, _: &impl HasZones) -> Option<CardId> {
+        Some(*self)
+    }
+}
+
+pub trait HasZones {
+    fn zones(&self) -> &Zones;
+}
+
 /// Stores the state & position of all cards and card-like objects
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Zones {
@@ -168,6 +183,12 @@ pub struct Zones {
     outside_the_game_zone: UnorderedZone<CardId>,
 }
 
+impl HasZones for Zones {
+    fn zones(&self) -> &Zones {
+        self
+    }
+}
+
 impl Default for Zones {
     fn default() -> Self {
         Self {
@@ -188,12 +209,14 @@ impl Default for Zones {
 }
 
 impl ZoneQueries for Zones {
-    fn card(&self, id: impl HasCardId) -> &CardState {
-        &self.all_cards[id.card_id()]
+    fn card(&self, id: impl ToCardId) -> &CardState {
+        let card_id = id.card_id(self).expect("Card not found");
+        &self.all_cards[card_id]
     }
 
-    fn card_mut(&mut self, id: impl HasCardId) -> &mut CardState {
-        &mut self.all_cards[id.card_id()]
+    fn card_mut(&mut self, id: impl ToCardId) -> &mut CardState {
+        let card_id = id.card_id(self).expect("Card not found");
+        &mut self.all_cards[card_id]
     }
 
     fn permanent(&self, id: PermanentId) -> Option<&CardState> {
@@ -407,8 +430,11 @@ impl Zones {
     /// The card is added as the top card of the target zone if it is ordered.
     ///
     /// Panics if this card was not found in its previous zone.
-    pub fn move_card(&mut self, id: impl HasCardId, zone: Zone) {
-        let card_id = id.card_id();
+    pub fn move_card(&mut self, id: impl ToCardId, zone: Zone) {
+        let Some(card_id) = id.card_id(self) else {
+            return;
+        };
+
         let old_zone = self.card_mut(card_id).zone;
         let owner = self.card_mut(card_id).owner;
         self.remove_from_zone(owner, card_id, old_zone);
@@ -469,12 +495,15 @@ impl Zones {
     /// `battlefield_controlled` set.
     pub fn on_controller_changed(
         &mut self,
-        id: impl HasCardId,
+        id: impl ToCardId,
         old_controller: PlayerName,
         new_controller: PlayerName,
         current_turn: TurnData,
     ) {
-        let card_id = id.card_id();
+        let Some(card_id) = id.card_id(self) else {
+            return;
+        };
+
         if let Some(permanent_id) = self.permanent_id_for_card(card_id) {
             if self.card(card_id).zone == Zone::Battlefield && old_controller != new_controller {
                 self.battlefield_controlled.remove(permanent_id, old_controller);

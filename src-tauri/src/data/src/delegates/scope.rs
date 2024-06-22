@@ -14,13 +14,14 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::card_states::zones::{HasZones, ToCardId, Zones};
 use crate::core::primitives::{
-    AbilityId, AbilityNumber, CardId, EffectId, HasCardId, HasSource, PlayerName, Source,
+    AbilityId, AbilityNumber, CardId, EffectId, HasSource, PlayerName, Source,
 };
 
 /// Identifies the context in which an event function or event delegate is
 /// currently executing
-pub trait Scope: HasCardId {
+pub trait Scope: ToCardId {
     /// The controller for this ability or the card that created this ability.
     ///
     /// In an effect function, this is the controller of the effect on the
@@ -66,9 +67,9 @@ impl Scope for DelegateScope {
     }
 }
 
-impl HasCardId for DelegateScope {
-    fn card_id(&self) -> CardId {
-        self.ability_id.card_id
+impl ToCardId for DelegateScope {
+    fn card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+        self.ability_id.card_id(zones)
     }
 }
 
@@ -82,9 +83,9 @@ impl Scope for EffectScope {
     }
 }
 
-impl HasCardId for EffectScope {
-    fn card_id(&self) -> CardId {
-        self.ability_id.card_id
+impl ToCardId for EffectScope {
+    fn card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+        self.ability_id.card_id(zones)
     }
 }
 

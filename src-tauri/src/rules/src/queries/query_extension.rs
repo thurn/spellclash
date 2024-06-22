@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_states::zones::ZoneQueries;
-use data::core::primitives::HasCardId;
+use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::delegates::card_delegate_list::CardDelegateList;
 use data::delegates::event_delegate_list::EventDelegateList;
 use data::delegates::scope::DelegateScope;
@@ -36,7 +35,7 @@ pub trait QueryExt<TArg, TResult> {
     );
 }
 
-impl<TArg: HasCardId, TResult> QueryExt<TArg, TResult>
+impl<TArg: ToCardId, TResult> QueryExt<TArg, TResult>
     for CardDelegateList<GameState, TArg, TResult>
 {
     fn this_turn(
@@ -48,7 +47,7 @@ impl<TArg: HasCardId, TResult> QueryExt<TArg, TResult>
             + 'static,
     ) {
         self.any(move |g, s, arg, mut result| {
-            for _ in 0..g.ability_state.this_turn.effect_count(s.ability_id, g.card(arg).entity_id)
+            for _ in 0..g.ability_state.this_turn.effect_count(s.ability_id, g.card(*arg).entity_id)
             {
                 result = transformation(g, s, result);
             }

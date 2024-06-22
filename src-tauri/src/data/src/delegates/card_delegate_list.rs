@@ -17,7 +17,8 @@ use std::collections::HashMap;
 use dyn_clone::DynClone;
 use enumset::EnumSet;
 
-use crate::core::primitives::{AbilityId, EntityId, HasCardId, Zone};
+use crate::card_states::zones::ToCardId;
+use crate::core::primitives::{AbilityId, EntityId, Zone};
 use crate::delegates::flag::Flag;
 use crate::delegates::has_delegates::HasDelegates;
 use crate::delegates::scope::DelegateScope;
@@ -63,12 +64,12 @@ struct StoredQueryDelegate<TData: HasDelegates, TArg, TResult> {
 }
 
 #[derive(Clone)]
-pub struct CardDelegateList<TData: HasDelegates, TArg: HasCardId, TResult> {
+pub struct CardDelegateList<TData: HasDelegates, TArg: ToCardId, TResult> {
     current: Vec<(CardDelegateExecution, BoxedQueryFn<TData, TArg, TResult>)>,
     delegates: Vec<StoredQueryDelegate<TData, TArg, TResult>>,
 }
 
-impl<TData: HasDelegates, TArg: HasCardId, TResult> CardDelegateList<TData, TArg, TResult> {
+impl<TData: HasDelegates, TArg: ToCardId, TResult> CardDelegateList<TData, TArg, TResult> {
     pub fn this(
         &mut self,
         value: impl Fn(&TData, <TData as HasDelegates>::ScopeType, &TArg, TResult) -> TResult
@@ -96,7 +97,7 @@ impl<TData: HasDelegates, TArg: HasCardId, TResult> CardDelegateList<TData, TArg
         let mut result = current;
         for stored in &self.delegates {
             if stored.execution_type == CardDelegateExecution::This
-                && arg.card_id() != stored.ability_id.card_id
+                && arg.card_id(data.game_state()) != Some(stored.ability_id.card_id)
             {
                 continue;
             }
@@ -117,7 +118,7 @@ impl<TData: HasDelegates, TArg: HasCardId, TResult> CardDelegateList<TData, TArg
     }
 }
 
-impl<TData: HasDelegates, TArg: HasCardId> CardDelegateList<TData, TArg, Flag> {
+impl<TData: HasDelegates, TArg: ToCardId> CardDelegateList<TData, TArg, Flag> {
     /// Runs a boolean query to see if any item in the provided iterator matches
     /// a predicate. Returns `current` if no delegates are present in the map.
     ///
@@ -158,7 +159,7 @@ impl<TData: HasDelegates, TArg: HasCardId> CardDelegateList<TData, TArg, Flag> {
     }
 }
 
-impl<TData: HasDelegates, TArg: HasCardId, TResult> StoresDelegates
+impl<TData: HasDelegates, TArg: ToCardId, TResult> StoresDelegates
     for CardDelegateList<TData, TArg, TResult>
 {
     fn apply_writes(&mut self, id: AbilityId, zones: EnumSet<Zone>) {
@@ -173,7 +174,7 @@ impl<TData: HasDelegates, TArg: HasCardId, TResult> StoresDelegates
     }
 }
 
-impl<TData: HasDelegates, TArg: HasCardId, TResult> Default
+impl<TData: HasDelegates, TArg: ToCardId, TResult> Default
     for CardDelegateList<TData, TArg, TResult>
 {
     fn default() -> Self {

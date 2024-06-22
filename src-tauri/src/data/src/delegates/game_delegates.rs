@@ -16,9 +16,9 @@ use std::fmt::{Debug, Formatter};
 
 use enumset::EnumSet;
 
-use crate::card_states::zones::ZoneQueries;
+use crate::card_states::zones::{HasZones, ToCardId, ZoneQueries, Zones};
 use crate::core::numerics::{Power, Toughness};
-use crate::core::primitives::{AbilityId, CardId, HasCardId, PlayerName, Zone};
+use crate::core::primitives::{AbilityId, CardId, PlayerName, Zone};
 use crate::delegates::card_delegate_list::CardDelegateList;
 use crate::delegates::event_delegate_list::EventDelegateList;
 use crate::delegates::flag::Flag;
@@ -32,9 +32,9 @@ pub struct CanAttackTarget {
     pub target: AttackTarget,
 }
 
-impl HasCardId for CanAttackTarget {
-    fn card_id(&self) -> CardId {
-        self.attacker_id.internal_card_id
+impl ToCardId for CanAttackTarget {
+    fn card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+        self.attacker_id.card_id(zones)
     }
 }
 

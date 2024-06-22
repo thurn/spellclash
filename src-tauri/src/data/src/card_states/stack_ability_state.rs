@@ -16,11 +16,13 @@ use serde::{Deserialize, Serialize};
 
 #[allow(unused)] // Used in docs
 use crate::card_states::zones::Zones;
+use crate::card_states::zones::{HasZones, ToCardId};
 use crate::core::primitives::{
-    AbilityId, CardId, EntityId, HasCardId, HasController, HasEntityId, HasPlayerName, ObjectId,
-    PlayerName, StackAbilityId,
+    AbilityId, CardId, EntityId, HasController, HasEntityId, HasPlayerName, ObjectId, PlayerName,
+    StackAbilityId,
 };
 use crate::delegates::scope::DelegateScope;
+use crate::game_states::game_state::GameState;
 
 /// Represents the state of a triggered or activated ability which has triggered
 /// or is on the stack
@@ -51,12 +53,6 @@ pub struct StackAbilityState {
 
     /// Targets for this ability, selected when it is placed on the stack.
     pub targets: Vec<EntityId>,
-}
-
-impl HasCardId for StackAbilityState {
-    fn card_id(&self) -> CardId {
-        self.ability_id.card_id
-    }
 }
 
 impl HasEntityId for StackAbilityState {

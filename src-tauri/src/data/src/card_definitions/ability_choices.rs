@@ -18,9 +18,9 @@ use utils::outcome::Outcome;
 
 use crate::card_definitions::ability_definition::EffectFn;
 use crate::card_states::card_state::CardState;
-use crate::card_states::zones::ZoneQueries;
+use crate::card_states::zones::{ToCardId, ZoneQueries};
 use crate::core::function_types::{CardPredicateFn, PlayerPredicateFn, StackAbilityPredicateFn};
-use crate::core::primitives::{CardId, EntityId, HasCardId, PlayerName, StackItemId, Zone};
+use crate::core::primitives::{CardId, EntityId, PlayerName, StackItemId, Zone};
 use crate::delegates::scope::{DelegateScope, EffectScope};
 use crate::game_states::game_state::GameState;
 
@@ -175,14 +175,14 @@ impl<TArg: 'static, TResult: AbilityChoiceBuilder> EffectAbilityBuilder<TArg, TR
 }
 
 fn card_target_builder(game: &GameState, scope: EffectScope) -> Option<CardId> {
-    match game.card(scope.card_id()).targets.first() {
+    match game.card(scope.card_id(game)?).targets.first() {
         Some(EntityId::Card(card_id, _)) => Some(*card_id),
         _ => None,
     }
 }
 
 fn player_target_builder(game: &GameState, scope: EffectScope) -> Option<PlayerName> {
-    match game.card(scope.card_id()).targets.first() {
+    match game.card(scope).targets.first() {
         Some(EntityId::Player(player_name)) => Some(*player_name),
         _ => None,
     }

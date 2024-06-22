@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, HasCardId, HasPlayerName, HasSource, PlayerName, Zone};
+use data::card_states::zones::{ToCardId, ZoneQueries};
+use data::core::primitives::{CardId, HasPlayerName, HasSource, PlayerName, Zone};
 use data::game_states::game_state::GameState;
 use data::game_states::state_based_event::StateBasedEvent;
 use utils::outcome;
@@ -59,9 +59,9 @@ pub fn draw_cards(
 pub fn move_to_top(
     game: &mut GameState,
     source: impl HasSource,
-    card_id: impl HasCardId,
+    card_id: impl ToCardId,
 ) -> Outcome {
-    move_card::run(game, source, card_id.card_id(), Zone::Library)
+    move_card::run(game, source, card_id, Zone::Library)
 }
 
 /// Moves all provided cards to the top of their owner's library in the given
@@ -73,7 +73,7 @@ pub fn move_all_to_top<'a>(
 ) -> Outcome {
     let source = source.source();
     for card_id in cards {
-        move_to_top(game, source, card_id)?;
+        move_to_top(game, source, *card_id)?;
     }
     outcome::OK
 }

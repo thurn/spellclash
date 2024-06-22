@@ -24,6 +24,9 @@ use specta::{DataType, Generics, Type, TypeMap};
 use strum::EnumString;
 use uuid::Uuid;
 
+use crate::card_states::zones::{HasZones, ToCardId, ZoneQueries, Zones};
+use crate::game_states::game_state::GameState;
+
 /// The five canonical colors of magic.
 #[derive(Debug, Hash, Ord, PartialOrd, Serialize, Deserialize, EnumSetType, Sequence)]
 pub enum Color {
@@ -151,25 +154,6 @@ impl CardId {
     }
 }
 
-/// Identifies a struct that is 1:1 associated with a given [CardId].
-pub trait HasCardId {
-    fn card_id(&self) -> CardId;
-}
-
-impl HasCardId for CardId {
-    fn card_id(&self) -> CardId {
-        // I know this is the same as Into, I just find it less annoying to have
-        // explicit types :)
-        *self
-    }
-}
-
-impl<T: HasCardId> HasCardId for &T {
-    fn card_id(&self) -> CardId {
-        (*self).card_id()
-    }
-}
-
 new_key_type! {
     /// Identifies a triggered or activated ability on the stack.
     pub struct StackAbilityId;
@@ -260,6 +244,12 @@ pub struct PermanentId {
     pub internal_card_id: CardId,
 }
 
+impl ToCardId for PermanentId {
+    fn card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+        zones.zones().card_id_for_permanent(*self)
+    }
+}
+
 /// A unique identifier for an effect.
 ///
 /// Each instance of an effect function resolving as a spell ability, activated
@@ -291,9 +281,9 @@ pub struct AbilityId {
     pub number: AbilityNumber,
 }
 
-impl HasCardId for AbilityId {
-    fn card_id(&self) -> CardId {
-        self.card_id
+impl ToCardId for AbilityId {
+    fn card_id(&self, _: &impl HasZones) -> Option<CardId> {
+        Some(self.card_id)
     }
 }
 

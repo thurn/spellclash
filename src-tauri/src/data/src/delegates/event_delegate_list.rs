@@ -19,7 +19,7 @@ use enumset::EnumSet;
 use utils::outcome;
 use utils::outcome::Outcome;
 
-use crate::core::primitives::{AbilityId, EntityId, HasCardId, Zone};
+use crate::core::primitives::{AbilityId, EntityId, Zone};
 use crate::delegates::flag::Flag;
 use crate::delegates::has_delegates::HasDelegates;
 use crate::delegates::scope::DelegateScope;

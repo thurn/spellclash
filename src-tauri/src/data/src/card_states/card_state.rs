@@ -24,10 +24,11 @@ use crate::card_states::counters::Counters;
 use crate::card_states::custom_card_state::CustomCardStateList;
 #[allow(unused)] // Used in docs
 use crate::card_states::zones::Zones;
+use crate::card_states::zones::{HasZones, ToCardId};
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
-    AbilityId, CardId, EffectId, EntityId, HasCardId, HasController, HasEntityId, HasPlayerName,
-    ObjectId, PermanentId, PlayerName, Zone,
+    AbilityId, CardId, EffectId, EntityId, HasController, HasEntityId, HasPlayerName, ObjectId,
+    PermanentId, PlayerName, Zone,
 };
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::{GameState, TurnData};
@@ -186,12 +187,6 @@ impl CardState {
         } else {
             None
         }
-    }
-}
-
-impl HasCardId for CardState {
-    fn card_id(&self) -> CardId {
-        self.id
     }
 }
 

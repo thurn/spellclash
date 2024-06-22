@@ -20,7 +20,7 @@ use data::card_states::zones::ZoneQueries;
 use data::core::function_types::{
     CardMutation, CardPredicate, PermanentMutation, PermanentPredicate,
 };
-use data::core::primitives::{HasCardId, HasSource, Zone};
+use data::core::primitives::{HasSource, Zone};
 use data::delegates::game_delegates::GameDelegates;
 use data::delegates::scope::DelegateScope;
 use data::game_states::game_state::GameState;
@@ -41,7 +41,7 @@ pub fn when_controls_no(
             })
         })
         .effect(move |g, s| {
-            if let Some(permanent_id) = g.permanent_id_for_card(s.card_id()) {
+            if let Some(permanent_id) = g.permanent_id_for_card(s.ability_id.card_id) {
                 mutation(g, s.source(), permanent_id)?;
             }
             outcome::OK

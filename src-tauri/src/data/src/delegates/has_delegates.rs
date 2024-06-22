@@ -29,6 +29,8 @@ pub trait HasDelegates {
     fn current_zone(&self, card_id: CardId) -> Zone;
 
     fn create_delegate_scope(&self, ability_id: AbilityId) -> Self::ScopeType;
+
+    fn game_state(&self) -> &GameState;
 }
 
 impl HasDelegates for GameState {
@@ -41,5 +43,9 @@ impl HasDelegates for GameState {
 
     fn create_delegate_scope(&self, ability_id: AbilityId) -> Self::ScopeType {
         DelegateScope { controller: self.card(ability_id).controller(), ability_id }
+    }
+
+    fn game_state(&self) -> &GameState {
+        self
     }
 }

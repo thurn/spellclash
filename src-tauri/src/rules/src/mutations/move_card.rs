@@ -14,10 +14,10 @@
 
 use data::card_states::card_kind::CardKind;
 use data::card_states::card_state::{CardFacing, TappedState};
-use data::card_states::zones::ZoneQueries;
+use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::numerics::Damage;
 use data::core::primitives::{
-    CardId, EntityId, HasCardId, HasController, HasSource, Zone, ALL_POSSIBLE_PLAYERS,
+    CardId, EntityId, HasController, HasSource, Zone, ALL_POSSIBLE_PLAYERS,
 };
 use data::game_states::game_state::{GameState, TurnData};
 use data::game_states::state_based_event::StateBasedEvent;
@@ -34,21 +34,24 @@ use utils::outcome::Outcome;
 pub fn run(
     game: &mut GameState,
     _source: impl HasSource,
-    id: impl HasCardId,
+    id: impl ToCardId,
     zone: Zone,
 ) -> Outcome {
-    let id = id.card_id();
-    debug!(?id, ?zone, "Moving card to zone");
-    let old = game.card(id.card_id()).zone;
-    on_leave_zone(game, id, old);
+    let Some(card_id) = id.card_id(game) else {
+        return outcome::OK;
+    };
+
+    debug!(?card_id, ?zone, "Moving card to zone");
+    let old = game.card(card_id).zone;
+    on_leave_zone(game, card_id, old);
 
     if !(old == Zone::Stack && zone == Zone::Battlefield) {
         // Control-changing effects persist from the stack to the battlefield.
-        game.card_mut(id).control_changing_effects.clear();
+        game.card_mut(card_id).control_changing_effects.clear();
     }
 
-    game.zones.move_card(id, zone);
-    on_enter_zone(game, id, zone);
+    game.zones.move_card(card_id, zone);
+    on_enter_zone(game, card_id, zone);
     outcome::OK
 }
 

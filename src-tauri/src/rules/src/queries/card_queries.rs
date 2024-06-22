@@ -15,9 +15,9 @@
 use std::iter;
 
 use data::card_states::play_card_plan::PlayCardPlan;
-use data::card_states::zones::ZoneQueries;
+use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::numerics::{Power, Toughness};
-use data::core::primitives::{CardId, CardType, HasCardId, Zone};
+use data::core::primitives::{CardId, CardType, Zone};
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandSubtype;
 use data::printed_cards::layout::CardLayout;
@@ -88,7 +88,7 @@ use enumset::EnumSet;
 ///   > or permanent to be face down.
 ///
 ///   <https://yawgatog.com/resources/magic-rules/#R7082>
-pub fn characteristic_faces(game: &GameState, card_id: CardId) -> Vec<&PrintedCardFace> {
+pub fn characteristic_faces(game: &GameState, card_id: impl ToCardId) -> Vec<&PrintedCardFace> {
     let card = game.card(card_id);
     match card.zone {
         Zone::Battlefield => card.face_up_printed_face().map_or_else(Vec::new, |face| vec![face]),
@@ -103,18 +103,14 @@ pub fn characteristic_faces(game: &GameState, card_id: CardId) -> Vec<&PrintedCa
 /// Returns the set of current card types on a card's characteristic faces.
 ///
 /// See [characteristic_faces] for more information.
-pub fn card_types(game: &GameState, card_id: impl HasCardId) -> EnumSet<CardType> {
-    characteristic_faces(game, card_id.card_id())
-        .iter()
-        .flat_map(|face| face.card_types.iter())
-        .collect()
+pub fn card_types(game: &GameState, card_id: impl ToCardId) -> EnumSet<CardType> {
+    characteristic_faces(game, card_id).iter().flat_map(|face| face.card_types.iter()).collect()
 }
 
 /// Returns the set of current land subtypes on a card's characteristic faces.
 ///
 /// See [characteristic_faces] for more information.
-pub fn land_subtypes(game: &GameState, card_id: impl HasCardId) -> EnumSet<LandSubtype> {
-    let card_id = card_id.card_id();
+pub fn land_subtypes(game: &GameState, card_id: impl ToCardId) -> EnumSet<LandSubtype> {
     characteristic_faces(game, card_id).iter().flat_map(|face| face.subtypes.land.iter()).collect()
 }
 
@@ -160,8 +156,7 @@ pub fn power(game: &GameState, card_id: CardId) -> Power {
 /// Computes the current toughness on card's characteristic faces.
 ///
 /// See [characteristic_faces] for more information.
-pub fn toughness(game: &GameState, card_id: impl HasCardId) -> Toughness {
-    let card_id = card_id.card_id();
+pub fn toughness(game: &GameState, card_id: impl ToCardId) -> Toughness {
     let characteristic = characteristic_faces(game, card_id);
     let result = match characteristic[..] {
         [] => {
@@ -178,5 +173,9 @@ pub fn toughness(game: &GameState, card_id: impl HasCardId) -> Toughness {
         _ => panic!("Cannot compute toughness for card with multiple active faces"),
     };
 
-    game.delegates.toughness.query(game, &card_id, result)
+    if let Some(card_id) = card_id.card_id(game) {
+        game.delegates.toughness.query(game, &card_id, result)
+    } else {
+        result
+    }
 }

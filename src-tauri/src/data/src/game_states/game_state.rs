@@ -25,12 +25,12 @@ use crate::actions::game_action::GameAction;
 use crate::actions::user_action::UserAction;
 use crate::card_states::card_state::CardState;
 use crate::card_states::stack_ability_state::StackAbilityState;
-use crate::card_states::zones::{ZoneQueries, Zones};
+use crate::card_states::zones::{HasZones, ToCardId, ZoneQueries, Zones};
 use crate::core::numerics::TurnNumber;
 #[allow(unused_imports)] // Used in docs
 use crate::core::primitives::{
-    CardId, EntityId, GameId, HasCardId, HasPlayerName, HasSource, PlayerName, StackAbilityId,
-    StackItemId, UserId, Zone,
+    CardId, EntityId, GameId, HasPlayerName, HasSource, PlayerName, StackAbilityId, StackItemId,
+    UserId, Zone,
 };
 use crate::core::primitives::{EffectId, ObjectId, PermanentId};
 use crate::delegates::game_delegates::GameDelegates;
@@ -219,12 +219,18 @@ impl GameState {
     }
 }
 
+impl HasZones for GameState {
+    fn zones(&self) -> &Zones {
+        &self.zones
+    }
+}
+
 impl ZoneQueries for GameState {
-    fn card(&self, id: impl HasCardId) -> &CardState {
+    fn card(&self, id: impl ToCardId) -> &CardState {
         self.zones.card(id)
     }
 
-    fn card_mut(&mut self, id: impl HasCardId) -> &mut CardState {
+    fn card_mut(&mut self, id: impl ToCardId) -> &mut CardState {
         self.zones.card_mut(id)
     }
 
