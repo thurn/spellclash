@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use data::card_states::card_state::{CardFacing, TappedState};
-use data::card_states::zones::ZoneQueries;
+use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::numerics::Damage;
 use data::core::primitives::{CardId, PermanentId, Source, Zone, ALL_POSSIBLE_PLAYERS};
 use data::game_states::game_state::GameState;
@@ -26,27 +26,29 @@ use utils::outcome::Outcome;
 use crate::mutations::move_card;
 
 /// Turns the [Face] face of this card up and reveals it to all players.
-pub fn turn_face_up(game: &mut GameState, _source: Source, id: PermanentId, face: Face) -> Outcome {
-    if let Some(card) = game.permanent_mut(id) {
-        card.facing = CardFacing::FaceUp(face);
-        card.revealed_to = ALL_POSSIBLE_PLAYERS;
-    }
+pub fn turn_face_up(
+    game: &mut GameState,
+    _source: Source,
+    id: impl ToCardId,
+    face: Face,
+) -> Outcome {
+    let card = game.card_mut(id)?;
+    card.facing = CardFacing::FaceUp(face);
+    card.revealed_to = ALL_POSSIBLE_PLAYERS;
     outcome::OK
 }
 
 /// Taps a permanent.
-pub fn tap(game: &mut GameState, _source: Source, id: PermanentId) -> Outcome {
-    if let Some(card) = game.permanent_mut(id) {
-        card.tapped_state = TappedState::Tapped;
-    }
+pub fn tap(game: &mut GameState, _source: Source, id: impl ToCardId) -> Outcome {
+    let card = game.card_mut(id)?;
+    card.tapped_state = TappedState::Tapped;
     outcome::OK
 }
 
 /// Untaps a permanent
-pub fn untap(game: &mut GameState, _source: Source, id: PermanentId) -> Outcome {
-    if let Some(card) = game.permanent_mut(id) {
-        card.tapped_state = TappedState::Untapped;
-    }
+pub fn untap(game: &mut GameState, _source: Source, id: impl ToCardId) -> Outcome {
+    let card = game.card_mut(id)?;
+    card.tapped_state = TappedState::Untapped;
     outcome::OK
 }
 
@@ -54,21 +56,18 @@ pub fn untap(game: &mut GameState, _source: Source, id: PermanentId) -> Outcome 
 pub fn deal_damage(
     game: &mut GameState,
     source: Source,
-    id: PermanentId,
+    id: impl ToCardId,
     damage: Damage,
 ) -> Outcome {
-    if let Some(card) = game.permanent_mut(id) {
-        debug!("Dealing {damage:?} damage to {id:?}");
-        card.damage += damage;
-        game.add_state_based_event(StateBasedEvent::CreatureDamaged(id));
-    }
+    let card = game.card_mut(id)?;
+    let permanent_id = card.permanent_id()?;
+    debug!("Dealing {damage:?} damage to {id:?}");
+    card.damage += damage;
+    game.add_state_based_event(StateBasedEvent::CreatureDamaged(permanent_id));
     outcome::OK
 }
 
 /// Sacrifices a permanent.
-pub fn sacrifice(game: &mut GameState, source: Source, id: PermanentId) -> Outcome {
-    if let Some(card_id) = game.card_id_for_permanent(id) {
-        move_card::run(game, source, card_id, Zone::Graveyard)?;
-    }
-    outcome::OK
+pub fn sacrifice(game: &mut GameState, source: Source, id: impl ToCardId) -> Outcome {
+    move_card::run(game, source, id, Zone::Graveyard)
 }

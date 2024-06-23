@@ -34,7 +34,6 @@ pub fn draw(game: &mut GameState, source: impl HasSource, player: impl HasPlayer
         game.add_state_based_event(StateBasedEvent::DrawFromEmptyLibrary(player));
         return outcome::OK;
     };
-    let card = game.card_mut(id);
     move_card::run(game, source, id, Zone::Hand)
 }
 
@@ -66,14 +65,15 @@ pub fn move_to_top(
 
 /// Moves all provided cards to the top of their owner's library in the given
 /// order.
+///
+/// Cards in the list which no longer exist will be ignored.
 pub fn move_all_to_top<'a>(
     game: &mut GameState,
     source: impl HasSource,
     cards: impl IntoIterator<Item = &'a CardId>,
-) -> Outcome {
+) {
     let source = source.source();
     for card_id in cards {
-        move_to_top(game, source, *card_id)?;
+        move_to_top(game, source, *card_id);
     }
-    outcome::OK
 }

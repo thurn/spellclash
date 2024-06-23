@@ -30,6 +30,7 @@ use data::delegates::scope::DelegateScope;
 use data::game_states::game_state::GameState;
 use data::prompts::choice_prompt::Choice;
 use data::text_strings::Text;
+use either::Either;
 use enum_iterator::Sequence;
 use enumset::EnumSet;
 use tracing::instrument;
@@ -44,9 +45,7 @@ use crate::queries::player_queries;
 /// Plays a card.
 ///
 /// This will prompt the player for all required choices to play the card, and
-/// then put it into play. An error is returned if the player makes a choice
-/// which results in this card being illegal to play (e.g. selecting a target
-/// which increases the cost of a spell beyond their ability to play).
+/// then put it into play.
 pub fn execute(
     game: &mut GameState,
     player: PlayerName,
@@ -58,16 +57,18 @@ pub fn execute(
     let mut plan = plans.remove(0);
 
     let prompt_lists = targeted_abilities(game, card_id)
-        .map(|(ability_id, target)| {
-            let scope = game.create_delegate_scope(ability_id);
-            valid_targets(game, scope, &target.predicate)
-                .map(|entity_id| Choice { entity_id })
-                .collect::<Vec<_>>()
+        .filter_map(|(ability_id, target)| {
+            let scope = game.create_delegate_scope(ability_id)?;
+            Some(
+                valid_targets(game, scope, &target.predicate)
+                    .map(|entity_id| Choice { entity_id })
+                    .collect::<Vec<_>>(),
+            )
         })
         .collect::<Vec<_>>();
     for choices in prompt_lists {
         assert!(!choices.is_empty(), "No valid targets available");
-        let response = prompts::choose_entity(game, player, Text::SelectTarget, choices)?;
+        let response = prompts::choose_entity(game, player, Text::SelectTarget, choices);
         plan.targets.push(response);
     }
 
@@ -90,7 +91,10 @@ pub fn can_play_card(
     source: Source,
     card_id: CardId,
 ) -> bool {
-    let card = game.card(card_id);
+    let Some(card) = game.card(card_id) else {
+        return false;
+    };
+
     if card.controller() != player || card.zone != Zone::Hand {
         return false;
     }
@@ -140,36 +144,51 @@ fn targeted_abilities(
     game: &GameState,
     card_id: CardId,
 ) -> impl Iterator<Item = (AbilityId, &AbilityTarget)> {
-    definitions::get(game.card(card_id).card_name)
-        .iterate_abilities()
-        .filter(|(_, ability)| ability.ability_type == AbilityType::Spell)
-        .flat_map(move |(number, ability)| {
-            ability
-                .choices
-                .targets
-                .iter()
-                .map(move |target| (AbilityId { card_id, number }, target))
-        })
+    let Some(card_name) = game.card(card_id).map(|c| c.card_name) else {
+        return Either::Left(iter::empty());
+    };
+
+    Either::Right(
+        definitions::get(card_name)
+            .iterate_abilities()
+            .filter(|(_, ability)| ability.ability_type == AbilityType::Spell)
+            .flat_map(move |(number, ability)| {
+                ability
+                    .choices
+                    .targets
+                    .iter()
+                    .map(move |target| (AbilityId { card_id, number }, target))
+            }),
+    )
 }
 
 fn valid_target_lists(
     game: &GameState,
     card_id: CardId,
 ) -> impl Iterator<Item = Vec<EntityId>> + '_ {
-    definitions::get(game.card(card_id).card_name)
-        .iterate_abilities()
-        .filter(|(_, ability)| ability.ability_type == AbilityType::Spell)
-        .flat_map(move |(number, ability)| {
-            ability.choices.targets.iter().flat_map(move |target| {
-                let scope = game.create_delegate_scope(AbilityId { card_id, number });
-                assert_eq!(
-                    target.quantity,
-                    AbilityTargetQuantity::Exactly(1),
-                    "TODO: handle multiple target quantities"
-                );
-                valid_targets(game, scope, &target.predicate).map(|entity_id| vec![entity_id])
-            })
-        })
+    let Some(card) = game.card(card_id) else {
+        return Either::Left(iter::empty());
+    };
+
+    Either::Right(
+        definitions::get(card.card_name)
+            .iterate_abilities()
+            .filter(|(_, ability)| ability.ability_type == AbilityType::Spell)
+            .flat_map(move |(number, ability)| {
+                ability.choices.targets.iter().flat_map(move |target| {
+                    let scope =
+                        game.create_delegate_scope(AbilityId { card_id, number }).unwrap_or_else(
+                            || panic!("Unable to create delegate scope for card {card_id:?}"),
+                        );
+                    assert_eq!(
+                        target.quantity,
+                        AbilityTargetQuantity::Exactly(1),
+                        "TODO: handle multiple target quantities"
+                    );
+                    valid_targets(game, scope, &target.predicate).map(|entity_id| vec![entity_id])
+                })
+            }),
+    )
 }
 
 fn valid_targets<'a>(
@@ -214,7 +233,7 @@ fn valid_card_targets<'a>(
                     .flat_map(move |player| game.zones.cards_in_zone(zone, player))
             })
             .filter_some(move |&card_id| (target.predicate)(game, scope, card_id))
-            .map(|card_id| game.card(card_id).entity_id),
+            .filter_map(|card_id| Some(game.card(card_id)?.entity_id)),
     )
 }
 

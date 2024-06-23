@@ -51,7 +51,9 @@ pub fn run(builder: &mut ResponseBuilder, game: &GameState) {
         &mut game
             .zones
             .all_stack_abilities()
-            .map(|a| ability_sync::stack_ability_view(builder, game.card(a.ability_id.card_id), a))
+            .filter_map(|a| {
+                Some(ability_sync::stack_ability_view(builder, game.card(a.ability_id.card_id)?, a))
+            })
             .collect(),
     );
 

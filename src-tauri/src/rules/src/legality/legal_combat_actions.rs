@@ -59,9 +59,9 @@ pub fn append(
                 actions,
                 combat_queries::legal_attackers(game, player)
                     .filter(|id| {
-                        !selected_attackers.contains(&id) && !proposed_attacks.contains(*id)
+                        !selected_attackers.contains(id) && !proposed_attacks.contains(*id)
                     })
-                    .map(|id| CombatAction::AddSelectedAttacker(id)),
+                    .map(CombatAction::AddSelectedAttacker),
             );
             if !selected_attackers.is_empty() {
                 extend_actions(
@@ -102,10 +102,10 @@ pub fn append(
                 actions,
                 combat_queries::legal_blockers(game, player)
                     .filter(|id| {
-                        !blockers.selected_blockers.contains(&id)
+                        !blockers.selected_blockers.contains(id)
                             && !blockers.proposed_blocks.contains_key(id)
                     })
-                    .map(|id| CombatAction::AddSelectedBlocker(id)),
+                    .map(CombatAction::AddSelectedBlocker),
             );
             if !blockers.selected_blockers.is_empty() {
                 extend_actions(

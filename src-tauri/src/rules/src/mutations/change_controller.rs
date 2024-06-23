@@ -28,11 +28,14 @@ use utils::outcome::Outcome;
 /// card changes zones, except for a transition from the stack to the
 /// battlefield.
 pub fn gain_control(game: &mut GameState, scope: EffectScope, card_id: CardId) -> Outcome {
-    let current = game.card(card_id).controller();
+    let current = game.card(card_id)?.controller();
+
     if current != scope.controller {
         game.zones.on_controller_changed(card_id, current, scope.controller, game.turn);
-        game.card_mut(card_id).last_changed_control = game.turn;
-        game.card_mut(card_id).control_changing_effects.push(ControlChangingEffect {
+        let turn = game.turn;
+        let card = game.card_mut(card_id)?;
+        card.last_changed_control = turn;
+        card.control_changing_effects.push(ControlChangingEffect {
             effect_id: scope.effect_id,
             controller: scope.controller,
         });
@@ -55,12 +58,13 @@ pub fn gain_control_this_turn(
 /// Removes all control-changing effects from the [CardId] card that were added
 /// by the given [EffectId].
 pub fn remove_control(game: &mut GameState, effect_id: EffectId, card_id: CardId) -> Outcome {
-    let current = game.card(card_id).controller();
-    game.card_mut(card_id).control_changing_effects.retain(|effect| effect.effect_id != effect_id);
-    let new = game.card(card_id).controller();
+    let card = game.card_mut(card_id)?;
+    let current = card.controller();
+    card.control_changing_effects.retain(|effect| effect.effect_id != effect_id);
+    let new = card.controller();
     if current != new {
         game.zones.on_controller_changed(card_id, current, new, game.turn);
-        game.card_mut(card_id).last_changed_control = game.turn;
+        game.card_mut(card_id)?.last_changed_control = game.turn;
     }
     outcome::OK
 }

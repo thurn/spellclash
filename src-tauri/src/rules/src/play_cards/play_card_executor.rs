@@ -41,12 +41,10 @@ pub fn execute_plan(
         game.history_counters_mut(player).lands_played += 1;
         let face = plan.play_as.single_face();
         move_card::run(game, source, card_id, Zone::Battlefield)?;
-        if let Some(permanent_id) = game.card(card_id).permanent_id() {
-            permanents::turn_face_up(game, source, permanent_id, face)?;
-        }
+        permanents::turn_face_up(game, source, card_id, face)?;
     } else {
-        game.card_mut(card_id).cast_as = plan.play_as.faces;
-        game.card_mut(card_id).targets = plan.targets;
+        game.card_mut(card_id)?.cast_as = plan.play_as.faces;
+        game.card_mut(card_id)?.targets = plan.targets;
         move_card::run(game, source, card_id, Zone::Stack)?;
 
         // Once a card is played, abilities trigger and then a new priority round is created:
@@ -58,7 +56,7 @@ pub fn execute_plan(
         game.passed.clear();
         if !game.player(player).options.hold_priority {
             // Automatically pass priority after putting something on the stack.
-            priority::pass(game, player)?;
+            priority::pass(game, player);
         }
     }
 

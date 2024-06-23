@@ -30,11 +30,6 @@ impl Flag {
         Self { changed_by: Source::Game, value: true, locked: false }
     }
 
-    /// Creates a new locked flag with a value of 'false'.
-    pub fn locked_false() -> Self {
-        Self { changed_by: Source::Game, value: false, locked: true }
-    }
-
     pub fn from_bool(value: bool) -> Self {
         Self { changed_by: Source::Game, value, locked: false }
     }
@@ -98,6 +93,16 @@ impl Flag {
     pub fn lock(mut self) -> Self {
         self.locked = true;
         self
+    }
+}
+
+pub trait FlagOption {
+    fn value(&self) -> bool;
+}
+
+impl FlagOption for Option<Flag> {
+    fn value(&self) -> bool {
+        self.map_or(false, |flag| flag.value())
     }
 }
 

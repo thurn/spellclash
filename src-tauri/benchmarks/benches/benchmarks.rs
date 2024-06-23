@@ -56,7 +56,9 @@ pub fn green_vanilla(c: &mut Criterion) {
                 let creature_id = *game
                     .hand(PlayerName::One)
                     .iter()
-                    .find(|&card_id| game.card(*card_id).card_name == card_name::KALONIAN_TUSKER)
+                    .find(|&card_id| {
+                        game.card(*card_id).unwrap().card_name == card_name::KALONIAN_TUSKER
+                    })
                     .expect("Creature not found");
                 (game, creature_id)
             },
@@ -79,7 +81,7 @@ pub fn green_vanilla(c: &mut Criterion) {
                 let creature_id = *game
                     .hand(PlayerName::One)
                     .iter()
-                    .find(|&card_id| game.card(*card_id).card_name == card_name::FOREST)
+                    .find(|&card_id| game.card(*card_id).unwrap().card_name == card_name::FOREST)
                     .expect("Land not found");
                 (game, creature_id)
             },

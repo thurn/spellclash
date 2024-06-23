@@ -37,7 +37,7 @@ use crate::queries::{card_queries, player_queries};
 /// for exiting the previous [GamePhaseStep] and then performs actions
 /// which occur at the start of this step. Increments the turn number and active
 /// player when transitioning to the Untap step.
-pub fn advance(game: &mut GameState) -> Outcome {
+pub fn advance(game: &mut GameState) {
     let step = enum_iterator::next(&game.step).unwrap_or(GamePhaseStep::Untap);
     match step {
         GamePhaseStep::Untap => untap(game),
@@ -62,7 +62,7 @@ fn begin_step(game: &mut GameState, step: GamePhaseStep) {
     game.passed.clear();
 }
 
-fn untap(game: &mut GameState) -> Outcome {
+fn untap(game: &mut GameState) {
     begin_step(game, GamePhaseStep::Untap);
     let next = player_queries::next_player_after(game, game.turn.active_player);
     if next == PlayerName::One {
@@ -77,7 +77,7 @@ fn untap(game: &mut GameState) -> Outcome {
     // <https://yawgatog.com/resources/magic-rules/#R5023>
     let to_untap = game.battlefield(next).clone();
     for &card_id in &to_untap {
-        permanents::untap(game, Source::Game, card_id)?;
+        permanents::untap(game, Source::Game, card_id);
     }
 
     // > 502.4. No player receives priority during the untap step, so no spells can
@@ -89,31 +89,28 @@ fn untap(game: &mut GameState) -> Outcome {
     advance(game)
 }
 
-fn upkeep(game: &mut GameState) -> Outcome {
+fn upkeep(game: &mut GameState) {
     begin_step(game, GamePhaseStep::Upkeep);
-    outcome::OK
 }
 
-fn draw(game: &mut GameState) -> Outcome {
+fn draw(game: &mut GameState) {
     begin_step(game, GamePhaseStep::Draw);
 
     // > 504.1. First, the active player draws a card. This turn-based action
     // doesn't use the stack.
     // <https://yawgatog.com/resources/magic-rules/#R5041>
-    library::draw(game, Source::Game, game.turn.active_player)
+    library::draw(game, Source::Game, game.turn.active_player);
 }
 
-fn pre_combat_main(game: &mut GameState) -> Outcome {
+fn pre_combat_main(game: &mut GameState) {
     begin_step(game, GamePhaseStep::PreCombatMain);
-    outcome::OK
 }
 
-fn begin_combat(game: &mut GameState) -> Outcome {
+fn begin_combat(game: &mut GameState) {
     begin_step(game, GamePhaseStep::BeginCombat);
-    outcome::OK
 }
 
-fn declare_attackers(game: &mut GameState) -> Outcome {
+fn declare_attackers(game: &mut GameState) {
     begin_step(game, GamePhaseStep::DeclareAttackers);
     // > 508.1. First, the active player declares attackers. This turn-based action
     // > doesn't use the stack.
@@ -128,10 +125,9 @@ fn declare_attackers(game: &mut GameState) -> Outcome {
         proposed_attacks: AttackerMap::default(),
         selected_attackers: HashSet::new(),
     }));
-    outcome::OK
 }
 
-fn declare_blockers(game: &mut GameState) -> Outcome {
+fn declare_blockers(game: &mut GameState) {
     begin_step(game, GamePhaseStep::DeclareBlockers);
     // > 509.1. First, the defending player declares blockers. This turn-based
     // > action doesn't use the stack.
@@ -155,12 +151,10 @@ fn declare_blockers(game: &mut GameState) -> Outcome {
         selected_blockers: HashSet::new(),
         proposed_blocks: HashMap::new(),
     }));
-    outcome::OK
 }
 
-fn first_strike_damage(game: &mut GameState) -> Outcome {
+fn first_strike_damage(game: &mut GameState) {
     begin_step(game, GamePhaseStep::FirstStrikeDamage);
-    outcome::OK
 }
 
 pub enum CombatDamageAssignment {
@@ -170,7 +164,7 @@ pub enum CombatDamageAssignment {
     Creature(BlockerId, Damage),
 }
 
-fn combat_damage(game: &mut GameState) -> Outcome {
+fn combat_damage(game: &mut GameState) {
     begin_step(game, GamePhaseStep::CombatDamage);
     let Some(CombatState::ConfirmedBlockers(blockers)) = &game.combat else {
         panic!("Not in the 'ConfirmedBlockers' state");
@@ -182,58 +176,55 @@ fn combat_damage(game: &mut GameState) -> Outcome {
 
     let mut damage_assignments = vec![];
     for (attacker_id, target) in blockers.attackers.all_targets() {
-        // > 510.1a. Each attacking creature and each blocking creature assigns
-        // > combat damage equal to its power. Creatures that would assign 0 or less
-        // > damage this way don't assign combat damage at all.
-        // <https://yawgatog.com/resources/magic-rules/#R5101>
-
-        let Some(attacker_card_id) = game.card_id_for_permanent(*attacker_id) else {
-            continue;
-        };
-
-        if blockers.blocked_attackers.contains_key(attacker_id) {
-            let blockers = &blockers.blocked_attackers[attacker_id];
-            if blockers.len() != 1 {
-                // TODO: Implement support for multiple blockers
-            }
-            let blocker_id = blockers[0];
-            if game.card_id_for_permanent(blocker_id).is_none() {
-                continue;
-            };
-            damage_assignments.push(CombatDamageAssignment::Creature(
-                blocker_id,
-                numerics::power_to_damage(card_queries::power(game, attacker_card_id)),
-            ));
-        } else {
-            match target {
-                AttackTarget::Player(player) => {
-                    damage_assignments.push(CombatDamageAssignment::Player(
-                        *player,
-                        numerics::power_to_damage(card_queries::power(game, attacker_card_id)),
-                    ));
+        outcome::execute(|| {
+            // > 510.1a. Each attacking creature and each blocking creature assigns
+            // > combat damage equal to its power. Creatures that would assign 0 or less
+            // > damage this way don't assign combat damage at all.
+            // <https://yawgatog.com/resources/magic-rules/#R5101>
+            if blockers.blocked_attackers.contains_key(attacker_id) {
+                let blockers = &blockers.blocked_attackers[attacker_id];
+                if blockers.len() != 1 {
+                    // TODO: Implement support for multiple blockers
                 }
-                _ => todo!("Implement attack target"),
+                let blocker_id = blockers[0];
+                damage_assignments.push(CombatDamageAssignment::Creature(
+                    blocker_id,
+                    numerics::power_to_damage(card_queries::power(game, *attacker_id)?),
+                ));
+            } else {
+                match target {
+                    AttackTarget::Player(player) => {
+                        damage_assignments.push(CombatDamageAssignment::Player(
+                            *player,
+                            numerics::power_to_damage(card_queries::power(game, *attacker_id)?),
+                        ));
+                    }
+                    _ => todo!("Implement attack target"),
+                }
             }
-        }
+
+            outcome::OK
+        });
     }
 
     for (blocker_id, attackers) in &blockers.reverse_lookup {
-        // > 510.1d. A blocking creature assigns combat damage to the creatures it's blocking.
-        // > If it isn't currently blocking any creatures (if, for example, they were destroyed
-        // > or removed from combat), it assigns no combat damage. If it's blocking exactly one
-        // > creature, it assigns all its combat damage to that creature.
-        // <https://yawgatog.com/resources/magic-rules/#R5101d>
-        if attackers.len() != 1 {
-            todo!("Implement support for blocking multiple attackers");
-        }
-        let attacker_id = attackers[0];
-        let Some(blocker_card_id) = game.card_id_for_permanent(*blocker_id) else {
-            continue;
-        };
-        damage_assignments.push(CombatDamageAssignment::Creature(
-            attacker_id,
-            numerics::power_to_damage(card_queries::power(game, blocker_card_id)),
-        ));
+        outcome::execute(|| {
+            // > 510.1d. A blocking creature assigns combat damage to the creatures it's blocking.
+            // > If it isn't currently blocking any creatures (if, for example, they were destroyed
+            // > or removed from combat), it assigns no combat damage. If it's blocking exactly one
+            // > creature, it assigns all its combat damage to that creature.
+            // <https://yawgatog.com/resources/magic-rules/#R5101d>
+            if attackers.len() != 1 {
+                todo!("Implement support for blocking multiple attackers");
+            }
+            let attacker_id = attackers[0];
+            damage_assignments.push(CombatDamageAssignment::Creature(
+                attacker_id,
+                numerics::power_to_damage(card_queries::power(game, *blocker_id)?),
+            ));
+
+            outcome::OK
+        });
     }
 
     // > 510.2. Second, all combat damage that's been assigned is dealt
@@ -244,7 +235,7 @@ fn combat_damage(game: &mut GameState) -> Outcome {
     for assignment in damage_assignments {
         match assignment {
             CombatDamageAssignment::Player(player, damage) => {
-                players::deal_damage(game, Source::Game, player, damage)?;
+                players::deal_damage(game, Source::Game, player, damage);
             }
             CombatDamageAssignment::Planeswalker(player, damage) => {
                 todo!("Implement planeswalker damage");
@@ -253,33 +244,29 @@ fn combat_damage(game: &mut GameState) -> Outcome {
                 todo!("Implement battle damage");
             }
             CombatDamageAssignment::Creature(creature_id, damage) => {
-                permanents::deal_damage(game, Source::Game, creature_id, damage)?;
+                permanents::deal_damage(game, Source::Game, creature_id, damage);
             }
         }
     }
 
     // > 510.3. Third, the active player gets priority.
     // <https://yawgatog.com/resources/magic-rules/#R5103>
-    outcome::OK
 }
 
-fn end_combat(game: &mut GameState) -> Outcome {
+fn end_combat(game: &mut GameState) {
     begin_step(game, GamePhaseStep::EndCombat);
-    outcome::OK
 }
 
-fn post_combat_main(game: &mut GameState) -> Outcome {
+fn post_combat_main(game: &mut GameState) {
     begin_step(game, GamePhaseStep::PostCombatMain);
     game.combat = None;
-    outcome::OK
 }
 
-fn end_step(game: &mut GameState) -> Outcome {
+fn end_step(game: &mut GameState) {
     begin_step(game, GamePhaseStep::EndStep);
-    outcome::OK
 }
 
-fn cleanup(game: &mut GameState) -> Outcome {
+fn cleanup(game: &mut GameState) {
     begin_step(game, GamePhaseStep::Cleanup);
 
     // > 514.1. First, if the active player's hand contains more cards than their
@@ -300,7 +287,7 @@ fn cleanup(game: &mut GameState) -> Outcome {
     }
 
     for (effect_id, target_id) in game.ability_state.this_turn.take_control_changing_effects() {
-        change_controller::remove_control(game, effect_id, target_id)?;
+        change_controller::remove_control(game, effect_id, target_id);
     }
     game.ability_state.this_turn = ThisTurnState::default();
 
@@ -316,7 +303,7 @@ fn cleanup(game: &mut GameState) -> Outcome {
     // > gets priority.
     //
     // https://yawgatog.com/resources/magic-rules/#R5143
-    state_based_actions::on_will_receive_priority(game)?;
+    state_based_actions::on_will_receive_priority(game);
 
     advance(game)
 }

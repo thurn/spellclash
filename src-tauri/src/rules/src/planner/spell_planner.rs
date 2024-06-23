@@ -21,6 +21,8 @@ use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandSubtype;
 use data::printed_cards::mana_cost::ManaCostItem;
 use tracing::instrument;
+use utils::outcome;
+use utils::outcome::Outcome;
 
 use crate::queries::card_queries;
 
@@ -45,7 +47,7 @@ pub fn mana_payment(
     card_id: CardId,
     plan: &PlayCardPlan,
 ) -> Option<ManaPaymentPlan> {
-    let controller = game.card(card_id).controller();
+    let controller = game.card(card_id)?.controller();
 
     let mut lands: LandAbilityMap = HashMap::new();
     for card in game.battlefield(controller) {
@@ -57,7 +59,7 @@ pub fn mana_payment(
     }
     lands.values_mut().for_each(|v| v.sort_by_key(|(_, subtypes)| *subtypes));
 
-    let cost = card_queries::mana_cost_for_casting_card(game, card_id, plan);
+    let cost = card_queries::mana_cost_for_casting_card(game, card_id, plan)?;
     let mut result = ManaPaymentPlan::default();
     for item in cost.items {
         add_land_for_item(&mut result, &mut lands, item)?;
@@ -72,17 +74,15 @@ fn add_land_to_map(
     lands: &mut LandAbilityMap,
     color: ManaColor,
     subtype: LandSubtype,
-) {
-    let Some(card_id) = game.card_id_for_permanent(land_id) else {
-        return;
-    };
-    if game.card(card_id).tapped_state.is_tapped() {
-        return;
+) -> Outcome {
+    if game.card(land_id)?.tapped_state.is_tapped() {
+        return outcome::OK;
     }
-    let subtypes = card_queries::land_subtypes(game, card_id);
+    let subtypes = card_queries::land_subtypes(game, land_id)?;
     if subtypes.contains(subtype) {
         lands.entry(color).or_default().push((land_id, subtypes.len()));
     }
+    outcome::OK
 }
 
 fn add_land_for_item(

@@ -35,28 +35,30 @@ use crate::resolve_cards::invoke_effect;
 /// > top of the stack resolves.
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R608>
-pub fn resolve_top_of_stack(game: &mut GameState) -> Outcome {
+pub fn resolve_top_of_stack(game: &mut GameState) {
     match game.stack().last().copied() {
-        Some(StackItemId::Card(card_id)) => resolve_top_card_of_stack(game, card_id),
-        Some(StackItemId::StackAbility(stack_ability_id)) => {
-            resolve_top_ability_of_stack(game, stack_ability_id)
+        Some(StackItemId::Card(card_id)) => {
+            resolve_top_card_of_stack(game, card_id);
         }
-        _ => outcome::OK,
+        Some(StackItemId::StackAbility(stack_ability_id)) => {
+            resolve_top_ability_of_stack(game, stack_ability_id);
+        }
+        _ => {}
     }
 }
 
 fn resolve_top_card_of_stack(game: &mut GameState, card_id: CardId) -> Outcome {
     debug!(?card_id, "Resolving top card of stack");
-    let definition = definitions::get(game.card(card_id).card_name);
+    let definition = definitions::get(game.card(card_id)?.card_name);
     for (ability_number, ability) in definition.iterate_abilities() {
         if ability.ability_type == AbilityType::Spell {
             let ability_id = AbilityId { card_id, number: ability_number };
-            invoke_effect::run(game, ability_id, None, &ability.effect)?;
+            invoke_effect::run(game, ability_id, None, &ability.effect);
         }
     }
 
-    let card = game.card(card_id);
-    if card_queries::card_types(game, card_id).iter().any(|t| t.is_permanent()) {
+    let card = game.card(card_id)?;
+    if card_queries::card_types(game, card_id)?.iter().any(|t| t.is_permanent()) {
         // > 608.3. If the object that's resolving is a permanent spell, its resolution may involve
         // > several steps. The instructions in rules 608.3a and b are always performed first. Then
         // > one of the steps in rule 608.3c-e is performed, if appropriate.
@@ -73,9 +75,7 @@ fn resolve_top_card_of_stack(game: &mut GameState, card_id: CardId) -> Outcome {
             };
 
             move_card::run(game, Source::Game, card_id, Zone::Battlefield)?;
-            if let Some(permanent_id) = game.card(card_id).permanent_id() {
-                permanents::turn_face_up(game, Source::Game, permanent_id, face)?;
-            }
+            permanents::turn_face_up(game, Source::Game, card_id, face)?;
         } else {
             todo!("Implement targeting for permanents");
         }
@@ -92,8 +92,8 @@ fn resolve_top_ability_of_stack(game: &mut GameState, stack_ability_id: StackAbi
     debug!(?stack_ability_id, "Resolving top ability of stack");
     let ability_id = game.stack_ability(stack_ability_id).ability_id;
     let ability_definition =
-        definitions::get(game.card(ability_id.card_id).card_name).get_ability(ability_id.number);
-    invoke_effect::run(game, ability_id, Some(stack_ability_id), &ability_definition.effect)?;
+        definitions::get(game.card(ability_id.card_id)?.card_name).get_ability(ability_id.number);
+    invoke_effect::run(game, ability_id, Some(stack_ability_id), &ability_definition.effect);
     game.zones.remove_stack_ability(stack_ability_id);
     outcome::OK
 }

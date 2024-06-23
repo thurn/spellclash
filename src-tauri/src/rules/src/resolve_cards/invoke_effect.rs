@@ -22,7 +22,7 @@ use data::delegates::has_delegates::HasDelegates;
 use data::delegates::scope::EffectScope;
 use data::game_states::game_state::GameState;
 use utils::outcome;
-use utils::outcome::{Outcome, OutcomeWithResult};
+use utils::outcome::Outcome;
 
 pub fn run(
     game: &mut GameState,
@@ -33,11 +33,13 @@ pub fn run(
     if let Some(function) = effect {
         let controller = match stack_ability_id {
             Some(stack_ability_id) => game.stack_ability(stack_ability_id).controller,
-            _ => game.card(ability_id).controller(),
+            _ => game.card(ability_id)?.controller(),
         };
         let scope =
             EffectScope { controller, ability_id, effect_id: game.ability_state.new_effect_id() };
-        function(game, scope)?;
+        function(game, scope);
+        outcome::OK
+    } else {
+        outcome::SKIPPED
     }
-    outcome::OK
 }

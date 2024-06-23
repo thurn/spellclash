@@ -29,14 +29,13 @@ use enumset::EnumSet;
 use maplit::hashmap;
 use tokio::sync::oneshot;
 use tracing::info;
-use utils::outcome::PromptResult;
 
 use crate::action_handlers::prompt_actions;
 use crate::action_handlers::prompt_actions::PromptExecutionResult;
 
 /// Sends a new [Prompt] to the player and blocks until they respond with a
 /// [PromptResponse].
-pub fn send(game: &mut GameState, mut prompt: Prompt) -> PromptResult<PromptResponse> {
+pub fn send(game: &mut GameState, mut prompt: Prompt) -> PromptResponse {
     let agent_player = game.current_search_agent.unwrap_or(prompt.player);
     if let (Some(agent), Some(prompt_agent)) =
         (game.player(agent_player).agent(), game.player(agent_player).prompt_agent())
@@ -53,7 +52,7 @@ pub fn send(game: &mut GameState, mut prompt: Prompt) -> PromptResult<PromptResp
                     prompt = p;
                 }
                 PromptExecutionResult::PromptResponse(response) => {
-                    return Ok(response);
+                    return response;
                 }
             }
         }
@@ -71,7 +70,7 @@ pub fn send(game: &mut GameState, mut prompt: Prompt) -> PromptResult<PromptResp
             .expect("Unable to receive prompt response, sender has dropped");
         let result_kind = result.kind();
         info!(?result_kind, "Got prompt response");
-        Ok(result)
+        result
     }
 }
 
@@ -80,16 +79,15 @@ pub fn choose_entity(
     player: PlayerName,
     description: Text,
     choices: Vec<Choice<EntityId>>,
-) -> PromptResult<EntityId> {
+) -> EntityId {
     let PromptResponse::EntityChoice(id) = send(game, Prompt {
         player,
         label: Some(description),
         prompt_type: PromptType::EntityChoice(ChoicePrompt { optional: false, choices }),
-    })?
-    else {
+    }) else {
         panic!("Unexpected prompt response type!");
     };
-    Ok(id)
+    id
 }
 
 /// Prompt for the [PlayerName] player to select and reorder cards based on a
@@ -99,17 +97,16 @@ pub fn select_order(
     player: PlayerName,
     description: Text,
     prompt: SelectOrderPrompt,
-) -> PromptResult<HashMap<CardOrderLocation, Vec<CardId>>> {
+) -> HashMap<CardOrderLocation, Vec<CardId>> {
     let PromptResponse::SelectOrder(ids) = send(game, Prompt {
         player,
         label: Some(description),
         prompt_type: PromptType::SelectOrder(prompt),
-    })?
-    else {
+    }) else {
         panic!("Unexpected prompt response type!");
     };
 
-    Ok(ids)
+    ids
 }
 
 /// Show a [PickNumberPrompt].
@@ -118,16 +115,15 @@ pub fn pick_number(
     player: PlayerName,
     description: Text,
     prompt: PickNumberPrompt,
-) -> PromptResult<u32> {
+) -> u32 {
     let PromptResponse::PickNumber(number) = send(game, Prompt {
         player,
         label: Some(description),
         prompt_type: PromptType::PickNumber(prompt),
-    })?
-    else {
+    }) else {
         panic!("Unexpected prompt response type!");
     };
-    Ok(number)
+    number
 }
 
 /// Prompt the controller to select a `quantity` from the provided unordered
@@ -143,8 +139,8 @@ pub fn select_ordered_from<'a>(
     cards: impl IntoIterator<Item = &'a CardId>,
     quantity: usize,
     target: CardOrderLocation,
-) -> PromptResult<Vec<CardId>> {
-    Ok(select_order(
+) -> Vec<CardId> {
+    select_order(
         game,
         scope.controller(),
         text,
@@ -153,7 +149,7 @@ pub fn select_ordered_from<'a>(
             target => vec![]
         })
         .quantity(Quantity::Ordered(quantity)),
-    )?
+    )
     .remove(&target)
-    .unwrap_or_default())
+    .unwrap_or_default()
 }

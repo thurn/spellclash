@@ -119,7 +119,7 @@ pub trait AbilityChoiceBuilder: Sized {
 
     fn effect(
         mut self,
-        effect: impl Fn(&mut GameState, EffectScope) -> Outcome + 'static + Copy + Send + Sync,
+        effect: impl Fn(&mut GameState, EffectScope) + 'static + Copy + Send + Sync,
     ) -> Self {
         self.set_effect_fn(Box::new(effect));
         self
@@ -164,13 +164,12 @@ pub struct EffectAbilityBuilder<TArg: 'static, TResult: AbilityChoiceBuilder> {
 impl<TArg: 'static, TResult: AbilityChoiceBuilder> EffectAbilityBuilder<TArg, TResult> {
     pub fn effect(
         mut self,
-        effect: impl Fn(&mut GameState, EffectScope, TArg) -> Outcome + 'static + Copy + Send + Sync,
+        effect: impl Fn(&mut GameState, EffectScope, TArg) + 'static + Copy + Send + Sync,
     ) -> TResult {
         self.builder.set_effect_fn(Box::new(move |game, scope| {
             if let Some(argument) = (self.argument_builder)(game, scope) {
-                effect(game, scope, argument)?;
+                effect(game, scope, argument);
             }
-            outcome::OK
         }));
         self.builder
     }

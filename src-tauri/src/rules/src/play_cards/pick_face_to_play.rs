@@ -31,7 +31,10 @@ use crate::queries::player_queries;
 /// restrictions and the intrinsic properties of the card layout.
 pub fn play_as(game: &GameState, source: Source, card_id: CardId) -> Vec<PlayCardPlan> {
     let mut valid_faces = vec![];
-    let card = game.card(card_id);
+    let Some(card) = game.card(card_id) else {
+        return vec![];
+    };
+
     if let Some(play) = can_play_as(game, card, &card.printed().face) {
         valid_faces.push(play);
     }

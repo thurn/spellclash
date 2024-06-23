@@ -45,7 +45,7 @@ pub fn execute(
     player: PlayerName,
     action: GameAction,
     options: ExecuteAction,
-) -> Outcome {
+) {
     if options.validate {
         assert!(
             legal_actions::can_take_action(game, player, &action) || action.is_debug_action(),
@@ -70,29 +70,22 @@ pub fn execute(
         GameAction::PassPriority => handle_pass_priority(game, player),
         GameAction::ProposePlayingCard(id) => handle_play_card(game, Source::Game, player, id),
         GameAction::CombatAction(a) => combat_actions::execute(game, player, a),
-    }?;
+    };
 
     if legal_actions::can_any_player_pass_priority(game) {
         // If any player has priority as a result of this game action, check state-based
         // actions.
-        state_based_actions::on_will_receive_priority(game)?;
+        state_based_actions::on_will_receive_priority(game);
     }
-
-    outcome::OK
 }
 
 #[instrument(level = "debug", skip(game))]
-fn handle_pass_priority(game: &mut GameState, player: PlayerName) -> Outcome {
+fn handle_pass_priority(game: &mut GameState, player: PlayerName) {
     priority::pass(game, player)
 }
 
 #[instrument(level = "debug", skip(game))]
-fn handle_play_card(
-    game: &mut GameState,
-    source: Source,
-    player: PlayerName,
-    card_id: CardId,
-) -> Outcome {
+fn handle_play_card(game: &mut GameState, source: Source, player: PlayerName, card_id: CardId) {
     debug!(?player, ?card_id, "Playing card");
-    play_card::execute(game, player, Source::Game, card_id)
+    play_card::execute(game, player, Source::Game, card_id);
 }

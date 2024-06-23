@@ -35,24 +35,7 @@ pub struct Delegate {
 }
 
 /// Function to apply the effects of of an ability to the game.
-// pub type UntargetedEffectFn =
-//     Box<dyn Fn(&mut GameState, EffectScope) -> Outcome + 'static + Send +
-// Sync>; pub type TargetedEffectFn<T> =
-//     Box<dyn Fn(&mut GameState, EffectScope, T) -> Outcome + 'static + Send +
-// Sync>; pub type MultipleTargetedEffectFn =
-//     Box<dyn Fn(&mut GameState, EffectScope, &[EntityId]) -> Outcome + 'static
-// + Send + Sync>;
-//
-// pub enum EffectFn {
-//     NoEffect,
-//     Untargeted(UntargetedEffectFn),
-//     SingleCardTarget(TargetedEffectFn<CardId>),
-//     SinglePlayerTarget(TargetedEffectFn<PlayerName>),
-//     SingleCardOrPlayerTarget(TargetedEffectFn<CardOrPlayer>),
-//     Targeted(MultipleTargetedEffectFn),
-// }
-
-pub type EffectFn = Box<dyn Fn(&mut GameState, EffectScope) -> Outcome + 'static + Send + Sync>;
+pub type EffectFn = Box<dyn Fn(&mut GameState, EffectScope) + 'static + Send + Sync>;
 
 /// Defines the game rules for an ability.
 ///

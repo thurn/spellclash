@@ -37,44 +37,43 @@ pub fn run(
     id: impl ToCardId,
     zone: Zone,
 ) -> Outcome {
-    let Some(card_id) = id.card_id(game) else {
-        return outcome::OK;
-    };
+    let card_id = id.card_id(game)?;
 
     debug!(?card_id, ?zone, "Moving card to zone");
-    let old = game.card(card_id).zone;
-    on_leave_zone(game, card_id, old);
+    let old = game.card(card_id)?.zone;
+    on_leave_zone(game, card_id, old)?;
 
     if !(old == Zone::Stack && zone == Zone::Battlefield) {
         // Control-changing effects persist from the stack to the battlefield.
-        game.card_mut(card_id).control_changing_effects.clear();
+        game.card_mut(card_id)?.control_changing_effects.clear();
     }
 
     game.zones.move_card(card_id, zone);
-    on_enter_zone(game, card_id, zone);
+    on_enter_zone(game, card_id, zone)?;
     outcome::OK
 }
 
-fn on_leave_zone(game: &mut GameState, card_id: CardId, zone: Zone) {
+fn on_leave_zone(game: &mut GameState, card_id: CardId, zone: Zone) -> Outcome {
     match zone {
         Zone::Stack => {
-            let card = game.card_mut(card_id);
+            let card = game.card_mut(card_id)?;
             card.cast_as.clear();
             card.targets.clear();
         }
         Zone::Battlefield => {
-            let card = game.card_mut(card_id);
+            let card = game.card_mut(card_id)?;
             card.tapped_state = TappedState::Untapped;
             card.damage = 0;
             card.attached_to = None;
         }
         _ => {}
     }
+    outcome::OK
 }
 
-fn on_enter_zone(game: &mut GameState, card_id: CardId, zone: Zone) {
+fn on_enter_zone(game: &mut GameState, card_id: CardId, zone: Zone) -> Outcome {
     let turn = game.turn;
-    let card = game.card_mut(card_id);
+    let card = game.card_mut(card_id)?;
     card.entered_current_zone = turn;
 
     match zone {
@@ -95,4 +94,6 @@ fn on_enter_zone(game: &mut GameState, card_id: CardId, zone: Zone) {
     if card.kind == CardKind::Token && zone != Zone::Battlefield {
         game.add_state_based_event(StateBasedEvent::TokenLeftBattlefield(card_id));
     }
+
+    outcome::OK
 }

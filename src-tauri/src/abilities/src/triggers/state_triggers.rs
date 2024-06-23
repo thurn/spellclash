@@ -42,8 +42,7 @@ pub fn when_controls_no(
         })
         .effect(move |g, s| {
             if let Some(permanent_id) = g.permanent_id_for_card(s.ability_id.card_id) {
-                mutation(g, s.source(), permanent_id)?;
+                mutation(g, s.source(), permanent_id);
             }
-            outcome::OK
         })
 }

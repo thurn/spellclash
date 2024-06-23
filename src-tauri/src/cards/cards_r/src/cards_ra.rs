@@ -28,10 +28,10 @@ pub fn ray_of_command() -> CardDefinition {
         SpellAbility::new()
             .target(targets::creature_opponent_controls())
             .effect(|g, s, target| {
-                let permanent_id = g.card(target).permanent_id().unwrap();
+                let permanent_id = g.card(target).unwrap().permanent_id().unwrap();
                 STATE.store(g, s, permanent_id);
-                permanents::untap(g, s.source(), permanent_id)?;
-                change_controller::gain_control_this_turn(g, s, target)
+                permanents::untap(g, s.source(), permanent_id);
+                change_controller::gain_control_this_turn(g, s, target);
             })
             .delegates(|d| {
                 d.can_attack_target.this(|g, s, target, current| {

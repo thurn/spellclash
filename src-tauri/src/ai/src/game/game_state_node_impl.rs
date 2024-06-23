@@ -56,8 +56,7 @@ impl GameStateNode for GameState {
         actions::execute(self, player, action.as_game_action(), ExecuteAction {
             skip_undo_tracking: true,
             validate: false,
-        })
-        .expect("Halt encountered during AI action execution");
+        });
     }
 
     fn set_agent_state(&mut self, agent_state: AgentState<Self::PlayerName, Self::Action>) {

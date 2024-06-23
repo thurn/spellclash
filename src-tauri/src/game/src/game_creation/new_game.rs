@@ -63,7 +63,7 @@ pub fn create_and_start(
     let _ = library::draw_cards(&mut game, Source::Game, PlayerName::Two, 7);
     // TODO: Resolve mulligans
     game.status = GameStatus::Playing;
-    let _ = step::advance(&mut game);
+    step::advance(&mut game);
     game
 }
 

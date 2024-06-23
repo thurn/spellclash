@@ -21,7 +21,9 @@ use utils::outcome::Outcome;
 
 /// Marks a card as applying an effect to the given target card until the end of
 /// the current turn.
-pub fn this_turn(game: &mut GameState, scope: EffectScope, target: CardId) -> Outcome {
-    game.ability_state.this_turn.add_effect(scope, game.card(target).entity_id);
-    outcome::OK
+pub fn this_turn(game: &mut GameState, scope: EffectScope, target: CardId) {
+    outcome::execute(|| {
+        game.ability_state.this_turn.add_effect(scope, game.card(target)?.entity_id);
+        outcome::OK
+    });
 }

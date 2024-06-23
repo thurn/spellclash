@@ -30,7 +30,7 @@ use crate::prompt_handling::prompts;
 use crate::queries::card_queries;
 
 #[instrument(level = "debug", skip(game))]
-pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction) -> Outcome {
+pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction) {
     match action {
         DebugGameAction::Undo => {
             debug!(?player, "(Debug) Undoing last action");
@@ -43,30 +43,32 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction
             *game = *previous;
         }
         DebugGameAction::SetLifeTotal(target) => {
-            let amount =
-                prompts::pick_number(game, player, Text::SelectNumber, PickNumberPrompt {
-                    minimum: 0,
-                    maximum: 20,
-                })?;
+            let amount = prompts::pick_number(game, player, Text::SelectNumber, PickNumberPrompt {
+                minimum: 0,
+                maximum: 20,
+            });
             debug!(?target, ?amount, "(Debug) Setting life total");
-            players::set_life_total(game, Source::Game, target, amount as LifeValue)?;
+            players::set_life_total(game, Source::Game, target, amount as LifeValue);
         }
         DebugGameAction::RevealHand(target) => {
             for card_id in game.hand(target).clone() {
-                game.card_mut(card_id).revealed_to.insert(player);
+                outcome::execute(|| {
+                    let card = game.card_mut(card_id)?;
+                    card.revealed_to.insert(player);
+                    outcome::OK
+                });
             }
         }
         DebugGameAction::DestroyAllLands(target) => {
             for permanent_id in game.battlefield(target).clone() {
-                let Some(card_id) = game.card_id_for_permanent(permanent_id) else {
-                    continue;
-                };
-                if card_queries::card_types(game, card_id).contains(CardType::Land) {
-                    move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
-                }
+                outcome::execute(|| {
+                    let card_id = game.card_id_for_permanent(permanent_id)?;
+                    if card_queries::card_types(game, card_id)?.contains(CardType::Land) {
+                        move_card::run(game, Source::Game, card_id, Zone::Graveyard)?;
+                    }
+                    outcome::OK
+                });
             }
         }
     }
-
-    outcome::OK
 }

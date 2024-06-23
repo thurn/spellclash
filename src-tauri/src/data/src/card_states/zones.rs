@@ -22,6 +22,8 @@ use rand::prelude::SliceRandom;
 use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};
 use slotmap::SlotMap;
+use utils::outcome;
+use utils::outcome::{Outcome, Success};
 
 use crate::card_definitions::card_name::CardName;
 use crate::card_states::card_kind::CardKind;
@@ -147,7 +149,7 @@ pub trait ZoneQueries {
 }
 
 /// Identifies a struct that can be converted into a [CardId].
-pub trait ToCardId: Copy {
+pub trait ToCardId: Copy + Debug {
     fn card_id(&self, zones: &impl HasZones) -> Option<CardId>;
 }
 
@@ -457,7 +459,7 @@ impl Zones {
     /// The card is added as the top card of the target zone if it is ordered.
     ///
     /// Returns None if this card was not found in the previous zone.
-    pub fn move_card(&mut self, id: impl ToCardId, zone: Zone) -> Option<()> {
+    pub fn move_card(&mut self, id: impl ToCardId, zone: Zone) -> Outcome {
         let card = self.card_mut(id)?;
         let card_id = card.id;
         let old_zone = card.zone;
@@ -468,7 +470,7 @@ impl Zones {
         card.zone = zone;
         card.entity_id = entity_id;
         self.add_to_zone(owner, card_id, zone);
-        Some(())
+        outcome::OK
     }
 
     /// Adds a list of items to the top of the stack in the given order.

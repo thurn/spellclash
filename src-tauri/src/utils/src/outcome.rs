@@ -17,18 +17,40 @@ pub enum HaltCondition {
     Cancel,
 }
 
-/// Provides the ability to halt the rules engine during execution in order to
-/// cancel a selected user action.
-pub type Outcome = Result<(), HaltCondition>;
+/// Marker struct indicating that an operation applied its effects successfully.
+///
+/// Typically, effect functions will return None if they are unable to apply
+/// their operation (e.g. because the card in question no longer exists) and
+/// Some(Success) if the operation occurred successfully.
+pub struct Success;
 
-/// Outcome which wraps a return value
-pub type PromptResult<T> = Result<T, HaltCondition>;
+/// The result of an operation which may not apply its effects.
+///
+/// This return type should only be used for low-level mutations which perform a
+/// single atomic change to game state like "move a card" or "tap a permanent".
+/// Anything involving larger steps like "untap your lands" or "assign combat
+/// damage" should *not* employ this system, as generally those operations are
+/// expected to continue even if some constituent part is missing.
+///
+/// For convenience in those cases, you can wrap individual blocks of logic in
+/// the [execute] function to have them apply atomically. This is often used in
+/// the bodies of for loops.
+pub type Outcome = Option<Success>;
 
-/// Outcome which wraps a return value
-pub type OutcomeWithResult<T> = Result<T, HaltCondition>;
+/// A constant representing a successful outcome.
+pub const OK: Outcome = Some(Success);
 
-/// Continue execution.
-pub const OK: Outcome = Ok(());
+/// A constant representing a skipped outcome.
+pub const SKIPPED: Outcome = None;
 
-/// Cancel the current user action.
-pub const CANCEL: Outcome = Err(HaltCondition::Cancel);
+pub trait IsSuccess {
+    fn is_success(&self) -> bool;
+}
+
+/// Executes a function and returns its outcome.
+///
+/// Used to create a block of code which should return early if an output is
+/// skipped.
+pub fn execute(mut function: impl FnMut() -> Outcome) -> Outcome {
+    function()
+}

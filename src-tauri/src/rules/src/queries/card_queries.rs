@@ -29,7 +29,7 @@ use either::Either;
 use enumset::EnumSet;
 
 /// Returns the list of [PrintedCardFace]s for a card which currently define its
-/// characteristics.
+/// characteristics. Returns None if this card no longer exists.
 ///
 /// - If this card is on the battlefield, this is the face-up face of the card.
 ///
@@ -88,53 +88,56 @@ use enumset::EnumSet;
 ///   > or permanent to be face down.
 ///
 ///   <https://yawgatog.com/resources/magic-rules/#R7082>
-pub fn characteristic_faces(game: &GameState, card_id: impl ToCardId) -> Vec<&PrintedCardFace> {
-    let card = game.card(card_id);
-    match card.zone {
+pub fn characteristic_faces(game: &GameState, id: impl ToCardId) -> Option<Vec<&PrintedCardFace>> {
+    let card = game.card(id)?;
+    Some(match card.zone {
         Zone::Battlefield => card.face_up_printed_face().map_or_else(Vec::new, |face| vec![face]),
         Zone::Stack => card.cast_as.iter().map(|face| card.printed().face(face)).collect(),
         _ => match card.printed().layout {
             CardLayout::Split | CardLayout::Aftermath => card.printed().all_faces().collect(),
             _ => vec![&card.printed().face],
         },
-    }
+    })
 }
 
 /// Returns the set of current card types on a card's characteristic faces.
+/// Returns None if this card no longer exists.
 ///
 /// See [characteristic_faces] for more information.
-pub fn card_types(game: &GameState, card_id: impl ToCardId) -> EnumSet<CardType> {
-    characteristic_faces(game, card_id).iter().flat_map(|face| face.card_types.iter()).collect()
+pub fn card_types(game: &GameState, id: impl ToCardId) -> Option<EnumSet<CardType>> {
+    Some(characteristic_faces(game, id)?.iter().flat_map(|face| face.card_types.iter()).collect())
 }
 
 /// Returns the set of current land subtypes on a card's characteristic faces.
+/// Returns None if this card no longer exists.
 ///
 /// See [characteristic_faces] for more information.
-pub fn land_subtypes(game: &GameState, card_id: impl ToCardId) -> EnumSet<LandSubtype> {
-    characteristic_faces(game, card_id).iter().flat_map(|face| face.subtypes.land.iter()).collect()
+pub fn land_subtypes(game: &GameState, id: impl ToCardId) -> Option<EnumSet<LandSubtype>> {
+    Some(
+        characteristic_faces(game, id)?.iter().flat_map(|face| face.subtypes.land.iter()).collect(),
+    )
 }
 
 /// Returns the current [ManaCost] that needs to be paid to cast the [CardId]
 /// card using the provided [PlayCardPlan]. Cost items are sorted in
-/// [ManaCostItem] order.
-///
-/// Panics if invalid choices are selected, e.g. if the selected card
-/// face does not exist.
+/// [ManaCostItem] order. Returns None if this card no longer exists.
 pub fn mana_cost_for_casting_card(
     game: &GameState,
-    card_id: CardId,
+    id: CardId,
     plan: &PlayCardPlan,
-) -> ManaCost {
-    let mut cost = game.card(card_id).printed().face(plan.play_as.single_face()).mana_cost.clone();
+) -> Option<ManaCost> {
+    let mut cost = game.card(id)?.printed().face(plan.play_as.single_face()).mana_cost.clone();
     cost.items.sort();
-    cost
+    Some(cost)
 }
 
-/// Computes the current power on a card's characteristic faces.
+/// Computes the current power on a card's characteristic faces. Returns None if
+/// this card no longer exists.
 ///
 /// See [characteristic_faces] for more information.
-pub fn power(game: &GameState, card_id: CardId) -> Power {
-    let characteristic = characteristic_faces(game, card_id);
+pub fn power(game: &GameState, id: impl ToCardId) -> Option<Power> {
+    let card_id = id.card_id(game)?;
+    let characteristic = characteristic_faces(game, card_id)?;
     let result = match characteristic[..] {
         [] => {
             // > 708.2a. If a face-up permanent is turned face down by a spell or ability that
@@ -150,14 +153,16 @@ pub fn power(game: &GameState, card_id: CardId) -> Power {
         _ => panic!("Cannot compute power for card with multiple active faces"),
     };
 
-    game.delegates.power.query(game, &card_id, result)
+    Some(game.delegates.power.query(game, &card_id, result))
 }
 
-/// Computes the current toughness on card's characteristic faces.
+/// Computes the current toughness on card's characteristic faces. Returns None
+/// if this card no longer exists.
 ///
 /// See [characteristic_faces] for more information.
-pub fn toughness(game: &GameState, card_id: impl ToCardId) -> Toughness {
-    let characteristic = characteristic_faces(game, card_id);
+pub fn toughness(game: &GameState, id: impl ToCardId) -> Option<Toughness> {
+    let card_id = id.card_id(game)?;
+    let characteristic = characteristic_faces(game, card_id)?;
     let result = match characteristic[..] {
         [] => {
             // > 708.2a. If a face-up permanent is turned face down by a spell or ability that
@@ -173,9 +178,5 @@ pub fn toughness(game: &GameState, card_id: impl ToCardId) -> Toughness {
         _ => panic!("Cannot compute toughness for card with multiple active faces"),
     };
 
-    if let Some(card_id) = card_id.card_id(game) {
-        game.delegates.toughness.query(game, &card_id, result)
-    } else {
-        result
-    }
+    Some(game.delegates.toughness.query(game, &card_id, result))
 }
