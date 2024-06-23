@@ -195,6 +195,21 @@ impl HasEntityId for EntityId {
     }
 }
 
+impl ToCardId for EntityId {
+    fn card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+        match self {
+            EntityId::Card(card_id, object_id) => {
+                if zones.zones().card(*card_id)?.object_id() == *object_id {
+                    Some(*card_id)
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    }
+}
+
 impl HasEntityId for PlayerName {
     fn entity_id(&self) -> EntityId {
         match self {

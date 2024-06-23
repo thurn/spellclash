@@ -26,6 +26,8 @@ use utils::outcome::Outcome;
 use crate::mutations::move_card;
 
 /// Turns the [Face] face of this card up and reveals it to all players.
+///
+/// Returns None if this card does not exist.
 pub fn turn_face_up(
     game: &mut GameState,
     _source: Source,
@@ -39,6 +41,8 @@ pub fn turn_face_up(
 }
 
 /// Taps a permanent.
+///
+/// Returns None if this card does not exist.
 pub fn tap(game: &mut GameState, _source: Source, id: impl ToCardId) -> Outcome {
     let card = game.card_mut(id)?;
     card.tapped_state = TappedState::Tapped;
@@ -46,6 +50,8 @@ pub fn tap(game: &mut GameState, _source: Source, id: impl ToCardId) -> Outcome 
 }
 
 /// Untaps a permanent
+///
+/// Returns None if this card does not exist.
 pub fn untap(game: &mut GameState, _source: Source, id: impl ToCardId) -> Outcome {
     let card = game.card_mut(id)?;
     card.tapped_state = TappedState::Untapped;
@@ -53,6 +59,8 @@ pub fn untap(game: &mut GameState, _source: Source, id: impl ToCardId) -> Outcom
 }
 
 /// Deals damage to a permanent
+///
+/// Returns None if this card does not exist.
 pub fn deal_damage(
     game: &mut GameState,
     source: Source,
@@ -68,6 +76,8 @@ pub fn deal_damage(
 }
 
 /// Sacrifices a permanent.
+///
+/// Returns None if this card does not exist.
 pub fn sacrifice(game: &mut GameState, source: Source, id: impl ToCardId) -> Outcome {
     move_card::run(game, source, id, Zone::Graveyard)
 }
