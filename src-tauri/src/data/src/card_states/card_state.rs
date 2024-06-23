@@ -27,8 +27,8 @@ use crate::card_states::zones::Zones;
 use crate::card_states::zones::{HasZones, ToCardId};
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
-    AbilityId, CardId, EffectId, EntityId, HasController, HasEntityId, HasPlayerName, ObjectId,
-    PermanentId, PlayerName, Zone,
+    AbilityId, CardId, EffectId, EntityId, HasController, HasPlayerName, ObjectId, PermanentId,
+    PlayerName, Zone,
 };
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::{GameState, TurnData};
@@ -48,16 +48,16 @@ pub struct CardState {
     /// Unique identifier for this card in the [Zones] struct.
     pub id: CardId,
 
-    /// Entity ID for this card. Cards receive an Entity ID when they are
+    /// Object ID for this card. Cards receive an Entity ID when they are
     /// created and then get a new one every time they change zones.
     ///
     /// In most typical game situations the rules only 'remember' effects that
     /// happen to a specific object, e.g. if you exile a card and return it to
-    /// the battlefield it gets a new entity ID and effects targeting it will
+    /// the battlefield it gets a new object ID and effects targeting it will
     /// end.
     ///
     /// Do not mutate this field directly, use the `move_card` module instead.
-    pub entity_id: EntityId,
+    pub object_id: ObjectId,
 
     /// Identifier for this card within the rules of the game.
     ///
@@ -170,29 +170,20 @@ pub struct CardState {
 }
 
 impl CardState {
-    /// Returns the [ObjectId] for this card.
+    /// Returns the [EntityId] for this card.
     ///
     /// Panics if this card was assigned an invalid entity id.
-    pub fn object_id(&self) -> ObjectId {
-        match self.entity_id {
-            EntityId::Card(_, id) => id,
-            _ => panic!("Card was assigned an invalid entity id"),
-        }
+    pub fn entity_id(&self) -> EntityId {
+        EntityId::Card(self.id, self.object_id)
     }
 
     /// Returns this card's [PermanentId] if it is on the battlefield.
     pub fn permanent_id(&self) -> Option<PermanentId> {
         if self.zone == Zone::Battlefield {
-            Some(PermanentId::new(self.object_id(), self.id))
+            Some(PermanentId::new(self.object_id, self.id))
         } else {
             None
         }
-    }
-}
-
-impl HasEntityId for CardState {
-    fn entity_id(&self) -> EntityId {
-        self.entity_id
     }
 }
 

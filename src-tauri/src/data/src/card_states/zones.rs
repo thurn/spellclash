@@ -32,7 +32,6 @@ use crate::card_states::card_state::{CardFacing, CardState, TappedState};
 use crate::card_states::counters::Counters;
 use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::card_states::stack_ability_state::StackAbilityState;
-use crate::core::function_types::ScopedCardPredicate;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
     AbilityId, CardId, EntityId, HasController, HasPlayerName, HasSource, ObjectId, PermanentId,
@@ -113,33 +112,6 @@ impl ToCardId for CardId {
 
 pub trait HasZones {
     fn zones(&self) -> &Zones;
-}
-
-pub trait IterMatchingScope<
-    TId: ToCardId,
-    TScope: Scope + 'static,
-    TFn: ScopedCardPredicate<TId, TScope>,
->
-{
-    fn iter_matching_scoped<'a>(
-        &'a self,
-        game: &'a GameState,
-        scope: TScope,
-        predicate: TFn,
-    ) -> impl Iterator<Item = TId> + 'a;
-}
-
-impl<TId: ToCardId, TScope: Scope + 'static, TFn: ScopedCardPredicate<TId, TScope>>
-    IterMatchingScope<TId, TScope, TFn> for HashSet<TId>
-{
-    fn iter_matching_scoped<'a>(
-        &'a self,
-        game: &'a GameState,
-        scope: TScope,
-        predicate: TFn,
-    ) -> impl Iterator<Item = TId> + 'a {
-        self.iter().filter(move |&&id| predicate(game, scope, id) == Some(true)).copied()
-    }
 }
 
 /// Stores the state & position of all cards and card-like objects
@@ -280,7 +252,7 @@ impl Zones {
     ) -> &CardState {
         let id = self.all_cards.insert(CardState {
             id: CardId::default(),
-            entity_id: EntityId::Card(CardId::default(), ObjectId(0)),
+            object_id: ObjectId(0),
             card_name: reference.printed_card_reference.name,
             printed_card_id: reference.identifier,
             kind,
@@ -302,11 +274,11 @@ impl Zones {
         });
 
         self.add_to_zone(owner, id, Zone::Library);
-        let entity_id = self.new_card_entity_id(id);
+        let object_id = self.new_object_id();
 
         let card = &mut self.all_cards[id];
         card.id = id;
-        card.entity_id = entity_id;
+        card.object_id = object_id;
         card
     }
 
@@ -356,7 +328,8 @@ impl Zones {
     }
 
     /// Moves a card to a new zone, updates indices, and assigns a new
-    /// [EntityId] to it.
+    /// [ObjectId] to it. Do not call this method directly, use the `move_card`
+    /// module instead.
     ///
     /// The card is added as the top card of the target zone if it is ordered.
     ///
@@ -367,10 +340,10 @@ impl Zones {
         let old_zone = card.zone;
         let owner = card.owner;
         self.remove_from_zone(owner, card_id, old_zone);
-        let entity_id = self.new_card_entity_id(card_id);
+        let object_id = self.new_object_id();
         let card = self.card_mut(card_id).expect("Card not found");
         card.zone = zone;
-        card.entity_id = entity_id;
+        card.object_id = object_id;
         self.add_to_zone(owner, card_id, zone);
         outcome::OK
     }
@@ -514,10 +487,6 @@ impl Zones {
         let result = self.next_object_id;
         self.next_object_id = ObjectId(result.0 + 1);
         result
-    }
-
-    fn new_card_entity_id(&mut self, card_id: CardId) -> EntityId {
-        EntityId::Card(card_id, self.new_object_id())
     }
 }
 

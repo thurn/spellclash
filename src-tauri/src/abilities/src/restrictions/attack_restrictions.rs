@@ -16,7 +16,7 @@ use data::card_definitions::ability_definition::{
     AbilityBuilder, AbilityDelegateBuilder, StaticAbility,
 };
 use data::card_states::zones::{ToCardId, ZoneQueries};
-use data::core::function_types::{PermanentPredicate, ScopedCardPredicate};
+use data::core::function_types::CardPredicate;
 use data::core::primitives::{CardId, PermanentId, Zone};
 use data::delegates::game_delegates::GameDelegates;
 use data::delegates::scope::DelegateScope;
@@ -25,7 +25,7 @@ use rules::queries::combat_queries;
 /// Prevent this creature from attacking unless the defending player controls a
 /// permanent matching the given predicate.
 pub fn cannot_attack_unless_defender_controls(
-    predicate: impl ScopedCardPredicate<PermanentId, DelegateScope>,
+    predicate: impl CardPredicate<PermanentId>,
 ) -> impl AbilityBuilder {
     StaticAbility::new().delegates(move |d| {
         d.can_attack_target.this(move |g, s, data, current| {
@@ -33,7 +33,7 @@ pub fn cannot_attack_unless_defender_controls(
                 s,
                 g.battlefield(data.target.defending_player())
                     .iter()
-                    .any(|&id| predicate(g, s, id) == Some(true)),
+                    .any(|&id| predicate(g, id) == Some(true)),
             )
         })
     })

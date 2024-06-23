@@ -20,6 +20,10 @@ use data::printed_cards::card_subtypes::LandSubtype;
 
 use crate::queries::card_queries;
 
+pub fn creature(game: &GameState, id: impl ToCardId) -> Option<bool> {
+    Some(card_queries::card_types(game, id)?.contains(CardType::Creature))
+}
+
 pub fn planeswalker(game: &GameState, id: impl ToCardId) -> Option<bool> {
     Some(card_queries::card_types(game, id)?.contains(CardType::Planeswalker))
 }
@@ -28,6 +32,6 @@ pub fn battle(game: &GameState, id: impl ToCardId) -> Option<bool> {
     Some(card_queries::card_types(game, id)?.contains(CardType::Battle))
 }
 
-pub fn island(game: &GameState, _: DelegateScope, id: impl ToCardId) -> Option<bool> {
+pub fn island(game: &GameState, id: impl ToCardId) -> Option<bool> {
     Some(card_queries::land_subtypes(game, id)?.contains(LandSubtype::Island))
 }

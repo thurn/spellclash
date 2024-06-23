@@ -23,7 +23,7 @@ use data::card_definitions::definitions;
 use data::card_states::play_card_plan::{PlayAs, PlayCardPlan, PlayCardTiming};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{
-    AbilityId, CardId, EntityId, HasController, HasEntityId, PlayerName, Source, Zone,
+    AbilityId, CardId, EntityId, HasController, PlayerName, Source, Zone,
 };
 use data::delegates::has_delegates::HasDelegates;
 use data::delegates::scope::DelegateScope;
@@ -198,18 +198,15 @@ fn valid_targets<'a>(
 ) -> Box<dyn Iterator<Item = EntityId> + 'a> {
     match target {
         AbilityTargetPredicate::Card(data) => valid_card_targets(game, scope, data),
-        AbilityTargetPredicate::Player(data) => valid_player_targets(game, scope, data),
+        AbilityTargetPredicate::Player(data) => valid_player_targets(game, data),
         AbilityTargetPredicate::CardOrPlayer(data) => Box::new(
-            valid_card_targets(game, scope, &data.card_target).chain(valid_player_targets(
-                game,
-                scope,
-                &data.player_target,
-            )),
+            valid_card_targets(game, scope, &data.card_target)
+                .chain(valid_player_targets(game, &data.player_target)),
         ),
         AbilityTargetPredicate::StackAbility(predicate) => Box::new(
             game.zones
                 .abilities_on_stack()
-                .filter(move |&ability_id| predicate(game, scope, ability_id))
+                .filter_some(move |&ability_id| predicate(game, ability_id))
                 .map(EntityId::StackAbility),
         ),
         AbilityTargetPredicate::AnyOf(predicate_list) => Box::new(
@@ -232,21 +229,20 @@ fn valid_card_targets<'a>(
                     .iter()
                     .flat_map(move |player| game.zones.cards_in_zone(zone, player))
             })
-            .filter_some(move |&card_id| (target.predicate)(game, scope, card_id))
-            .filter_map(|card_id| Some(game.card(card_id)?.entity_id)),
+            .filter_some(move |&card_id| (target.predicate)(game, card_id))
+            .filter_map(|card_id| Some(game.card(card_id)?.entity_id())),
     )
 }
 
 fn valid_player_targets<'a>(
     game: &'a GameState,
-    scope: DelegateScope,
     target: &'a PlayerAbilityTarget,
 ) -> Box<dyn Iterator<Item = EntityId> + 'a> {
     Box::new(
         target
             .players
             .iter()
-            .filter(move |&player| (target.predicate)(game, scope, player))
+            .filter(move |&player| (target.predicate)(game, player))
             .map(|player| player.entity_id()),
     )
 }

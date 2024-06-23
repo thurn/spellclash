@@ -47,7 +47,7 @@ impl<TArg: ToCardId, TResult> QueryExt<TArg, TResult>
             + 'static,
     ) {
         self.any(move |g, s, arg, mut result| {
-            let Some(entity_id) = g.card(*arg).map(|c| c.entity_id) else {
+            let Some(entity_id) = g.card(*arg).map(|c| c.entity_id()) else {
                 return result;
             };
             for _ in 0..g.ability_state.this_turn.effect_count(s.ability_id, entity_id) {

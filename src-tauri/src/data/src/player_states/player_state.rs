@@ -16,9 +16,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::card_states::counters::Counters;
 use crate::core::numerics::LifeValue;
-use crate::core::primitives::{
-    CardId, EntityId, HasController, HasEntityId, HasPlayerName, PlayerName, UserId,
-};
+use crate::core::primitives::{CardId, EntityId, HasController, HasPlayerName, PlayerName, UserId};
 use crate::player_states::game_agent::{GameAgent, GameAgentImpl, PromptAgentImpl};
 use crate::player_states::mana_pool::ManaPool;
 use crate::player_states::player_options::PlayerOptions;
@@ -163,12 +161,6 @@ impl PlayerState {
             PlayerType::Agent(agent) => agent.prompt_agent_reference.clone(),
             _ => None,
         }
-    }
-}
-
-impl HasEntityId for PlayerState {
-    fn entity_id(&self) -> EntityId {
-        self.entity_id
     }
 }
 

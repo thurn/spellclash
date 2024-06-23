@@ -129,7 +129,7 @@ fn prompt_card_status(
     card: &CardState,
 ) -> Option<RevealedCardStatus> {
     if let PromptType::EntityChoice(choice) = &prompt.prompt_type {
-        if choice.choices.iter().any(|c| c.entity_id == card.entity_id) {
+        if choice.choices.iter().any(|c| c.entity_id == card.entity_id()) {
             return Some(RevealedCardStatus::CanSelect);
         }
     }
@@ -198,8 +198,8 @@ fn prompt_card_action(
     card: &CardState,
 ) -> Option<UserAction> {
     if let PromptType::EntityChoice(choice) = &prompt.prompt_type {
-        if choice.choices.iter().any(|c| c.entity_id == card.entity_id) {
-            return Some(PromptAction::SelectEntity(card.entity_id).into());
+        if choice.choices.iter().any(|c| c.entity_id == card.entity_id()) {
+            return Some(PromptAction::SelectEntity(card.entity_id()).into());
         }
     }
     None

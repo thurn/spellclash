@@ -18,8 +18,7 @@ use serde::{Deserialize, Serialize};
 use crate::card_states::zones::Zones;
 use crate::card_states::zones::{HasZones, ToCardId};
 use crate::core::primitives::{
-    AbilityId, CardId, EntityId, HasController, HasEntityId, HasPlayerName, ObjectId, PlayerName,
-    StackAbilityId,
+    AbilityId, CardId, EntityId, HasController, HasPlayerName, ObjectId, PlayerName, StackAbilityId,
 };
 use crate::delegates::scope::DelegateScope;
 use crate::game_states::game_state::GameState;
@@ -34,8 +33,7 @@ pub struct StackAbilityState {
     /// Identifies this ability within its parent card's oracle text.
     pub ability_id: AbilityId,
 
-    /// Identifier for the ability within its zone, used to implement sorting
-    /// order.
+    /// Identifier for the ability within its zone
     pub object_id: ObjectId,
 
     /// True if this ability has been placed on the stack.
@@ -53,12 +51,6 @@ pub struct StackAbilityState {
 
     /// Targets for this ability, selected when it is placed on the stack.
     pub targets: Vec<EntityId>,
-}
-
-impl HasEntityId for StackAbilityState {
-    fn entity_id(&self) -> EntityId {
-        EntityId::StackAbility(self.id)
-    }
 }
 
 impl HasPlayerName for StackAbilityState {

@@ -19,9 +19,7 @@ use utils::outcome::Outcome;
 use crate::card_definitions::ability_definition::EffectFn;
 use crate::card_states::card_state::CardState;
 use crate::card_states::zones::{ToCardId, ZoneQueries};
-use crate::core::function_types::{
-    PlayerPredicateFn, ScopedCardPredicateFn, StackAbilityPredicateFn,
-};
+use crate::core::function_types::{CardPredicateFn, PlayerPredicateFn, StackAbilityPredicateFn};
 use crate::core::primitives::{CardId, EntityId, PlayerName, StackItemId, Zone};
 use crate::delegates::scope::{DelegateScope, EffectScope};
 use crate::game_states::game_state::GameState;
@@ -91,7 +89,7 @@ pub struct CardAbilityTarget {
     pub players: PlayerSet,
 
     /// Predicate that must be satisfied by the selected card
-    pub predicate: ScopedCardPredicateFn<CardId, DelegateScope>,
+    pub predicate: CardPredicateFn<CardId>,
 }
 
 pub struct PlayerAbilityTarget {

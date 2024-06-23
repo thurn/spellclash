@@ -15,7 +15,7 @@
 use std::collections::HashSet;
 
 use crate::card_states::zones::ToCardId;
-use crate::core::function_types::{CardPredicate, ScopedCardPredicate};
+use crate::core::function_types::CardPredicate;
 use crate::delegates::scope::Scope;
 use crate::game_states::game_state::GameState;
 
@@ -25,6 +25,10 @@ pub trait IterMatching<TId: ToCardId, TFn: CardPredicate<TId>> {
         game: &'a GameState,
         predicate: TFn,
     ) -> impl Iterator<Item = TId> + 'a;
+
+    fn any_matching<'a>(&'a self, game: &'a GameState, predicate: TFn) -> bool {
+        self.iter_matching(game, predicate).next().is_some()
+    }
 }
 
 impl<TId: ToCardId, TFn: CardPredicate<TId>> IterMatching<TId, TFn> for HashSet<TId> {
@@ -34,32 +38,5 @@ impl<TId: ToCardId, TFn: CardPredicate<TId>> IterMatching<TId, TFn> for HashSet<
         predicate: TFn,
     ) -> impl Iterator<Item = TId> + 'a {
         self.iter().filter(move |&&id| predicate(game, id) == Some(true)).copied()
-    }
-}
-
-pub trait IterMatchingScoped<
-    TId: ToCardId,
-    TScope: Scope + 'static,
-    TFn: ScopedCardPredicate<TId, TScope>,
->
-{
-    fn iter_matching_scoped<'a>(
-        &'a self,
-        game: &'a GameState,
-        scope: TScope,
-        predicate: TFn,
-    ) -> impl Iterator<Item = TId> + 'a;
-}
-
-impl<TId: ToCardId, TScope: Scope + 'static, TFn: ScopedCardPredicate<TId, TScope>>
-    IterMatchingScoped<TId, TScope, TFn> for HashSet<TId>
-{
-    fn iter_matching_scoped<'a>(
-        &'a self,
-        game: &'a GameState,
-        scope: TScope,
-        predicate: TFn,
-    ) -> impl Iterator<Item = TId> + 'a {
-        self.iter().filter(move |&&id| predicate(game, scope, id) == Some(true)).copied()
     }
 }

@@ -112,6 +112,12 @@ pub enum PlayerName {
     Four,
 }
 
+impl PlayerName {
+    pub fn entity_id(&self) -> EntityId {
+        EntityId::Player(*self)
+    }
+}
+
 pub const ALL_POSSIBLE_PLAYERS: EnumSet<PlayerName> = EnumSet::ALL;
 
 /// Identifies a struct that is 1:1 associated with a given [PlayerName].
@@ -185,38 +191,17 @@ pub const PLAYER_TWO_ID: EntityId = EntityId::Player(PlayerName::Two);
 pub const PLAYER_THREE_ID: EntityId = EntityId::Player(PlayerName::Three);
 pub const PLAYER_FOUR_ID: EntityId = EntityId::Player(PlayerName::Four);
 
-pub trait HasEntityId {
-    fn entity_id(&self) -> EntityId;
-}
-
-impl HasEntityId for EntityId {
-    fn entity_id(&self) -> EntityId {
-        *self
-    }
-}
-
 impl ToCardId for EntityId {
     fn card_id(&self, zones: &impl HasZones) -> Option<CardId> {
         match self {
             EntityId::Card(card_id, object_id) => {
-                if zones.zones().card(*card_id)?.object_id() == *object_id {
+                if zones.zones().card(*card_id)?.object_id == *object_id {
                     Some(*card_id)
                 } else {
                     None
                 }
             }
             _ => None,
-        }
-    }
-}
-
-impl HasEntityId for PlayerName {
-    fn entity_id(&self) -> EntityId {
-        match self {
-            PlayerName::One => PLAYER_ONE_ID,
-            PlayerName::Two => PLAYER_TWO_ID,
-            PlayerName::Three => PLAYER_THREE_ID,
-            PlayerName::Four => PLAYER_FOUR_ID,
         }
     }
 }
@@ -251,11 +236,6 @@ impl ObjectId {
 )]
 pub struct PermanentId {
     object_id: ObjectId,
-
-    /// The underlying [CardId] for this permanent.
-    ///
-    /// Do not access this field directly, you must first validate that this
-    /// permanent ID still exists.
     internal_card_id: CardId,
 }
 
@@ -267,7 +247,7 @@ impl PermanentId {
 
 impl ToCardId for PermanentId {
     fn card_id(&self, zones: &impl HasZones) -> Option<CardId> {
-        if zones.zones().card(self.internal_card_id)?.object_id() == self.object_id {
+        if zones.zones().card(self.internal_card_id)?.object_id == self.object_id {
             Some(self.internal_card_id)
         } else {
             None
