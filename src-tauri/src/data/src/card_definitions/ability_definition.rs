@@ -16,7 +16,7 @@ use enumset::EnumSet;
 use utils::outcome::Outcome;
 
 use crate::card_definitions::ability_choices::{
-    AbilityChoiceBuilder, AbilityChoices, CardOrPlayer,
+    AbilityChoiceBuilder, AbilityChoices, PermanentOrPlayer,
 };
 use crate::core::primitives::{CardId, EntityId, PlayerName, Zone, ALL_ZONES};
 use crate::costs::cost::Cost;

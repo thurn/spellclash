@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_definitions::ability_choices::{CardAbilityTarget, PlayerSet};
+use data::card_definitions::ability_choices::{AbilityTargetPermanent, PlayerSet};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardType, HasController, Zone, ALL_POSSIBLE_PLAYERS};
 use data::delegates::scope::DelegateScope;
@@ -22,18 +22,16 @@ use rules::predicates::card_predicates;
 use rules::queries::{card_queries, player_queries};
 
 /// Target any creature on the battlefield
-pub fn creature() -> CardAbilityTarget {
-    CardAbilityTarget {
-        zones: EnumSet::only(Zone::Battlefield),
+pub fn creature() -> AbilityTargetPermanent {
+    AbilityTargetPermanent {
         players: PlayerSet::AllPlayers,
         predicate: Box::new(card_predicates::creature),
     }
 }
 
 /// Target a creature an opponent controls
-pub fn creature_opponent_controls() -> CardAbilityTarget {
-    CardAbilityTarget {
-        zones: EnumSet::only(Zone::Battlefield),
+pub fn creature_opponent_controls() -> AbilityTargetPermanent {
+    AbilityTargetPermanent {
         players: PlayerSet::Opponents,
         predicate: Box::new(card_predicates::creature),
     }

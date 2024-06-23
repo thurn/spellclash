@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_definitions::ability_choices::CardOrPlayer;
+use data::card_definitions::ability_choices::PermanentOrPlayer;
 use data::card_definitions::ability_definition::EffectFn;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{

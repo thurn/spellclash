@@ -17,7 +17,6 @@ use data::card_definitions::ability_choices::AbilityChoiceBuilder;
 use data::card_definitions::ability_definition::{AbilityDelegateBuilder, SpellAbility};
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{HasSource, PermanentId};
 use data::game_states::effect_state::EffectState;
 use rules::mutations::{change_controller, permanents};
@@ -28,9 +27,8 @@ pub fn ray_of_command() -> CardDefinition {
         SpellAbility::new()
             .target(targets::creature_opponent_controls())
             .effect(|g, s, target| {
-                let permanent_id = g.card(target).unwrap().permanent_id().unwrap();
-                STATE.store(g, s, permanent_id);
-                permanents::untap(g, s.source(), permanent_id);
+                STATE.store(g, s, target);
+                permanents::untap(g, s.source(), target);
                 change_controller::gain_control_this_turn(g, s, target);
             })
             .delegates(|d| {

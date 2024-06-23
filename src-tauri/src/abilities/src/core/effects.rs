@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::CardId;
+use data::core::primitives::{CardId, PermanentId};
 use data::delegates::scope::{DelegateScope, EffectScope};
 use data::game_states::game_state::GameState;
 use utils::outcome;
@@ -21,9 +21,6 @@ use utils::outcome::Outcome;
 
 /// Marks a card as applying an effect to the given target card until the end of
 /// the current turn.
-pub fn this_turn(game: &mut GameState, scope: EffectScope, target: CardId) {
-    outcome::execute(|| {
-        game.ability_state.this_turn.add_effect(scope, game.card(target)?.entity_id());
-        outcome::OK
-    });
+pub fn this_turn(game: &mut GameState, scope: EffectScope, target: PermanentId) {
+    game.ability_state.this_turn.add_effect(scope, target.to_entity_id());
 }

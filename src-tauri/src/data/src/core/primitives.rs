@@ -243,6 +243,10 @@ impl PermanentId {
     pub fn new(object_id: ObjectId, internal_card_id: CardId) -> Self {
         Self { object_id, internal_card_id }
     }
+
+    pub fn to_entity_id(&self) -> EntityId {
+        EntityId::Card(self.internal_card_id, self.object_id)
+    }
 }
 
 impl ToCardId for PermanentId {

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use data::card_states::card_state::ControlChangingEffect;
-use data::card_states::zones::ZoneQueries;
+use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::primitives::{AbilityId, CardId, EffectId, HasController, HasSource, PlayerName};
 use data::delegates::scope::{DelegateScope, EffectScope};
 use data::game_states::game_state::GameState;
@@ -27,7 +27,7 @@ use utils::outcome::Outcome;
 /// [remove_control] if it ends. The effect will also automatically end if this
 /// card changes zones, except for a transition from the stack to the
 /// battlefield.
-pub fn gain_control(game: &mut GameState, scope: EffectScope, card_id: CardId) -> Outcome {
+pub fn gain_control(game: &mut GameState, scope: EffectScope, card_id: impl ToCardId) -> Outcome {
     let current = game.card(card_id)?.controller();
 
     if current != scope.controller {
@@ -49,8 +49,9 @@ pub fn gain_control(game: &mut GameState, scope: EffectScope, card_id: CardId) -
 pub fn gain_control_this_turn(
     game: &mut GameState,
     scope: EffectScope,
-    card_id: CardId,
+    id: impl ToCardId,
 ) -> Outcome {
+    let card_id = id.to_card_id(game)?;
     game.ability_state.this_turn.add_control_changing_effect(scope.effect_id, card_id);
     gain_control(game, scope, card_id)
 }

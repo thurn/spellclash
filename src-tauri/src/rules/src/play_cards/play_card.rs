@@ -15,11 +15,12 @@
 use std::iter;
 
 use data::card_definitions::ability_choices::{
-    AbilityTarget, AbilityTargetPredicate, AbilityTargetQuantity, CardAbilityTarget,
-    PlayerAbilityTarget, PlayerSet,
+    AbilityTarget, AbilityTargetPermanent, AbilityTargetPlayer, AbilityTargetPredicate,
+    AbilityTargetQuantity, PlayerSet,
 };
 use data::card_definitions::ability_definition::AbilityType;
 use data::card_definitions::definitions;
+use data::card_states::iter_matching::IterMatching;
 use data::card_states::play_card_plan::{PlayAs, PlayCardPlan, PlayCardTiming};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{
@@ -197,11 +198,11 @@ fn valid_targets<'a>(
     target: &'a AbilityTargetPredicate,
 ) -> Box<dyn Iterator<Item = EntityId> + 'a> {
     match target {
-        AbilityTargetPredicate::Card(data) => valid_card_targets(game, scope, data),
+        AbilityTargetPredicate::Permanent(data) => valid_card_targets(game, scope, data),
         AbilityTargetPredicate::Player(data) => valid_player_targets(game, data),
         AbilityTargetPredicate::CardOrPlayer(data) => Box::new(
-            valid_card_targets(game, scope, &data.card_target)
-                .chain(valid_player_targets(game, &data.player_target)),
+            valid_card_targets(game, scope, &data.target_permanent)
+                .chain(valid_player_targets(game, &data.target_player)),
         ),
         AbilityTargetPredicate::StackAbility(predicate) => Box::new(
             game.zones
@@ -218,25 +219,22 @@ fn valid_targets<'a>(
 fn valid_card_targets<'a>(
     game: &'a GameState,
     scope: DelegateScope,
-    target: &'a CardAbilityTarget,
+    target: &'a AbilityTargetPermanent,
 ) -> Box<dyn Iterator<Item = EntityId> + 'a> {
-    Box::new(
-        target
-            .zones
-            .iter()
-            .flat_map(move |zone| {
-                players_in_set(game, scope, target.players)
-                    .iter()
-                    .flat_map(move |player| game.zones.cards_in_zone(zone, player))
-            })
-            .filter_some(move |&card_id| (target.predicate)(game, card_id))
-            .filter_map(|card_id| Some(game.card(card_id)?.entity_id())),
-    )
+    Box::new(players_in_set(game, scope, target.players).iter().flat_map(move |player| {
+        game.battlefield(player).iter().filter_map(move |&permanent_id| {
+            if (target.predicate)(game, permanent_id) == Some(true) {
+                Some(permanent_id.to_entity_id())
+            } else {
+                None
+            }
+        })
+    }))
 }
 
 fn valid_player_targets<'a>(
     game: &'a GameState,
-    target: &'a PlayerAbilityTarget,
+    target: &'a AbilityTargetPlayer,
 ) -> Box<dyn Iterator<Item = EntityId> + 'a> {
     Box::new(
         target

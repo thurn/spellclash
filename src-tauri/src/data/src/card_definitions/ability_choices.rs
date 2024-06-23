@@ -20,7 +20,7 @@ use crate::card_definitions::ability_definition::EffectFn;
 use crate::card_states::card_state::CardState;
 use crate::card_states::zones::{ToCardId, ZoneQueries};
 use crate::core::function_types::{CardPredicateFn, PlayerPredicateFn, StackAbilityPredicateFn};
-use crate::core::primitives::{CardId, EntityId, PlayerName, StackItemId, Zone};
+use crate::core::primitives::{CardId, EntityId, PermanentId, PlayerName, StackItemId, Zone};
 use crate::delegates::scope::{DelegateScope, EffectScope};
 use crate::game_states::game_state::GameState;
 
@@ -52,14 +52,14 @@ pub enum AbilityTargetQuantity {
 
 /// Possible restrictions on the targets of an ability
 pub enum AbilityTargetPredicate {
-    /// Target cards matching a predicate in a set of zones.
-    Card(CardAbilityTarget),
+    /// Target permanents matching a predicate
+    Permanent(AbilityTargetPermanent),
 
     /// Target a player matching a predicate from a set of players.
-    Player(PlayerAbilityTarget),
+    Player(AbilityTargetPlayer),
 
     /// Target cards or players matching these predicates
-    CardOrPlayer(CardOrPlayerAbilityTarget),
+    CardOrPlayer(PermanentOrPlayerAbilityTarget),
 
     /// Target an ability on the stack matching a predicate
     StackAbility(StackAbilityPredicateFn),
@@ -80,31 +80,28 @@ pub enum PlayerSet {
     Opponents,
 }
 
-/// A target for an ability that targets a card.
-pub struct CardAbilityTarget {
-    /// Zones to search for the target card
-    pub zones: EnumSet<Zone>,
-
+/// A target for an ability that targets a permanent.
+pub struct AbilityTargetPermanent {
     /// Players whose cards should be searched
     pub players: PlayerSet,
 
-    /// Predicate that must be satisfied by the selected card
-    pub predicate: CardPredicateFn<CardId>,
+    /// Predicate that must be satisfied by the selected permanent
+    pub predicate: CardPredicateFn<PermanentId>,
 }
 
-pub struct PlayerAbilityTarget {
+pub struct AbilityTargetPlayer {
     pub players: EnumSet<PlayerName>,
     pub predicate: PlayerPredicateFn,
 }
 
-pub struct CardOrPlayerAbilityTarget {
-    pub card_target: CardAbilityTarget,
-    pub player_target: PlayerAbilityTarget,
+pub struct PermanentOrPlayerAbilityTarget {
+    pub target_permanent: AbilityTargetPermanent,
+    pub target_player: AbilityTargetPlayer,
 }
 
 #[derive(Clone, Copy, Eq, PartialEq, Debug)]
-pub enum CardOrPlayer {
-    Card(CardId),
+pub enum PermanentOrPlayer {
+    Permanent(PermanentId),
     Player(PlayerName),
 }
 
@@ -123,19 +120,19 @@ pub trait AbilityChoiceBuilder: Sized {
         self
     }
 
-    /// Adds a single target card for this ability.
+    /// Adds a single target permanent for this ability.
     ///
-    /// The ID of the card that is targeted will be passed as a parameter to the
-    /// effect function.
+    /// The ID of the permanent that is targeted will be passed as a parameter
+    /// to the effect function.
     fn target(
         mut self,
-        target: impl Into<CardAbilityTarget>,
-    ) -> EffectAbilityBuilder<CardId, Self> {
+        target: impl Into<AbilityTargetPermanent>,
+    ) -> EffectAbilityBuilder<PermanentId, Self> {
         self.get_choices_mut().targets.push(AbilityTarget {
             quantity: AbilityTargetQuantity::Exactly(1),
-            predicate: AbilityTargetPredicate::Card(target.into()),
+            predicate: AbilityTargetPredicate::Permanent(target.into()),
         });
-        EffectAbilityBuilder { argument_builder: card_target_builder, builder: self }
+        EffectAbilityBuilder { argument_builder: permanent_target_builder, builder: self }
     }
 
     /// Adds a single target player for this ability.
@@ -144,7 +141,7 @@ pub trait AbilityChoiceBuilder: Sized {
     /// effect function.
     fn target_player(
         mut self,
-        target: impl Into<PlayerAbilityTarget>,
+        target: impl Into<AbilityTargetPlayer>,
     ) -> EffectAbilityBuilder<PlayerName, Self> {
         self.get_choices_mut().targets.push(AbilityTarget {
             quantity: AbilityTargetQuantity::Exactly(1),
@@ -173,11 +170,8 @@ impl<TArg: 'static, TResult: AbilityChoiceBuilder> EffectAbilityBuilder<TArg, TR
     }
 }
 
-fn card_target_builder(game: &GameState, scope: EffectScope) -> Option<CardId> {
-    match game.card(scope)?.targets.first() {
-        Some(EntityId::Card(card_id, _)) => Some(*card_id),
-        _ => None,
-    }
+fn permanent_target_builder(game: &GameState, scope: EffectScope) -> Option<PermanentId> {
+    game.card(*game.card(scope)?.targets.first()?)?.permanent_id()
 }
 
 fn player_target_builder(game: &GameState, scope: EffectScope) -> Option<PlayerName> {
