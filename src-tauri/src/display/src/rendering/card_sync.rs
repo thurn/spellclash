@@ -113,15 +113,11 @@ fn card_status(
                 Some(RevealedCardStatus::Attacking("SB".to_string()))
             }
             Some(CombatRole::ProposedBlocker(attacker)) => Some(RevealedCardStatus::Blocking(
-                format!("B@{:?}", game.permanent(attacker)?.printed().face.displayed_name),
+                format!("B@{:?}", game.card(attacker)?.printed().face.displayed_name),
             )),
-            Some(CombatRole::Blocking { attacker, order }) => {
-                Some(RevealedCardStatus::Blocking(format!(
-                    "B@{:?}@{}",
-                    game.permanent(attacker)?.printed().face.displayed_name,
-                    order
-                )))
-            }
+            Some(CombatRole::Blocking { attacker, order }) => Some(RevealedCardStatus::Blocking(
+                format!("B@{:?}@{}", game.card(attacker)?.printed().face.displayed_name, order),
+            )),
         }
     }
 }

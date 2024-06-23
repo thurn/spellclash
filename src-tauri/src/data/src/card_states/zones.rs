@@ -53,21 +53,12 @@ pub trait ZoneQueries {
     /// Mutable equivalent of [Self::card]
     fn card_mut(&mut self, id: impl ToCardId) -> Option<&mut CardState>;
 
-    /// Returns the [CardState] for a [PermanentId].
-    ///
-    /// If this [PermanentId] is not valid, e.g. because the permanent it
-    /// represents is no longer on the battlefield, returns None.
-    fn permanent(&self, id: PermanentId) -> Option<&CardState>;
-
-    /// Mutable equivalent of [Self::permanent]
-    fn permanent_mut(&mut self, id: PermanentId) -> Option<&mut CardState>;
-
     /// Returns the [CardId] for a [PermanentId].
     ///
     /// If this [PermanentId] is not valid, e.g. because the permanent it
     /// represents is no longer on the battlefield, returns None.
     fn card_id_for_permanent(&self, id: PermanentId) -> Option<CardId> {
-        self.permanent(id).map(|c| c.id)
+        self.card(id).map(|c| c.id)
     }
 
     /// Returns the [PermanentId] for a [CardId].
@@ -246,28 +237,6 @@ impl ZoneQueries for Zones {
 
     fn card_mut(&mut self, id: impl ToCardId) -> Option<&mut CardState> {
         self.all_cards.get_mut(id.card_id(self)?)
-    }
-
-    fn permanent(&self, id: PermanentId) -> Option<&CardState> {
-        let card = self.all_cards.get(id.internal_card_id)?;
-        if card.object_id() == id.object_id {
-            Some(card)
-        } else {
-            None
-        }
-    }
-
-    fn permanent_mut(&mut self, id: PermanentId) -> Option<&mut CardState> {
-        let card = self.all_cards.get_mut(id.internal_card_id)?;
-        if card.object_id() == id.object_id {
-            Some(card)
-        } else {
-            None
-        }
-    }
-
-    fn card_id_for_permanent(&self, id: PermanentId) -> Option<CardId> {
-        self.permanent(id).map(|c| c.id)
     }
 
     fn card_entity(&self, id: EntityId) -> Option<&CardState> {

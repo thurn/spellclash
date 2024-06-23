@@ -31,7 +31,7 @@ pub fn cannot_attack_unless_defender_controls(
         d.can_attack_target.this(move |g, s, data, current| {
             current.add_condition(
                 s,
-                g.battlefield(combat_queries::defending_player(g, data.target))
+                g.battlefield(data.target.defending_player())
                     .iter()
                     .any(|&id| predicate(g, s, id) == Some(true)),
             )

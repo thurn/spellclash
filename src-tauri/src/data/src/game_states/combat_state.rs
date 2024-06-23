@@ -30,8 +30,18 @@ pub type BlockerId = PermanentId;
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum AttackTarget {
     Player(PlayerName),
-    Planeswalker(PermanentId),
-    Battle(PermanentId),
+    Planeswalker(PlayerName, PermanentId),
+    Battle(PlayerName, PermanentId),
+}
+
+impl AttackTarget {
+    pub fn defending_player(&self) -> PlayerName {
+        match self {
+            Self::Player(player) => *player,
+            Self::Planeswalker(player, _) => *player,
+            Self::Battle(player, _) => *player,
+        }
+    }
 }
 
 /// Tracks the state of creatures participating in a combat phase

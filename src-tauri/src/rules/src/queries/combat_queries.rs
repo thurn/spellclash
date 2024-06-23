@@ -41,7 +41,7 @@ use crate::queries::{card_queries, combat_queries, player_queries};
 /// <https://yawgatog.com/resources/magic-rules/#R5081a>
 pub fn can_attack(game: &GameState, attacker_id: AttackerId) -> Option<Flag> {
     let turn = game.turn;
-    let card = game.permanent(attacker_id)?;
+    let card = game.card(attacker_id)?;
     let types = card_queries::card_types(game, card.id)?;
     let mut result = Flag::new();
     result = result.add_condition(Source::Game, card.last_changed_control != turn);
@@ -75,7 +75,7 @@ pub fn legal_attackers(
 /// <https://yawgatog.com/resources/magic-rules/#R5091a>
 #[must_use]
 pub fn can_block(game: &GameState, blocker_id: BlockerId) -> Option<Flag> {
-    let card = game.permanent(blocker_id)?;
+    let card = game.card(blocker_id)?;
     let types = card_queries::card_types(game, card.id)?;
     let mut result = Flag::new();
     result = result.add_condition(Source::Game, card.controller() != game.turn.active_player);
@@ -96,20 +96,13 @@ pub fn legal_blockers(
 /// Returns an iterator over legal targets the active player could attack during
 /// combat.
 pub fn attack_targets(game: &GameState) -> impl Iterator<Item = AttackTarget> + '_ {
-    player_queries::inactive_players(game)
-        .iter()
-        .flat_map(|player| {
-            iter::once(AttackTarget::Player(player)).chain(
-                game.battlefield(player)
-                    .iter_matching(game, card_predicates::planeswalker)
-                    .map(AttackTarget::Planeswalker),
-            )
-        })
-        .chain(
-            game.battlefield(game.active_player())
-                .iter_matching(game, card_predicates::battle)
-                .map(AttackTarget::Battle),
+    player_queries::inactive_players(game).iter().flat_map(|player| {
+        iter::once(AttackTarget::Player(player)).chain(
+            game.battlefield(player)
+                .iter_matching(game, card_predicates::planeswalker)
+                .map(move |id| AttackTarget::Planeswalker(player, id)),
         )
+    })
 }
 
 /// Possible states for a creature to be in during combat.
@@ -180,19 +173,5 @@ fn role_in_blocker_map(id: PermanentId, blockers: &BlockerMap) -> Option<CombatR
         })
     } else {
         None
-    }
-}
-
-/// Returns the defending player for an [AttackTarget].
-///
-/// Panics if this target no longer exists, e.g. because the target is no longer
-/// on the battlefield.
-#[must_use]
-pub fn defending_player(game: &GameState, target: AttackTarget) -> PlayerName {
-    match target {
-        AttackTarget::Player(player) => player,
-        AttackTarget::Planeswalker(entity) | AttackTarget::Battle(entity) => {
-            game.permanent(entity).expect("Permanent no longer on battlefield").controller()
-        }
     }
 }

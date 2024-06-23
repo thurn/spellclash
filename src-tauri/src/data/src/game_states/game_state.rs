@@ -234,14 +234,6 @@ impl ZoneQueries for GameState {
         self.zones.card_mut(id)
     }
 
-    fn permanent(&self, id: PermanentId) -> Option<&CardState> {
-        self.zones.permanent(id)
-    }
-
-    fn permanent_mut(&mut self, id: PermanentId) -> Option<&mut CardState> {
-        self.zones.permanent_mut(id)
-    }
-
     fn card_entity(&self, id: EntityId) -> Option<&CardState> {
         self.zones.card_entity(id)
     }
