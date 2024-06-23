@@ -97,7 +97,7 @@ impl<TData: HasDelegates, TArg: ToCardId, TResult> CardDelegateList<TData, TArg,
         let mut result = current;
         for stored in &self.delegates {
             if stored.execution_type == CardDelegateExecution::This
-                && arg.card_id(data.game_state()) != Some(stored.ability_id.card_id)
+                && arg.to_card_id(data.game_state()) != Some(stored.ability_id.card_id)
             {
                 continue;
             }

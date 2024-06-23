@@ -68,8 +68,8 @@ impl Scope for DelegateScope {
 }
 
 impl ToCardId for DelegateScope {
-    fn card_id(&self, zones: &impl HasZones) -> Option<CardId> {
-        self.ability_id.card_id(zones)
+    fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+        self.ability_id.to_card_id(zones)
     }
 }
 
@@ -84,8 +84,8 @@ impl Scope for EffectScope {
 }
 
 impl ToCardId for EffectScope {
-    fn card_id(&self, zones: &impl HasZones) -> Option<CardId> {
-        self.ability_id.card_id(zones)
+    fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+        self.ability_id.to_card_id(zones)
     }
 }
 

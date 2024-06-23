@@ -33,8 +33,8 @@ pub struct CanAttackTarget {
 }
 
 impl ToCardId for CanAttackTarget {
-    fn card_id(&self, zones: &impl HasZones) -> Option<CardId> {
-        self.attacker_id.card_id(zones)
+    fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+        self.attacker_id.to_card_id(zones)
     }
 }
 

@@ -192,7 +192,7 @@ pub const PLAYER_THREE_ID: EntityId = EntityId::Player(PlayerName::Three);
 pub const PLAYER_FOUR_ID: EntityId = EntityId::Player(PlayerName::Four);
 
 impl ToCardId for EntityId {
-    fn card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+    fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
         match self {
             EntityId::Card(card_id, object_id) => {
                 if zones.zones().card(*card_id)?.object_id == *object_id {
@@ -246,7 +246,7 @@ impl PermanentId {
 }
 
 impl ToCardId for PermanentId {
-    fn card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+    fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
         if zones.zones().card(self.internal_card_id)?.object_id == self.object_id {
             Some(self.internal_card_id)
         } else {
@@ -287,7 +287,7 @@ pub struct AbilityId {
 }
 
 impl ToCardId for AbilityId {
-    fn card_id(&self, _: &impl HasZones) -> Option<CardId> {
+    fn to_card_id(&self, _: &impl HasZones) -> Option<CardId> {
         Some(self.card_id)
     }
 }

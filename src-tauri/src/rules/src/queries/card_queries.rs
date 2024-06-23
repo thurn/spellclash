@@ -136,7 +136,7 @@ pub fn mana_cost_for_casting_card(
 ///
 /// See [characteristic_faces] for more information.
 pub fn power(game: &GameState, id: impl ToCardId) -> Option<Power> {
-    let card_id = id.card_id(game)?;
+    let card_id = id.to_card_id(game)?;
     let characteristic = characteristic_faces(game, card_id)?;
     let result = match characteristic[..] {
         [] => {
@@ -161,7 +161,7 @@ pub fn power(game: &GameState, id: impl ToCardId) -> Option<Power> {
 ///
 /// See [characteristic_faces] for more information.
 pub fn toughness(game: &GameState, id: impl ToCardId) -> Option<Toughness> {
-    let card_id = id.card_id(game)?;
+    let card_id = id.to_card_id(game)?;
     let characteristic = characteristic_faces(game, card_id)?;
     let result = match characteristic[..] {
         [] => {

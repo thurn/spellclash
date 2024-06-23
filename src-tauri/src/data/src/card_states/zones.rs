@@ -101,11 +101,11 @@ pub trait ZoneQueries {
 
 /// Identifies a struct that can be converted into a [CardId].
 pub trait ToCardId: Copy + Debug {
-    fn card_id(&self, zones: &impl HasZones) -> Option<CardId>;
+    fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId>;
 }
 
 impl ToCardId for CardId {
-    fn card_id(&self, _: &impl HasZones) -> Option<CardId> {
+    fn to_card_id(&self, _: &impl HasZones) -> Option<CardId> {
         Some(*self)
     }
 }
@@ -165,11 +165,11 @@ impl Default for Zones {
 
 impl ZoneQueries for Zones {
     fn card(&self, id: impl ToCardId) -> Option<&CardState> {
-        self.all_cards.get(id.card_id(self)?)
+        self.all_cards.get(id.to_card_id(self)?)
     }
 
     fn card_mut(&mut self, id: impl ToCardId) -> Option<&mut CardState> {
-        self.all_cards.get_mut(id.card_id(self)?)
+        self.all_cards.get_mut(id.to_card_id(self)?)
     }
 
     fn stack_ability(&self, id: StackAbilityId) -> &StackAbilityState {

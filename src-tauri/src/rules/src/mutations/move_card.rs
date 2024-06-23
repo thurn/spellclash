@@ -37,7 +37,7 @@ pub fn run(
     id: impl ToCardId,
     zone: Zone,
 ) -> Outcome {
-    let card_id = id.card_id(game)?;
+    let card_id = id.to_card_id(game)?;
 
     debug!(?card_id, ?zone, "Moving card to zone");
     let old = game.card(card_id)?.zone;
