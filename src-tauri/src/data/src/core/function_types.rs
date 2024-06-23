@@ -61,32 +61,19 @@ impl<TId: ToCardId, TScope: Scope, F> ScopedCardPredicate<TId, TScope> for F whe
 pub type ScopedCardPredicateFn<TId, TScope> =
     Box<dyn Fn(&GameState, TScope, TId) -> Option<bool> + 'static + Send + Sync>;
 
-pub trait PermanentMutation:
-    Fn(&mut GameState, Source, PermanentId) -> Outcome + 'static + Copy + Send + Sync
-{
-}
-
-impl<F> PermanentMutation for F where
-    F: Fn(&mut GameState, Source, PermanentId) -> Outcome + 'static + Copy + Send + Sync
-{
-}
-
-pub type PermanentMutationFn =
-    Box<dyn Fn(&mut GameState, Source, PermanentId) -> Outcome + 'static + Send + Sync>;
-
 /// Function which performs a mutation on the state of a card.
-pub trait CardMutation:
-    Fn(&mut GameState, Source, CardId) -> Outcome + 'static + Copy + Send + Sync
+pub trait CardMutation<TId: ToCardId>:
+    Fn(&mut GameState, Source, TId) -> Outcome + 'static + Copy + Send + Sync
 {
 }
 
-impl<F> CardMutation for F where
-    F: Fn(&mut GameState, Source, CardId) -> Outcome + 'static + Copy + Send + Sync
+impl<TId: ToCardId, F> CardMutation<TId> for F where
+    F: Fn(&mut GameState, Source, TId) -> Outcome + 'static + Copy + Send + Sync
 {
 }
 
-pub type CardMutationFn =
-    Box<dyn Fn(&mut GameState, Source, CardId) -> Outcome + 'static + Send + Sync>;
+pub type CardMutationFn<TId> =
+    Box<dyn Fn(&mut GameState, Source, TId) -> Outcome + 'static + Send + Sync>;
 
 pub trait PlayerPredicate:
     Fn(&GameState, DelegateScope, PlayerName) -> bool + 'static + Copy + Send + Sync

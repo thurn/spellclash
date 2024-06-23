@@ -18,9 +18,9 @@ use data::card_definitions::ability_definition::{
 };
 use data::card_states::zones::ZoneQueries;
 use data::core::function_types::{
-    CardMutation, CardPredicate, PermanentMutation, PermanentPredicate, ScopedCardPredicate,
+    CardMutation, CardPredicate, PermanentPredicate, ScopedCardPredicate,
 };
-use data::core::primitives::{HasSource, PermanentId, Zone};
+use data::core::primitives::{CardId, HasSource, PermanentId, Zone};
 use data::delegates::game_delegates::GameDelegates;
 use data::delegates::scope::DelegateScope;
 use data::game_states::game_state::GameState;
@@ -32,7 +32,7 @@ use utils::outcome::Outcome;
 /// applies `mutation` to it.
 pub fn when_controls_no(
     predicate: impl ScopedCardPredicate<PermanentId, DelegateScope>,
-    mutation: impl PermanentMutation,
+    mutation: impl CardMutation<CardId>,
 ) -> impl AbilityBuilder {
     TriggeredAbility::new()
         .delegates(move |d| {
@@ -41,8 +41,6 @@ pub fn when_controls_no(
             })
         })
         .effect(move |g, s| {
-            if let Some(permanent_id) = g.permanent_id_for_card(s.ability_id.card_id) {
-                mutation(g, s.source(), permanent_id);
-            }
+            mutation(g, s.source(), s.ability_id.card_id);
         })
 }

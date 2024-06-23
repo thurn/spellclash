@@ -183,7 +183,7 @@ impl CardState {
     /// Returns this card's [PermanentId] if it is on the battlefield.
     pub fn permanent_id(&self) -> Option<PermanentId> {
         if self.zone == Zone::Battlefield {
-            Some(PermanentId { object_id: self.object_id(), internal_card_id: self.id })
+            Some(PermanentId::new(self.object_id(), self.id))
         } else {
             None
         }

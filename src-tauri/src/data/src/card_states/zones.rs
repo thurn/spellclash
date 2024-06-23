@@ -53,21 +53,6 @@ pub trait ZoneQueries {
     /// Mutable equivalent of [Self::card]
     fn card_mut(&mut self, id: impl ToCardId) -> Option<&mut CardState>;
 
-    /// Returns the [CardId] for a [PermanentId].
-    ///
-    /// If this [PermanentId] is not valid, e.g. because the permanent it
-    /// represents is no longer on the battlefield, returns None.
-    fn card_id_for_permanent(&self, id: PermanentId) -> Option<CardId> {
-        self.card(id).map(|c| c.id)
-    }
-
-    /// Returns the [PermanentId] for a [CardId].
-    ///
-    /// If this card is not a permanent, returns None.
-    fn permanent_id_for_card(&self, card_id: CardId) -> Option<PermanentId> {
-        self.card(card_id)?.permanent_id()
-    }
-
     /// Returns the [CardState] for an [EntityId].
     ///
     /// If this [EntityId] is not the entity id of a card, or if the associated
@@ -109,14 +94,6 @@ pub trait ZoneQueries {
     /// Returns the IDs of cards and card-like objects ***controlled*** by a
     /// player on the battlefield
     fn battlefield(&self, player: impl HasPlayerName) -> &HashSet<PermanentId>;
-
-    /// Returns [CardId]s for cards controlled by a player on the battlefield
-    fn battlefield_card_ids(
-        &self,
-        player: impl HasPlayerName,
-    ) -> impl Iterator<Item = CardId> + '_ {
-        self.battlefield(player).iter().filter_map(move |&id| self.card_id_for_permanent(id))
-    }
 
     /// Returns the IDs of cards and card-like objects owned by a player on the
     /// battlefield
@@ -458,11 +435,9 @@ impl Zones {
             Zone::Hand => Box::new(self.hand(player).iter().copied()),
             Zone::Graveyard => Box::new(self.graveyard(player).iter().copied()),
             Zone::Library => Box::new(self.library(player).iter().copied()),
-            Zone::Battlefield => Box::new(
-                self.battlefield(player)
-                    .iter()
-                    .map(|&id| self.card_id_for_permanent(id).expect("Permanent not found")),
-            ),
+            Zone::Battlefield => {
+                Box::new(self.battlefield(player).iter().filter_map(|&id| Some(self.card(id)?.id)))
+            }
             Zone::Stack => Box::new(self.stack.iter().filter_map(move |id| {
                 let id = id.card_id()?;
                 if self.card(id)?.controller() == player {
@@ -518,8 +493,8 @@ impl Zones {
             Zone::Graveyard => self.graveyards.remove(card_id, owner),
             Zone::Library => self.libraries.remove(card_id, owner),
             Zone::Battlefield => {
-                let Some(permanent_id) = self.permanent_id_for_card(card_id) else {
-                    panic!("Card has no permanent id {card_id:?}")
+                let Some(permanent_id) = self.card(card_id).and_then(|c| c.permanent_id()) else {
+                    return;
                 };
                 self.battlefield_owned.remove(permanent_id, owner);
                 if !self.battlefield_controlled.cards_mut(owner).remove(&permanent_id) {
@@ -560,8 +535,8 @@ impl Zones {
             }
             Zone::Graveyard => self.graveyards.cards_mut(owner).push_back(card_id),
             Zone::Battlefield => {
-                let Some(permanent_id) = self.permanent_id_for_card(card_id) else {
-                    panic!("Card has no permanent id {card_id:?}");
+                let Some(permanent_id) = self.card(card_id).and_then(|c| c.permanent_id()) else {
+                    return;
                 };
                 self.battlefield_owned.cards_mut(owner).insert(permanent_id);
                 self.battlefield_controlled.cards_mut(owner).insert(permanent_id);

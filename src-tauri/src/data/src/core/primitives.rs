@@ -235,18 +235,28 @@ impl ObjectId {
     Debug, Clone, Copy, Default, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize,
 )]
 pub struct PermanentId {
-    pub object_id: ObjectId,
+    object_id: ObjectId,
 
     /// The underlying [CardId] for this permanent.
     ///
     /// Do not access this field directly, you must first validate that this
     /// permanent ID still exists.
-    pub internal_card_id: CardId,
+    internal_card_id: CardId,
+}
+
+impl PermanentId {
+    pub fn new(object_id: ObjectId, internal_card_id: CardId) -> Self {
+        Self { object_id, internal_card_id }
+    }
 }
 
 impl ToCardId for PermanentId {
     fn card_id(&self, zones: &impl HasZones) -> Option<CardId> {
-        zones.zones().card_id_for_permanent(*self)
+        if zones.zones().card(self.internal_card_id)?.object_id() == self.object_id {
+            Some(self.internal_card_id)
+        } else {
+            None
+        }
     }
 }
 
