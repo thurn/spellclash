@@ -11,6 +11,17 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+use data::core::primitives::PermanentId;
+use data::delegates::scope::EffectScope;
+use data::game_states::combat_state::AttackerId;
+use data::game_states::effect_state::EffectState;
+use data::game_states::game_state::GameState;
 
-pub mod delayed_trigger;
-pub mod state_triggers;
+pub fn enable<TTarget>(
+    game: &mut GameState,
+    scope: EffectScope,
+    state: &EffectState<TTarget>,
+    target: TTarget,
+) {
+    todo!()
+}

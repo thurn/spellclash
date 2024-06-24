@@ -20,13 +20,26 @@ use crate::game_states::game_state::GameState;
 
 #[derive(Clone, Copy)]
 pub struct EffectState<T> {
-    _number: usize,
+    number: u32,
     value: PhantomData<T>,
 }
 
 impl<T> EffectState<T> {
-    pub const fn new(number: usize) -> Self {
-        Self { _number: number, value: PhantomData }
+    const STATE0: EffectState<T> = EffectState { number: 0, value: PhantomData };
+    const STATE1: EffectState<T> = EffectState { number: 1, value: PhantomData };
+    const STATE2: EffectState<T> = EffectState { number: 2, value: PhantomData };
+    const STATE3: EffectState<T> = EffectState { number: 3, value: PhantomData };
+    const STATE4: EffectState<T> = EffectState { number: 4, value: PhantomData };
+
+    pub fn new(number: u32) -> &'static Self {
+        match number {
+            0 => &Self::STATE0,
+            1 => &Self::STATE1,
+            2 => &Self::STATE2,
+            3 => &Self::STATE3,
+            4 => &Self::STATE4,
+            _ => panic!("Invalid effect state number"),
+        }
     }
 
     pub fn store(&self, game: &mut GameState, scope: EffectScope, value: T) {

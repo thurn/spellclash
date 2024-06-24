@@ -13,27 +13,29 @@
 // limitations under the License.
 
 use abilities::targeting::targets;
+use abilities::triggers;
+use abilities::triggers::delayed_trigger;
 use data::card_definitions::ability_choices::AbilityChoiceBuilder;
 use data::card_definitions::ability_definition::{AbilityDelegateBuilder, SpellAbility};
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::core::primitives::{HasSource, PermanentId};
+use data::core::primitives::HasSource;
 use data::game_states::effect_state::EffectState;
 use rules::mutations::{change_controller, permanents};
 
 pub fn ray_of_command() -> CardDefinition {
-    const STATE: EffectState<PermanentId> = EffectState::new(0);
+    let state = EffectState::new(0);
     CardDefinition::new(card_name::RAY_OF_COMMAND).ability(
         SpellAbility::new()
             .target(targets::creature_opponent_controls())
-            .effect(|g, s, target| {
-                STATE.store(g, s, target);
+            .effect(move |g, s, target| {
                 permanents::untap(g, s.source(), target);
                 change_controller::gain_control_this_turn(g, s, target);
+                delayed_trigger::enable(g, s, state, target)
             })
             .delegates(|d| {
                 d.can_attack_target.this(|g, s, target, current| {
-                    current.add_condition(s, target.attacker_id == STATE.get(g, s))
+                    current.add_condition(s, target.attacker_id == state.get(g, s))
                 })
             }),
     )
