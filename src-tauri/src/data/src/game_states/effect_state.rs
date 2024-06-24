@@ -20,16 +20,16 @@ use crate::game_states::game_state::GameState;
 
 #[derive(Clone, Copy)]
 pub struct EffectState<T> {
-    number: u32,
+    _number: u32,
     value: PhantomData<T>,
 }
 
 impl<T> EffectState<T> {
-    const STATE0: EffectState<T> = EffectState { number: 0, value: PhantomData };
-    const STATE1: EffectState<T> = EffectState { number: 1, value: PhantomData };
-    const STATE2: EffectState<T> = EffectState { number: 2, value: PhantomData };
-    const STATE3: EffectState<T> = EffectState { number: 3, value: PhantomData };
-    const STATE4: EffectState<T> = EffectState { number: 4, value: PhantomData };
+    const STATE0: EffectState<T> = EffectState { _number: 0, value: PhantomData };
+    const STATE1: EffectState<T> = EffectState { _number: 1, value: PhantomData };
+    const STATE2: EffectState<T> = EffectState { _number: 2, value: PhantomData };
+    const STATE3: EffectState<T> = EffectState { _number: 3, value: PhantomData };
+    const STATE4: EffectState<T> = EffectState { _number: 4, value: PhantomData };
 
     pub fn new(number: u32) -> &'static Self {
         match number {

@@ -116,6 +116,9 @@ pub struct CardState {
     /// A card that is not on the battlefield is always untapped.
     pub tapped_state: TappedState,
 
+    /// Whether this card is phased out.
+    pub phasing_state: PhasingState,
+
     /// Players who this card has been revealed to.
     pub revealed_to: EnumSet<PlayerName>,
 
@@ -257,4 +260,12 @@ pub enum CardFacing {
 pub struct ControlChangingEffect {
     pub effect_id: EffectId,
     pub controller: PlayerName,
+}
+
+/// Whether a card is phased out
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub enum PhasingState {
+    PhasedIn,
+    PhasedOut,
 }

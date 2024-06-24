@@ -28,7 +28,7 @@ use utils::outcome::{Outcome, Success};
 use crate::card_definitions::card_name::CardName;
 use crate::card_states::card_kind::CardKind;
 use crate::card_states::card_reference::CardReference;
-use crate::card_states::card_state::{CardFacing, CardState, TappedState};
+use crate::card_states::card_state::{CardFacing, CardState, PhasingState, TappedState};
 use crate::card_states::counters::Counters;
 use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::card_states::stack_ability_state::StackAbilityState;
@@ -47,8 +47,8 @@ pub trait ZoneQueries {
     /// Looks up the state for a card.
     ///
     /// Returns None if this card or id no longer exists, e.g. if it's the ID of
-    /// a token which has been destroyed or it's a permanent ID for a
-    /// permanent which is no longer on the battlefield.
+    /// a token which has been destroyed, a permanent which is no longer on the
+    /// battlefield, or a card that has been phased out.
     fn card(&self, id: impl ToCardId) -> Option<&CardState>;
 
     /// Mutable equivalent of [Self::card]
@@ -165,11 +165,21 @@ impl Default for Zones {
 
 impl ZoneQueries for Zones {
     fn card(&self, id: impl ToCardId) -> Option<&CardState> {
-        self.all_cards.get(id.to_card_id(self)?)
+        let c = self.all_cards.get(id.to_card_id(self)?)?;
+        if c.phasing_state == PhasingState::PhasedOut {
+            return None;
+        }
+
+        Some(c)
     }
 
     fn card_mut(&mut self, id: impl ToCardId) -> Option<&mut CardState> {
-        self.all_cards.get_mut(id.to_card_id(self)?)
+        let c = self.all_cards.get_mut(id.to_card_id(self)?)?;
+        if c.phasing_state == PhasingState::PhasedOut {
+            return None;
+        }
+
+        Some(c)
     }
 
     fn stack_ability(&self, id: StackAbilityId) -> &StackAbilityState {
@@ -262,6 +272,7 @@ impl Zones {
             facing: CardFacing::FaceDown,
             cast_as: EnumSet::empty(),
             tapped_state: TappedState::Untapped,
+            phasing_state: PhasingState::PhasedIn,
             revealed_to: EnumSet::empty(),
             counters: Counters::default(),
             damage: 0,

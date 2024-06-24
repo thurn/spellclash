@@ -13,7 +13,6 @@
 // limitations under the License.
 
 use abilities::targeting::targets;
-use abilities::triggers;
 use abilities::triggers::delayed_trigger;
 use data::card_definitions::ability_choices::AbilityChoiceBuilder;
 use data::card_definitions::ability_definition::{AbilityDelegateBuilder, SpellAbility};
