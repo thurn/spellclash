@@ -19,9 +19,10 @@ use crate::core::primitives::{
     AbilityId, AbilityNumber, CardId, EffectId, HasSource, PlayerName, Source,
 };
 
-/// Identifies the context in which an event function or event delegate is
+/// Identifies the context in which an effect function or event delegate is
 /// currently executing
-pub trait Scope: ToCardId {
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct Scope {
     /// The controller for this ability or the card that created this ability.
     ///
     /// In an effect function, this is the controller of the effect on the
@@ -32,65 +33,52 @@ pub trait Scope: ToCardId {
     /// create its own delegate callbacks, since those callbacks will see their
     /// card's controller, *not* the controller of the ability that
     /// created them.
-    fn controller(&self) -> PlayerName;
-
-    /// The identifier for the ability definition that is executing.
-    fn ability_id(&self) -> AbilityId;
-}
-
-/// Execution context for a delegate callback
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub struct DelegateScope {
-    /// The controller of the card that created this delegate.
     pub controller: PlayerName,
 
+    /// The identifier for the ability definition that is executing.
     pub ability_id: AbilityId,
 }
 
 /// Execution context for an effect function
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub struct EffectScope {
-    pub controller: PlayerName,
-    pub ability_id: AbilityId,
+pub struct EffectContext {
+    /// Context in which this effect function is executing
+    pub scope: Scope,
 
     /// Unique identifier for this instance of the effect function resolving.
     pub effect_id: EffectId,
 }
 
-impl Scope for DelegateScope {
-    fn controller(&self) -> PlayerName {
-        self.controller
+impl EffectContext {
+    pub fn controller(&self) -> PlayerName {
+        self.scope.controller
     }
 
-    fn ability_id(&self) -> AbilityId {
-        self.ability_id
+    pub fn ability_id(&self) -> AbilityId {
+        self.scope.ability_id
     }
 }
 
-impl ToCardId for DelegateScope {
+impl ToCardId for Scope {
     fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
         self.ability_id.to_card_id(zones)
     }
 }
 
-impl Scope for EffectScope {
-    fn controller(&self) -> PlayerName {
-        self.controller
-    }
-
-    fn ability_id(&self) -> AbilityId {
-        self.ability_id
-    }
-}
-
-impl ToCardId for EffectScope {
+impl ToCardId for EffectContext {
     fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
-        self.ability_id.to_card_id(zones)
+        self.scope.to_card_id(zones)
     }
 }
 
-impl<T: Scope> HasSource for T {
+impl HasSource for Scope {
     fn source(&self) -> Source {
-        Source::Ability { controller: self.controller(), ability_id: self.ability_id() }
+        Source::Ability { controller: self.controller, ability_id: self.ability_id }
+    }
+}
+
+impl HasSource for EffectContext {
+    fn source(&self) -> Source {
+        self.scope.source()
     }
 }

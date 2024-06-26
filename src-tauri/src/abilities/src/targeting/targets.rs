@@ -15,7 +15,7 @@
 use data::card_definitions::ability_choices::{AbilityTargetPermanent, PlayerSet};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardType, HasController, Zone, ALL_POSSIBLE_PLAYERS};
-use data::delegates::scope::DelegateScope;
+use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use enumset::EnumSet;
 use rules::predicates::card_predicates;

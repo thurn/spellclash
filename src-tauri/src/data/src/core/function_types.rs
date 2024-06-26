@@ -16,7 +16,7 @@ use utils::outcome::Outcome;
 
 use crate::card_states::zones::ToCardId;
 use crate::core::primitives::{CardId, EntityId, PermanentId, PlayerName, Source, StackAbilityId};
-use crate::delegates::scope::{DelegateScope, Scope};
+use crate::delegates::scope::Scope;
 use crate::game_states::game_state::GameState;
 
 /// Function which performs a boolean query on the state of a card.

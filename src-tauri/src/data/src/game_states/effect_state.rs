@@ -15,7 +15,7 @@
 use std::marker::PhantomData;
 
 use crate::core::primitives::CardId;
-use crate::delegates::scope::{DelegateScope, EffectScope};
+use crate::delegates::scope::{EffectContext, Scope};
 use crate::game_states::game_state::GameState;
 
 #[derive(Clone, Copy)]
@@ -42,11 +42,11 @@ impl<T> EffectState<T> {
         }
     }
 
-    pub fn store(&self, game: &mut GameState, scope: EffectScope, value: T) {
+    pub fn store(&self, game: &mut GameState, scope: EffectContext, value: T) {
         todo!("")
     }
 
-    pub fn get(&self, game: &GameState, scope: DelegateScope) -> T {
+    pub fn get(&self, game: &GameState, scope: Scope) -> T {
         todo!("")
     }
 }

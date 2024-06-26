@@ -20,7 +20,7 @@ use crate::card_states::zones::{HasZones, ToCardId};
 use crate::core::primitives::{
     AbilityId, CardId, EntityId, HasController, HasPlayerName, ObjectId, PlayerName, StackAbilityId,
 };
-use crate::delegates::scope::DelegateScope;
+use crate::delegates::scope::Scope;
 use crate::game_states::game_state::GameState;
 
 /// Represents the state of a triggered or activated ability which has triggered

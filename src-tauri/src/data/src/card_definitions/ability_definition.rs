@@ -22,7 +22,7 @@ use crate::core::primitives::{CardId, EntityId, PlayerName, Zone, ALL_ZONES};
 use crate::costs::cost::Cost;
 #[allow(unused)] // Used in docs
 use crate::delegates::game_delegates::GameDelegates;
-use crate::delegates::scope::{DelegateScope, EffectScope};
+use crate::delegates::scope::{EffectContext, Scope};
 use crate::game_states::game_state::GameState;
 
 /// An event callback function.
@@ -35,7 +35,7 @@ pub struct Delegate {
 }
 
 /// Function to apply the effects of of an ability to the game.
-pub type EffectFn = Box<dyn Fn(&mut GameState, EffectScope) + 'static + Send + Sync>;
+pub type EffectFn = Box<dyn Fn(&mut GameState, EffectContext) + 'static + Send + Sync>;
 
 /// Defines the game rules for an ability.
 ///

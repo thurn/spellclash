@@ -15,7 +15,7 @@
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::delegates::card_delegate_list::CardDelegateList;
 use data::delegates::event_delegate_list::EventDelegateList;
-use data::delegates::scope::DelegateScope;
+use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use utils::outcome;
 
@@ -27,11 +27,7 @@ pub trait QueryExt<TArg, TResult> {
     /// event.
     fn this_turn(
         &mut self,
-        transformation: impl Fn(&GameState, DelegateScope, TResult) -> TResult
-            + Copy
-            + Send
-            + Sync
-            + 'static,
+        transformation: impl Fn(&GameState, Scope, TResult) -> TResult + Copy + Send + Sync + 'static,
     );
 }
 
@@ -40,11 +36,7 @@ impl<TArg: ToCardId, TResult> QueryExt<TArg, TResult>
 {
     fn this_turn(
         &mut self,
-        transformation: impl Fn(&GameState, DelegateScope, TResult) -> TResult
-            + Copy
-            + Send
-            + Sync
-            + 'static,
+        transformation: impl Fn(&GameState, Scope, TResult) -> TResult + Copy + Send + Sync + 'static,
     ) {
         self.any(move |g, s, arg, mut result| {
             let Some(entity_id) = g.card(*arg).map(|c| c.entity_id()) else {

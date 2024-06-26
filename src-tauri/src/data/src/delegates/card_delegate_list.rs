@@ -21,7 +21,7 @@ use crate::card_states::zones::ToCardId;
 use crate::core::primitives::{AbilityId, EntityId, Zone};
 use crate::delegates::flag::Flag;
 use crate::delegates::has_delegates::HasDelegates;
-use crate::delegates::scope::DelegateScope;
+use crate::delegates::scope::Scope;
 use crate::delegates::stores_delegates::StoresDelegates;
 
 /// Wrapper around query functions to enable closures to be cloned.

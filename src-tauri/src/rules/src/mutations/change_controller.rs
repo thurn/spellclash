@@ -15,30 +15,33 @@
 use data::card_states::card_state::ControlChangingEffect;
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::primitives::{AbilityId, CardId, EffectId, HasController, HasSource, PlayerName};
-use data::delegates::scope::{DelegateScope, EffectScope};
+use data::delegates::scope::{EffectContext, Scope};
 use data::game_states::game_state::GameState;
 use utils::outcome;
 use utils::outcome::Outcome;
 
-/// Causes the controller of [EffectScope] to gain control of the [CardId]
+/// Causes the controller of [EffectContext] to gain control of the [CardId]
 /// card.
 ///
 /// The caller of this function is responsible for removing this status via
 /// [remove_control] if it ends. The effect will also automatically end if this
 /// card changes zones, except for a transition from the stack to the
 /// battlefield.
-pub fn gain_control(game: &mut GameState, scope: EffectScope, card_id: impl ToCardId) -> Outcome {
+pub fn gain_control(
+    game: &mut GameState,
+    new_controller: PlayerName,
+    effect_id: EffectId,
+    card_id: impl ToCardId,
+) -> Outcome {
     let current = game.card(card_id)?.controller();
 
-    if current != scope.controller {
-        game.zones.on_controller_changed(card_id, current, scope.controller, game.turn);
+    if current != new_controller {
+        game.zones.on_controller_changed(card_id, current, new_controller, game.turn);
         let turn = game.turn;
         let card = game.card_mut(card_id)?;
         card.last_changed_control = turn;
-        card.control_changing_effects.push(ControlChangingEffect {
-            effect_id: scope.effect_id,
-            controller: scope.controller,
-        });
+        card.control_changing_effects
+            .push(ControlChangingEffect { effect_id, controller: new_controller });
     }
     outcome::OK
 }
@@ -48,12 +51,13 @@ pub fn gain_control(game: &mut GameState, scope: EffectScope, card_id: impl ToCa
 /// cleanup step.
 pub fn gain_control_this_turn(
     game: &mut GameState,
-    scope: EffectScope,
+    new_controller: PlayerName,
+    effect_id: EffectId,
     id: impl ToCardId,
 ) -> Outcome {
     let card_id = id.to_card_id(game)?;
-    game.ability_state.this_turn.add_control_changing_effect(scope.effect_id, card_id);
-    gain_control(game, scope, card_id)
+    game.ability_state.this_turn.add_control_changing_effect(effect_id, card_id);
+    gain_control(game, new_controller, effect_id, card_id)
 }
 
 /// Removes all control-changing effects from the [CardId] card that were added

@@ -14,7 +14,7 @@
 
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::primitives::{CardType, PermanentId};
-use data::delegates::scope::DelegateScope;
+use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandSubtype;
 

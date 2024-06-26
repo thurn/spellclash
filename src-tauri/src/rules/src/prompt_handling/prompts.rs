@@ -16,7 +16,7 @@ use std::collections::HashMap;
 
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, EntityId, PlayerName};
-use data::delegates::scope::{DelegateScope, Scope};
+use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use data::player_states::player_state::{PlayerQueries, PlayerType};
 use data::prompts::choice_prompt::{Choice, ChoicePrompt};
@@ -126,7 +126,7 @@ pub fn pick_number(
     number
 }
 
-/// Prompt the controller to select a `quantity` from the provided unordered
+/// Prompt a player to select a `quantity` from the provided unordered
 /// list of cards to move to a new `target` location.
 ///
 /// This is typically used when the cards in question do not already exist in an
@@ -134,7 +134,7 @@ pub fn pick_number(
 /// library.
 pub fn select_ordered_from<'a>(
     game: &mut GameState,
-    scope: impl Scope,
+    player: PlayerName,
     text: Text,
     cards: impl IntoIterator<Item = &'a CardId>,
     quantity: usize,
@@ -142,7 +142,7 @@ pub fn select_ordered_from<'a>(
 ) -> Vec<CardId> {
     select_order(
         game,
-        scope.controller(),
+        player,
         text,
         SelectOrderPrompt::new(hashmap! {
             CardOrderLocation::Unordered => cards.into_iter().copied().collect(),

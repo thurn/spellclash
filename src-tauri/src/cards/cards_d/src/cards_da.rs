@@ -25,8 +25,8 @@ use rules::predicates::card_predicates;
 
 pub fn dance_of_the_skywise() -> CardDefinition {
     CardDefinition::new(card_name::DANCE_OF_THE_SKYWISE).ability(
-        SpellAbility::new().target(targets::creature()).effect(|g, s, target| {
-            move_card::run(g, s.source(), target, Zone::Graveyard);
+        SpellAbility::new().target(targets::creature()).effect(|g, c, target| {
+            move_card::run(g, c.source(), target, Zone::Graveyard);
         }),
     )
 }

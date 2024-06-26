@@ -19,7 +19,7 @@ use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::function_types::CardPredicate;
 use data::core::primitives::{CardId, PermanentId, Zone};
 use data::delegates::game_delegates::GameDelegates;
-use data::delegates::scope::DelegateScope;
+use data::delegates::scope::Scope;
 use rules::queries::combat_queries;
 
 /// Prevent this creature from attacking unless the defending player controls a

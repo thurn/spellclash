@@ -23,17 +23,17 @@ use rules::mutations::library;
 use rules::prompt_handling::prompts;
 
 pub fn brainstorm() -> CardDefinition {
-    CardDefinition::new(card_name::BRAINSTORM).ability(SpellAbility::new().effect(|g, s| {
-        library::draw_cards(g, s, s.controller, 3);
+    CardDefinition::new(card_name::BRAINSTORM).ability(SpellAbility::new().effect(|g, c| {
+        library::draw_cards(g, c, c.controller(), 3);
         let cards = prompts::select_ordered_from(
             g,
-            s,
+            c.controller(),
             Text::HandToTopOfLibraryPrompt,
-            &g.hand(s.controller).clone(),
+            &g.hand(c.controller()).clone(),
             2,
             CardOrderLocation::TopOfLibrary,
         );
-        library::move_all_to_top(g, s, &cards)
+        library::move_all_to_top(g, c, &cards)
     }))
 }
 

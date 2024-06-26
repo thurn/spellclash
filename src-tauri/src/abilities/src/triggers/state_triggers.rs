@@ -21,7 +21,7 @@ use data::card_states::zones::ZoneQueries;
 use data::core::function_types::{CardMutation, CardPredicate};
 use data::core::primitives::{CardId, HasSource, PermanentId, Zone};
 use data::delegates::game_delegates::GameDelegates;
-use data::delegates::scope::DelegateScope;
+use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use rules::mutations::trigger_extension::TriggerExt;
 use utils::outcome;
@@ -39,7 +39,7 @@ pub fn when_controls_no(
                 !g.battlefield(s.controller).any_matching(g, predicate)
             })
         })
-        .effect(move |g, s| {
-            mutation(g, s.source(), s.ability_id.card_id);
+        .effect(move |g, c| {
+            mutation(g, c.source(), c.ability_id().card_id);
         })
 }

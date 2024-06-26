@@ -19,7 +19,7 @@ use data::core::primitives::{
     AbilityId, CardId, EntityId, HasController, PlayerName, StackAbilityId, StackItemId,
 };
 use data::delegates::has_delegates::HasDelegates;
-use data::delegates::scope::EffectScope;
+use data::delegates::scope::{EffectContext, Scope};
 use data::game_states::game_state::GameState;
 use utils::outcome;
 use utils::outcome::Outcome;
@@ -35,9 +35,10 @@ pub fn run(
             Some(stack_ability_id) => game.stack_ability(stack_ability_id).controller,
             _ => game.card(ability_id)?.controller(),
         };
-        let scope =
-            EffectScope { controller, ability_id, effect_id: game.ability_state.new_effect_id() };
-        function(game, scope);
+        let scope = Scope { controller, ability_id };
+
+        let context = EffectContext { scope, effect_id: game.ability_state.new_effect_id() };
+        function(game, context);
         outcome::OK
     } else {
         outcome::SKIPPED

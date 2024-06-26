@@ -27,10 +27,10 @@ pub fn ray_of_command() -> CardDefinition {
     CardDefinition::new(card_name::RAY_OF_COMMAND).ability(
         SpellAbility::new()
             .target(targets::creature_opponent_controls())
-            .effect(move |g, s, target| {
-                permanents::untap(g, s.source(), target);
-                change_controller::gain_control_this_turn(g, s, target);
-                delayed_trigger::enable(g, s, state, target)
+            .effect(move |g, c, target| {
+                permanents::untap(g, c.source(), target);
+                change_controller::gain_control_this_turn(g, c.controller(), c.effect_id, target);
+                delayed_trigger::enable(g, c, state, target)
             })
             .delegates(|d| {
                 d.can_attack_target.this(|g, s, target, current| {

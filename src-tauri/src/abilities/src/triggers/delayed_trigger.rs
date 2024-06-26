@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use data::core::primitives::PermanentId;
-use data::delegates::scope::EffectScope;
+use data::delegates::scope::EffectContext;
 use data::game_states::combat_state::AttackerId;
 use data::game_states::effect_state::EffectState;
 use data::game_states::game_state::GameState;
 
 pub fn enable<TTarget>(
     game: &mut GameState,
-    scope: EffectScope,
+    scope: EffectContext,
     state: &EffectState<TTarget>,
     target: TTarget,
 ) {

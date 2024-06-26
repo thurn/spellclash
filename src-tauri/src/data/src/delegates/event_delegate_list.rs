@@ -22,7 +22,7 @@ use utils::outcome::Outcome;
 use crate::core::primitives::{AbilityId, EntityId, Zone};
 use crate::delegates::flag::Flag;
 use crate::delegates::has_delegates::HasDelegates;
-use crate::delegates::scope::DelegateScope;
+use crate::delegates::scope::Scope;
 use crate::delegates::stores_delegates::StoresDelegates;
 use crate::game_states::game_state::GameState;
 

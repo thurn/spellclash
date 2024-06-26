@@ -21,7 +21,7 @@ use crate::card_states::card_state::CardState;
 use crate::card_states::zones::{ToCardId, ZoneQueries};
 use crate::core::function_types::{CardPredicateFn, PlayerPredicateFn, StackAbilityPredicateFn};
 use crate::core::primitives::{CardId, EntityId, PermanentId, PlayerName, StackItemId, Zone};
-use crate::delegates::scope::{DelegateScope, EffectScope};
+use crate::delegates::scope::{EffectContext, Scope};
 use crate::game_states::game_state::GameState;
 
 /// Set of choices available to be made when placing an ability on the stack.
@@ -114,7 +114,7 @@ pub trait AbilityChoiceBuilder: Sized {
 
     fn effect(
         mut self,
-        effect: impl Fn(&mut GameState, EffectScope) + 'static + Copy + Send + Sync,
+        effect: impl Fn(&mut GameState, EffectContext) + 'static + Copy + Send + Sync,
     ) -> Self {
         self.set_effect_fn(Box::new(effect));
         self
@@ -152,14 +152,14 @@ pub trait AbilityChoiceBuilder: Sized {
 }
 
 pub struct EffectAbilityBuilder<TArg: 'static, TResult: AbilityChoiceBuilder> {
-    pub argument_builder: fn(&GameState, EffectScope) -> Option<TArg>,
+    pub argument_builder: fn(&GameState, EffectContext) -> Option<TArg>,
     pub builder: TResult,
 }
 
 impl<TArg: 'static, TResult: AbilityChoiceBuilder> EffectAbilityBuilder<TArg, TResult> {
     pub fn effect(
         mut self,
-        effect: impl Fn(&mut GameState, EffectScope, TArg) + 'static + Copy + Send + Sync,
+        effect: impl Fn(&mut GameState, EffectContext, TArg) + 'static + Copy + Send + Sync,
     ) -> TResult {
         self.builder.set_effect_fn(Box::new(move |game, scope| {
             if let Some(argument) = (self.argument_builder)(game, scope) {
@@ -170,11 +170,11 @@ impl<TArg: 'static, TResult: AbilityChoiceBuilder> EffectAbilityBuilder<TArg, TR
     }
 }
 
-fn permanent_target_builder(game: &GameState, scope: EffectScope) -> Option<PermanentId> {
+fn permanent_target_builder(game: &GameState, scope: EffectContext) -> Option<PermanentId> {
     game.card(*game.card(scope)?.targets.first()?)?.permanent_id()
 }
 
-fn player_target_builder(game: &GameState, scope: EffectScope) -> Option<PlayerName> {
+fn player_target_builder(game: &GameState, scope: EffectContext) -> Option<PlayerName> {
     match game.card(scope)?.targets.first() {
         Some(EntityId::Player(player_name)) => Some(*player_name),
         _ => None,

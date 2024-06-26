@@ -18,7 +18,7 @@ use crate::card_states::zones::ZoneQueries;
 use crate::core::primitives::{
     AbilityId, CardId, EffectId, HasController, StackAbilityId, StackItemId, Zone,
 };
-use crate::delegates::scope::{DelegateScope, EffectScope};
+use crate::delegates::scope::{EffectContext, Scope};
 use crate::game_states::game_state::GameState;
 
 /// Marker trait for types which store and can query delegates.
@@ -37,15 +37,15 @@ pub trait HasDelegates {
 }
 
 impl HasDelegates for GameState {
-    type EffectScopeType = EffectScope;
-    type ScopeType = DelegateScope;
+    type EffectScopeType = EffectContext;
+    type ScopeType = Scope;
 
     fn current_zone(&self, card_id: CardId) -> Option<Zone> {
         Some(self.card(card_id)?.zone)
     }
 
     fn create_delegate_scope(&self, ability_id: AbilityId) -> Option<Self::ScopeType> {
-        Some(DelegateScope { controller: self.card(ability_id)?.controller(), ability_id })
+        Some(Scope { controller: self.card(ability_id)?.controller(), ability_id })
     }
 
     fn game_state(&self) -> &GameState {

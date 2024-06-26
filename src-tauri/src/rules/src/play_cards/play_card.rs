@@ -27,7 +27,7 @@ use data::core::primitives::{
     AbilityId, CardId, EntityId, HasController, PlayerName, Source, Zone,
 };
 use data::delegates::has_delegates::HasDelegates;
-use data::delegates::scope::DelegateScope;
+use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use data::prompts::choice_prompt::Choice;
 use data::text_strings::Text;
@@ -194,7 +194,7 @@ fn valid_target_lists(
 
 fn valid_targets<'a>(
     game: &'a GameState,
-    scope: DelegateScope,
+    scope: Scope,
     target: &'a AbilityTargetPredicate,
 ) -> Box<dyn Iterator<Item = EntityId> + 'a> {
     match target {
@@ -218,7 +218,7 @@ fn valid_targets<'a>(
 
 fn valid_card_targets<'a>(
     game: &'a GameState,
-    scope: DelegateScope,
+    scope: Scope,
     target: &'a AbilityTargetPermanent,
 ) -> Box<dyn Iterator<Item = EntityId> + 'a> {
     Box::new(players_in_set(game, scope, target.players).iter().flat_map(move |player| {
@@ -245,7 +245,7 @@ fn valid_player_targets<'a>(
     )
 }
 
-fn players_in_set(game: &GameState, scope: DelegateScope, set: PlayerSet) -> EnumSet<PlayerName> {
+fn players_in_set(game: &GameState, scope: Scope, set: PlayerSet) -> EnumSet<PlayerName> {
     match set {
         PlayerSet::AllPlayers => player_queries::all_players(game),
         PlayerSet::You => EnumSet::only(scope.controller),

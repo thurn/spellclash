@@ -18,7 +18,13 @@ use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 
 use crate::core::primitives::{AbilityId, CardId, EffectId, EntityId};
-use crate::delegates::scope::{DelegateScope, EffectScope};
+use crate::delegates::scope::{EffectContext, Scope};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct ThisTurnEffectSource {
+    pub ability_id: AbilityId,
+    pub effect_id: EffectId,
+}
 
 /// Stores a state mapping for effects that persist until the end of the current
 /// turn.
@@ -30,7 +36,7 @@ pub struct ThisTurnState {
     /// Map from entities to lists of effects active this turn affecting that
     /// entity.
     #[serde_as(as = "Vec<(_, _)>")]
-    effects: HashMap<EntityId, Vec<EffectScope>>,
+    effects: HashMap<EntityId, Vec<ThisTurnEffectSource>>,
 
     /// List of control-changing effects to automatically clean up at end of
     /// turn.
@@ -39,9 +45,12 @@ pub struct ThisTurnState {
 
 impl ThisTurnState {
     /// Marks a new effect which persists until end of turn for a given
-    /// [EffectScope].
-    pub fn add_effect(&mut self, scope: EffectScope, target: EntityId) {
-        self.effects.entry(target).or_default().push(scope);
+    /// [EffectContext].
+    pub fn add_effect(&mut self, source: AbilityId, effect_id: EffectId, target: EntityId) {
+        self.effects
+            .entry(target)
+            .or_default()
+            .push(ThisTurnEffectSource { ability_id: source, effect_id });
     }
 
     /// Returns the number of times the [AbilityId] ability has been applied to
