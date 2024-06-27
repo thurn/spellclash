@@ -12,27 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_definitions::ability_choices::{AbilityTargetPermanent, PlayerSet};
-use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardType, HasController, Zone, ALL_POSSIBLE_PLAYERS};
-use data::delegates::scope::Scope;
-use data::game_states::game_state::GameState;
-use enumset::EnumSet;
+use data::card_definitions::ability_definition::TargetSelector;
+use data::core::primitives::PermanentId;
 use rules::predicates::card_predicates;
-use rules::queries::{card_queries, player_queries};
+
+use crate::targeting::permanent_selectors::SinglePermanentSelector;
+use crate::targeting::player_set::PlayerSet;
 
 /// Target any creature on the battlefield
-pub fn creature() -> AbilityTargetPermanent {
-    AbilityTargetPermanent {
-        players: PlayerSet::AllPlayers,
-        predicate: Box::new(card_predicates::creature),
-    }
+pub fn creature() -> impl TargetSelector<Target = PermanentId> {
+    SinglePermanentSelector::new(PlayerSet::AllPlayers, card_predicates::creature)
 }
 
 /// Target a creature an opponent controls
-pub fn creature_opponent_controls() -> AbilityTargetPermanent {
-    AbilityTargetPermanent {
-        players: PlayerSet::Opponents,
-        predicate: Box::new(card_predicates::creature),
-    }
+pub fn creature_opponent_controls() -> impl TargetSelector<Target = PermanentId> {
+    SinglePermanentSelector::new(PlayerSet::Opponents, card_predicates::creature)
+}
+
+/// Target a creature you control
+pub fn creature_you_control() -> impl TargetSelector<Target = PermanentId> {
+    SinglePermanentSelector::new(PlayerSet::You, card_predicates::creature)
 }

@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_definitions::ability_definition::{
-    AbilityBuilder, AbilityDelegateBuilder, StaticAbility,
-};
+use data::card_definitions::ability_definition::{Ability, StaticAbility};
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::function_types::CardPredicate;
 use data::core::primitives::{CardId, PermanentId, Zone};
@@ -26,7 +24,7 @@ use rules::queries::combat_queries;
 /// permanent matching the given predicate.
 pub fn cannot_attack_unless_defender_controls(
     predicate: impl CardPredicate<PermanentId>,
-) -> impl AbilityBuilder {
+) -> impl Ability {
     StaticAbility::new().delegates(move |d| {
         d.can_attack_target.this(move |g, s, data, current| {
             current.add_condition(

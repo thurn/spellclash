@@ -14,11 +14,7 @@
 
 use std::iter;
 
-use data::card_definitions::ability_choices::{
-    AbilityTarget, AbilityTargetPermanent, AbilityTargetPlayer, AbilityTargetPredicate,
-    AbilityTargetQuantity, PlayerSet,
-};
-use data::card_definitions::ability_definition::AbilityType;
+use data::card_definitions::ability_definition::{Ability, AbilityType};
 use data::card_definitions::definitions;
 use data::card_states::iter_matching::IterMatching;
 use data::card_states::play_card_plan::{PlayAs, PlayCardPlan, PlayCardTiming};
@@ -58,13 +54,11 @@ pub fn execute(
     let mut plan = plans.remove(0);
 
     let prompt_lists = targeted_abilities(game, card_id)
-        .filter_map(|(ability_id, target)| {
-            let scope = game.create_delegate_scope(ability_id)?;
-            Some(
-                valid_targets(game, scope, &target.predicate)
-                    .map(|entity_id| Choice { entity_id })
-                    .collect::<Vec<_>>(),
-            )
+        .map(|(scope, ability)| {
+            ability
+                .valid_targets(game, scope)
+                .map(|entity_id| Choice { entity_id })
+                .collect::<Vec<_>>()
         })
         .collect::<Vec<_>>();
     for choices in prompt_lists {
@@ -144,23 +138,20 @@ pub fn can_pick_targets(
 fn targeted_abilities(
     game: &GameState,
     card_id: CardId,
-) -> impl Iterator<Item = (AbilityId, &AbilityTarget)> {
+) -> impl Iterator<Item = (Scope, &dyn Ability)> {
     let Some(card_name) = game.card(card_id).map(|c| c.card_name) else {
         return Either::Left(iter::empty());
     };
 
-    Either::Right(
-        definitions::get(card_name)
-            .iterate_abilities()
-            .filter(|(_, ability)| ability.ability_type == AbilityType::Spell)
-            .flat_map(move |(number, ability)| {
-                ability
-                    .choices
-                    .targets
-                    .iter()
-                    .map(move |target| (AbilityId { card_id, number }, target))
-            }),
-    )
+    Either::Right(definitions::get(card_name).iterate_abilities().filter_map(
+        move |(number, ability)| {
+            if ability.get_ability_type() == AbilityType::Spell && ability.requires_targets() {
+                Some((game.create_delegate_scope(AbilityId { card_id, number })?, ability))
+            } else {
+                None
+            }
+        },
+    ))
 }
 
 fn valid_target_lists(
@@ -171,86 +162,9 @@ fn valid_target_lists(
         return Either::Left(iter::empty());
     };
 
-    Either::Right(
-        definitions::get(card.card_name)
-            .iterate_abilities()
-            .filter(|(_, ability)| ability.ability_type == AbilityType::Spell)
-            .flat_map(move |(number, ability)| {
-                ability.choices.targets.iter().flat_map(move |target| {
-                    let scope =
-                        game.create_delegate_scope(AbilityId { card_id, number }).unwrap_or_else(
-                            || panic!("Unable to create delegate scope for card {card_id:?}"),
-                        );
-                    assert_eq!(
-                        target.quantity,
-                        AbilityTargetQuantity::Exactly(1),
-                        "TODO: handle multiple target quantities"
-                    );
-                    valid_targets(game, scope, &target.predicate).map(|entity_id| vec![entity_id])
-                })
-            }),
-    )
-}
-
-fn valid_targets<'a>(
-    game: &'a GameState,
-    scope: Scope,
-    target: &'a AbilityTargetPredicate,
-) -> Box<dyn Iterator<Item = EntityId> + 'a> {
-    match target {
-        AbilityTargetPredicate::Permanent(data) => valid_card_targets(game, scope, data),
-        AbilityTargetPredicate::Player(data) => valid_player_targets(game, data),
-        AbilityTargetPredicate::CardOrPlayer(data) => Box::new(
-            valid_card_targets(game, scope, &data.target_permanent)
-                .chain(valid_player_targets(game, &data.target_player)),
-        ),
-        AbilityTargetPredicate::StackAbility(predicate) => Box::new(
-            game.zones
-                .abilities_on_stack()
-                .filter_some(move |&ability_id| predicate(game, ability_id))
-                .map(EntityId::StackAbility),
-        ),
-        AbilityTargetPredicate::AnyOf(predicate_list) => Box::new(
-            predicate_list.iter().flat_map(move |predicate| valid_targets(game, scope, predicate)),
-        ),
-    }
-}
-
-fn valid_card_targets<'a>(
-    game: &'a GameState,
-    scope: Scope,
-    target: &'a AbilityTargetPermanent,
-) -> Box<dyn Iterator<Item = EntityId> + 'a> {
-    Box::new(players_in_set(game, scope, target.players).iter().flat_map(move |player| {
-        game.battlefield(player).iter().filter_map(move |&permanent_id| {
-            if (target.predicate)(game, permanent_id) == Some(true) {
-                Some(permanent_id.to_entity_id())
-            } else {
-                None
-            }
-        })
+    Either::Right(targeted_abilities(game, card_id).flat_map(|(scope, ability)| {
+        ability.valid_targets(game, scope).map(|entity_id| vec![entity_id])
     }))
-}
-
-fn valid_player_targets<'a>(
-    game: &'a GameState,
-    target: &'a AbilityTargetPlayer,
-) -> Box<dyn Iterator<Item = EntityId> + 'a> {
-    Box::new(
-        target
-            .players
-            .iter()
-            .filter(move |&player| (target.predicate)(game, player))
-            .map(|player| player.entity_id()),
-    )
-}
-
-fn players_in_set(game: &GameState, scope: Scope, set: PlayerSet) -> EnumSet<PlayerName> {
-    match set {
-        PlayerSet::AllPlayers => player_queries::all_players(game),
-        PlayerSet::You => EnumSet::only(scope.controller),
-        PlayerSet::Opponents => player_queries::all_opponents(game, scope.controller),
-    }
 }
 
 fn can_pay_mana_costs(

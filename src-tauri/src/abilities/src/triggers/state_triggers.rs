@@ -12,10 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_definitions::ability_choices::AbilityChoiceBuilder;
-use data::card_definitions::ability_definition::{
-    AbilityBuilder, AbilityDelegateBuilder, TriggeredAbility,
-};
+use data::card_definitions::ability_definition::{Ability, TriggeredAbility};
 use data::card_states::iter_matching::IterMatching;
 use data::card_states::zones::ZoneQueries;
 use data::core::function_types::{CardMutation, CardPredicate};
@@ -32,7 +29,7 @@ use utils::outcome::Outcome;
 pub fn when_controls_no(
     predicate: impl CardPredicate<PermanentId>,
     mutation: impl CardMutation<CardId>,
-) -> impl AbilityBuilder {
+) -> impl Ability {
     TriggeredAbility::new()
         .delegates(move |d| {
             d.state_triggered_ability.trigger_if_not_on_stack(move |g, s, _| {

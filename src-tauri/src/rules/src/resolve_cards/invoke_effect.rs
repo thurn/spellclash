@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_definitions::ability_choices::PermanentOrPlayer;
-use data::card_definitions::ability_definition::EffectFn;
+use data::card_definitions::ability_definition::{Ability, EffectFn};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{
     AbilityId, CardId, EntityId, HasController, PlayerName, StackAbilityId, StackItemId,
@@ -28,19 +27,15 @@ pub fn run(
     game: &mut GameState,
     ability_id: AbilityId,
     stack_ability_id: Option<StackAbilityId>,
-    effect: &Option<EffectFn>,
+    ability: &dyn Ability,
 ) -> Outcome {
-    if let Some(function) = effect {
-        let controller = match stack_ability_id {
-            Some(stack_ability_id) => game.stack_ability(stack_ability_id).controller,
-            _ => game.card(ability_id)?.controller(),
-        };
-        let scope = Scope { controller, ability_id };
+    let controller = match stack_ability_id {
+        Some(stack_ability_id) => game.stack_ability(stack_ability_id).controller,
+        _ => game.card(ability_id)?.controller(),
+    };
+    let scope = Scope { controller, ability_id };
 
-        let context = EffectContext { scope, effect_id: game.ability_state.new_effect_id() };
-        function(game, context);
-        outcome::OK
-    } else {
-        outcome::SKIPPED
-    }
+    let context = EffectContext { scope, effect_id: game.ability_state.new_effect_id() };
+    ability.invoke_effect(game, context);
+    outcome::OK
 }

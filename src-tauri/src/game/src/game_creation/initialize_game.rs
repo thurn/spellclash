@@ -52,7 +52,7 @@ pub fn run(database: SqliteDatabase, game: &mut GameState, update_channel: Optio
             for (number, ability) in
                 definitions::get(game.card(card_id)?.card_name).iterate_abilities()
             {
-                for delegate in &ability.delegates {
+                for delegate in ability.get_delegates() {
                     (delegate.run)(&mut game.delegates);
                     game.delegates.apply_writes(AbilityId { card_id, number }, delegate.zones);
                 }

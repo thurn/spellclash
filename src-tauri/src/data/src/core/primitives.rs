@@ -249,6 +249,17 @@ impl PermanentId {
     }
 }
 
+impl TryFrom<EntityId> for PermanentId {
+    type Error = ();
+
+    fn try_from(value: EntityId) -> Result<Self, Self::Error> {
+        match value {
+            EntityId::Card(card_id, object_id) => Ok(Self::new(object_id, card_id)),
+            _ => Err(()),
+        }
+    }
+}
+
 impl ToCardId for PermanentId {
     fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
         if zones.zones().card(self.internal_card_id)?.object_id == self.object_id {

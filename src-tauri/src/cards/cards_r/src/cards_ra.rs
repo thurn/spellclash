@@ -14,8 +14,7 @@
 
 use abilities::targeting::targets;
 use abilities::triggers::delayed_trigger;
-use data::card_definitions::ability_choices::AbilityChoiceBuilder;
-use data::card_definitions::ability_definition::{AbilityDelegateBuilder, SpellAbility};
+use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 use data::core::primitives::HasSource;
@@ -26,7 +25,7 @@ pub fn ray_of_command() -> CardDefinition {
     let state = EffectState::new(0);
     CardDefinition::new(card_name::RAY_OF_COMMAND).ability(
         SpellAbility::new()
-            .target(targets::creature_opponent_controls())
+            .targets(targets::creature_opponent_controls())
             .effect(move |g, c, target| {
                 permanents::untap(g, c.source(), target);
                 change_controller::gain_control_this_turn(g, c.controller(), c.effect_id, target);

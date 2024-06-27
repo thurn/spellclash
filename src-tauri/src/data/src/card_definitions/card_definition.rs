@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::card_definitions::ability_definition::{AbilityBuilder, AbilityDefinition};
+use crate::card_definitions::ability_definition::Ability;
 use crate::card_definitions::card_name::CardName;
 use crate::core::primitives::AbilityNumber;
 #[allow(unused)] // Used in docs
@@ -29,7 +29,7 @@ pub struct CardDefinition {
     name: CardName,
     /// Abilities of this card, which describe how it modifies game rules & game
     /// state.
-    abilities: Vec<AbilityDefinition>,
+    abilities: Vec<Box<dyn Ability>>,
 }
 
 impl CardDefinition {
@@ -45,20 +45,18 @@ impl CardDefinition {
     ///
     /// Each clause of the card's oracle text_strings should correspond to one
     /// ability in sequence.
-    pub fn ability(mut self, builder: impl AbilityBuilder) -> Self {
-        self.abilities.push(builder.build());
+    pub fn ability(mut self, ability: impl Ability + 'static) -> Self {
+        self.abilities.push(Box::new(ability));
         self
     }
 
     /// Iterates over all abilities of this card with their [AbilityNumber]s.
-    pub fn iterate_abilities(&self) -> impl Iterator<Item = (AbilityNumber, &AbilityDefinition)> {
-        self.abilities.iter().enumerate().map(|(i, a)| (AbilityNumber(i), a))
+    pub fn iterate_abilities(&self) -> impl Iterator<Item = (AbilityNumber, &dyn Ability)> {
+        self.abilities.iter().enumerate().map(|(i, a)| (AbilityNumber(i), a.as_ref()))
     }
 
     /// Looks up an ability by its [AbilityNumber].
-    pub fn get_ability(&self, ability_number: AbilityNumber) -> &AbilityDefinition {
-        self.abilities.get(ability_number.0).unwrap_or_else(|| {
-            panic!("Card {:?} does not have ability {}", self.name, ability_number.0)
-        })
+    pub fn get_ability(&self, ability_number: AbilityNumber) -> &dyn Ability {
+        self.abilities[ability_number.0].as_ref()
     }
 }

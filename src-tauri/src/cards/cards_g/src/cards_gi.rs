@@ -14,18 +14,19 @@
 
 use abilities::core::effects;
 use abilities::targeting::targets;
-use data::card_definitions::ability_choices::AbilityChoiceBuilder;
-use data::card_definitions::ability_definition::{AbilityDelegateBuilder, SpellAbility};
+use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 use rules::queries::query_extension::QueryExt;
 
 pub fn giant_growth() -> CardDefinition {
     CardDefinition::new(card_name::GIANT_GROWTH).ability(
-        SpellAbility::new().target(targets::creature()).effect(effects::this_turn).delegates(|d| {
-            d.power.this_turn(|_, _, current| current + 3);
-            d.toughness.this_turn(|_, _, current| current + 3);
-        }),
+        SpellAbility::new().targets(targets::creature()).effect(effects::this_turn).delegates(
+            |d| {
+                d.power.this_turn(|_, _, current| current + 3);
+                d.toughness.this_turn(|_, _, current| current + 3);
+            },
+        ),
     )
 }
 
