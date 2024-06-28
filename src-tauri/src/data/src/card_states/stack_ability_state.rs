@@ -18,7 +18,8 @@ use serde::{Deserialize, Serialize};
 use crate::card_states::zones::Zones;
 use crate::card_states::zones::{HasZones, ToCardId};
 use crate::core::primitives::{
-    AbilityId, CardId, EntityId, HasController, HasPlayerName, ObjectId, PlayerName, StackAbilityId,
+    AbilityId, CardId, EffectId, EntityId, HasController, HasPlayerName, ObjectId, PlayerName,
+    StackAbilityId,
 };
 use crate::delegates::scope::Scope;
 use crate::game_states::game_state::GameState;
@@ -51,6 +52,10 @@ pub struct StackAbilityState {
 
     /// Targets for this ability, selected when it is placed on the stack.
     pub targets: Vec<EntityId>,
+
+    /// Marks this as a delayed trigger on the stack created by the effect with
+    /// the indicated [EffectId].
+    pub delayed_trigger_effect_id: Option<EffectId>,
 }
 
 impl HasPlayerName for StackAbilityState {

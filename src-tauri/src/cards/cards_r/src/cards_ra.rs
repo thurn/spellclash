@@ -24,17 +24,12 @@ use rules::mutations::{change_controller, permanents};
 pub fn ray_of_command() -> CardDefinition {
     let state = EffectState::new(0);
     CardDefinition::new(card_name::RAY_OF_COMMAND).ability(
-        SpellAbility::new()
-            .targets(targets::creature_opponent_controls())
-            .effect(move |g, c, target| {
+        SpellAbility::new().targets(targets::creature_opponent_controls()).effect(
+            |g, c, target| {
                 permanents::untap(g, c.source(), target);
                 change_controller::gain_control_this_turn(g, c.controller(), c.effect_id, target);
                 delayed_trigger::enable(g, c, state, target)
-            })
-            .delegates(|d| {
-                d.can_attack_target.this(|g, s, target, current| {
-                    current.add_condition(s, target.attacker_id == state.get(g, s))
-                })
-            }),
+            },
+        ),
     )
 }

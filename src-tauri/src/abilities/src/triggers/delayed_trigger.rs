@@ -16,12 +16,23 @@ use data::delegates::scope::EffectContext;
 use data::game_states::combat_state::AttackerId;
 use data::game_states::effect_state::EffectState;
 use data::game_states::game_state::GameState;
+use data::game_states::state_value::StateValue;
 
-pub fn enable<TTarget>(
+/// Activates the delayed trigger associated with the current ability in
+/// [EffectContext] and stores a state value in the provided [EffectState].
+///
+/// One copy of the trigger will be placed on the stack for each call to this
+/// function once the trigger condition matches.
+pub fn enable<T: Into<StateValue> + TryFrom<StateValue>>(
     game: &mut GameState,
-    scope: EffectContext,
-    state: &EffectState<TTarget>,
-    target: TTarget,
+    context: EffectContext,
+    state: &EffectState<T>,
+    state_value: T,
 ) {
-    todo!()
+    game.ability_state
+        .delayed_triggers
+        .entry(context.ability_id())
+        .or_default()
+        .push(context.effect_id);
+    state.store(game, context.effect_id, state_value);
 }

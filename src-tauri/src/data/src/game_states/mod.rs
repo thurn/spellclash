@@ -20,5 +20,6 @@ pub mod game_step;
 pub mod history_data;
 pub mod oracle;
 pub mod state_based_event;
+pub mod state_value;
 pub mod this_turn_state;
 pub mod undo_tracker;

@@ -14,17 +14,18 @@
 
 use std::marker::PhantomData;
 
-use crate::core::primitives::CardId;
+use crate::core::primitives::{CardId, EffectId};
 use crate::delegates::scope::{EffectContext, Scope};
 use crate::game_states::game_state::GameState;
+use crate::game_states::state_value::StateValue;
 
 #[derive(Clone, Copy)]
-pub struct EffectState<T> {
+pub struct EffectState<T: Into<StateValue> + TryFrom<StateValue>> {
     _number: u32,
     value: PhantomData<T>,
 }
 
-impl<T> EffectState<T> {
+impl<T: Into<StateValue> + TryFrom<StateValue>> EffectState<T> {
     const STATE0: EffectState<T> = EffectState { _number: 0, value: PhantomData };
     const STATE1: EffectState<T> = EffectState { _number: 1, value: PhantomData };
     const STATE2: EffectState<T> = EffectState { _number: 2, value: PhantomData };
@@ -42,11 +43,19 @@ impl<T> EffectState<T> {
         }
     }
 
-    pub fn store(&self, game: &mut GameState, scope: EffectContext, value: T) {
-        todo!("")
+    /// Sets the value of the state associated with the provided [EffectId] to
+    /// the given value.
+    pub fn store(&self, game: &mut GameState, effect_id: EffectId, value: T) {
+        game.ability_state.effect_state.insert(effect_id, value.into());
     }
 
-    pub fn get(&self, game: &GameState, scope: Scope) -> T {
-        todo!("")
+    /// Retrieves the value of the state associated with the provided
+    /// [EffectId], if one is present.
+    ///
+    /// Returns None if no state is associated with the provided [EffectId] or
+    /// if the value found cannot be converted to the expected type.
+    pub fn get(&self, game: &GameState, effect_id: EffectId) -> Option<T> {
+        let state = game.ability_state.effect_state.get(&effect_id)?;
+        T::try_from(state.clone()).ok()
     }
 }

@@ -304,7 +304,7 @@ impl Zones {
         ability_id: AbilityId,
         owner: PlayerName,
         targets: Vec<EntityId>,
-    ) -> &StackAbilityState {
+    ) -> &mut StackAbilityState {
         let object_id = self.new_object_id();
         let id = self.stack_abilities.insert(StackAbilityState {
             id: StackAbilityId::default(),
@@ -314,6 +314,7 @@ impl Zones {
             owner,
             controller: owner,
             targets,
+            delayed_trigger_effect_id: None,
         });
 
         let ability = &mut self.stack_abilities[id];

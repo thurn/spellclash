@@ -21,7 +21,7 @@ use crate::core::primitives::{AbilityId, CardId, EffectId, EntityId};
 use crate::delegates::scope::{EffectContext, Scope};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct ThisTurnEffectSource {
+struct AbilityEffectId {
     pub ability_id: AbilityId,
     pub effect_id: EffectId,
 }
@@ -36,7 +36,7 @@ pub struct ThisTurnState {
     /// Map from entities to lists of effects active this turn affecting that
     /// entity.
     #[serde_as(as = "Vec<(_, _)>")]
-    effects: HashMap<EntityId, Vec<ThisTurnEffectSource>>,
+    effects: HashMap<EntityId, Vec<AbilityEffectId>>,
 
     /// List of control-changing effects to automatically clean up at end of
     /// turn.
@@ -50,7 +50,7 @@ impl ThisTurnState {
         self.effects
             .entry(target)
             .or_default()
-            .push(ThisTurnEffectSource { ability_id: source, effect_id });
+            .push(AbilityEffectId { ability_id: source, effect_id });
     }
 
     /// Returns the number of times the [AbilityId] ability has been applied to
