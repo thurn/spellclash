@@ -26,7 +26,8 @@ pub struct Scope {
     /// The controller for this ability or the card that created this ability.
     ///
     /// In an effect function, this is the controller of the effect on the
-    /// stack. In a delegate callback, this is the controller of the card.
+    /// stack. In a delegate callback, this is always the current controller of
+    /// the card.
     ///
     /// This is *usually* what you want, but note that you can get into trouble
     /// relying on this in an activated or triggered ability that needs to

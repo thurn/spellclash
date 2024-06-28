@@ -15,6 +15,7 @@
 use data::card_states::card_state::ControlChangingEffect;
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::primitives::{AbilityId, CardId, EffectId, HasController, HasSource, PlayerName};
+use data::delegates::game_delegates::PermanentControllerChangedEvent;
 use data::delegates::scope::{EffectContext, Scope};
 use data::game_states::game_state::GameState;
 use utils::outcome;
@@ -33,15 +34,28 @@ pub fn gain_control(
     effect_id: EffectId,
     card_id: impl ToCardId,
 ) -> Outcome {
+    let card_id = card_id.to_card_id(game)?;
     let current = game.card(card_id)?.controller();
 
     if current != new_controller {
         game.zones.on_controller_changed(card_id, current, new_controller, game.turn);
         let turn = game.turn;
         let card = game.card_mut(card_id)?;
+        let permanent_id = card.permanent_id();
         card.last_changed_control = turn;
         card.control_changing_effects
             .push(ControlChangingEffect { effect_id, controller: new_controller });
+
+        if let Some(id) = permanent_id {
+            game.delegates
+                .permanent_controller_changed
+                .invoke_with(game, &PermanentControllerChangedEvent {
+                    permanent_id: id,
+                    old_controller: current,
+                    new_controller,
+                })
+                .run(game);
+        }
     }
     outcome::OK
 }

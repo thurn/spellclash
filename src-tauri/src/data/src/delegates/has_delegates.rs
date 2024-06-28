@@ -31,7 +31,7 @@ pub trait HasDelegates {
     /// Returns None if this card does not exist.
     fn current_zone(&self, card_id: CardId) -> Option<Zone>;
 
-    fn create_delegate_scope(&self, ability_id: AbilityId) -> Option<Self::ScopeType>;
+    fn create_scope(&self, ability_id: AbilityId) -> Option<Self::ScopeType>;
 
     fn game_state(&self) -> &GameState;
 }
@@ -44,7 +44,7 @@ impl HasDelegates for GameState {
         Some(self.card(card_id)?.zone)
     }
 
-    fn create_delegate_scope(&self, ability_id: AbilityId) -> Option<Self::ScopeType> {
+    fn create_scope(&self, ability_id: AbilityId) -> Option<Self::ScopeType> {
         Some(Scope { controller: self.card(ability_id)?.controller(), ability_id })
     }
 

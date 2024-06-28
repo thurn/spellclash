@@ -21,17 +21,34 @@ use data::game_states::game_state::GameState;
 use utils::outcome;
 use utils::outcome::Outcome;
 
+use crate::mutations::delayed_trigger;
+
+/// Extensions to event delegates for triggering abilities.
+///
+/// This is primarily implemented as a trait to prevent crate cyclic
+/// dependencies, since we don't want our core 'data' crate to have a bunch of
+/// rules logic in it.
 pub trait TriggerExt<TArg> {
+    /// Trigger the [Scope] ability if a predicate is true. The ability will be
+    /// placed on the stack the next time a player would receive priority.
     fn trigger_if(
         &mut self,
         predicate: impl Fn(&GameState, Scope, &TArg) -> bool + Copy + Send + Sync + 'static,
     );
 
+    /// Trigger the [Scope] delayed trigger ability if a predicate is true *and*
+    /// this delayed trigger has previously been enabled by a call to
+    /// [delayed_trigger::enable].
+    ///
+    /// The delayed trigger is automatically disabled after being triggered.
     fn delayed_trigger_if(
         &mut self,
         predicate: impl Fn(&GameState, Scope, EffectId, &TArg) -> bool + Copy + Send + Sync + 'static,
     );
 
+    /// Trigger the [Scope] ability as long as it is not currently on the stack.
+    ///
+    /// Used for state-based triggers.
     fn trigger_if_not_on_stack(
         &mut self,
         predicate: impl Fn(&GameState, Scope, &TArg) -> bool + Copy + Send + Sync + 'static,
@@ -69,6 +86,7 @@ impl<TArg> TriggerExt<TArg> for EventDelegateList<GameState, TArg> {
             for effect_id in to_trigger {
                 let ability = trigger_ability(g, s.ability_id, s.controller);
                 ability.delayed_trigger_effect_id = Some(effect_id);
+                delayed_trigger::disable(g, s.ability_id, effect_id);
             }
             outcome::OK
         });

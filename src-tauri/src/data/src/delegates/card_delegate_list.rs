@@ -110,7 +110,7 @@ impl<TData: HasDelegates, TArg: ToCardId, TResult> CardDelegateList<TData, TArg,
                 continue;
             }
 
-            let Some(scope) = data.create_delegate_scope(stored.ability_id) else {
+            let Some(scope) = data.create_scope(stored.ability_id) else {
                 continue;
             };
 

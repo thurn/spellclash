@@ -18,7 +18,7 @@ use enumset::EnumSet;
 
 use crate::card_states::zones::{HasZones, ToCardId, ZoneQueries, Zones};
 use crate::core::numerics::{Power, Toughness};
-use crate::core::primitives::{AbilityId, CardId, PlayerName, Zone};
+use crate::core::primitives::{AbilityId, CardId, PermanentId, PlayerName, Zone};
 use crate::delegates::card_delegate_list::CardDelegateList;
 use crate::delegates::event_delegate_list::EventDelegateList;
 use crate::delegates::flag::Flag;
@@ -26,7 +26,7 @@ use crate::delegates::stores_delegates::StoresDelegates;
 use crate::game_states::combat_state::{AttackTarget, AttackerId};
 use crate::game_states::game_state::GameState;
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Copy)]
 pub struct CanAttackTarget {
     pub attacker_id: AttackerId,
     pub target: AttackTarget,
@@ -38,10 +38,20 @@ impl ToCardId for CanAttackTarget {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct PermanentControllerChangedEvent {
+    pub permanent_id: PermanentId,
+    pub old_controller: PlayerName,
+    pub new_controller: PlayerName,
+}
+
 #[derive(Default, Clone)]
 pub struct GameDelegates {
     /// Invoked every time game state-triggered abilities are checked.
     pub state_triggered_ability: EventDelegateList<GameState, ()>,
+
+    /// Invoked when the controller of a permanent changes.
+    pub permanent_controller_changed: EventDelegateList<GameState, PermanentControllerChangedEvent>,
 
     /// Can a creature attack the indicated target?
     pub can_attack_target: CardDelegateList<GameState, CanAttackTarget, Flag>,
@@ -60,6 +70,7 @@ pub struct GameDelegates {
 impl GameDelegates {
     pub fn apply_writes(&mut self, id: AbilityId, zones: EnumSet<Zone>) {
         self.state_triggered_ability.apply_writes(id, zones);
+        self.permanent_controller_changed.apply_writes(id, zones);
         self.can_attack_target.apply_writes(id, zones);
         self.power.apply_writes(id, zones);
         self.toughness.apply_writes(id, zones);

@@ -146,7 +146,7 @@ fn targeted_abilities(
     Either::Right(definitions::get(card_name).iterate_abilities().filter_map(
         move |(number, ability)| {
             if ability.get_ability_type() == AbilityType::Spell && ability.requires_targets() {
-                Some((game.create_delegate_scope(AbilityId { card_id, number })?, ability))
+                Some((game.create_scope(AbilityId { card_id, number })?, ability))
             } else {
                 None
             }

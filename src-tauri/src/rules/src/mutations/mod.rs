@@ -13,6 +13,7 @@
 // limitations under the License.
 
 pub mod change_controller;
+pub mod delayed_trigger;
 pub mod library;
 pub mod move_card;
 pub mod permanents;
