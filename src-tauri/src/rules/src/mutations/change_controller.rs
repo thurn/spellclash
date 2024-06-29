@@ -83,7 +83,20 @@ pub fn remove_control(game: &mut GameState, effect_id: EffectId, card_id: CardId
     let new = card.controller();
     if current != new {
         game.zones.on_controller_changed(card_id, current, new, game.turn);
-        game.card_mut(card_id)?.last_changed_control = game.turn;
+        let turn = game.turn;
+        let card = game.card_mut(card_id)?;
+        card.last_changed_control = turn;
+        let permanent_id = card.permanent_id();
+        if let Some(id) = permanent_id {
+            game.delegates
+                .permanent_controller_changed
+                .invoke_with(game, &PermanentControllerChangedEvent {
+                    permanent_id: id,
+                    old_controller: current,
+                    new_controller: new,
+                })
+                .run(game);
+        }
     }
     outcome::OK
 }

@@ -21,6 +21,7 @@ use data::game_states::game_state::{GameState, GameStatus};
 use data::game_states::state_based_event::StateBasedEvent;
 use data::player_states::player_state::PlayerQueries;
 use enumset::EnumSet;
+use itertools::any;
 use tracing::instrument;
 use utils::outcome;
 use utils::outcome::{IsSuccess, Outcome};
@@ -29,9 +30,13 @@ use crate::mutations::move_card;
 use crate::queries::{card_queries, player_queries};
 
 /// Runs actions immediately before a player receives priority
+///
+/// Returns true if any state-based actions fired or any triggers were put on
+/// the stack.
 #[instrument(name = "state_based_actions_run", level = "debug", skip(game))]
-pub fn on_will_receive_priority(game: &mut GameState) {
-    check_state_triggered_abilities(game);
+pub fn on_will_receive_priority(game: &mut GameState) -> bool {
+    let mut anything_happened = false;
+    anything_happened |= check_state_triggered_abilities(game);
 
     // > 704.3. Whenever a player would get priority (see rule 117, "Timing and
     // > Priority"), the game checks for any of the listed conditions for
@@ -45,11 +50,15 @@ pub fn on_will_receive_priority(game: &mut GameState) {
     // <https://yawgatog.com/resources/magic-rules/#R7043>
     loop {
         let applied_action = state_based_actions(game);
+        anything_happened |= applied_action;
         let ability_triggered = add_triggers_to_stack(game);
+        anything_happened |= ability_triggered;
         if !applied_action && !ability_triggered {
             break;
         }
     }
+
+    anything_happened
 }
 
 /// Runs state-based actions. Returns 'Some(true)' if any action was performed.
@@ -156,15 +165,18 @@ fn add_triggers_to_stack(game: &mut GameState) -> bool {
 /// that seem likely to produce conditions *during* their execution that are not
 /// visible *afterwards*, e.g. flicker effects. It's not perfect, but this is
 /// probably the only reasonable way to handle it.
-pub fn check_state_triggered_abilities(game: &mut GameState) -> Outcome {
+///
+/// Returns true if an ability fired.
+pub fn check_state_triggered_abilities(game: &mut GameState) -> bool {
     if !game.delegates.state_triggered_ability.is_empty()
         && !game.checking_state_triggered_abilities
     {
         // Only run the check if it's not already running to prevent infinite loops.
         game.checking_state_triggered_abilities = true;
-        game.delegates.state_triggered_ability.invoke_with(game, &()).run(game)?;
+        game.delegates.state_triggered_ability.invoke_with(game, &()).run(game);
         game.checking_state_triggered_abilities = false;
+        true
+    } else {
+        false
     }
-
-    outcome::OK
 }

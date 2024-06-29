@@ -303,7 +303,8 @@ fn cleanup(game: &mut GameState) {
     // > gets priority.
     //
     // https://yawgatog.com/resources/magic-rules/#R5143
-    state_based_actions::on_will_receive_priority(game);
-
-    advance(game)
+    let anything_happened = state_based_actions::on_will_receive_priority(game);
+    if !anything_happened {
+        advance(game)
+    }
 }
