@@ -80,7 +80,8 @@ pub trait Ability: AbilityData {
     /// Invokes a delayed trigger effect associated with this ability.
     ///
     /// This applies the effect of a delayed trigger after it has been triggered
-    /// and resolved.
+    /// and resolved. The `EffectId` in the provided [EffectContext] will be the
+    /// ID from the effect which originally produced this delayed trigger.
     fn invoke_delayed_trigger_effect(&self, game: &mut GameState, context: EffectContext);
 }
 
