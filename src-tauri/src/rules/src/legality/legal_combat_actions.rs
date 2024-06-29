@@ -77,7 +77,7 @@ pub fn append(
                                         attacker_id: attacker,
                                         target: *target,
                                     }),
-                                    Flag::new(),
+                                    Flag::new(true),
                                 )
                                 .value()
                         })

@@ -23,14 +23,8 @@ pub struct Flag {
 }
 
 impl Flag {
-    /// Creates a new flag.
-    ///
-    /// Newly-created flags always have a value of 'true'.
-    pub fn new() -> Self {
-        Self { changed_by: Source::Game, value: true, locked: false }
-    }
-
-    pub fn from_bool(value: bool) -> Self {
+    /// Creates a new flag with the given initial value
+    pub fn new(value: bool) -> Self {
         Self { changed_by: Source::Game, value, locked: false }
     }
 
@@ -89,6 +83,11 @@ impl Flag {
         self
     }
 
+    /// Helper function equivalent to `add_condition(source, true)`.
+    pub fn yes(self, source: impl HasSource) -> Self {
+        self.add_permission(source, true)
+    }
+
     /// Prevent all further modifications to the value of this flag.
     pub fn lock(mut self) -> Self {
         self.locked = true;
@@ -103,11 +102,5 @@ pub trait FlagOption {
 impl FlagOption for Option<Flag> {
     fn value(&self) -> bool {
         self.map_or(false, |flag| flag.value())
-    }
-}
-
-impl Default for Flag {
-    fn default() -> Self {
-        Self::new()
     }
 }

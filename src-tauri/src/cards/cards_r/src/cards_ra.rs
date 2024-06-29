@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use abilities::core::effects;
 use abilities::targeting::targets;
 use data::card_definitions::ability_definition::{DelayedTrigger, SpellAbility};
 use data::card_definitions::card_definition::CardDefinition;
@@ -20,6 +21,7 @@ use data::core::primitives::HasSource;
 use data::game_states::effect_state::EffectState;
 use rules::mutations::trigger_extension::TriggerExt;
 use rules::mutations::{change_controller, delayed_trigger, permanents};
+use rules::queries::query_extension::QueryExt;
 
 pub fn ray_of_command() -> CardDefinition {
     let state = EffectState::new(0);
@@ -29,16 +31,19 @@ pub fn ray_of_command() -> CardDefinition {
             .effect(|g, c, target| {
                 permanents::untap(g, c.source(), target);
                 change_controller::gain_control_this_turn(g, c.controller(), c.effect_id, target);
+                effects::this_turn(g, c, target);
                 delayed_trigger::enable(g, c, state, target);
             })
             .delegates(|d| {
                 d.permanent_controller_changed.delayed_trigger_if(|g, s, effect_id, data| {
                     data.old_controller == s.controller
                         && state.matches(g, effect_id, data.permanent_id)
-                })
+                });
+                d.has_haste.this_turn(|_, s, current| current.yes(s.source()));
             })
             .delayed_trigger(DelayedTrigger::new().effect(|g, c| {
-                permanents::tap(g, c.source(), state.get(g, c.effect_id));
+                let effect_id = state.pop(g, c.effect_id);
+                permanents::tap(g, c.source(), effect_id);
             })),
     )
 }

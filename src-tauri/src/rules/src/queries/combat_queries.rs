@@ -43,9 +43,15 @@ pub fn can_attack(game: &GameState, attacker_id: AttackerId) -> Option<Flag> {
     let turn = game.turn;
     let card = game.card(attacker_id)?;
     let types = card_queries::card_types(game, card.id)?;
-    let mut result = Flag::new();
-    result = result.add_condition(Source::Game, card.last_changed_control != turn);
-    result = result.add_condition(Source::Game, card.entered_current_zone != turn);
+    let mut result = Flag::new(true);
+    result = result.add_condition(
+        Source::Game,
+        card.last_changed_control != turn || has_haste(game, attacker_id).value(),
+    );
+    result = result.add_condition(
+        Source::Game,
+        card.entered_current_zone != turn || has_haste(game, attacker_id).value(),
+    );
     result = result.add_condition(Source::Game, card.controller() == turn.active_player);
     result = result.add_condition(Source::Game, card.tapped_state == TappedState::Untapped);
     result = result.add_condition(Source::Game, types.contains(CardType::Creature));
@@ -56,6 +62,12 @@ pub fn can_attack(game: &GameState, attacker_id: AttackerId) -> Option<Flag> {
         attack_targets(game).map(|target| CanAttackTarget { attacker_id, target }),
         result,
     ))
+}
+
+/// Returns true if the indicated permanent has the 'haste' ability.
+pub fn has_haste(game: &GameState, permanent_id: PermanentId) -> Option<Flag> {
+    let card = game.card(permanent_id)?;
+    Some(game.delegates.has_haste.query(game, &permanent_id, Flag::new(false)))
 }
 
 /// Returns an iterator over all legal attackers for the provided player.
@@ -77,7 +89,7 @@ pub fn legal_attackers(
 pub fn can_block(game: &GameState, blocker_id: BlockerId) -> Option<Flag> {
     let card = game.card(blocker_id)?;
     let types = card_queries::card_types(game, card.id)?;
-    let mut result = Flag::new();
+    let mut result = Flag::new(true);
     result = result.add_condition(Source::Game, card.controller() != game.turn.active_player);
     result = result.add_condition(Source::Game, card.tapped_state != TappedState::Tapped);
     result = result.add_condition(Source::Game, types.contains(CardType::Creature));

@@ -53,7 +53,7 @@ where
             move |player| {
                 game.battlefield(player).iter().filter_map(move |&permanent_id| {
                     if (self.predicate)(game, permanent_id) == Some(true) {
-                        Some(permanent_id.to_entity_id())
+                        Some(permanent_id.into())
                     } else {
                         None
                     }

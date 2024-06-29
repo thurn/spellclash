@@ -141,7 +141,7 @@ impl<TData: HasDelegates, TArg: ToCardId> CardDelegateList<TData, TArg, Flag> {
         if self.is_empty() {
             current
         } else {
-            Flag::from_bool(iterator.any(|arg| self.query(data, &arg, current).value()))
+            Flag::new(iterator.any(|arg| self.query(data, &arg, current).value()))
         }
     }
 
@@ -161,7 +161,7 @@ impl<TData: HasDelegates, TArg: ToCardId> CardDelegateList<TData, TArg, Flag> {
         if self.is_empty() {
             current
         } else {
-            Flag::from_bool(iterator.all(|arg| self.query(data, &arg, current).value()))
+            Flag::new(iterator.all(|arg| self.query(data, &arg, current).value()))
         }
     }
 }

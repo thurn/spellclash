@@ -59,6 +59,13 @@ impl<T: Into<StateValue> + TryFrom<StateValue> + PartialEq> EffectState<T> {
         T::try_from(state.clone()).ok()
     }
 
+    /// Retrieves and removes the state value associated with the provided
+    /// [EffectId], if one is present.
+    pub fn pop(&self, game: &mut GameState, effect_id: EffectId) -> Option<T> {
+        let state = game.ability_state.effect_state.remove(&effect_id)?;
+        T::try_from(state).ok()
+    }
+
     /// Returns true if `other` is equal to the stored state value for this
     /// [EffectId]. Returns false if they are not equal or if no state is
     /// associated with the provided [EffectId].

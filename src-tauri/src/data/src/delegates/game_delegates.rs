@@ -56,6 +56,9 @@ pub struct GameDelegates {
     /// Can a creature attack the indicated target?
     pub can_attack_target: CardDelegateList<GameState, CanAttackTarget, Flag>,
 
+    /// Does this permanent have haste?
+    pub has_haste: CardDelegateList<GameState, PermanentId, Flag>,
+
     /// Queries the power value for a card.
     ///
     /// This may be invoked for a card in any zone.
@@ -72,6 +75,7 @@ impl GameDelegates {
         self.state_triggered_ability.apply_writes(id, zones);
         self.permanent_controller_changed.apply_writes(id, zones);
         self.can_attack_target.apply_writes(id, zones);
+        self.has_haste.apply_writes(id, zones);
         self.power.apply_writes(id, zones);
         self.toughness.apply_writes(id, zones);
     }
