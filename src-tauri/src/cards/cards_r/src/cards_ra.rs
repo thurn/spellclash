@@ -13,14 +13,13 @@
 // limitations under the License.
 
 use abilities::targeting::targets;
-use data::card_definitions::ability_definition::SpellAbility;
+use data::card_definitions::ability_definition::{DelayedTrigger, SpellAbility};
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 use data::core::primitives::HasSource;
 use data::game_states::effect_state::EffectState;
 use rules::mutations::trigger_extension::TriggerExt;
 use rules::mutations::{change_controller, delayed_trigger, permanents};
-use utils::outcome;
 
 pub fn ray_of_command() -> CardDefinition {
     let state = EffectState::new(0);
@@ -29,24 +28,17 @@ pub fn ray_of_command() -> CardDefinition {
             .targets(targets::creature_opponent_controls())
             .effect(|g, c, target| {
                 permanents::untap(g, c.source(), target);
-                outcome::execute(|| {
-                    // Only schedule delayed trigger if control effect happens and is not prevented,
-                    // e.g. by the ability of Guardian Beast.
-                    change_controller::gain_control_this_turn(
-                        g,
-                        c.controller(),
-                        c.effect_id,
-                        target,
-                    )?;
-                    delayed_trigger::enable(g, c, state, target);
-                    outcome::OK
-                });
+                change_controller::gain_control_this_turn(g, c.controller(), c.effect_id, target);
+                delayed_trigger::enable(g, c, state, target);
             })
             .delegates(|d| {
                 d.permanent_controller_changed.delayed_trigger_if(|g, s, effect_id, data| {
                     data.old_controller == s.controller
                         && state.matches(g, effect_id, data.permanent_id)
                 })
-            }),
+            })
+            .delayed_trigger(DelayedTrigger::new().effect(|g, c| {
+                permanents::tap(g, c.source(), state.get(g, c.effect_id));
+            })),
     )
 }

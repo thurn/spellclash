@@ -22,6 +22,7 @@ pub enum HaltCondition {
 /// Typically, effect functions will return None if they are unable to apply
 /// their operation (e.g. because the card in question no longer exists) and
 /// Some(Success) if the operation occurred successfully.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Success;
 
 /// The result of an operation which may not apply its effects.

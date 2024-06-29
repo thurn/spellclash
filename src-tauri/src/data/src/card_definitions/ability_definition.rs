@@ -76,6 +76,12 @@ pub trait Ability: AbilityData {
     /// This is a no-op if invoked on an ability with no effect, like a static
     /// ability.
     fn invoke_effect(&self, game: &mut GameState, context: EffectContext);
+
+    /// Invokes a delayed trigger effect associated with this ability.
+    ///
+    /// This applies the effect of a delayed trigger after it has been triggered
+    /// and resolved.
+    fn invoke_delayed_trigger_effect(&self, game: &mut GameState, context: EffectContext);
 }
 
 pub trait TargetSelector: Sync + Send {
@@ -94,8 +100,13 @@ pub struct SpellAbility;
 
 impl SpellAbility {
     #[allow(clippy::new_ret_no_self)]
-    pub fn new() -> AbilityBuilder<NoEffect> {
-        AbilityBuilder { ability_type: AbilityType::Spell, delegates: vec![], effect: NoEffect }
+    pub fn new() -> AbilityBuilder<NoEffect, DelayedTrigger<NoEffect>> {
+        AbilityBuilder {
+            ability_type: AbilityType::Spell,
+            delegates: vec![],
+            effect: NoEffect,
+            delayed_trigger_effect: DelayedTrigger { delayed_trigger_effect: NoEffect },
+        }
     }
 }
 
@@ -103,8 +114,13 @@ pub struct TriggeredAbility;
 
 impl TriggeredAbility {
     #[allow(clippy::new_ret_no_self)]
-    pub fn new() -> AbilityBuilder<NoEffect> {
-        AbilityBuilder { ability_type: AbilityType::Triggered, delegates: vec![], effect: NoEffect }
+    pub fn new() -> AbilityBuilder<NoEffect, DelayedTrigger<NoEffect>> {
+        AbilityBuilder {
+            ability_type: AbilityType::Triggered,
+            delegates: vec![],
+            effect: NoEffect,
+            delayed_trigger_effect: DelayedTrigger { delayed_trigger_effect: NoEffect },
+        }
     }
 }
 
@@ -112,11 +128,12 @@ pub struct StaticAbility;
 
 impl StaticAbility {
     #[allow(clippy::new_ret_no_self)]
-    pub fn new() -> AbilityBuilder<StaticEffect> {
+    pub fn new() -> AbilityBuilder<StaticEffect, DelayedTrigger<StaticEffect>> {
         AbilityBuilder {
             ability_type: AbilityType::Static,
             delegates: vec![],
             effect: StaticEffect,
+            delayed_trigger_effect: DelayedTrigger { delayed_trigger_effect: StaticEffect },
         }
     }
 }
@@ -144,15 +161,21 @@ where
 
 pub struct StaticEffect;
 
-pub struct AbilityBuilder<TEffect> {
+pub trait DelayedTriggerEffect {
+    fn invoke(&self, game: &mut GameState, context: EffectContext);
+}
+
+pub struct AbilityBuilder<TEffect, TDelayed: DelayedTriggerEffect> {
     ability_type: AbilityType,
 
     delegates: Vec<Delegate>,
 
     effect: TEffect,
+
+    delayed_trigger_effect: TDelayed,
 }
 
-impl<TEffect> AbilityBuilder<TEffect> {
+impl<TEffect, TDelayed: DelayedTriggerEffect> AbilityBuilder<TEffect, TDelayed> {
     /// Adds new [Delegate]s to this ability which functions only for the
     /// default zones.
     ///
@@ -183,10 +206,27 @@ impl<TEffect> AbilityBuilder<TEffect> {
         self.delegates.push(Delegate { zones: zones.into(), run: Box::new(delegate) });
         self
     }
+
+    /// Adds a new [DelayedTrigger] to this ability which can be fired after its
+    /// main effect.
+    pub fn delayed_trigger<TNew: DelayedTriggerEffect>(
+        self,
+        trigger: TNew,
+    ) -> AbilityBuilder<TEffect, TNew> {
+        AbilityBuilder {
+            ability_type: self.ability_type,
+            delegates: self.delegates,
+            effect: self.effect,
+            delayed_trigger_effect: trigger,
+        }
+    }
 }
 
-impl AbilityBuilder<NoEffect> {
-    pub fn effect<TFn>(self, effect: TFn) -> AbilityBuilder<UntargetedEffect<TFn>>
+impl<TDelayed> AbilityBuilder<NoEffect, TDelayed>
+where
+    TDelayed: DelayedTriggerEffect,
+{
+    pub fn effect<TFn>(self, effect: TFn) -> AbilityBuilder<UntargetedEffect<TFn>, TDelayed>
     where
         TFn: Fn(&mut GameState, EffectContext) + 'static + Copy + Send + Sync,
     {
@@ -194,10 +234,14 @@ impl AbilityBuilder<NoEffect> {
             ability_type: self.ability_type,
             effect: UntargetedEffect { function: effect },
             delegates: self.delegates,
+            delayed_trigger_effect: self.delayed_trigger_effect,
         }
     }
 
-    pub fn targets<TSelector>(self, selector: TSelector) -> AbilityBuilder<WithSelector<TSelector>>
+    pub fn targets<TSelector>(
+        self,
+        selector: TSelector,
+    ) -> AbilityBuilder<WithSelector<TSelector>, TDelayed>
     where
         TSelector: TargetSelector,
     {
@@ -205,15 +249,20 @@ impl AbilityBuilder<NoEffect> {
             ability_type: self.ability_type,
             effect: WithSelector { selector },
             delegates: self.delegates,
+            delayed_trigger_effect: self.delayed_trigger_effect,
         }
     }
 }
 
-impl<TSelector> AbilityBuilder<WithSelector<TSelector>>
+impl<TSelector, TDelayed> AbilityBuilder<WithSelector<TSelector>, TDelayed>
 where
     TSelector: TargetSelector,
+    TDelayed: DelayedTriggerEffect,
 {
-    pub fn effect<TTarget, TFn>(self, effect: TFn) -> AbilityBuilder<TargetedEffect<TSelector, TFn>>
+    pub fn effect<TTarget, TFn>(
+        self,
+        effect: TFn,
+    ) -> AbilityBuilder<TargetedEffect<TSelector, TFn>, TDelayed>
     where
         TFn: Fn(&mut GameState, EffectContext, TTarget) + 'static + Copy + Send + Sync,
     {
@@ -221,11 +270,16 @@ where
             ability_type: self.ability_type,
             effect: TargetedEffect { selector: self.effect.selector, function: effect },
             delegates: self.delegates,
+            delayed_trigger_effect: self.delayed_trigger_effect,
         }
     }
 }
 
-impl<TEffect: Sync + Send> AbilityData for AbilityBuilder<TEffect> {
+impl<TEffect, TDelayed> AbilityData for AbilityBuilder<TEffect, TDelayed>
+where
+    TEffect: Sync + Send,
+    TDelayed: Sync + Send + DelayedTriggerEffect,
+{
     #[doc(hidden)]
     fn get_ability_type(&self) -> AbilityType {
         self.ability_type
@@ -237,9 +291,10 @@ impl<TEffect: Sync + Send> AbilityData for AbilityBuilder<TEffect> {
     }
 }
 
-impl<TFn> Ability for AbilityBuilder<UntargetedEffect<TFn>>
+impl<TFn, TDelayed> Ability for AbilityBuilder<UntargetedEffect<TFn>, TDelayed>
 where
     TFn: Fn(&mut GameState, EffectContext) + 'static + Copy + Send + Sync,
+    TDelayed: DelayedTriggerEffect + 'static + Send + Sync,
 {
     #[doc(hidden)]
     fn requires_targets(&self) -> bool {
@@ -255,12 +310,18 @@ where
     fn invoke_effect(&self, game: &mut GameState, context: EffectContext) {
         (self.effect.function)(game, context)
     }
+
+    #[doc(hidden)]
+    fn invoke_delayed_trigger_effect(&self, game: &mut GameState, context: EffectContext) {
+        self.delayed_trigger_effect.invoke(game, context);
+    }
 }
 
-impl<TSelector, TFn> Ability for AbilityBuilder<TargetedEffect<TSelector, TFn>>
+impl<TSelector, TFn, TDelayed> Ability for AbilityBuilder<TargetedEffect<TSelector, TFn>, TDelayed>
 where
     TSelector: TargetSelector,
     TFn: Fn(&mut GameState, EffectContext, TSelector::Target) + 'static + Copy + Send + Sync,
+    TDelayed: DelayedTriggerEffect + 'static + Send + Sync,
 {
     #[doc(hidden)]
     fn requires_targets(&self) -> bool {
@@ -286,9 +347,17 @@ where
             (self.effect.function)(game, context, data);
         }
     }
+
+    #[doc(hidden)]
+    fn invoke_delayed_trigger_effect(&self, game: &mut GameState, context: EffectContext) {
+        self.delayed_trigger_effect.invoke(game, context);
+    }
 }
 
-impl Ability for AbilityBuilder<StaticEffect> {
+impl<TDelayed> Ability for AbilityBuilder<StaticEffect, TDelayed>
+where
+    TDelayed: DelayedTriggerEffect + 'static + Send + Sync,
+{
     #[doc(hidden)]
     fn requires_targets(&self) -> bool {
         false
@@ -301,4 +370,86 @@ impl Ability for AbilityBuilder<StaticEffect> {
 
     #[doc(hidden)]
     fn invoke_effect(&self, game: &mut GameState, context: EffectContext) {}
+
+    #[doc(hidden)]
+    fn invoke_delayed_trigger_effect(&self, game: &mut GameState, context: EffectContext) {
+        self.delayed_trigger_effect.invoke(game, context);
+    }
+}
+
+pub struct DelayedTrigger<TDelayed> {
+    delayed_trigger_effect: TDelayed,
+}
+
+impl DelayedTrigger<NoEffect> {
+    #[allow(clippy::new_without_default)]
+    pub fn new() -> Self {
+        DelayedTrigger { delayed_trigger_effect: NoEffect }
+    }
+
+    pub fn effect<TFn>(self, effect: TFn) -> DelayedTrigger<UntargetedEffect<TFn>>
+    where
+        TFn: Fn(&mut GameState, EffectContext) + 'static + Copy + Send + Sync,
+    {
+        DelayedTrigger { delayed_trigger_effect: UntargetedEffect { function: effect } }
+    }
+
+    pub fn targets<TSelector>(self, selector: TSelector) -> DelayedTrigger<WithSelector<TSelector>>
+    where
+        TSelector: TargetSelector,
+    {
+        DelayedTrigger { delayed_trigger_effect: WithSelector { selector } }
+    }
+}
+
+impl<TSelector> DelayedTrigger<WithSelector<TSelector>>
+where
+    TSelector: TargetSelector,
+{
+    pub fn effect<TTarget, TFn>(self, effect: TFn) -> DelayedTrigger<TargetedEffect<TSelector, TFn>>
+    where
+        TFn: Fn(&mut GameState, EffectContext, TTarget) + 'static + Copy + Send + Sync,
+    {
+        DelayedTrigger {
+            delayed_trigger_effect: TargetedEffect {
+                selector: self.delayed_trigger_effect.selector,
+                function: effect,
+            },
+        }
+    }
+}
+
+impl DelayedTriggerEffect for DelayedTrigger<NoEffect> {
+    fn invoke(&self, game: &mut GameState, context: EffectContext) {}
+}
+
+impl<TFn> DelayedTriggerEffect for DelayedTrigger<UntargetedEffect<TFn>>
+where
+    TFn: Fn(&mut GameState, EffectContext) + 'static + Copy + Send + Sync,
+{
+    #[doc(hidden)]
+    fn invoke(&self, game: &mut GameState, context: EffectContext) {
+        (self.delayed_trigger_effect.function)(game, context)
+    }
+}
+
+impl<TSelector, TFn> DelayedTriggerEffect for DelayedTrigger<TargetedEffect<TSelector, TFn>>
+where
+    TSelector: TargetSelector,
+    TFn: Fn(&mut GameState, EffectContext, TSelector::Target) + 'static + Copy + Send + Sync,
+{
+    #[doc(hidden)]
+    fn invoke(&self, game: &mut GameState, context: EffectContext) {
+        let Some(targets) = game.card(context).map(|c| &c.targets) else {
+            return;
+        };
+
+        if let Some(data) = self.delayed_trigger_effect.selector.build_target_data(game, targets) {
+            (self.delayed_trigger_effect.function)(game, context, data);
+        }
+    }
+}
+
+impl DelayedTriggerEffect for DelayedTrigger<StaticEffect> {
+    fn invoke(&self, game: &mut GameState, context: EffectContext) {}
 }

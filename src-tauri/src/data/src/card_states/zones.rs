@@ -110,6 +110,12 @@ impl ToCardId for CardId {
     }
 }
 
+impl<T: ToCardId> ToCardId for Option<T> {
+    fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+        self.as_ref().and_then(|id| id.to_card_id(zones))
+    }
+}
+
 pub trait HasZones {
     fn zones(&self) -> &Zones;
 }
