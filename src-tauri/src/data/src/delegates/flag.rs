@@ -84,7 +84,9 @@ impl Flag {
     }
 
     /// Helper function equivalent to `add_condition(source, true)`.
-    pub fn yes(self, source: impl HasSource) -> Self {
+    ///
+    /// If the flag is locked, this method has no effect.
+    pub fn set_true(self, source: impl HasSource) -> Self {
         self.add_permission(source, true)
     }
 

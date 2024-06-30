@@ -27,7 +27,11 @@ pub trait QueryExt<TArg, TResult> {
     /// event.
     fn this_turn(
         &mut self,
-        transformation: impl Fn(&GameState, Scope, TResult) -> TResult + Copy + Send + Sync + 'static,
+        transformation: impl Fn(&GameState, Scope, &TArg, TResult) -> TResult
+            + Copy
+            + Send
+            + Sync
+            + 'static,
     );
 }
 
@@ -36,14 +40,18 @@ impl<TArg: ToCardId, TResult> QueryExt<TArg, TResult>
 {
     fn this_turn(
         &mut self,
-        transformation: impl Fn(&GameState, Scope, TResult) -> TResult + Copy + Send + Sync + 'static,
+        transformation: impl Fn(&GameState, Scope, &TArg, TResult) -> TResult
+            + Copy
+            + Send
+            + Sync
+            + 'static,
     ) {
         self.any(move |g, s, arg, mut result| {
             let Some(entity_id) = g.card(*arg).map(|c| c.entity_id()) else {
                 return result;
             };
             for _ in 0..g.ability_state.this_turn.effect_count(s.ability_id, entity_id) {
-                result = transformation(g, s, result);
+                result = transformation(g, s, arg, result);
             }
             result
         })

@@ -13,3 +13,4 @@
 // limitations under the License.
 
 pub mod effects;
+pub mod gain_ability;

@@ -12,12 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![allow(unused_imports)]
-#![allow(unused_variables)]
-
-pub mod core;
-pub mod keyword_abilities;
-pub mod mana;
-pub mod restrictions;
-pub mod targeting;
-pub mod triggers;
+pub mod haste;
