@@ -27,19 +27,9 @@ use uuid::Uuid;
 use crate::card_states::zones::{HasZones, ToCardId, ZoneQueries, Zones};
 use crate::game_states::game_state::GameState;
 
-/// The five canonical colors of magic.
-#[derive(Debug, Hash, Ord, PartialOrd, Serialize, Deserialize, EnumSetType, Sequence)]
-pub enum Color {
-    White,
-    Blue,
-    Black,
-    Red,
-    Green,
-}
-
-/// Possible colors of mana
+/// Possible colors of mana or cards.
 #[derive(Debug, Hash, Ord, PartialOrd, Serialize, Deserialize, EnumSetType, Enum, Sequence)]
-pub enum ManaColor {
+pub enum Color {
     Colorless,
     White,
     Blue,

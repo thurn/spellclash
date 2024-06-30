@@ -15,7 +15,7 @@
 use std::iter;
 
 use data::card_definitions::card_name::CardName;
-use data::core::primitives::{CardSupertype, CardType, ManaColor};
+use data::core::primitives::{CardSupertype, CardType, Color};
 use data::printed_cards::card_subtypes::{
     ArtifactSubtype, BattleSubtype, CardSubtypes, CreatureSubtype, DungeonSubtype,
     EnchantmentSubtype, InstantOrSorcerySubtype, LandSubtype, PlaneSubtype, PlaneswalkerSubtype,
@@ -168,11 +168,11 @@ fn mana_cost(cost: &Option<String>) -> ManaCost {
 
 fn to_mana_item(symbol: &str) -> Vec<ManaCostItem> {
     vec![match symbol {
-        "W" => ManaCostItem::Colored(ManaColor::White),
-        "U" => ManaCostItem::Colored(ManaColor::Blue),
-        "B" => ManaCostItem::Colored(ManaColor::Black),
-        "R" => ManaCostItem::Colored(ManaColor::Red),
-        "G" => ManaCostItem::Colored(ManaColor::Green),
+        "W" => ManaCostItem::Colored(Color::White),
+        "U" => ManaCostItem::Colored(Color::Blue),
+        "B" => ManaCostItem::Colored(Color::Black),
+        "R" => ManaCostItem::Colored(Color::Red),
+        "G" => ManaCostItem::Colored(Color::Green),
         _ => match symbol.parse::<usize>() {
             Ok(value) => return iter::repeat(ManaCostItem::Generic).take(value).collect(),
             Err(_) => {

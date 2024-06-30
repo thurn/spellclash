@@ -14,7 +14,7 @@
 
 use data::card_states::card_kind::CardKind;
 use data::card_states::zones::Zones;
-use data::core::primitives::{Color, EffectId, GameId, PlayerName, Source, UserId};
+use data::core::primitives::{EffectId, GameId, PlayerName, Source, UserId};
 use data::decks::deck::Deck;
 use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
@@ -147,7 +147,6 @@ fn create_cards_in_deck(
 fn find_deck(name: DeckName) -> Deck {
     match name {
         deck_name::GREEN_VANILLA => Deck {
-            colors: EnumSet::only(Color::Green),
             cards: hashmap! {
                 printed_card_id::FOREST => 35,
                 printed_card_id::GRIZZLY_BEARS => 1,
@@ -188,14 +187,12 @@ fn find_deck(name: DeckName) -> Deck {
             },
         },
         deck_name::ALL_DANDANS => Deck {
-            colors: EnumSet::only(Color::Blue),
             cards: hashmap! {
                 printed_card_id::ISLAND => 30,
                 printed_card_id::DANDAN => 30,
             },
         },
         deck_name::GRIZZLY_BEAR_GIANT_GROWTH => Deck {
-            colors: EnumSet::only(Color::Blue),
             cards: hashmap! {
                 printed_card_id::FOREST => 20,
                 printed_card_id::GRIZZLY_BEARS => 20,
@@ -203,7 +200,6 @@ fn find_deck(name: DeckName) -> Deck {
             },
         },
         deck_name::DANDAN => Deck {
-            colors: EnumSet::only(Color::Blue),
             cards: hashmap! {
                 printed_card_id::ISLAND => 20,
                 printed_card_id::RAY_OF_COMMAND => 20,

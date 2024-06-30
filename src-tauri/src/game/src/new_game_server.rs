@@ -19,7 +19,7 @@ use data::card_definitions::card_name;
 use data::card_states::card_kind::CardKind;
 use data::card_states::zones::Zones;
 use data::core::numerics::LifeValue;
-use data::core::primitives::{Color, GameId, PlayerName, Source, UserId};
+use data::core::primitives::{GameId, PlayerName, Source, UserId};
 use data::decks::deck::Deck;
 use data::decks::deck_name;
 use data::decks::deck_name::DeckName;

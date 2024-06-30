@@ -19,8 +19,8 @@ use data::game_states::game_state::GameState;
 use utils::outcome;
 use utils::outcome::Outcome;
 
-/// Marks a card as applying an effect to the given target permanent until the
-/// end of the current turn.
+/// Marks a card as applying an effect to the target permanent until the end of
+/// the current turn.
 pub fn apply_this_turn(game: &mut GameState, context: EffectContext, target: impl Into<EntityId>) {
     game.ability_state.this_turn.add_effect(context.ability_id(), context.effect_id, target.into());
 }

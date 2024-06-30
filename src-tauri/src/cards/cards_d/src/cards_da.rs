@@ -12,22 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use abilities::core::effects;
 use abilities::restrictions::attack_restrictions;
 use abilities::targeting::targets;
 use abilities::triggers::state_triggers;
 use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::core::primitives::{HasSource, Zone};
-use rules::mutations::{move_card, permanents};
+use rules::mutations::permanents;
 use rules::predicates::card_predicates;
 
 pub fn dance_of_the_skywise() -> CardDefinition {
-    CardDefinition::new(card_name::DANCE_OF_THE_SKYWISE).ability(
-        SpellAbility::new().targets(targets::creature()).effect(|g, c, target| {
-            move_card::run(g, c.source(), target, Zone::Graveyard);
-        }),
-    )
+    CardDefinition::new(card_name::DANCE_OF_THE_SKYWISE)
+        .ability(SpellAbility::new().targets(targets::creature()).effect(effects::apply_this_turn))
 }
 
 pub fn dandan() -> CardDefinition {
