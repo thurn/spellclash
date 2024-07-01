@@ -30,7 +30,7 @@ pub fn dance_of_the_skywise() -> CardDefinition {
         SpellAbility::new()
             .targets(targets::creature_you_control())
             .effect(|g, c, target| {
-                effects::apply_this_turn(g, c, target);
+                effects::target_this_turn(g, c, target);
                 lose_all_abilities::this_turn(g, target);
             })
             .delegates(|d| {

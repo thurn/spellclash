@@ -32,7 +32,7 @@ pub fn ray_of_command() -> CardDefinition {
             .effect(|g, c, target| {
                 permanents::untap(g, c.source(), target);
                 change_controller::gain_control_this_turn(g, c.controller(), c.effect_id, target);
-                effects::apply_this_turn(g, c, target);
+                effects::target_this_turn(g, c, target);
                 delayed_trigger::enable(g, c, state, target);
             })
             .delegates(|d| {
@@ -40,7 +40,7 @@ pub fn ray_of_command() -> CardDefinition {
                     data.old_controller == s.controller
                         && state.matches(g, effect_id, data.permanent_id)
                 });
-                haste::gain(d, GainAbility::ForEffectThisTurn);
+                haste::gain(d, GainAbility::ForTargetThisTurn);
             })
             .delayed_trigger(DelayedTrigger::new().effect(|g, c| {
                 let effect_id = state.pop(g, c.effect_id);

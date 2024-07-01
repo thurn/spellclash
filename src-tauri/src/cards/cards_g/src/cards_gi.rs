@@ -23,7 +23,7 @@ pub fn giant_growth() -> CardDefinition {
     CardDefinition::new(card_name::GIANT_GROWTH).ability(
         SpellAbility::new()
             .targets(targets::creature())
-            .effect(effects::apply_this_turn)
+            .effect(effects::target_this_turn)
             .delegates(|d| {
                 d.power.this_turn(|_, _, _, current| current + 3);
                 d.toughness.this_turn(|_, _, _, current| current + 3);

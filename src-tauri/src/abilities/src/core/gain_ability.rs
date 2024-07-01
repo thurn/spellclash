@@ -29,8 +29,8 @@ pub enum GainAbility {
     ThisCard,
 
     /// Adds an ability to any cards which have been marked as being affected by
-    /// this delegate for a turn by a call to [effects::apply_this_turn].
-    ForEffectThisTurn,
+    /// this delegate for a turn by a call to [effects::target_this_turn].
+    ForTargetThisTurn,
 }
 
 pub fn add_to_query<TArg, TResult, TFn>(
@@ -43,6 +43,6 @@ pub fn add_to_query<TArg, TResult, TFn>(
 {
     match add_ability {
         GainAbility::ThisCard => query_delegate.this(transformation),
-        GainAbility::ForEffectThisTurn => query_delegate.this_turn(transformation),
+        GainAbility::ForTargetThisTurn => query_delegate.this_turn_ability(transformation),
     }
 }
