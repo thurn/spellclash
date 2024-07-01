@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 
-use crate::core::primitives::{AbilityId, CardId, EffectId, EntityId};
+use crate::core::primitives::{AbilityId, CardId, EffectId, EntityId, PermanentId};
 use crate::delegates::scope::{EffectContext, Scope};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -41,6 +41,9 @@ pub struct ThisTurnState {
     /// List of control-changing effects to automatically clean up at end of
     /// turn.
     control_changing_effects: Option<Vec<(EffectId, CardId)>>,
+
+    /// Permanents that have lost all abilities this turn.
+    lost_all_abilities: HashSet<PermanentId>,
 }
 
 impl ThisTurnState {
@@ -70,5 +73,15 @@ impl ThisTurnState {
     /// Adds a control-changing effect to automatically clean up at end of turn.
     pub fn add_control_changing_effect(&mut self, effect_id: EffectId, card_id: CardId) {
         self.control_changing_effects.get_or_insert_with(Vec::new).push((effect_id, card_id));
+    }
+
+    /// Marks a permanent as having lost all abilities this turn.
+    pub fn set_lost_all_abilities(&mut self, id: PermanentId) {
+        self.lost_all_abilities.insert(id);
+    }
+
+    /// Returns true if a permanent has lost all abilities this turn.
+    pub fn has_lost_all_abilities(&self, permanent_id: PermanentId) -> bool {
+        self.lost_all_abilities.contains(&permanent_id)
     }
 }

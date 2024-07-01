@@ -34,7 +34,7 @@ pub enum GainAbility {
 }
 
 pub fn add_to_query<TArg, TResult, TFn>(
-    query_delegate: &mut CardDelegateList<GameState, TArg, TResult>,
+    query_delegate: &mut CardDelegateList<TArg, TResult>,
     add_ability: GainAbility,
     transformation: TFn,
 ) where

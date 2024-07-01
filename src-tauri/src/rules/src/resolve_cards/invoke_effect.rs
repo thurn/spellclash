@@ -17,7 +17,6 @@ use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{
     AbilityId, CardId, EntityId, HasController, PlayerName, StackAbilityId, StackItemId,
 };
-use data::delegates::has_delegates::HasDelegates;
 use data::delegates::scope::{EffectContext, Scope};
 use data::game_states::game_state::GameState;
 use utils::outcome;

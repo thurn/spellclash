@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use abilities::characteristics::{base_power_toughness, colors, creature_subtypes};
-use abilities::core::effects;
+use abilities::core::{effects, lose_all_abilities};
 use abilities::restrictions::attack_restrictions;
 use abilities::targeting::targets;
 use abilities::triggers::state_triggers;
@@ -29,14 +29,17 @@ pub fn dance_of_the_skywise() -> CardDefinition {
     CardDefinition::new(card_name::DANCE_OF_THE_SKYWISE).ability(
         SpellAbility::new()
             .targets(targets::creature_you_control())
-            .effect(effects::apply_this_turn)
+            .effect(|g, c, target| {
+                effects::apply_this_turn(g, c, target);
+                lose_all_abilities::this_turn(g, target);
+            })
             .delegates(|d| {
-                colors::set_this_turn(d, Color::Blue);
-                creature_subtypes::set_this_turn(
+                colors::for_target_this_turn(d, Color::Blue);
+                creature_subtypes::for_target_this_turn(
                     d,
                     CreatureSubtype::Dragon | CreatureSubtype::Illusion,
                 );
-                base_power_toughness::set_this_turn(d, 5, 5);
+                base_power_toughness::for_target_this_turn(d, 5, 5);
             }),
     )
 }

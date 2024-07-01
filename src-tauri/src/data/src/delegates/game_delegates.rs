@@ -49,42 +49,42 @@ pub struct PermanentControllerChangedEvent {
 #[derive(Default, Clone)]
 pub struct GameDelegates {
     /// Invoked every time game state-triggered abilities are checked.
-    pub state_triggered_ability: EventDelegateList<GameState, ()>,
+    pub state_triggered_ability: EventDelegateList<()>,
 
     /// Invoked when the controller of a permanent changes.
-    pub permanent_controller_changed: EventDelegateList<GameState, PermanentControllerChangedEvent>,
+    pub permanent_controller_changed: EventDelegateList<PermanentControllerChangedEvent>,
 
     /// Can a creature attack the indicated target?
-    pub can_attack_target: CardDelegateList<GameState, CanAttackTarget, Flag>,
+    pub can_attack_target: CardDelegateList<CanAttackTarget, Flag>,
 
     /// Does this permanent have haste?
-    pub has_haste: CardDelegateList<GameState, PermanentId, Flag>,
+    pub has_haste: CardDelegateList<PermanentId, Flag>,
 
     /// Queries the power value for a card.
     ///
     /// This may be invoked for a card in any zone.
-    pub power: CardDelegateList<GameState, CardId, Power>,
+    pub power: CardDelegateList<CardId, Power>,
 
     /// Queries the base power value for a card. This is added to other
     /// modifiers to compute a final power value.
-    pub base_power: CardDelegateList<GameState, CardId, Power>,
+    pub base_power: CardDelegateList<CardId, Power>,
 
     /// Queries the toughness value for a card.
     ///
     /// This may be invoked for a card in any zone.
-    pub toughness: CardDelegateList<GameState, CardId, Toughness>,
+    pub toughness: CardDelegateList<CardId, Toughness>,
 
     /// Queries the base toughness value for a card. This is added to other
     /// modifiers to compute a final power value.
-    pub base_toughness: CardDelegateList<GameState, CardId, Toughness>,
+    pub base_toughness: CardDelegateList<CardId, Toughness>,
 
     /// Queries the colors of a card.
     ///
     /// An empty set represents colorless.
-    pub colors: CardDelegateList<GameState, CardId, EnumSet<Color>>,
+    pub colors: CardDelegateList<CardId, EnumSet<Color>>,
 
     /// Queries the creature subtypes of a card.
-    pub creature_subtypes: CardDelegateList<GameState, CardId, EnumSet<CreatureSubtype>>,
+    pub creature_subtypes: CardDelegateList<CardId, EnumSet<CreatureSubtype>>,
 }
 
 impl GameDelegates {

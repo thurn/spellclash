@@ -17,7 +17,6 @@ use data::card_definitions::definitions;
 use data::card_states::card_kind::CardKind;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{AbilityId, CardId, Source, StackAbilityId, StackItemId, Zone};
-use data::delegates::has_delegates::HasDelegates;
 use data::game_states::game_state::GameState;
 use enumset::EnumSet;
 use tracing::{debug, info};

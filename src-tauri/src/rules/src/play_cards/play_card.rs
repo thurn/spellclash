@@ -22,7 +22,6 @@ use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{
     AbilityId, CardId, EntityId, HasController, PlayerName, Source, Zone,
 };
-use data::delegates::has_delegates::HasDelegates;
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use data::prompts::choice_prompt::Choice;

@@ -27,13 +27,14 @@ use crate::card_states::card_state::CardState;
 use crate::card_states::stack_ability_state::StackAbilityState;
 use crate::card_states::zones::{HasZones, ToCardId, ZoneQueries, Zones};
 use crate::core::numerics::TurnNumber;
+use crate::core::primitives::{AbilityId, EffectId, HasController, ObjectId, PermanentId};
 #[allow(unused_imports)] // Used in docs
 use crate::core::primitives::{
     CardId, EntityId, GameId, HasPlayerName, HasSource, PlayerName, StackAbilityId, StackItemId,
     UserId, Zone,
 };
-use crate::core::primitives::{EffectId, ObjectId, PermanentId};
 use crate::delegates::game_delegates::GameDelegates;
+use crate::delegates::scope::Scope;
 use crate::game_states::ability_state::AbilityState;
 use crate::game_states::combat_state::CombatState;
 use crate::game_states::game_step::GamePhaseStep;
@@ -216,6 +217,16 @@ impl GameState {
         } else {
             self.state_based_events = Some(vec![event]);
         }
+    }
+
+    pub fn create_scope(&self, ability_id: AbilityId) -> Option<Scope> {
+        Some(Scope { controller: self.card(ability_id)?.controller(), ability_id })
+    }
+
+    /// Returns true if the [PermanentId] permanent has currently lost all
+    /// abilities.
+    pub fn has_lost_all_abilities(&self, id: PermanentId) -> bool {
+        self.ability_state.this_turn.has_lost_all_abilities(id)
     }
 }
 

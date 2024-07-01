@@ -17,104 +17,137 @@ use std::collections::HashMap;
 use dyn_clone::DynClone;
 use enumset::EnumSet;
 
-use crate::card_states::zones::ToCardId;
+use crate::card_states::zones::{ToCardId, ZoneQueries};
 use crate::core::primitives::{AbilityId, EntityId, Zone};
+use crate::delegates::delegate_type::DelegateType;
 use crate::delegates::flag::Flag;
-use crate::delegates::has_delegates::HasDelegates;
 use crate::delegates::scope::Scope;
 use crate::delegates::stores_delegates::StoresDelegates;
+use crate::game_states::game_state::GameState;
 
 /// Wrapper around query functions to enable closures to be cloned.
-trait QueryFnWrapper<TData: HasDelegates, TArg, TResult>: DynClone + Send {
-    fn invoke(&self, data: &TData, scope: TData::ScopeType, arg: &TArg, result: TResult)
-        -> TResult;
+trait QueryFnWrapper<TArg, TResult>: DynClone + Send {
+    fn invoke(&self, data: &GameState, scope: Scope, arg: &TArg, result: TResult) -> TResult;
 }
 
-dyn_clone::clone_trait_object!(<TData: HasDelegates, TArg, TResult> QueryFnWrapper<TData, TArg, TResult>);
+dyn_clone::clone_trait_object!(<TArg, TResult> QueryFnWrapper<TArg, TResult>);
 
-impl<TData: HasDelegates, TArg, TResult, F> QueryFnWrapper<TData, TArg, TResult> for F
+impl<TArg, TResult, F> QueryFnWrapper<TArg, TResult> for F
 where
-    F: Fn(&TData, TData::ScopeType, &TArg, TResult) -> TResult + Copy + Send,
+    F: Fn(&GameState, Scope, &TArg, TResult) -> TResult + Copy + Send,
 {
-    fn invoke(
-        &self,
-        data: &TData,
-        scope: TData::ScopeType,
-        arg: &TArg,
-        result: TResult,
-    ) -> TResult {
+    fn invoke(&self, data: &GameState, scope: Scope, arg: &TArg, result: TResult) -> TResult {
         self(data, scope, arg, result)
     }
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
-enum CardDelegateExecution {
+pub enum CardDelegateExecution {
     This,
     Any,
 }
 
-type BoxedQueryFn<TData, TArg, TResult> = Box<dyn QueryFnWrapper<TData, TArg, TResult>>;
+type BoxedQueryFn<TArg, TResult> = Box<dyn QueryFnWrapper<TArg, TResult>>;
 
 #[derive(Clone)]
-struct StoredQueryDelegate<TData: HasDelegates, TArg, TResult> {
+struct DelegateBuilder<TArg: ToCardId, TResult> {
+    delegate_type: DelegateType,
+    execution_type: CardDelegateExecution,
+    query: BoxedQueryFn<TArg, TResult>,
+}
+
+#[derive(Clone)]
+struct StoredQueryDelegate<TArg, TResult> {
     zones: EnumSet<Zone>,
     ability_id: AbilityId,
+    delegate_type: DelegateType,
     execution_type: CardDelegateExecution,
-    query_fn: BoxedQueryFn<TData, TArg, TResult>,
+    query_fn: BoxedQueryFn<TArg, TResult>,
 }
 
 #[derive(Clone)]
-pub struct CardDelegateList<TData: HasDelegates, TArg: ToCardId, TResult> {
-    current: Vec<(CardDelegateExecution, BoxedQueryFn<TData, TArg, TResult>)>,
-    delegates: Vec<StoredQueryDelegate<TData, TArg, TResult>>,
+pub struct CardDelegateList<TArg: ToCardId, TResult> {
+    current: Vec<DelegateBuilder<TArg, TResult>>,
+    delegates: Vec<StoredQueryDelegate<TArg, TResult>>,
 }
 
-impl<TData: HasDelegates, TArg: ToCardId, TResult> CardDelegateList<TData, TArg, TResult> {
+impl<TArg: ToCardId, TResult> CardDelegateList<TArg, TResult> {
+    /// Adds a new query transformation which only applies to the card which
+    /// owns this delegate.
+    ///
+    /// This adds a delegate with [DelegateType::Ability], i.e. the delegate
+    /// will be automatically disabled if the owning card loses its abilities.
     pub fn this(
         &mut self,
-        value: impl Fn(&TData, <TData as HasDelegates>::ScopeType, &TArg, TResult) -> TResult
-            + Copy
-            + Send
-            + Sync
-            + 'static,
+        value: impl Fn(&GameState, Scope, &TArg, TResult) -> TResult + Copy + Send + Sync + 'static,
     ) {
-        self.current.push((CardDelegateExecution::This, Box::new(value)));
+        self.current.push(DelegateBuilder {
+            delegate_type: DelegateType::Ability,
+            execution_type: CardDelegateExecution::This,
+            query: Box::new(value),
+        });
     }
 
+    /// Adds a new query transformation which applies to *any* query of this
+    /// type.
+    ///
+    /// This adds a delegate with [DelegateType::Ability], i.e. the delegate
+    /// will be automatically disabled if the owning card loses its abilities.
     pub fn any(
         &mut self,
-        value: impl Fn(&TData, <TData as HasDelegates>::ScopeType, &TArg, TResult) -> TResult
-            + Copy
-            + Send
-            + Sync
-            + 'static,
+        value: impl Fn(&GameState, Scope, &TArg, TResult) -> TResult + Copy + Send + Sync + 'static,
     ) {
-        self.current.push((CardDelegateExecution::Any, Box::new(value)));
+        self.current.push(DelegateBuilder {
+            delegate_type: DelegateType::Ability,
+            execution_type: CardDelegateExecution::This,
+            query: Box::new(value),
+        });
+    }
+
+    /// Adds a new query transformation with the given [DelegateType] and
+    /// [CardDelegateExecution].
+    pub fn add_delegate(
+        &mut self,
+        delegate_type: DelegateType,
+        execution_type: CardDelegateExecution,
+        value: impl Fn(&GameState, Scope, &TArg, TResult) -> TResult + Copy + Send + Sync + 'static,
+    ) {
+        self.current.push(DelegateBuilder {
+            delegate_type,
+            execution_type,
+            query: Box::new(value),
+        });
     }
 
     #[must_use]
-    pub fn query(&self, data: &TData, arg: &TArg, current: TResult) -> TResult {
+    pub fn query(&self, game: &GameState, arg: &TArg, current: TResult) -> TResult {
         let mut result = current;
         for stored in &self.delegates {
+            let Some(card) = game.card(stored.ability_id.card_id) else {
+                continue;
+            };
+
             if stored.execution_type == CardDelegateExecution::This
-                && arg.to_card_id(data.game_state()) != Some(stored.ability_id.card_id)
+                && card.id != stored.ability_id.card_id
             {
                 continue;
             }
 
-            let Some(zone) = data.current_zone(stored.ability_id.card_id) else {
-                continue;
-            };
-
-            if !stored.zones.contains(zone) {
+            if !stored.zones.contains(card.zone) {
                 continue;
             }
 
-            let Some(scope) = data.create_scope(stored.ability_id) else {
+            let Some(scope) = game.create_scope(stored.ability_id) else {
                 continue;
             };
 
-            result = stored.query_fn.invoke(data, scope, arg, result);
+            if stored.delegate_type == DelegateType::Ability
+                && card.permanent_id().map_or(false, |id| game.has_lost_all_abilities(id))
+            {
+                continue;
+            }
+
+            result = stored.query_fn.invoke(game, scope, arg, result);
         }
         result
     }
@@ -125,7 +158,7 @@ impl<TData: HasDelegates, TArg: ToCardId, TResult> CardDelegateList<TData, TArg,
     }
 }
 
-impl<TData: HasDelegates, TArg: ToCardId> CardDelegateList<TData, TArg, Flag> {
+impl<TArg: ToCardId> CardDelegateList<TArg, Flag> {
     /// Runs a boolean query to see if any item in the provided iterator matches
     /// a predicate. Returns `current` if no delegates are present in the map.
     ///
@@ -134,14 +167,14 @@ impl<TData: HasDelegates, TArg: ToCardId> CardDelegateList<TData, TArg, Flag> {
     /// iterator, which can be a significant performance win.
     pub fn query_any(
         &self,
-        data: &TData,
+        game: &GameState,
         mut iterator: impl Iterator<Item = TArg>,
         current: Flag,
     ) -> Flag {
         if self.is_empty() {
             current
         } else {
-            Flag::new(iterator.any(|arg| self.query(data, &arg, current).value()))
+            Flag::new(iterator.any(|arg| self.query(game, &arg, current).value()))
         }
     }
 
@@ -154,36 +187,33 @@ impl<TData: HasDelegates, TArg: ToCardId> CardDelegateList<TData, TArg, Flag> {
     /// iterator, which can be a significant performance win.
     pub fn query_all(
         &self,
-        data: &TData,
+        game: &GameState,
         mut iterator: impl Iterator<Item = TArg>,
         current: Flag,
     ) -> Flag {
         if self.is_empty() {
             current
         } else {
-            Flag::new(iterator.all(|arg| self.query(data, &arg, current).value()))
+            Flag::new(iterator.all(|arg| self.query(game, &arg, current).value()))
         }
     }
 }
 
-impl<TData: HasDelegates, TArg: ToCardId, TResult> StoresDelegates
-    for CardDelegateList<TData, TArg, TResult>
-{
+impl<TArg: ToCardId, TResult> StoresDelegates for CardDelegateList<TArg, TResult> {
     fn apply_writes(&mut self, id: AbilityId, zones: EnumSet<Zone>) {
-        for (execution_type, function) in self.current.drain(..) {
+        for builder in self.current.drain(..) {
             self.delegates.push(StoredQueryDelegate {
                 zones,
                 ability_id: id,
-                execution_type,
-                query_fn: function,
+                delegate_type: builder.delegate_type,
+                execution_type: builder.execution_type,
+                query_fn: builder.query,
             });
         }
     }
 }
 
-impl<TData: HasDelegates, TArg: ToCardId, TResult> Default
-    for CardDelegateList<TData, TArg, TResult>
-{
+impl<TArg: ToCardId, TResult> Default for CardDelegateList<TArg, TResult> {
     fn default() -> Self {
         Self { current: vec![], delegates: vec![] }
     }

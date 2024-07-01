@@ -35,9 +35,7 @@ pub trait QueryExt<TArg, TResult> {
     );
 }
 
-impl<TArg: ToCardId, TResult> QueryExt<TArg, TResult>
-    for CardDelegateList<GameState, TArg, TResult>
-{
+impl<TArg: ToCardId, TResult> QueryExt<TArg, TResult> for CardDelegateList<TArg, TResult> {
     fn this_turn(
         &mut self,
         transformation: impl Fn(&GameState, Scope, &TArg, TResult) -> TResult

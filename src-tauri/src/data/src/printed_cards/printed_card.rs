@@ -111,6 +111,9 @@ pub struct PrintedCardFace {
     pub card_types: EnumSet<CardType>,
 
     /// The set of subtypes for this face, found after em-dash.
+    ///
+    /// This *does not* include the results of characteristic-defining abilities
+    /// like Changeling.
     pub subtypes: CardSubtypes,
 
     /// The rules text for this face.

@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::Color;
-use data::delegates::game_delegates::GameDelegates;
-use enumset::EnumSet;
-use rules::queries::query_extension::QueryExt;
+use data::core::primitives::PermanentId;
+use data::game_states::game_state::GameState;
 
-/// Sets a card's colors for the current turn when affected by this card.
-pub fn for_target_this_turn(d: &mut GameDelegates, colors: impl Into<EnumSet<Color>>) {
-    let colors = colors.into();
-    d.colors.this_turn(move |_, _, _, _| colors);
+/// Causes the [PermanentId] permanent to lose all abilities for the duration of
+/// the current turn.
+pub fn this_turn(game: &mut GameState, permanent_id: PermanentId) {
+    game.ability_state.this_turn.set_lost_all_abilities(permanent_id);
 }

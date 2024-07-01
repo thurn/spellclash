@@ -14,3 +14,4 @@
 
 pub mod effects;
 pub mod gain_ability;
+pub mod lose_all_abilities;

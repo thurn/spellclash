@@ -12,13 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::Color;
-use data::delegates::game_delegates::GameDelegates;
-use enumset::EnumSet;
-use rules::queries::query_extension::QueryExt;
+/// Possible high-level types of game delegate
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum DelegateType {
+    /// Ability delegate. Will not be invoked if a permanent loses abilities.
+    Ability,
 
-/// Sets a card's colors for the current turn when affected by this card.
-pub fn for_target_this_turn(d: &mut GameDelegates, colors: impl Into<EnumSet<Color>>) {
-    let colors = colors.into();
-    d.colors.this_turn(move |_, _, _, _| colors);
+    /// Effect delegate. Will still be invoked if a permanent loses abilities.
+    Effect,
 }

@@ -19,75 +19,86 @@ use enumset::EnumSet;
 use utils::outcome;
 use utils::outcome::Outcome;
 
+use crate::card_states::zones::{ToCardId, ZoneQueries};
 use crate::core::primitives::{AbilityId, EntityId, Zone};
+use crate::delegates::card_delegate_list::CardDelegateExecution;
+use crate::delegates::delegate_type::DelegateType;
 use crate::delegates::flag::Flag;
-use crate::delegates::has_delegates::HasDelegates;
 use crate::delegates::scope::Scope;
 use crate::delegates::stores_delegates::StoresDelegates;
 use crate::game_states::game_state::GameState;
 
 /// Wrapper around event functions to enable closures to be cloned.
-pub trait EventFnWrapper<TData: HasDelegates, TArg>: DynClone + Send {
-    fn invoke(&self, data: &mut TData, scope: TData::ScopeType, arg: &TArg) -> Outcome;
+pub trait EventFnWrapper<TArg>: DynClone + Send {
+    fn invoke(&self, data: &mut GameState, scope: Scope, arg: &TArg) -> Outcome;
 }
 
-dyn_clone::clone_trait_object!(<TData: HasDelegates, TArg> EventFnWrapper<TData, TArg>);
+dyn_clone::clone_trait_object!(<TArg> EventFnWrapper<TArg>);
 
-impl<TData: HasDelegates, TArg, F> EventFnWrapper<TData, TArg> for F
+impl<TArg, F> EventFnWrapper<TArg> for F
 where
-    F: Fn(&mut TData, TData::ScopeType, &TArg) -> Outcome + Copy + Send,
+    F: Fn(&mut GameState, Scope, &TArg) -> Outcome + Copy + Send,
 {
-    fn invoke(&self, data: &mut TData, scope: TData::ScopeType, arg: &TArg) -> Outcome {
+    fn invoke(&self, data: &mut GameState, scope: Scope, arg: &TArg) -> Outcome {
         self(data, scope, arg)
     }
 }
 
-pub type BoxedEventFn<TData, TArg> = Box<dyn EventFnWrapper<TData, TArg>>;
+pub type BoxedEventFn<TArg> = Box<dyn EventFnWrapper<TArg>>;
 
 #[derive(Clone)]
-pub struct StoredEventDelegate<TData: HasDelegates, TArg> {
+pub struct StoredEventDelegate<TArg> {
     zones: EnumSet<Zone>,
     ability_id: AbilityId,
-    event_fn: BoxedEventFn<TData, TArg>,
+    delegate_type: DelegateType,
+    event_fn: BoxedEventFn<TArg>,
 }
 
 #[derive(Clone)]
-pub struct EventDelegateList<TData: HasDelegates, TArg> {
-    current: Vec<BoxedEventFn<TData, TArg>>,
-    delegates: Vec<StoredEventDelegate<TData, TArg>>,
+struct EventDelegateBuilder<TArg> {
+    delegate_type: DelegateType,
+    callback: BoxedEventFn<TArg>,
 }
 
-impl<TData: HasDelegates, TArg> EventDelegateList<TData, TArg> {
+#[derive(Clone)]
+pub struct EventDelegateList<TArg> {
+    current: Vec<EventDelegateBuilder<TArg>>,
+    delegates: Vec<StoredEventDelegate<TArg>>,
+}
+
+impl<TArg: Clone> EventDelegateList<TArg> {
+    /// Adds a new callback which will be invoked whenever the underlying event
+    /// occurs, with a given [DelegateType].
     pub fn whenever(
         &mut self,
-        value: impl Fn(&mut TData, <TData as HasDelegates>::ScopeType, &TArg) -> Outcome
-            + Copy
-            + Send
-            + Sync
-            + 'static,
+        delegate_type: DelegateType,
+        value: impl Fn(&mut GameState, Scope, &TArg) -> Outcome + Copy + Send + Sync + 'static,
     ) {
-        self.current.push(Box::new(value));
+        self.current.push(EventDelegateBuilder { delegate_type, callback: Box::new(value) });
     }
 
     pub fn invoke_with<'a>(
         &self,
-        data: &TData,
+        game: &GameState,
         arg: &'a TArg,
-    ) -> EventDelegateInvoker<'a, TData, TArg> {
-        let mut result: Vec<StoredEventDelegate<TData, TArg>> = vec![];
+    ) -> EventDelegateInvoker<'a, TArg> {
+        let mut result = vec![];
         for stored in &self.delegates {
-            let Some(zone) = data.current_zone(stored.ability_id.card_id) else {
+            let Some(card) = game.card(stored.ability_id) else {
                 continue;
             };
 
-            if !stored.zones.contains(zone) {
+            if !stored.zones.contains(card.zone) {
                 continue;
             }
-            result.push(StoredEventDelegate {
-                zones: stored.zones,
-                ability_id: stored.ability_id,
-                event_fn: stored.event_fn.clone(),
-            });
+
+            if stored.delegate_type == DelegateType::Ability
+                && card.permanent_id().map_or(false, |id| game.has_lost_all_abilities(id))
+            {
+                continue;
+            }
+
+            result.push(stored.clone());
         }
         EventDelegateInvoker::new(result, arg)
     }
@@ -98,31 +109,36 @@ impl<TData: HasDelegates, TArg> EventDelegateList<TData, TArg> {
     }
 }
 
-impl<TData: HasDelegates, TArg> StoresDelegates for EventDelegateList<TData, TArg> {
+impl<TArg> StoresDelegates for EventDelegateList<TArg> {
     fn apply_writes(&mut self, id: AbilityId, zones: EnumSet<Zone>) {
-        for function in self.current.drain(..) {
-            self.delegates.push(StoredEventDelegate { zones, ability_id: id, event_fn: function });
+        for builder in self.current.drain(..) {
+            self.delegates.push(StoredEventDelegate {
+                zones,
+                ability_id: id,
+                delegate_type: builder.delegate_type,
+                event_fn: builder.callback,
+            });
         }
     }
 }
 
-impl<TData: HasDelegates, TArg> Default for EventDelegateList<TData, TArg> {
+impl<TArg> Default for EventDelegateList<TArg> {
     fn default() -> Self {
         Self { current: vec![], delegates: vec![] }
     }
 }
 
-pub struct EventDelegateInvoker<'a, TData: HasDelegates, TArg> {
-    delegates: Vec<StoredEventDelegate<TData, TArg>>,
+pub struct EventDelegateInvoker<'a, TArg> {
+    delegates: Vec<StoredEventDelegate<TArg>>,
     arg: &'a TArg,
 }
 
-impl<'a, TData: HasDelegates, TArg> EventDelegateInvoker<'a, TData, TArg> {
-    pub fn new(delegates: Vec<StoredEventDelegate<TData, TArg>>, arg: &'a TArg) -> Self {
+impl<'a, TArg> EventDelegateInvoker<'a, TArg> {
+    pub fn new(delegates: Vec<StoredEventDelegate<TArg>>, arg: &'a TArg) -> Self {
         Self { delegates, arg }
     }
 
-    pub fn run(&self, data: &mut TData) {
+    pub fn run(&self, data: &mut GameState) {
         for stored in &self.delegates {
             let Some(scope) = data.create_scope(stored.ability_id) else {
                 continue;

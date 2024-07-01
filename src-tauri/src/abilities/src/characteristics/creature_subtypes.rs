@@ -20,7 +20,7 @@ use rules::queries::query_extension::QueryExt;
 
 /// Sets a card's creature subtypes for the current turn when affected by this
 /// card.
-pub fn set_this_turn(d: &mut GameDelegates, types: impl Into<EnumSet<CreatureSubtype>>) {
+pub fn for_target_this_turn(d: &mut GameDelegates, types: impl Into<EnumSet<CreatureSubtype>>) {
     let types = types.into();
     d.creature_subtypes.this_turn(move |_, _, _, _| types);
 }
