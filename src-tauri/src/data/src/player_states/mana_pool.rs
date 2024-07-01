@@ -16,7 +16,7 @@ use enum_map::EnumMap;
 use serde::{Deserialize, Serialize};
 
 use crate::core::numerics::ManaValue;
-use crate::core::primitives::Color;
+use crate::core::primitives::ManaColor;
 
 /// Represents mana currently in a player's mana pool.
 ///
@@ -26,5 +26,5 @@ use crate::core::primitives::Color;
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ManaPool {
     /// Mana which has no usage restriction associated with it
-    pub unrestricted: EnumMap<Color, ManaValue>,
+    pub unrestricted: EnumMap<ManaColor, ManaValue>,
 }

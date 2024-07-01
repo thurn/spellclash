@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![allow(unused_imports)]
-#![allow(unused_variables)]
+use data::core::primitives::Color;
+use data::delegates::game_delegates::GameDelegates;
+use data::printed_cards::card_subtypes::CreatureSubtype;
+use enumset::EnumSet;
+use rules::queries::query_extension::QueryExt;
 
-pub mod characteristics;
-pub mod core;
-pub mod keyword_abilities;
-pub mod mana;
-pub mod restrictions;
-pub mod targeting;
-pub mod triggers;
+/// Sets a card's creature subtypes for the current turn when affected by this
+/// card.
+pub fn set_this_turn(d: &mut GameDelegates, types: impl Into<EnumSet<CreatureSubtype>>) {
+    let types = types.into();
+    d.creature_subtypes.this_turn(move |_, _, _, _| types);
+}

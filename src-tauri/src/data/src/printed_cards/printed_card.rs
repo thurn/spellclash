@@ -21,7 +21,7 @@ use uuid::Uuid;
 
 use crate::card_definitions::card_name::CardName;
 use crate::core::numerics::ManaValue;
-use crate::core::primitives::{CardSupertype, CardType};
+use crate::core::primitives::{CardSupertype, CardType, Color};
 use crate::printed_cards::card_subtypes::CardSubtypes;
 use crate::printed_cards::layout::{CardLayout, FaceLayout};
 use crate::printed_cards::mana_cost::ManaCost;
@@ -100,20 +100,27 @@ impl PrintedCard {
 pub struct PrintedCardFace {
     /// The name for this face.
     pub displayed_name: String,
+
     /// Identifier for this face.
     pub face_identifier: Face,
+
     /// The set of face supertypes
     pub supertypes: EnumSet<CardSupertype>,
+
     /// The set of all card types of the face
     pub card_types: EnumSet<CardType>,
+
     /// The set of subtypes for this face, found after em-dash.
     pub subtypes: CardSubtypes,
+
     /// The rules text for this face.
     pub oracle_text: Option<String>,
+
     /// The mana cost for this face.
     ///
     /// See <https://yawgatog.com/resources/magic-rules/#R1074>
     pub mana_cost: ManaCost,
+
     /// The static mana value of this face.
     ///
     /// This is the printed mana value of the face itself. Note that mana value
@@ -122,14 +129,24 @@ pub struct PrintedCardFace {
     ///
     /// See <https://yawgatog.com/resources/magic-rules/#R2023>
     pub mana_value: ManaValue,
+
     /// The printed power of the card.
     pub power: Option<PrintedPower>,
+
     /// The printed toughness of the card.
     pub toughness: Option<PrintedToughness>,
+
     /// Face layout, describing its printed structure.
     ///
     /// See <https://scryfall.com/docs/api/layouts> for descriptions & examples of layouts.
     pub layout: FaceLayout,
+
+    /// The set of colors in this face's mana cost and color indicators. An
+    /// empty set represents colorless.
+    ///
+    /// This *does* take into account color-characteristic-defining abilities
+    /// like Devoid.
+    pub colors: EnumSet<Color>,
 }
 
 /// A visually unique printed version of a card face.

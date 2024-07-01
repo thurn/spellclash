@@ -15,7 +15,7 @@
 use std::iter;
 
 use data::card_definitions::card_name::CardName;
-use data::core::primitives::{CardSupertype, CardType, Color};
+use data::core::primitives::{CardSupertype, CardType, Color, ManaColor};
 use data::printed_cards::card_subtypes::{
     ArtifactSubtype, BattleSubtype, CardSubtypes, CreatureSubtype, DungeonSubtype,
     EnchantmentSubtype, InstantOrSorcerySubtype, LandSubtype, PlaneSubtype, PlaneswalkerSubtype,
@@ -91,6 +91,7 @@ fn parse_face(face: &DatabaseCardFace, face_identifier: Face) -> PrintedCardFace
         power: power(face.power.as_ref()),
         toughness: toughness(face.toughness.as_ref()),
         layout: layout(&face.layout),
+        colors: colors(split(&face.colors)),
     }
 }
 
@@ -168,11 +169,11 @@ fn mana_cost(cost: &Option<String>) -> ManaCost {
 
 fn to_mana_item(symbol: &str) -> Vec<ManaCostItem> {
     vec![match symbol {
-        "W" => ManaCostItem::Colored(Color::White),
-        "U" => ManaCostItem::Colored(Color::Blue),
-        "B" => ManaCostItem::Colored(Color::Black),
-        "R" => ManaCostItem::Colored(Color::Red),
-        "G" => ManaCostItem::Colored(Color::Green),
+        "W" => ManaCostItem::Colored(ManaColor::White),
+        "U" => ManaCostItem::Colored(ManaColor::Blue),
+        "B" => ManaCostItem::Colored(ManaColor::Black),
+        "R" => ManaCostItem::Colored(ManaColor::Red),
+        "G" => ManaCostItem::Colored(ManaColor::Green),
         _ => match symbol.parse::<usize>() {
             Ok(value) => return iter::repeat(ManaCostItem::Generic).take(value).collect(),
             Err(_) => {
@@ -206,4 +207,13 @@ fn layout(string: &str) -> FaceLayout {
     string
         .parse::<FaceLayout>()
         .unwrap_or_else(|e| panic!("Unknown card layout: {:?} {e:?}", string))
+}
+
+fn colors(colors: Vec<&str>) -> EnumSet<Color> {
+    colors
+        .iter()
+        .map(|s| {
+            s.parse::<Color>().unwrap_or_else(|e| panic!("Error deserializing color '{s}' {e:?}"))
+        })
+        .collect()
 }

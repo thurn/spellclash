@@ -27,9 +27,36 @@ use uuid::Uuid;
 use crate::card_states::zones::{HasZones, ToCardId, ZoneQueries, Zones};
 use crate::game_states::game_state::GameState;
 
-/// Possible colors of mana or cards.
+/// Possible colors of cards or effects.
+///
+/// An empty color set represents colorless.
 #[derive(Debug, Hash, Ord, PartialOrd, Serialize, Deserialize, EnumSetType, Enum, Sequence)]
 pub enum Color {
+    White,
+    Blue,
+    Black,
+    Red,
+    Green,
+}
+
+impl FromStr for Color {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "W" => Ok(Color::White),
+            "U" => Ok(Color::Blue),
+            "B" => Ok(Color::Black),
+            "R" => Ok(Color::Red),
+            "G" => Ok(Color::Green),
+            _ => Err(()),
+        }
+    }
+}
+
+/// Possible colors of mana.
+#[derive(Debug, Hash, Ord, PartialOrd, Serialize, Deserialize, EnumSetType, Enum, Sequence)]
+pub enum ManaColor {
     Colorless,
     White,
     Blue,

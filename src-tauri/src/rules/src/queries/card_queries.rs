@@ -17,9 +17,9 @@ use std::iter;
 use data::card_states::play_card_plan::PlayCardPlan;
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::numerics::{Power, Toughness};
-use data::core::primitives::{CardId, CardType, Zone};
+use data::core::primitives::{CardId, CardType, Color, Zone};
 use data::game_states::game_state::GameState;
-use data::printed_cards::card_subtypes::LandSubtype;
+use data::printed_cards::card_subtypes::{CreatureSubtype, LandSubtype};
 use data::printed_cards::layout::CardLayout;
 #[allow(unused)] // Used in docs
 use data::printed_cards::mana_cost::{ManaCost, ManaCostItem};
@@ -118,6 +118,30 @@ pub fn land_subtypes(game: &GameState, id: impl ToCardId) -> Option<EnumSet<Land
     )
 }
 
+/// Returns the set of current creature subtypes on a card's characteristic
+/// faces. Returns None if this card no longer exists.
+///
+/// Note that setting a creature's subtype does not remove subtypes for other
+/// card types:
+///
+/// > 205.1a. ... Similarly, when an effect sets one or more of an object's
+/// > subtypes, the new subtype(s) replaces any existing subtypes from the
+/// > appropriate set  (creature types, land types, artifact types, enchantment
+/// > types, planeswalker types, or spell types).
+///
+/// <https://yawgatog.com/resources/magic-rules/#R2051a>
+///
+/// See [characteristic_faces] for more information.
+pub fn creature_subtypes(game: &GameState, id: impl ToCardId) -> Option<EnumSet<CreatureSubtype>> {
+    let card_id = id.to_card_id(game)?;
+    let types = characteristic_faces(game, card_id)?
+        .iter()
+        .flat_map(|face| face.subtypes.creature.iter())
+        .collect();
+
+    Some(game.delegates.creature_subtypes.query(game, &card_id, types))
+}
+
 /// Returns the current [ManaCost] that needs to be paid to cast the [CardId]
 /// card using the provided [PlayCardPlan]. Cost items are sorted in
 /// [ManaCostItem] order. Returns None if this card no longer exists.
@@ -153,7 +177,8 @@ pub fn power(game: &GameState, id: impl ToCardId) -> Option<Power> {
         _ => panic!("Cannot compute power for card with multiple active faces"),
     };
 
-    Some(game.delegates.power.query(game, &card_id, result))
+    let base = game.delegates.base_power.query(game, &card_id, result);
+    Some(game.delegates.power.query(game, &card_id, base))
 }
 
 /// Computes the current toughness on card's characteristic faces. Returns None
@@ -178,5 +203,16 @@ pub fn toughness(game: &GameState, id: impl ToCardId) -> Option<Toughness> {
         _ => panic!("Cannot compute toughness for card with multiple active faces"),
     };
 
-    Some(game.delegates.toughness.query(game, &card_id, result))
+    let base = game.delegates.base_toughness.query(game, &card_id, result);
+    Some(game.delegates.toughness.query(game, &card_id, base))
+}
+
+/// Returns the set of colors on a card's characteristic faces. Returns None if
+/// this card no longer exists.
+///
+/// See [characteristic_faces] for more information.
+pub fn colors(game: &GameState, id: impl ToCardId) -> Option<EnumSet<Color>> {
+    let result =
+        characteristic_faces(game, id)?.iter().flat_map(|face| face.colors.iter()).collect();
+    Some(game.delegates.colors.query(game, &id.to_card_id(game)?, result))
 }

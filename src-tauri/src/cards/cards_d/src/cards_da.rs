@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use abilities::characteristics::{base_power_toughness, colors, creature_subtypes};
 use abilities::core::effects;
 use abilities::restrictions::attack_restrictions;
 use abilities::targeting::targets;
@@ -19,12 +20,25 @@ use abilities::triggers::state_triggers;
 use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
+use data::core::primitives::Color;
+use data::printed_cards::card_subtypes::CreatureSubtype;
 use rules::mutations::permanents;
 use rules::predicates::card_predicates;
 
 pub fn dance_of_the_skywise() -> CardDefinition {
-    CardDefinition::new(card_name::DANCE_OF_THE_SKYWISE)
-        .ability(SpellAbility::new().targets(targets::creature()).effect(effects::apply_this_turn))
+    CardDefinition::new(card_name::DANCE_OF_THE_SKYWISE).ability(
+        SpellAbility::new()
+            .targets(targets::creature_you_control())
+            .effect(effects::apply_this_turn)
+            .delegates(|d| {
+                colors::set_this_turn(d, Color::Blue);
+                creature_subtypes::set_this_turn(
+                    d,
+                    CreatureSubtype::Dragon | CreatureSubtype::Illusion,
+                );
+                base_power_toughness::set_this_turn(d, 5, 5);
+            }),
+    )
 }
 
 pub fn dandan() -> CardDefinition {

@@ -12,13 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![allow(unused_imports)]
-#![allow(unused_variables)]
-
-pub mod characteristics;
-pub mod core;
-pub mod keyword_abilities;
-pub mod mana;
-pub mod restrictions;
-pub mod targeting;
-pub mod triggers;
+pub mod base_power_toughness;
+pub mod colors;
+pub mod creature_subtypes;

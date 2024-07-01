@@ -18,13 +18,14 @@ use enumset::EnumSet;
 
 use crate::card_states::zones::{HasZones, ToCardId, ZoneQueries, Zones};
 use crate::core::numerics::{Power, Toughness};
-use crate::core::primitives::{AbilityId, CardId, PermanentId, PlayerName, Zone};
+use crate::core::primitives::{AbilityId, CardId, Color, ManaColor, PermanentId, PlayerName, Zone};
 use crate::delegates::card_delegate_list::CardDelegateList;
 use crate::delegates::event_delegate_list::EventDelegateList;
 use crate::delegates::flag::Flag;
 use crate::delegates::stores_delegates::StoresDelegates;
 use crate::game_states::combat_state::{AttackTarget, AttackerId};
 use crate::game_states::game_state::GameState;
+use crate::printed_cards::card_subtypes::CreatureSubtype;
 
 #[derive(Debug, Clone, Copy)]
 pub struct CanAttackTarget {
@@ -64,10 +65,26 @@ pub struct GameDelegates {
     /// This may be invoked for a card in any zone.
     pub power: CardDelegateList<GameState, CardId, Power>,
 
+    /// Queries the base power value for a card. This is added to other
+    /// modifiers to compute a final power value.
+    pub base_power: CardDelegateList<GameState, CardId, Power>,
+
     /// Queries the toughness value for a card.
     ///
     /// This may be invoked for a card in any zone.
     pub toughness: CardDelegateList<GameState, CardId, Toughness>,
+
+    /// Queries the base toughness value for a card. This is added to other
+    /// modifiers to compute a final power value.
+    pub base_toughness: CardDelegateList<GameState, CardId, Toughness>,
+
+    /// Queries the colors of a card.
+    ///
+    /// An empty set represents colorless.
+    pub colors: CardDelegateList<GameState, CardId, EnumSet<Color>>,
+
+    /// Queries the creature subtypes of a card.
+    pub creature_subtypes: CardDelegateList<GameState, CardId, EnumSet<CreatureSubtype>>,
 }
 
 impl GameDelegates {
