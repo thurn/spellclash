@@ -14,7 +14,7 @@
 
 use data::card_states::zones::ToCardId;
 use data::core::primitives::PermanentId;
-use data::delegates::card_delegate_list::CardDelegateList;
+use data::delegates::card_query_delegate_list::CardQueryDelegateList;
 use data::delegates::delegate_data::QueryValue;
 use data::delegates::flag::Flag;
 use data::delegates::scope::Scope;
@@ -35,7 +35,7 @@ pub enum GainAbility {
 }
 
 pub fn add_to_query<TArg, TResult, TFn>(
-    query_delegate: &mut CardDelegateList<TArg, TResult>,
+    query_delegate: &mut CardQueryDelegateList<TArg, TResult>,
     add_ability: GainAbility,
     transformation: TFn,
 ) where

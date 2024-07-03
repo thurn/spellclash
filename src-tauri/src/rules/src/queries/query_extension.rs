@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use data::card_states::zones::{ToCardId, ZoneQueries};
-use data::delegates::card_delegate_list::{CardDelegateExecution, CardDelegateList};
+use data::delegates::card_query_delegate_list::{CardDelegateExecution, CardQueryDelegateList};
 use data::delegates::delegate_data::{DelegateType, QueryValue};
 use data::delegates::event_delegate_list::EventDelegateList;
 use data::delegates::scope::Scope;
@@ -51,7 +51,7 @@ pub trait QueryExt<TArg, TResult> {
     );
 }
 
-impl<TArg: ToCardId, TResult> QueryExt<TArg, TResult> for CardDelegateList<TArg, TResult> {
+impl<TArg: ToCardId, TResult> QueryExt<TArg, TResult> for CardQueryDelegateList<TArg, TResult> {
     fn this_turn(
         &mut self,
         transformation: impl Fn(&GameState, Scope, &TArg) -> QueryValue<TResult>
@@ -76,7 +76,7 @@ impl<TArg: ToCardId, TResult> QueryExt<TArg, TResult> for CardDelegateList<TArg,
 }
 
 fn this_turn_impl<TArg: ToCardId, TResult>(
-    list: &mut CardDelegateList<TArg, TResult>,
+    list: &mut CardQueryDelegateList<TArg, TResult>,
     delegate_type: DelegateType,
     transformation: impl Fn(&GameState, Scope, &TArg) -> QueryValue<TResult>
         + Copy

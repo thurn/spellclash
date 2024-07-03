@@ -67,12 +67,12 @@ struct StoredQueryDelegate<TArg, TResult> {
 }
 
 #[derive(Clone)]
-pub struct CardDelegateList<TArg: ToCardId, TResult> {
+pub struct CardQueryDelegateList<TArg: ToCardId, TResult> {
     current: Vec<DelegateBuilder<TArg, TResult>>,
     delegates: Vec<StoredQueryDelegate<TArg, TResult>>,
 }
 
-impl<TArg: ToCardId, TResult> CardDelegateList<TArg, TResult> {
+impl<TArg: ToCardId, TResult> CardQueryDelegateList<TArg, TResult> {
     /// Adds a new query transformation which only applies to the card which
     /// owns this delegate.
     ///
@@ -141,7 +141,9 @@ impl<TArg: ToCardId, TResult> CardDelegateList<TArg, TResult> {
     }
 }
 
-impl<TArg: ToCardId, TResult: Add<Output = TResult> + Default> CardDelegateList<TArg, TResult> {
+impl<TArg: ToCardId, TResult: Add<Output = TResult> + Default>
+    CardQueryDelegateList<TArg, TResult>
+{
     #[must_use]
     pub fn query_numeric(&self, game: &GameState, arg: &TArg, current: TResult) -> TResult {
         let mut largest_timestamp = Timestamp(0);
@@ -168,7 +170,7 @@ impl<TArg: ToCardId, TResult: Add<Output = TResult> + Default> CardDelegateList<
     }
 }
 
-impl<TArg: ToCardId> CardDelegateList<TArg, bool> {
+impl<TArg: ToCardId> CardQueryDelegateList<TArg, bool> {
     /// Runs a boolean query to see if any item in the provided iterator matches
     /// a predicate. Returns `current` if no delegates are present in the map.
     ///
@@ -209,7 +211,7 @@ impl<TArg: ToCardId> CardDelegateList<TArg, bool> {
     }
 }
 
-impl<TArg: ToCardId, TResult> StoresDelegates for CardDelegateList<TArg, TResult> {
+impl<TArg: ToCardId, TResult> StoresDelegates for CardQueryDelegateList<TArg, TResult> {
     fn apply_writes(&mut self, id: AbilityId, zones: EnumSet<Zone>) {
         for builder in self.current.drain(..) {
             self.delegates.push(StoredQueryDelegate {
@@ -223,7 +225,7 @@ impl<TArg: ToCardId, TResult> StoresDelegates for CardDelegateList<TArg, TResult
     }
 }
 
-impl<TArg: ToCardId, TResult> Default for CardDelegateList<TArg, TResult> {
+impl<TArg: ToCardId, TResult> Default for CardQueryDelegateList<TArg, TResult> {
     fn default() -> Self {
         Self { current: vec![], delegates: vec![] }
     }

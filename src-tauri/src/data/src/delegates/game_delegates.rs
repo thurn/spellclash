@@ -19,7 +19,7 @@ use enumset::EnumSet;
 use crate::card_states::zones::{HasZones, ToCardId, ZoneQueries, Zones};
 use crate::core::numerics::{Power, Toughness};
 use crate::core::primitives::{AbilityId, CardId, Color, ManaColor, PermanentId, PlayerName, Zone};
-use crate::delegates::card_delegate_list::CardDelegateList;
+use crate::delegates::card_query_delegate_list::CardQueryDelegateList;
 use crate::delegates::event_delegate_list::EventDelegateList;
 use crate::delegates::flag::Flag;
 use crate::delegates::stores_delegates::StoresDelegates;
@@ -55,36 +55,36 @@ pub struct GameDelegates {
     pub permanent_controller_changed: EventDelegateList<PermanentControllerChangedEvent>,
 
     /// Can a creature attack the indicated target?
-    pub can_attack_target: CardDelegateList<CanAttackTarget, bool>,
+    pub can_attack_target: CardQueryDelegateList<CanAttackTarget, bool>,
 
     /// Does this permanent have haste?
-    pub has_haste: CardDelegateList<PermanentId, bool>,
+    pub has_haste: CardQueryDelegateList<PermanentId, bool>,
 
     /// Queries the power value for a card.
     ///
     /// This may be invoked for a card in any zone.
-    pub power: CardDelegateList<CardId, Power>,
+    pub power: CardQueryDelegateList<CardId, Power>,
 
     /// Queries the base power value for a card. This is added to other
     /// modifiers to compute a final power value.
-    pub base_power: CardDelegateList<CardId, Power>,
+    pub base_power: CardQueryDelegateList<CardId, Power>,
 
     /// Queries the toughness value for a card.
     ///
     /// This may be invoked for a card in any zone.
-    pub toughness: CardDelegateList<CardId, Toughness>,
+    pub toughness: CardQueryDelegateList<CardId, Toughness>,
 
     /// Queries the base toughness value for a card. This is added to other
     /// modifiers to compute a final power value.
-    pub base_toughness: CardDelegateList<CardId, Toughness>,
+    pub base_toughness: CardQueryDelegateList<CardId, Toughness>,
 
     /// Queries the colors of a card.
     ///
     /// An empty set represents colorless.
-    pub colors: CardDelegateList<CardId, EnumSet<Color>>,
+    pub colors: CardQueryDelegateList<CardId, EnumSet<Color>>,
 
     /// Queries the creature subtypes of a card.
-    pub creature_subtypes: CardDelegateList<CardId, EnumSet<CreatureSubtype>>,
+    pub creature_subtypes: CardQueryDelegateList<CardId, EnumSet<CreatureSubtype>>,
 }
 
 impl GameDelegates {

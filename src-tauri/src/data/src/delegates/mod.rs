@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod card_delegate_list;
+pub mod card_query_delegate_list;
 pub mod delegate_data;
 pub mod event_delegate_list;
 pub mod flag;

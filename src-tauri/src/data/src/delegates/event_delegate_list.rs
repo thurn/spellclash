@@ -21,7 +21,7 @@ use utils::outcome::Outcome;
 
 use crate::card_states::zones::{ToCardId, ZoneQueries};
 use crate::core::primitives::{AbilityId, EntityId, Zone};
-use crate::delegates::card_delegate_list::CardDelegateExecution;
+use crate::delegates::card_query_delegate_list::CardDelegateExecution;
 use crate::delegates::delegate_data::DelegateType;
 use crate::delegates::flag::Flag;
 use crate::delegates::scope::Scope;
