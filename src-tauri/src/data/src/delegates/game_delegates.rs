@@ -55,10 +55,10 @@ pub struct GameDelegates {
     pub permanent_controller_changed: EventDelegateList<PermanentControllerChangedEvent>,
 
     /// Can a creature attack the indicated target?
-    pub can_attack_target: CardDelegateList<CanAttackTarget, Flag>,
+    pub can_attack_target: CardDelegateList<CanAttackTarget, bool>,
 
     /// Does this permanent have haste?
-    pub has_haste: CardDelegateList<PermanentId, Flag>,
+    pub has_haste: CardDelegateList<PermanentId, bool>,
 
     /// Queries the power value for a card.
     ///

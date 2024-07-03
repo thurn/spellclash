@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::card_states::zones::{HasZones, ToCardId, Zones};
 use crate::core::primitives::{
-    AbilityId, AbilityNumber, CardId, EffectId, HasSource, PlayerName, Source,
+    AbilityId, AbilityNumber, CardId, EffectId, HasSource, PlayerName, Source, Timestamp,
 };
 
 /// Identifies the context in which an effect function or event delegate is
@@ -38,6 +38,11 @@ pub struct Scope {
 
     /// The identifier for the ability definition that is executing.
     pub ability_id: AbilityId,
+
+    /// The current timestamp for the EffectId (if this is the scope for an
+    /// effect) or the card owning this ability (if this is the scope for a
+    /// delegate).
+    pub timestamp: Timestamp,
 }
 
 /// Execution context for an effect function
@@ -48,6 +53,12 @@ pub struct EffectContext {
 
     /// Unique identifier for this instance of the effect function resolving.
     pub effect_id: EffectId,
+}
+
+impl From<Scope> for Timestamp {
+    fn from(scope: Scope) -> Timestamp {
+        scope.timestamp
+    }
 }
 
 impl EffectContext {

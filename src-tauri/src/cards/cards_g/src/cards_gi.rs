@@ -17,6 +17,7 @@ use abilities::targeting::targets;
 use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
+use data::delegates::delegate_data::QueryValue;
 use rules::queries::query_extension::QueryExt;
 
 pub fn giant_growth() -> CardDefinition {
@@ -25,8 +26,8 @@ pub fn giant_growth() -> CardDefinition {
             .targets(targets::creature())
             .effect(effects::target_this_turn)
             .delegates(|d| {
-                d.power.this_turn(|_, _, _, current| current + 3);
-                d.toughness.this_turn(|_, _, _, current| current + 3);
+                d.power.this_turn(|_, s, _| QueryValue::Add(s.timestamp, 3));
+                d.toughness.this_turn(|_, s, _| QueryValue::Add(s.timestamp, 3));
             }),
     )
 }

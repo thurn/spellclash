@@ -16,6 +16,7 @@ use data::card_definitions::ability_definition::{Ability, StaticAbility};
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::function_types::CardPredicate;
 use data::core::primitives::{CardId, PermanentId, Zone};
+use data::delegates::delegate_data::QueryValue;
 use data::delegates::game_delegates::GameDelegates;
 use data::delegates::scope::Scope;
 use rules::queries::combat_queries;
@@ -26,9 +27,9 @@ pub fn cannot_attack_unless_defender_controls(
     predicate: impl CardPredicate<PermanentId>,
 ) -> impl Ability {
     StaticAbility::new().delegates(move |d| {
-        d.can_attack_target.this(move |g, s, data, current| {
-            current.add_condition(
-                s,
+        d.can_attack_target.this(move |g, s, data| {
+            QueryValue::set_if_true(
+                s.timestamp,
                 g.battlefield(data.target.defending_player())
                     .iter()
                     .any(|&id| predicate(g, id) == Some(true)),

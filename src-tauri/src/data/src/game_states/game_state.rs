@@ -220,7 +220,8 @@ impl GameState {
     }
 
     pub fn create_scope(&self, ability_id: AbilityId) -> Option<Scope> {
-        Some(Scope { controller: self.card(ability_id)?.controller(), ability_id })
+        let card = self.card(ability_id)?;
+        Some(Scope { controller: card.controller(), ability_id, timestamp: card.timestamp })
     }
 
     /// Returns true if the [PermanentId] permanent has currently lost all

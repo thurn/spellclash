@@ -14,7 +14,7 @@
 
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::delegates::card_delegate_list::{CardDelegateExecution, CardDelegateList};
-use data::delegates::delegate_type::DelegateType;
+use data::delegates::delegate_data::{DelegateType, QueryValue};
 use data::delegates::event_delegate_list::EventDelegateList;
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
@@ -31,7 +31,7 @@ pub trait QueryExt<TArg, TResult> {
     /// if the card owning this delegate loses all abilities.
     fn this_turn(
         &mut self,
-        transformation: impl Fn(&GameState, Scope, &TArg, TResult) -> TResult
+        transformation: impl Fn(&GameState, Scope, &TArg) -> QueryValue<TResult>
             + Copy
             + Send
             + Sync
@@ -43,7 +43,7 @@ pub trait QueryExt<TArg, TResult> {
     /// invoked if the card owning this delegate loses all abilities.
     fn this_turn_ability(
         &mut self,
-        transformation: impl Fn(&GameState, Scope, &TArg, TResult) -> TResult
+        transformation: impl Fn(&GameState, Scope, &TArg) -> QueryValue<TResult>
             + Copy
             + Send
             + Sync
@@ -54,7 +54,7 @@ pub trait QueryExt<TArg, TResult> {
 impl<TArg: ToCardId, TResult> QueryExt<TArg, TResult> for CardDelegateList<TArg, TResult> {
     fn this_turn(
         &mut self,
-        transformation: impl Fn(&GameState, Scope, &TArg, TResult) -> TResult
+        transformation: impl Fn(&GameState, Scope, &TArg) -> QueryValue<TResult>
             + Copy
             + Send
             + Sync
@@ -65,7 +65,7 @@ impl<TArg: ToCardId, TResult> QueryExt<TArg, TResult> for CardDelegateList<TArg,
 
     fn this_turn_ability(
         &mut self,
-        transformation: impl Fn(&GameState, Scope, &TArg, TResult) -> TResult
+        transformation: impl Fn(&GameState, Scope, &TArg) -> QueryValue<TResult>
             + Copy
             + Send
             + Sync
@@ -78,14 +78,24 @@ impl<TArg: ToCardId, TResult> QueryExt<TArg, TResult> for CardDelegateList<TArg,
 fn this_turn_impl<TArg: ToCardId, TResult>(
     list: &mut CardDelegateList<TArg, TResult>,
     delegate_type: DelegateType,
-    transformation: impl Fn(&GameState, Scope, &TArg, TResult) -> TResult + Copy + Send + Sync + 'static,
+    transformation: impl Fn(&GameState, Scope, &TArg) -> QueryValue<TResult>
+        + Copy
+        + Send
+        + Sync
+        + 'static,
 ) {
-    list.add_delegate(delegate_type, CardDelegateExecution::Any, move |g, s, arg, mut result| {
+    list.add_delegate(delegate_type, CardDelegateExecution::Any, move |g, s, arg| {
         let Some(entity_id) = g.card(*arg).map(|c| c.entity_id()) else {
-            return result;
+            return QueryValue::Skip;
         };
-        for _ in 0..g.ability_state.this_turn.effect_count(s.ability_id, entity_id) {
-            result = transformation(g, s, arg, result);
+        let mut result = QueryValue::Skip;
+        for effect_id in g.ability_state.this_turn.active_effects(s.ability_id, entity_id) {
+            let scope = Scope {
+                controller: s.controller,
+                ability_id: s.ability_id,
+                timestamp: effect_id.timestamp(),
+            };
+            result = transformation(g, scope, arg);
         }
         result
     })

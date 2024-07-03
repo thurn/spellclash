@@ -14,6 +14,7 @@
 
 use data::card_definitions::ability_definition::{Ability, StaticAbility};
 use data::core::primitives::HasSource;
+use data::delegates::delegate_data::QueryValue;
 use data::delegates::game_delegates::GameDelegates;
 
 use crate::core::gain_ability;
@@ -39,7 +40,7 @@ pub fn ability() -> impl Ability {
 
 /// Adds the haste ability to the given delegates.
 pub fn gain(delegates: &mut GameDelegates, add_ability: GainAbility) {
-    gain_ability::add_to_query(&mut delegates.has_haste, add_ability, |_, s, _, flag| {
-        flag.set_true(s.source())
+    gain_ability::add_to_query(&mut delegates.has_haste, add_ability, |_, s, _| {
+        QueryValue::set(s, true)
     });
 }

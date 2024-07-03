@@ -13,13 +13,14 @@
 // limitations under the License.
 
 use std::collections::HashMap;
+use std::ops::Add;
 
 use dyn_clone::DynClone;
 use enumset::EnumSet;
 
 use crate::card_states::zones::{ToCardId, ZoneQueries};
-use crate::core::primitives::{AbilityId, EntityId, Zone};
-use crate::delegates::delegate_type::DelegateType;
+use crate::core::primitives::{AbilityId, EntityId, Timestamp, Zone};
+use crate::delegates::delegate_data::{DelegateType, QueryValue};
 use crate::delegates::flag::Flag;
 use crate::delegates::scope::Scope;
 use crate::delegates::stores_delegates::StoresDelegates;
@@ -27,17 +28,17 @@ use crate::game_states::game_state::GameState;
 
 /// Wrapper around query functions to enable closures to be cloned.
 trait QueryFnWrapper<TArg, TResult>: DynClone + Send {
-    fn invoke(&self, data: &GameState, scope: Scope, arg: &TArg, result: TResult) -> TResult;
+    fn invoke(&self, data: &GameState, scope: Scope, arg: &TArg) -> QueryValue<TResult>;
 }
 
 dyn_clone::clone_trait_object!(<TArg, TResult> QueryFnWrapper<TArg, TResult>);
 
 impl<TArg, TResult, F> QueryFnWrapper<TArg, TResult> for F
 where
-    F: Fn(&GameState, Scope, &TArg, TResult) -> TResult + Copy + Send,
+    F: Fn(&GameState, Scope, &TArg) -> QueryValue<TResult> + Copy + Send,
 {
-    fn invoke(&self, data: &GameState, scope: Scope, arg: &TArg, result: TResult) -> TResult {
-        self(data, scope, arg, result)
+    fn invoke(&self, data: &GameState, scope: Scope, arg: &TArg) -> QueryValue<TResult> {
+        self(data, scope, arg)
     }
 }
 
@@ -79,13 +80,9 @@ impl<TArg: ToCardId, TResult> CardDelegateList<TArg, TResult> {
     /// will be automatically disabled if the owning card loses its abilities.
     pub fn this(
         &mut self,
-        value: impl Fn(&GameState, Scope, &TArg, TResult) -> TResult + Copy + Send + Sync + 'static,
+        value: impl Fn(&GameState, Scope, &TArg) -> QueryValue<TResult> + Copy + Send + Sync + 'static,
     ) {
-        self.current.push(DelegateBuilder {
-            delegate_type: DelegateType::Ability,
-            execution_type: CardDelegateExecution::This,
-            query: Box::new(value),
-        });
+        self.add_delegate(DelegateType::Ability, CardDelegateExecution::This, value);
     }
 
     /// Adds a new query transformation which applies to *any* query of this
@@ -95,13 +92,9 @@ impl<TArg: ToCardId, TResult> CardDelegateList<TArg, TResult> {
     /// will be automatically disabled if the owning card loses its abilities.
     pub fn any(
         &mut self,
-        value: impl Fn(&GameState, Scope, &TArg, TResult) -> TResult + Copy + Send + Sync + 'static,
+        value: impl Fn(&GameState, Scope, &TArg) -> QueryValue<TResult> + Copy + Send + Sync + 'static,
     ) {
-        self.current.push(DelegateBuilder {
-            delegate_type: DelegateType::Ability,
-            execution_type: CardDelegateExecution::This,
-            query: Box::new(value),
-        });
+        self.add_delegate(DelegateType::Ability, CardDelegateExecution::Any, value);
     }
 
     /// Adds a new query transformation with the given [DelegateType] and
@@ -110,7 +103,7 @@ impl<TArg: ToCardId, TResult> CardDelegateList<TArg, TResult> {
         &mut self,
         delegate_type: DelegateType,
         execution_type: CardDelegateExecution,
-        value: impl Fn(&GameState, Scope, &TArg, TResult) -> TResult + Copy + Send + Sync + 'static,
+        value: impl Fn(&GameState, Scope, &TArg) -> QueryValue<TResult> + Copy + Send + Sync + 'static,
     ) {
         self.current.push(DelegateBuilder {
             delegate_type,
@@ -121,33 +114,23 @@ impl<TArg: ToCardId, TResult> CardDelegateList<TArg, TResult> {
 
     #[must_use]
     pub fn query(&self, game: &GameState, arg: &TArg, current: TResult) -> TResult {
+        let mut largest_timestamp = Timestamp(0);
         let mut result = current;
         for stored in &self.delegates {
-            let Some(card) = game.card(stored.ability_id.card_id) else {
+            let Some(scope) = validate_scope(game, stored) else {
                 continue;
             };
 
-            if stored.execution_type == CardDelegateExecution::This
-                && card.id != stored.ability_id.card_id
-            {
-                continue;
-            }
-
-            if !stored.zones.contains(card.zone) {
-                continue;
-            }
-
-            let Some(scope) = game.create_scope(stored.ability_id) else {
-                continue;
+            match stored.query_fn.invoke(game, scope, arg) {
+                QueryValue::Set(timestamp, value) if timestamp > largest_timestamp => {
+                    result = value;
+                    largest_timestamp = timestamp;
+                }
+                QueryValue::Add(_, _) => {
+                    panic!("Query is not numeric")
+                }
+                _ => {}
             };
-
-            if stored.delegate_type == DelegateType::Ability
-                && card.permanent_id().map_or(false, |id| game.has_lost_all_abilities(id))
-            {
-                continue;
-            }
-
-            result = stored.query_fn.invoke(game, scope, arg, result);
         }
         result
     }
@@ -158,7 +141,34 @@ impl<TArg: ToCardId, TResult> CardDelegateList<TArg, TResult> {
     }
 }
 
-impl<TArg: ToCardId> CardDelegateList<TArg, Flag> {
+impl<TArg: ToCardId, TResult: Add<Output = TResult> + Default> CardDelegateList<TArg, TResult> {
+    #[must_use]
+    pub fn query_numeric(&self, game: &GameState, arg: &TArg, current: TResult) -> TResult {
+        let mut largest_timestamp = Timestamp(0);
+        let mut result = current;
+        let mut add = TResult::default();
+        for stored in &self.delegates {
+            let Some(scope) = validate_scope(game, stored) else {
+                continue;
+            };
+
+            match stored.query_fn.invoke(game, scope, arg) {
+                QueryValue::Set(timestamp, value) if timestamp > largest_timestamp => {
+                    result = value;
+                    largest_timestamp = timestamp;
+                }
+                QueryValue::Add(_, value) => {
+                    add = add + value;
+                }
+                _ => {}
+            };
+        }
+
+        result + add
+    }
+}
+
+impl<TArg: ToCardId> CardDelegateList<TArg, bool> {
     /// Runs a boolean query to see if any item in the provided iterator matches
     /// a predicate. Returns `current` if no delegates are present in the map.
     ///
@@ -169,12 +179,12 @@ impl<TArg: ToCardId> CardDelegateList<TArg, Flag> {
         &self,
         game: &GameState,
         mut iterator: impl Iterator<Item = TArg>,
-        current: Flag,
-    ) -> Flag {
+        current: bool,
+    ) -> bool {
         if self.is_empty() {
             current
         } else {
-            Flag::new(iterator.any(|arg| self.query(game, &arg, current).value()))
+            iterator.any(|arg| self.query(game, &arg, current))
         }
     }
 
@@ -189,12 +199,12 @@ impl<TArg: ToCardId> CardDelegateList<TArg, Flag> {
         &self,
         game: &GameState,
         mut iterator: impl Iterator<Item = TArg>,
-        current: Flag,
-    ) -> Flag {
+        current: bool,
+    ) -> bool {
         if self.is_empty() {
             current
         } else {
-            Flag::new(iterator.all(|arg| self.query(game, &arg, current).value()))
+            iterator.all(|arg| self.query(game, &arg, current))
         }
     }
 }
@@ -217,4 +227,30 @@ impl<TArg: ToCardId, TResult> Default for CardDelegateList<TArg, TResult> {
     fn default() -> Self {
         Self { current: vec![], delegates: vec![] }
     }
+}
+
+fn validate_scope<TArg: ToCardId, TResult>(
+    game: &GameState,
+    stored: &StoredQueryDelegate<TArg, TResult>,
+) -> Option<Scope> {
+    let card = game.card(stored.ability_id.card_id)?;
+
+    if stored.execution_type == CardDelegateExecution::This && card.id != stored.ability_id.card_id
+    {
+        return None;
+    }
+
+    if !stored.zones.contains(card.zone) {
+        return None;
+    }
+
+    let scope = game.create_scope(stored.ability_id)?;
+
+    if stored.delegate_type == DelegateType::Ability
+        && card.permanent_id().map_or(false, |id| game.has_lost_all_abilities(id))
+    {
+        return None;
+    }
+
+    Some(scope)
 }

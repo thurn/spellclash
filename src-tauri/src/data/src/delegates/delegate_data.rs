@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::core::primitives::Timestamp;
+
 /// Possible high-level types of game delegate
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum DelegateType {
@@ -20,4 +22,34 @@ pub enum DelegateType {
 
     /// Effect delegate. Will still be invoked if a permanent loses abilities.
     Effect,
+}
+
+/// The result of a query delegate function
+#[derive(Debug, Clone, Copy)]
+pub enum QueryValue<T> {
+    Skip,
+    Set(Timestamp, T),
+    Add(Timestamp, T),
+}
+
+impl<T> QueryValue<T> {
+    /// Create a new query response which sets the result to the given value.
+    pub fn set(timestamp: impl Into<Timestamp>, value: T) -> Self {
+        Self::Set(timestamp.into(), value)
+    }
+
+    /// Create a new query response which adds the given value to the result.
+    pub fn add(timestamp: impl Into<Timestamp>, value: T) -> Self {
+        Self::Add(timestamp.into(), value)
+    }
+}
+
+impl QueryValue<bool> {
+    pub fn set_if_true(timestamp: Timestamp, value: bool) -> Self {
+        if value {
+            Self::Set(timestamp, true)
+        } else {
+            Self::Skip
+        }
+    }
 }

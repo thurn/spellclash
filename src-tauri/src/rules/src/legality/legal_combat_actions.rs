@@ -69,17 +69,14 @@ pub fn append(
                     combat_queries::attack_targets(game)
                         .filter(|target| {
                             // Only include targets that all selected attackers can legally attack.
-                            game.delegates
-                                .can_attack_target
-                                .query_all(
-                                    game,
-                                    selected_attackers.iter().map(|&attacker| CanAttackTarget {
-                                        attacker_id: attacker,
-                                        target: *target,
-                                    }),
-                                    Flag::new(true),
-                                )
-                                .value()
+                            game.delegates.can_attack_target.query_all(
+                                game,
+                                selected_attackers.iter().map(|&attacker| CanAttackTarget {
+                                    attacker_id: attacker,
+                                    target: *target,
+                                }),
+                                true,
+                            )
                         })
                         .map(CombatAction::SetSelectedAttackersTarget),
                 );

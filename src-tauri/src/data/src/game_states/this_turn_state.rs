@@ -13,7 +13,9 @@
 // limitations under the License.
 
 use std::collections::{HashMap, HashSet};
+use std::iter;
 
+use either::Either;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 
@@ -56,12 +58,20 @@ impl ThisTurnState {
             .push(AbilityEffectId { ability_id: source, effect_id });
     }
 
-    /// Returns the number of times the [AbilityId] ability has been applied to
-    /// the provided target entity this turn.
-    pub fn effect_count(&self, ability_id: AbilityId, target: EntityId) -> usize {
-        self.effects
-            .get(&target)
-            .map_or(0, |e| e.iter().filter(|e| e.ability_id == ability_id).count())
+    /// Returns an iterator over effects for which the [AbilityId] ability has
+    /// been applied to the provided target entity this turn.
+    pub fn active_effects(
+        &self,
+        ability_id: AbilityId,
+        target: EntityId,
+    ) -> impl Iterator<Item = EffectId> + '_ {
+        let Some(effects) = self.effects.get(&target) else {
+            return Either::Right(iter::empty());
+        };
+
+        Either::Left(
+            effects.iter().filter(move |e| e.ability_id == ability_id).map(|e| e.effect_id),
+        )
     }
 
     /// Returns & removes the list of control-changing effects to automatically

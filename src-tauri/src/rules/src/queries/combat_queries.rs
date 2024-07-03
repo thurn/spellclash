@@ -57,17 +57,17 @@ pub fn can_attack(game: &GameState, attacker_id: AttackerId) -> Option<Flag> {
     result = result.add_condition(Source::Game, types.contains(CardType::Creature));
     result = result.add_condition(Source::Game, !types.contains(CardType::Battle));
 
-    Some(game.delegates.can_attack_target.query_any(
+    Some(Flag::new(game.delegates.can_attack_target.query_any(
         game,
         attack_targets(game).map(|target| CanAttackTarget { attacker_id, target }),
-        result,
-    ))
+        result.value(),
+    )))
 }
 
 /// Returns true if the indicated permanent has the 'haste' ability.
 pub fn has_haste(game: &GameState, permanent_id: PermanentId) -> Option<Flag> {
     let card = game.card(permanent_id)?;
-    Some(game.delegates.has_haste.query(game, &permanent_id, Flag::new(false)))
+    Some(Flag::new(game.delegates.has_haste.query(game, &permanent_id, false)))
 }
 
 /// Returns an iterator over all legal attackers for the provided player.

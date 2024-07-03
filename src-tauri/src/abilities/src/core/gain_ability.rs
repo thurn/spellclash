@@ -15,6 +15,7 @@
 use data::card_states::zones::ToCardId;
 use data::core::primitives::PermanentId;
 use data::delegates::card_delegate_list::CardDelegateList;
+use data::delegates::delegate_data::QueryValue;
 use data::delegates::flag::Flag;
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
@@ -39,7 +40,7 @@ pub fn add_to_query<TArg, TResult, TFn>(
     transformation: TFn,
 ) where
     TArg: ToCardId,
-    TFn: Fn(&GameState, Scope, &TArg, TResult) -> TResult + Copy + Send + Sync + 'static,
+    TFn: Fn(&GameState, Scope, &TArg) -> QueryValue<TResult> + Copy + Send + Sync + 'static,
 {
     match add_ability {
         GainAbility::ThisCard => query_delegate.this(transformation),

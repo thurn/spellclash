@@ -28,19 +28,28 @@ pub fn run(
     stack_ability_id: Option<StackAbilityId>,
     ability: &dyn Ability,
 ) -> Outcome {
+    let effect_id = new_effect_id(game);
     match stack_ability_id {
         Some(stack_ability_id) => {
             let stack_ability = game.stack_ability(stack_ability_id);
             if let Some(delayed_trigger_effect_id) = stack_ability.delayed_trigger_effect_id {
                 let context = EffectContext {
-                    scope: Scope { controller: stack_ability.controller, ability_id },
+                    scope: Scope {
+                        controller: stack_ability.controller,
+                        ability_id,
+                        timestamp: delayed_trigger_effect_id.timestamp(),
+                    },
                     effect_id: delayed_trigger_effect_id,
                 };
                 ability.invoke_delayed_trigger_effect(game, context);
             } else {
                 let context = EffectContext {
-                    scope: Scope { controller: stack_ability.controller, ability_id },
-                    effect_id: new_effect_id(game),
+                    scope: Scope {
+                        controller: stack_ability.controller,
+                        ability_id,
+                        timestamp: effect_id.timestamp(),
+                    },
+                    effect_id,
                 };
                 ability.invoke_effect(game, context);
             }
@@ -48,8 +57,12 @@ pub fn run(
         _ => {
             let card = game.card(ability_id)?;
             let context = EffectContext {
-                scope: Scope { controller: card.controller(), ability_id },
-                effect_id: new_effect_id(game),
+                scope: Scope {
+                    controller: card.controller(),
+                    ability_id,
+                    timestamp: effect_id.timestamp(),
+                },
+                effect_id,
             };
             ability.invoke_effect(game, context);
         }
