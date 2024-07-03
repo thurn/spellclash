@@ -13,7 +13,9 @@
 // limitations under the License.
 
 use abilities::characteristics::{base_power_toughness, colors, creature_subtypes};
+use abilities::core::gain_ability::GainAbility;
 use abilities::core::{effects, lose_all_abilities};
+use abilities::keyword_abilities::flying;
 use abilities::restrictions::attack_restrictions;
 use abilities::targeting::targets;
 use abilities::triggers::state_triggers;
@@ -40,6 +42,7 @@ pub fn dance_of_the_skywise() -> CardDefinition {
                     CreatureSubtype::Dragon | CreatureSubtype::Illusion,
                 );
                 base_power_toughness::for_target_this_turn(d, 5, 5);
+                flying::gain(d, GainAbility::ForTargetThisTurn);
             }),
     )
 }

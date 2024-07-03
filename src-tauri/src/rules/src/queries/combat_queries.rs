@@ -20,7 +20,7 @@ use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{
     CardId, CardType, EntityId, HasController, PermanentId, PlayerName, Source,
 };
-use data::delegates::game_delegates::CanAttackTarget;
+use data::delegates::game_delegates::{CanAttackTarget, CanBeBlocked};
 use data::game_states::combat_state::{
     AttackTarget, AttackerId, BlockerId, BlockerMap, CombatState, ProposedAttackers,
 };
@@ -51,18 +51,21 @@ pub fn can_attack(game: &GameState, attacker_id: AttackerId) -> Option<bool> {
     result &= types.contains(CardType::Creature);
     result &= !types.contains(CardType::Battle);
 
-    let ret = Some(game.delegates.can_attack_target.query_any(
+    Some(game.delegates.can_attack_target.query_any(
         game,
         attack_targets(game).map(|target| CanAttackTarget { attacker_id, target }),
         result,
-    ));
-
-    ret
+    ))
 }
 
 /// Returns true if the indicated permanent has the 'haste' ability.
 pub fn has_haste(game: &GameState, permanent_id: PermanentId) -> Option<bool> {
     Some(game.delegates.has_haste.query_boolean(game, &permanent_id, false))
+}
+
+/// Returns true if the indicated permanent has the 'flying' ability.
+pub fn has_flying(game: &GameState, permanent_id: PermanentId) -> Option<bool> {
+    Some(game.delegates.has_flying.query_boolean(game, &permanent_id, false))
 }
 
 /// Returns an iterator over all legal attackers for the provided player.
@@ -73,23 +76,38 @@ pub fn legal_attackers(
     game.battlefield(player).iter_matching(game, can_attack)
 }
 
-/// Returns true if the card with the provided [CardId] can block legally in the
-/// current combat phase.
+/// Returns true if the card with the provided [BlockerId] can block legally in
+/// the current combat phase. Must be invoked while the game is in the
+/// [CombatState::ConfirmedAttackers] state.
 ///
 /// > 509.1a. The defending player chooses which creatures they control, if any,
 /// > will block. The chosen creatures must be untapped and they can't also be
 /// > battles.
+///
 /// <https://yawgatog.com/resources/magic-rules/#R5091a>
 #[must_use]
 pub fn can_block(game: &GameState, blocker_id: BlockerId) -> Option<bool> {
     let card = game.card(blocker_id)?;
     let types = card_queries::card_types(game, card.id)?;
+
     let mut result = true;
     result &= card.controller() != game.turn.active_player;
     result &= card.tapped_state != TappedState::Tapped;
     result &= types.contains(CardType::Creature);
     result &= !types.contains(CardType::Battle);
-    Some(result)
+    let Some(CombatState::ConfirmedAttackers(attackers)) = &game.combat else {
+        return None;
+    };
+
+    Some(game.delegates.can_be_blocked.query_any(
+        game,
+        attackers.all_targets().map(|(&attacker_id, &target)| CanBeBlocked {
+            attacker_id,
+            target,
+            blocker_id,
+        }),
+        result,
+    ))
 }
 
 /// Returns an iterator over all legal blockers for the provided player.

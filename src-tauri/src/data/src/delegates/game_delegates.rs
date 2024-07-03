@@ -22,7 +22,7 @@ use crate::core::primitives::{AbilityId, CardId, Color, ManaColor, PermanentId, 
 use crate::delegates::card_query_delegate_list::CardQueryDelegateList;
 use crate::delegates::event_delegate_list::EventDelegateList;
 use crate::delegates::stores_delegates::StoresDelegates;
-use crate::game_states::combat_state::{AttackTarget, AttackerId};
+use crate::game_states::combat_state::{AttackTarget, AttackerId, BlockerId};
 use crate::game_states::game_state::GameState;
 use crate::printed_cards::card_subtypes::CreatureSubtype;
 
@@ -33,6 +33,19 @@ pub struct CanAttackTarget {
 }
 
 impl ToCardId for CanAttackTarget {
+    fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+        self.attacker_id.to_card_id(zones)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct CanBeBlocked {
+    pub attacker_id: AttackerId,
+    pub target: AttackTarget,
+    pub blocker_id: BlockerId,
+}
+
+impl ToCardId for CanBeBlocked {
     fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
         self.attacker_id.to_card_id(zones)
     }
@@ -55,6 +68,9 @@ pub struct GameDelegates {
 
     /// Can a creature attack the indicated target?
     pub can_attack_target: CardQueryDelegateList<CanAttackTarget, bool>,
+
+    /// Can this creature be blocked by the indicated blocker?
+    pub can_be_blocked: CardQueryDelegateList<CanBeBlocked, bool>,
 
     /// Does this permanent have haste?
     pub has_haste: CardQueryDelegateList<PermanentId, bool>,

@@ -24,6 +24,7 @@ use rules::queries::query_extension::QueryExt;
 use crate::core::effects;
 
 /// Configuration for cards gaining new abilities
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum GainAbility {
     /// Adds an ability to the card which owns this delegate.
     ThisCard,

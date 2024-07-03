@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::card_states::zones::ToCardId;
+use crate::core::function_types::CardPredicate;
 use crate::core::primitives::Timestamp;
+use crate::game_states::game_state::GameState;
 
 /// Possible high-level types of game delegate
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -30,7 +33,7 @@ pub enum QueryValue<T> {
     Skip,
     Set(Timestamp, T),
     Add(T),
-    And(T),
+    And(bool),
 }
 
 impl<T> QueryValue<T> {
@@ -46,8 +49,17 @@ impl<T> QueryValue<T> {
 
     /// Create a new query response which performs a boolean 'and' operation on
     /// the given value
-    pub fn and(value: T) -> Self {
+    pub fn and(value: bool) -> Self {
         Self::And(value)
+    }
+
+    /// Invokes a [CardPredicate] and passes the result to [Self::and].
+    pub fn and_predicate<TId: ToCardId>(
+        game: &GameState,
+        id: TId,
+        predicate: impl CardPredicate<TId>,
+    ) -> Self {
+        Self::And(predicate(game, id) == Some(true))
     }
 }
 
