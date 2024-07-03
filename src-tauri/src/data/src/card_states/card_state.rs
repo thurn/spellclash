@@ -28,7 +28,7 @@ use crate::card_states::zones::{HasZones, ToCardId};
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
     AbilityId, CardId, EffectId, EntityId, HasController, HasPlayerName, ObjectId, PermanentId,
-    PlayerName, Zone,
+    PlayerName, Timestamp, Zone,
 };
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::{GameState, TurnData};
@@ -46,9 +46,11 @@ use crate::printed_cards::printed_card_id::PrintedCardId;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CardState {
     /// Unique identifier for this card in the [Zones] struct.
+    ///
+    /// Do not modify this field.
     pub id: CardId,
 
-    /// Object ID for this card. Cards receive an Entity ID when they are
+    /// Object ID for this card. Cards receive an Object ID when they are
     /// created and then get a new one every time they change zones.
     ///
     /// In most typical game situations the rules only 'remember' effects that
@@ -56,24 +58,37 @@ pub struct CardState {
     /// the battlefield it gets a new object ID and effects targeting it will
     /// end.
     ///
-    /// Do not mutate this field directly, use the `move_card` module instead.
+    /// Do not modify this field directly, use the `move_card` module instead.
     pub object_id: ObjectId,
 
-    /// Identifier for this card within the rules of the game.
+    /// Identifier for this card within the rules of the game. Do not modify
+    /// this field.
     ///
     /// See [CardName] for more information.
     pub card_name: CardName,
 
     /// Identifier for the printed card for this card.
+    ///
+    /// Do not modify this field.
     pub printed_card_id: PrintedCardId,
 
-    /// Describes which kind of card-like object this is.
+    /// The current timestamp for this card's effects.
+    ///
+    /// Effects produced by a card within a layer are ordered based on the
+    /// timestamps of those effects.
+    ///
+    /// Do not modify this field directly, use the relevant higher-level modules
+    /// like `move_card` instead.
+    pub timestamp: Timestamp,
+
+    /// Describes which kind of card-like object this is. Do not modify this
+    /// field.
     ///
     /// See [CardKind].
     pub kind: CardKind,
 
     /// The player who this card belongs to, who starts the game with this card
-    /// or who creates this token. Do not mutate this field.
+    /// or who creates this token. Do not modify this field.
     ///
     /// See <https://yawgatog.com/resources/magic-rules/#R1083>
     pub owner: PlayerName,
@@ -87,13 +102,13 @@ pub struct CardState {
     /// are responsible for removing effects they create when their durations
     /// expire.
     ///
-    /// Do not mutate this field directly, use the `change_controller` module
+    /// Do not modify this field directly, use the `change_controller` module
     /// instead.
     pub control_changing_effects: Vec<ControlChangingEffect>,
 
     /// Current game zone location for this card.
     ///
-    /// Do not mutate this field directly, use the `move_card` module instead.
+    /// Do not modify this field directly, use the `move_card` module instead.
     pub zone: Zone,
 
     /// Whether this card is currently face down or has one of its faces up.

@@ -35,7 +35,7 @@ use crate::card_states::stack_ability_state::StackAbilityState;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
     AbilityId, CardId, EntityId, HasController, HasPlayerName, HasSource, ObjectId, PermanentId,
-    PlayerName, StackAbilityId, StackItemId, Zone, ALL_POSSIBLE_PLAYERS,
+    PlayerName, StackAbilityId, StackItemId, Timestamp, Zone, ALL_POSSIBLE_PLAYERS,
 };
 use crate::delegates::scope::Scope;
 #[allow(unused)] // Used in docs
@@ -133,6 +133,9 @@ pub struct Zones {
     /// Next object id to use for zone moves.
     next_object_id: ObjectId,
 
+    /// Next timestamp to use for zone moves.
+    next_timestamp: Timestamp,
+
     libraries: OrderedZone,
     hands: UnorderedZone<CardId>,
     graveyards: OrderedZone,
@@ -156,6 +159,7 @@ impl Default for Zones {
             all_cards: Default::default(),
             stack_abilities: Default::default(),
             next_object_id: ObjectId(100),
+            next_timestamp: Timestamp(1),
             libraries: Default::default(),
             hands: Default::default(),
             graveyards: Default::default(),
@@ -271,6 +275,7 @@ impl Zones {
             object_id: ObjectId(0),
             card_name: reference.printed_card_reference.name,
             printed_card_id: reference.identifier,
+            timestamp: Timestamp(0),
             kind,
             owner,
             control_changing_effects: vec![],
@@ -292,10 +297,12 @@ impl Zones {
 
         self.add_to_zone(owner, id, Zone::Library);
         let object_id = self.new_object_id();
+        let timestamp = self.new_timestamp();
 
         let card = &mut self.all_cards[id];
         card.id = id;
         card.object_id = object_id;
+        card.timestamp = timestamp;
         card
     }
 
@@ -359,9 +366,11 @@ impl Zones {
         let owner = card.owner;
         self.remove_from_zone(owner, card_id, old_zone);
         let object_id = self.new_object_id();
+        let timestamp = self.new_timestamp();
         let card = self.card_mut(card_id).expect("Card not found");
         card.zone = zone;
         card.object_id = object_id;
+        card.timestamp = timestamp;
         self.add_to_zone(owner, card_id, zone);
         outcome::OK
     }
@@ -499,6 +508,13 @@ impl Zones {
                 self.outside_the_game_zone.cards_mut(owner).insert(card_id);
             }
         }
+    }
+
+    /// Returns a new unique, monotonically-increasing [Timestamp].
+    pub fn new_timestamp(&mut self) -> Timestamp {
+        let result = self.next_timestamp;
+        self.next_timestamp = Timestamp(result.0 + 1);
+        result
     }
 
     fn new_object_id(&mut self) -> ObjectId {

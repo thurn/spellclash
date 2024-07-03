@@ -30,12 +30,6 @@ pub struct AbilityState {
     /// State which persists for the duration of the current turn.
     pub this_turn: ThisTurnState,
 
-    /// Stores the [EffectId] which will be returned next from
-    /// [Self::new_effect_id].
-    ///
-    /// Do not access this field directly.
-    pub next_effect_id: EffectId,
-
     /// Stores a list of delayed trigger activation IDs for each ability. An
     /// ability with an entry in this map will have its delayed trigger placed
     /// on the stack when the trigger condition occurs.
@@ -51,16 +45,4 @@ pub struct AbilityState {
     /// directly.
     #[serde_as(as = "Vec<(_, _)>")]
     pub effect_state: HashMap<EffectId, StateValue>,
-}
-
-impl AbilityState {
-    /// Returns a new unique [EffectId] for use in this game.
-    ///
-    /// Please attempt to have less than eighteen quintillion effects in a
-    /// single game.
-    pub fn new_effect_id(&mut self) -> EffectId {
-        let result = self.next_effect_id;
-        self.next_effect_id = EffectId(result.0 + 1);
-        result
-    }
 }

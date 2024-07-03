@@ -15,7 +15,7 @@
 use data::card_definitions::ability_definition::{Ability, EffectFn};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{
-    AbilityId, CardId, EntityId, HasController, PlayerName, StackAbilityId, StackItemId,
+    AbilityId, CardId, EffectId, EntityId, HasController, PlayerName, StackAbilityId, StackItemId,
 };
 use data::delegates::scope::{EffectContext, Scope};
 use data::game_states::game_state::GameState;
@@ -40,7 +40,7 @@ pub fn run(
             } else {
                 let context = EffectContext {
                     scope: Scope { controller: stack_ability.controller, ability_id },
-                    effect_id: game.ability_state.new_effect_id(),
+                    effect_id: new_effect_id(game),
                 };
                 ability.invoke_effect(game, context);
             }
@@ -49,10 +49,17 @@ pub fn run(
             let card = game.card(ability_id)?;
             let context = EffectContext {
                 scope: Scope { controller: card.controller(), ability_id },
-                effect_id: game.ability_state.new_effect_id(),
+                effect_id: new_effect_id(game),
             };
             ability.invoke_effect(game, context);
         }
     };
     outcome::OK
+}
+
+/// Creates a new [EffectId].
+///
+/// All [EffectId]s are also valid timestamps and share the same ID space.
+fn new_effect_id(game: &mut GameState) -> EffectId {
+    EffectId(game.zones.new_timestamp().0)
 }
