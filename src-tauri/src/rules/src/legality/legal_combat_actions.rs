@@ -15,7 +15,6 @@
 use data::actions::game_action::{CombatAction, GameAction};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::PlayerName;
-use data::delegates::flag::Flag;
 use data::delegates::game_delegates::CanAttackTarget;
 use data::game_states::combat_state::{CombatState, ProposedAttackers};
 use data::game_states::game_state::GameState;

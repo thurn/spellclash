@@ -21,7 +21,6 @@ use crate::core::numerics::{Power, Toughness};
 use crate::core::primitives::{AbilityId, CardId, Color, ManaColor, PermanentId, PlayerName, Zone};
 use crate::delegates::card_query_delegate_list::CardQueryDelegateList;
 use crate::delegates::event_delegate_list::EventDelegateList;
-use crate::delegates::flag::Flag;
 use crate::delegates::stores_delegates::StoresDelegates;
 use crate::game_states::combat_state::{AttackTarget, AttackerId};
 use crate::game_states::game_state::GameState;
