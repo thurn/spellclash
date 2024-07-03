@@ -125,8 +125,11 @@ impl<TArg: ToCardId, TResult> CardQueryDelegateList<TArg, TResult> {
                     result = value;
                     largest_timestamp = timestamp;
                 }
-                QueryValue::Add(_, _) => {
+                QueryValue::Add(_) => {
                     panic!("Query is not numeric")
+                }
+                QueryValue::And(_) => {
+                    panic!("Query is not boolean")
                 }
                 _ => {}
             };
@@ -158,8 +161,11 @@ impl<TArg: ToCardId, TResult: Add<Output = TResult> + Default>
                     result = value;
                     largest_timestamp = timestamp;
                 }
-                QueryValue::Add(_, value) => {
+                QueryValue::Add(value) => {
                     add = add + value;
+                }
+                QueryValue::And(_) => {
+                    panic!("Query is not boolean")
                 }
                 _ => {}
             };
@@ -185,7 +191,7 @@ impl<TArg: ToCardId> CardQueryDelegateList<TArg, bool> {
         if self.is_empty() {
             current
         } else {
-            iterator.any(|arg| self.query(game, &arg, current))
+            iterator.any(|arg| self.query_boolean(game, &arg, current))
         }
     }
 
@@ -205,8 +211,36 @@ impl<TArg: ToCardId> CardQueryDelegateList<TArg, bool> {
         if self.is_empty() {
             current
         } else {
-            iterator.all(|arg| self.query(game, &arg, current))
+            iterator.all(|arg| self.query_boolean(game, &arg, current))
         }
+    }
+
+    #[must_use]
+    pub fn query_boolean(&self, game: &GameState, arg: &TArg, current: bool) -> bool {
+        let mut largest_timestamp = Timestamp(0);
+        let mut result = current;
+        let mut and = true;
+        for stored in &self.delegates {
+            let Some(scope) = validate_scope(game, stored) else {
+                continue;
+            };
+
+            match stored.query_fn.invoke(game, scope, arg) {
+                QueryValue::Set(timestamp, value) if timestamp > largest_timestamp => {
+                    result = value;
+                    largest_timestamp = timestamp;
+                }
+                QueryValue::Add(_) => {
+                    panic!("Query is not numeric")
+                }
+                QueryValue::And(value) => {
+                    and &= value;
+                }
+                _ => {}
+            };
+        }
+
+        result & and
     }
 }
 

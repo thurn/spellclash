@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use data::card_definitions::ability_definition::{Ability, StaticAbility};
+use data::card_states::iter_matching::IterMatching;
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::function_types::CardPredicate;
 use data::core::primitives::{CardId, PermanentId, Zone};
@@ -28,11 +29,8 @@ pub fn cannot_attack_unless_defender_controls(
 ) -> impl Ability {
     StaticAbility::new().delegates(move |d| {
         d.can_attack_target.this(move |g, s, data| {
-            QueryValue::set_if_true(
-                s.timestamp,
-                g.battlefield(data.target.defending_player())
-                    .iter()
-                    .any(|&id| predicate(g, id) == Some(true)),
+            QueryValue::and(
+                g.battlefield(data.target.defending_player()).any_matching(g, predicate),
             )
         })
     })

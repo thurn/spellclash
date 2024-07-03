@@ -29,7 +29,8 @@ pub enum DelegateType {
 pub enum QueryValue<T> {
     Skip,
     Set(Timestamp, T),
-    Add(Timestamp, T),
+    Add(T),
+    And(T),
 }
 
 impl<T> QueryValue<T> {
@@ -39,8 +40,14 @@ impl<T> QueryValue<T> {
     }
 
     /// Create a new query response which adds the given value to the result.
-    pub fn add(timestamp: impl Into<Timestamp>, value: T) -> Self {
-        Self::Add(timestamp.into(), value)
+    pub fn add(value: T) -> Self {
+        Self::Add(value)
+    }
+
+    /// Create a new query response which performs a boolean 'and' operation on
+    /// the given value
+    pub fn and(value: T) -> Self {
+        Self::And(value)
     }
 }
 

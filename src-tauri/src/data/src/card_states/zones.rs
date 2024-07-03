@@ -528,6 +528,8 @@ impl Zones {
 struct UnorderedZone<T: ToCardId + Hash + Eq + PartialEq + Debug> {
     player1: HashSet<T>,
     player2: HashSet<T>,
+    player3: HashSet<T>,
+    player4: HashSet<T>,
 }
 
 impl<T: ToCardId + Hash + Eq + PartialEq + Debug> UnorderedZone<T> {
@@ -535,7 +537,8 @@ impl<T: ToCardId + Hash + Eq + PartialEq + Debug> UnorderedZone<T> {
         match player_name {
             PlayerName::One => &self.player1,
             PlayerName::Two => &self.player2,
-            _ => todo!("Not implemented"),
+            PlayerName::Three => &self.player3,
+            PlayerName::Four => &self.player4,
         }
     }
 
@@ -543,7 +546,8 @@ impl<T: ToCardId + Hash + Eq + PartialEq + Debug> UnorderedZone<T> {
         match player_name {
             PlayerName::One => &mut self.player1,
             PlayerName::Two => &mut self.player2,
-            _ => todo!("Not implemented"),
+            PlayerName::Three => &mut self.player3,
+            PlayerName::Four => &mut self.player4,
         }
     }
 
@@ -562,6 +566,8 @@ impl<T: ToCardId + Hash + Eq + PartialEq + Debug> UnorderedZone<T> {
 struct OrderedZone {
     player1: VecDeque<CardId>,
     player2: VecDeque<CardId>,
+    player3: VecDeque<CardId>,
+    player4: VecDeque<CardId>,
 }
 
 impl OrderedZone {
@@ -569,7 +575,8 @@ impl OrderedZone {
         match player_name {
             PlayerName::One => &self.player1,
             PlayerName::Two => &self.player2,
-            _ => todo!("Not implemented"),
+            PlayerName::Three => &self.player3,
+            PlayerName::Four => &self.player4,
         }
     }
 
@@ -577,7 +584,8 @@ impl OrderedZone {
         match player_name {
             PlayerName::One => &mut self.player1,
             PlayerName::Two => &mut self.player2,
-            _ => todo!("Not implemented"),
+            PlayerName::Three => &mut self.player3,
+            PlayerName::Four => &mut self.player4,
         }
     }
 

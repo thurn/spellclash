@@ -56,7 +56,7 @@ pub enum CombatAction {
     /// When selected blockers are selected, the blocking player can select a
     /// target for them to block via [Self::SetSelectedBlockersTarget].
     ///
-    /// If there is only one legal block, this creature will instead
+    /// If there is only one legal attacker to block, this creature will instead
     /// automatically be added to the 'proposed blocks' set and calling
     /// [Self::SetSelectedBlockersTarget] is not needed.
     AddSelectedBlocker(BlockerId),

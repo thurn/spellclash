@@ -26,8 +26,8 @@ pub fn giant_growth() -> CardDefinition {
             .targets(targets::creature())
             .effect(effects::target_this_turn)
             .delegates(|d| {
-                d.power.this_turn(|_, s, _| QueryValue::Add(s.timestamp, 3));
-                d.toughness.this_turn(|_, s, _| QueryValue::Add(s.timestamp, 3));
+                d.power.this_turn(|_, _, _| QueryValue::add(3));
+                d.toughness.this_turn(|_, _, _| QueryValue::add(3));
             }),
     )
 }

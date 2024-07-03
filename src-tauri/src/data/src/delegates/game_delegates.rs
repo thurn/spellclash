@@ -59,6 +59,9 @@ pub struct GameDelegates {
     /// Does this permanent have haste?
     pub has_haste: CardQueryDelegateList<PermanentId, bool>,
 
+    /// Does this permanent have flying?
+    pub has_flying: CardQueryDelegateList<PermanentId, bool>,
+
     /// Queries the power value for a card.
     ///
     /// This may be invoked for a card in any zone.
