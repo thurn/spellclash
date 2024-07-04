@@ -14,22 +14,18 @@
 
 use std::iter;
 
-use data::card_definitions::card_name;
 use data::card_states::card_state::TappedState;
 use data::card_states::iter_matching::IterMatching;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{
-    CardId, CardType, EntityId, HasController, PermanentId, PlayerName, Source,
-};
-use data::delegates::game_delegates::{CanAttackTarget, CanBeBlocked};
+use data::core::primitives::{CardType, HasController, PermanentId, PlayerName};
+use data::delegates::delegate_arguments::{CanAttackTarget, CanBeBlocked};
 use data::game_states::combat_state::{
-    AttackTarget, AttackerId, BlockerId, BlockerMap, CombatState, ProposedAttackers,
+    AttackTarget, AttackerId, BlockerId, BlockerMap, CombatState,
 };
 use data::game_states::game_state::GameState;
-use utils::bools;
 
 use crate::predicates::card_predicates;
-use crate::queries::{card_queries, combat_queries, player_queries};
+use crate::queries::{card_queries, player_queries};
 
 /// Returns true if the card with the provided [AttackerId] has any valid
 /// target to attack. Returns None if this attacker no longer exists.

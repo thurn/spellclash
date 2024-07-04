@@ -1359,6 +1359,7 @@ dependencies = [
  "once_cell",
  "rand 0.8.5",
  "rand_xoshiro",
+ "regex",
  "schemars",
  "serde",
  "serde_with",

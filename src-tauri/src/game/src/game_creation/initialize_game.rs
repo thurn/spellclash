@@ -24,6 +24,7 @@ use ai::tree_search::iterative_deepening_search::IterativeDeepeningSearch;
 use data::card_definitions::definitions;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{AbilityId, PlayerName};
+use data::delegates::apply_writes;
 use data::game_states::game_state::GameState;
 use data::player_states::game_agent::{AgentType, GameAgent};
 use data::player_states::player_state::{PlayerQueries, PlayerState, PlayerType};
@@ -54,7 +55,11 @@ pub fn run(database: SqliteDatabase, game: &mut GameState, update_channel: Optio
             {
                 for delegate in ability.get_delegates() {
                     (delegate.run)(&mut game.delegates);
-                    game.delegates.apply_writes(AbilityId { card_id, number }, delegate.zones);
+                    apply_writes::run(
+                        &mut game.delegates,
+                        AbilityId { card_id, number },
+                        delegate.zones,
+                    );
                 }
             }
             outcome::OK
