@@ -34,16 +34,19 @@ pub enum GainAbility {
     ForTargetThisTurn,
 }
 
-pub fn add_to_query<TArg, TResult: QueryValue, TFn>(
+pub fn add_to_query<TArg, TResult, TFn>(
     query_delegate: &mut CardQueryDelegateList<TArg, TResult>,
     add_ability: GainAbility,
     transformation: TFn,
 ) where
     TArg: ToCardId,
+    TResult: QueryValue,
     TFn: Fn(&GameState, Scope, &TArg) -> Option<TResult> + Copy + Send + Sync + 'static,
 {
     match add_ability {
         GainAbility::ThisCard => query_delegate.this(transformation),
-        GainAbility::ForTargetThisTurn => query_delegate.this_turn_ability(transformation),
+        GainAbility::ForTargetThisTurn => {
+            query_delegate.this_turn_ability(move |game, c, t| transformation(game, c.scope, t))
+        }
     }
 }

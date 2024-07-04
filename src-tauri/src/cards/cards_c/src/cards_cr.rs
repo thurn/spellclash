@@ -18,11 +18,13 @@ use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 use data::core::primitives::HasSource;
+use data::delegates::delegate_data::ChangeText;
 use data::game_states::effect_state::EffectState;
 use data::printed_cards::card_subtypes::BASIC_LANDS;
 use data::text_strings::Text;
 use rules::mutations::library;
 use rules::prompt_handling::prompts;
+use rules::queries::query_extension::QueryExt;
 
 pub fn craw_wurm() -> CardDefinition {
     CardDefinition::new(card_name::CRAW_WURM)
@@ -31,23 +33,31 @@ pub fn craw_wurm() -> CardDefinition {
 pub fn crystal_spray() -> CardDefinition {
     let state = EffectState::new();
     CardDefinition::new(card_name::CRYSTAL_SPRAY).ability(
-        SpellAbility::new().targets(targets::permanent()).effect(|g, c, target| {
-            let old = prompts::choose_land_subtype(
-                g,
-                c.controller(),
-                Text::SelectTypeToChange,
-                BASIC_LANDS.iter().collect(),
-            );
-            let new = prompts::choose_land_subtype(
-                g,
-                c.controller(),
-                Text::SelectTypeToChange,
-                BASIC_LANDS.iter().filter(|&subtype| subtype != old).collect(),
-            );
-            state.store(g, c.effect_id, (old, new));
+        SpellAbility::new()
+            .targets(targets::permanent())
+            .effect(|g, c, target| {
+                let old = prompts::choose_land_subtype(
+                    g,
+                    c.controller(),
+                    Text::SelectTypeToChange,
+                    BASIC_LANDS.iter().collect(),
+                );
+                let new = prompts::choose_land_subtype(
+                    g,
+                    c.controller(),
+                    Text::SelectTypeToChange,
+                    BASIC_LANDS.iter().filter(|&subtype| subtype != old).collect(),
+                );
+                state.store(g, c.effect_id, (old, new));
 
-            effects::target_this_turn(g, c, target);
-            library::draw(g, c.source(), c.controller());
-        }),
+                effects::target_this_turn(g, c, target);
+                library::draw(g, c.source(), c.controller());
+            })
+            .delegates(|d| {
+                d.change_basic_land_text.this_turn(|g, c, _| {
+                    let (old, new) = state.get(g, c.effect_id)?;
+                    ChangeText::replace(c, old, new)
+                })
+            }),
     )
 }

@@ -22,6 +22,6 @@ use rules::queries::query_extension::QueryExt;
 /// Sets a card's base power and toughness for the current turn when affected by
 /// this card.
 pub fn for_target_this_turn(d: &mut GameDelegates, power: Power, toughness: Toughness) {
-    d.base_power.this_turn(move |_, s, _| Ints::set(s, power));
-    d.base_toughness.this_turn(move |_, s, _| Ints::set(s, toughness));
+    d.base_power.this_turn(move |_, c, _| Ints::set(c, power));
+    d.base_toughness.this_turn(move |_, c, _| Ints::set(c, toughness));
 }

@@ -61,6 +61,12 @@ impl From<Scope> for Timestamp {
     }
 }
 
+impl From<EffectContext> for Timestamp {
+    fn from(context: EffectContext) -> Timestamp {
+        context.scope.timestamp
+    }
+}
+
 impl EffectContext {
     pub fn controller(&self) -> PlayerName {
         self.scope.controller
