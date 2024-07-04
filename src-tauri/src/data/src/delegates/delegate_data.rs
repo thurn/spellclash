@@ -96,3 +96,16 @@ impl<T: EnumSetType> EnumSets<T> {
 }
 
 impl<T: EnumSetType> QueryValue for EnumSets<T> {}
+
+#[derive(Clone, Copy, Debug)]
+pub enum ChangeText<T: EnumSetType> {
+    Replace(Timestamp, T, T),
+}
+
+impl<T: EnumSetType> ChangeText<T> {
+    pub fn replace(timestamp: impl Into<Timestamp>, old: T, new: T) -> Option<ChangeText<T>> {
+        Some(Self::Replace(timestamp.into(), old, new))
+    }
+}
+
+impl<T: EnumSetType> QueryValue for ChangeText<T> {}

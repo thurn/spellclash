@@ -25,7 +25,7 @@ use rules::mutations::trigger_extension::TriggerExt;
 use rules::mutations::{change_controller, delayed_trigger, permanents};
 
 pub fn ray_of_command() -> CardDefinition {
-    let state = EffectState::new(0);
+    let state = EffectState::new();
     CardDefinition::new(card_name::RAY_OF_COMMAND).ability(
         SpellAbility::new()
             .targets(targets::creature_opponent_controls())

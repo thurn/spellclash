@@ -19,8 +19,10 @@ use data::core::primitives::{CardId, EntityId, PlayerName};
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use data::player_states::player_state::{PlayerQueries, PlayerType};
-use data::prompts::choice_prompt::{Choice, ChoicePrompt};
+use data::printed_cards::card_subtypes::LandSubtype;
+use data::prompts::entity_choice_prompt::{Choice, EntityChoicePrompt};
 use data::prompts::game_update::GameUpdate;
+use data::prompts::multiple_choice_prompt::MultipleChoicePrompt;
 use data::prompts::pick_number_prompt::PickNumberPrompt;
 use data::prompts::prompt::{Prompt, PromptResponse, PromptType};
 use data::prompts::select_order_prompt::{CardOrderLocation, Quantity, SelectOrderPrompt};
@@ -83,7 +85,7 @@ pub fn choose_entity(
     let PromptResponse::EntityChoice(id) = send(game, Prompt {
         player,
         label: Some(description),
-        prompt_type: PromptType::EntityChoice(ChoicePrompt { optional: false, choices }),
+        prompt_type: PromptType::EntityChoice(EntityChoicePrompt { optional: false, choices }),
     }) else {
         panic!("Unexpected prompt response type!");
     };
@@ -152,4 +154,20 @@ pub fn select_ordered_from<'a>(
     )
     .remove(&target)
     .unwrap_or_default()
+}
+
+pub fn choose_land_subtype(
+    game: &mut GameState,
+    player: PlayerName,
+    description: Text,
+    choices: Vec<LandSubtype>,
+) -> LandSubtype {
+    let PromptResponse::MultipleChoice(index) = send(game, Prompt {
+        player,
+        label: Some(description),
+        prompt_type: PromptType::LandSubtype(MultipleChoicePrompt { choices: choices.clone() }),
+    }) else {
+        panic!("Unexpected prompt response type!");
+    };
+    choices[index]
 }

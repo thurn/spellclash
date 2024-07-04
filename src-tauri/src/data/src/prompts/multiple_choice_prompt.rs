@@ -14,14 +14,11 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::core::primitives::CardId;
+use crate::text_strings::Text;
 
-/// A prompt for a player to select an integer numeric value in a given range.
+/// A choice for a player to pick one item from a list of choice buttons.
 #[derive(Clone, Debug)]
-pub struct PickNumberPrompt {
-    /// Smallest allowed value
-    pub minimum: u32,
-
-    /// Largest allowed value
-    pub maximum: u32,
+pub struct MultipleChoicePrompt<T: Into<Text>> {
+    /// Choices to display for this prompt
+    pub choices: Vec<T>,
 }

@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use enumset::{EnumSet, EnumSetType};
+use enumset::{enum_set, EnumSet, EnumSetType};
 use serde::{Deserialize, Serialize};
-use strum::EnumString;
+use strum::{Display, EnumString};
+
+use crate::game_states::game_step::GamePhaseStep;
+use crate::text_strings::Text;
 
 /// Possible subtypes of a card. Each subtype is connected to a specific card
 /// type.
@@ -76,7 +79,7 @@ pub enum EnchantmentSubtype {
 /// Possible subtypes of lands
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R2053ia>
-#[derive(Debug, EnumSetType, EnumString)]
+#[derive(Debug, Display, EnumSetType, EnumString, Serialize, Deserialize)]
 pub enum LandSubtype {
     Cave,
     Desert,
@@ -93,6 +96,20 @@ pub enum LandSubtype {
     Swamp,
     Tower,
     Urzas,
+}
+
+pub const BASIC_LANDS: EnumSet<LandSubtype> = enum_set!(
+    LandSubtype::Plains
+        | LandSubtype::Island
+        | LandSubtype::Swamp
+        | LandSubtype::Mountain
+        | LandSubtype::Forest
+);
+
+impl From<LandSubtype> for Text {
+    fn from(value: LandSubtype) -> Self {
+        Text::LandSubtype(value)
+    }
 }
 
 /// Possible subtypes of planeswalkers

@@ -19,7 +19,7 @@ use crate::game_states::game_state::GameState;
 
 /// A prompt shown to the user to allow them to play one or more cards from a
 /// set of cards.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct PlayCardsPrompt {
     /// Zone of origin for the cards being played.
     pub from_zone: Zone,

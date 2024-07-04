@@ -245,5 +245,22 @@ fn prompt_view(state: &DisplayState, prompt: &Prompt, player: PlayerName) -> Vec
 
             result
         }
+        PromptType::LandSubtype(data) => {
+            let mut result = vec![];
+            for (i, choice) in data.choices.iter().enumerate() {
+                if legal_prompt_actions::can_take_action(
+                    prompt,
+                    player,
+                    PromptAction::SelectChoice(i),
+                ) {
+                    result.push(GameControlView::Button(GameButtonView::new_primary(
+                        choice.to_string(),
+                        PromptAction::SelectChoice(i),
+                    )));
+                }
+            }
+
+            result
+        }
     }
 }

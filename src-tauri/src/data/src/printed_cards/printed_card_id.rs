@@ -101,3 +101,5 @@ pub const RAY_OF_COMMAND: PrintedCardId =
     PrintedCardId(uuid!("638abe5f-2a8a-42ca-bcdf-a52a3df66946"));
 pub const GIANT_GROWTH: PrintedCardId =
     PrintedCardId(uuid!("6b712e6e-eb48-4a71-b95d-ce343966b236"));
+pub const CRYSTAL_SPRAY: PrintedCardId =
+    PrintedCardId(uuid!("8798a4f1-34bb-449d-a8cc-faf8bda8e0ab"));

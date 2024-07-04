@@ -21,26 +21,14 @@ use crate::game_states::state_value::StateValue;
 
 #[derive(Clone, Copy)]
 pub struct EffectState<T: Into<StateValue> + TryFrom<StateValue> + PartialEq> {
-    _number: u32,
     value: PhantomData<T>,
 }
 
 impl<T: Into<StateValue> + TryFrom<StateValue> + PartialEq> EffectState<T> {
-    const STATE0: EffectState<T> = EffectState { _number: 0, value: PhantomData };
-    const STATE1: EffectState<T> = EffectState { _number: 1, value: PhantomData };
-    const STATE2: EffectState<T> = EffectState { _number: 2, value: PhantomData };
-    const STATE3: EffectState<T> = EffectState { _number: 3, value: PhantomData };
-    const STATE4: EffectState<T> = EffectState { _number: 4, value: PhantomData };
+    const STATE: EffectState<T> = EffectState { value: PhantomData };
 
-    pub fn new(number: u32) -> &'static Self {
-        match number {
-            0 => &Self::STATE0,
-            1 => &Self::STATE1,
-            2 => &Self::STATE2,
-            3 => &Self::STATE3,
-            4 => &Self::STATE4,
-            _ => panic!("Invalid effect state number"),
-        }
+    pub fn new() -> &'static Self {
+        &Self::STATE
     }
 
     /// Sets the value of the state associated with the provided [EffectId] to

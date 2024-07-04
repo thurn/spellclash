@@ -20,7 +20,7 @@ use enumset::{EnumSet, EnumSetType};
 
 use crate::card_states::zones::{ToCardId, ZoneQueries};
 use crate::core::primitives::{AbilityId, EntityId, Source, Timestamp, Zone};
-use crate::delegates::delegate_data::{DelegateType, EnumSets, Flag, Ints, QueryValue};
+use crate::delegates::delegate_data::{ChangeText, DelegateType, EnumSets, Flag, Ints, QueryValue};
 use crate::delegates::scope::Scope;
 use crate::delegates::stores_delegates::StoresDelegates;
 use crate::game_states::game_state::GameState;
@@ -237,6 +237,31 @@ impl<TArg: ToCardId, TResult: EnumSetType> CardQueryDelegateList<TArg, EnumSets<
             match stored.query_fn.invoke(game, scope, arg) {
                 Some(EnumSets::Set(timestamp, value)) if timestamp >= largest_timestamp => {
                     result = value;
+                    largest_timestamp = timestamp;
+                }
+                _ => {}
+            };
+        }
+
+        result
+    }
+}
+
+impl<TArg: ToCardId, TResult: EnumSetType> CardQueryDelegateList<TArg, ChangeText<TResult>> {
+    #[must_use]
+    pub fn query(&self, game: &GameState, _: Source, arg: &TArg, current: TResult) -> TResult {
+        let mut largest_timestamp = Timestamp(0);
+        let mut result = current;
+        for stored in &self.delegates {
+            let Some(scope) = validate_scope(game, stored, &mut largest_timestamp) else {
+                continue;
+            };
+
+            match stored.query_fn.invoke(game, scope, arg) {
+                Some(ChangeText::Replace(timestamp, old, new))
+                    if old == current && timestamp >= largest_timestamp =>
+                {
+                    result = new;
                     largest_timestamp = timestamp;
                 }
                 _ => {}

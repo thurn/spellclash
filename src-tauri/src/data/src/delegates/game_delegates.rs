@@ -23,10 +23,10 @@ use crate::delegates::card_query_delegate_list::CardQueryDelegateList;
 use crate::delegates::delegate_arguments::{
     CanAttackTarget, CanBeBlocked, PermanentControllerChangedEvent,
 };
-use crate::delegates::delegate_data::{EnumSets, Flag, Ints};
+use crate::delegates::delegate_data::{ChangeText, EnumSets, Flag, Ints};
 use crate::delegates::event_delegate_list::EventDelegateList;
 use crate::delegates::stores_delegates::StoresDelegates;
-use crate::printed_cards::card_subtypes::CreatureSubtype;
+use crate::printed_cards::card_subtypes::{CreatureSubtype, LandSubtype};
 
 #[derive(Default, Clone)]
 pub struct GameDelegates {
@@ -73,6 +73,9 @@ pub struct GameDelegates {
 
     /// Queries the creature subtypes of a card.
     pub creature_subtypes: CardQueryDelegateList<CardId, EnumSets<CreatureSubtype>>,
+
+    /// Queries for text-changing effects to change basic land types on a card
+    pub change_basic_land_text: CardQueryDelegateList<CardId, ChangeText<LandSubtype>>,
 }
 
 impl Debug for GameDelegates {

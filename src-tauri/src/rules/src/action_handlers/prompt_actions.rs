@@ -53,6 +53,9 @@ pub fn execute(prompt: Prompt, action: PromptAction) -> PromptExecutionResult {
             };
             PromptExecutionResult::PromptResponse(PromptResponse::SelectOrder(prompt_data.cards))
         }
+        PromptAction::SelectChoice(index) => {
+            PromptExecutionResult::PromptResponse(PromptResponse::MultipleChoice(index))
+        }
     }
 }
 

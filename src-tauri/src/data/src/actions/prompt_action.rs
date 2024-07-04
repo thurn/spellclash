@@ -38,6 +38,9 @@ pub enum PromptAction {
 
     /// Confirm selected card choices on a card selection prompt
     SubmitCardSelection,
+
+    /// Pick a choice at a given index in a multiple choice prompt
+    SelectChoice(usize),
 }
 
 impl From<PromptAction> for UserAction {

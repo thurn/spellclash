@@ -12,12 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::fmt::{Display, Formatter};
+
 use serde::{Deserialize, Serialize};
 
+use crate::printed_cards::card_subtypes::LandSubtype;
+
 /// Canonical text displayed in the user interface, suitable for localization
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum Text {
     HandToTopOfLibraryPrompt,
     SelectNumber,
     SelectTarget,
+    LandSubtype(LandSubtype),
+    SelectTypeToChange,
+    SelectNewType,
+}
+
+impl Display for Text {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Text::HandToTopOfLibraryPrompt => {
+                write!(f, "Choose a card from your hand to put on top of your library.")
+            }
+            Text::SelectNumber => write!(f, "Select number"),
+            Text::SelectTarget => write!(f, "Select target"),
+            Text::LandSubtype(subtype) => write!(f, "{}", subtype),
+            Text::SelectTypeToChange => write!(f, "Select type to change"),
+            Text::SelectNewType => write!(f, "Select new type"),
+        }
+    }
 }

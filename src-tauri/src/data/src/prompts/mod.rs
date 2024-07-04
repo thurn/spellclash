@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod choice_prompt;
+pub mod entity_choice_prompt;
 pub mod game_update;
+pub mod multiple_choice_prompt;
 pub mod pick_number_prompt;
 pub mod play_cards_prompt;
 pub mod prompt;

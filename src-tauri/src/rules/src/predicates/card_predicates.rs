@@ -20,6 +20,10 @@ use data::printed_cards::card_subtypes::LandSubtype;
 
 use crate::queries::card_queries;
 
+pub fn always_true(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
+    Some(true)
+}
+
 pub fn creature(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
     Some(card_queries::card_types(game, source, id)?.contains(CardType::Creature))
 }
@@ -33,5 +37,12 @@ pub fn battle(game: &GameState, source: Source, id: impl ToCardId) -> Option<boo
 }
 
 pub fn island(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
-    Some(card_queries::land_subtypes(game, source, id)?.contains(LandSubtype::Island))
+    let mut subtype = LandSubtype::Island;
+    subtype = match source {
+        Source::Game => subtype,
+        Source::Ability { ability_id, .. } => {
+            game.delegates.change_basic_land_text.query(game, source, &ability_id.card_id, subtype)
+        }
+    };
+    Some(card_queries::land_subtypes(game, source, id)?.contains(subtype))
 }

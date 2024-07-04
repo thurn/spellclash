@@ -18,8 +18,8 @@ use crate::text_strings::Text;
 
 /// A blocking choice for a player to pick one of a list of options before
 /// any other game action_handlers can occur.
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ChoicePrompt<T> {
+#[derive(Clone, Debug)]
+pub struct EntityChoicePrompt<T> {
     /// If true, display a "continue" option to skip this prompt without taking
     /// an action.
     pub optional: bool,
@@ -27,8 +27,8 @@ pub struct ChoicePrompt<T> {
     pub choices: Vec<Choice<T>>,
 }
 
-/// A single option a user can select in a [ChoicePrompt].
-#[derive(Clone, Debug, Serialize, Deserialize)]
+/// A single option a user can select in a [EntityChoicePrompt].
+#[derive(Clone, Debug)]
 pub struct Choice<T> {
     /// The game entity associated with this choice.
     ///

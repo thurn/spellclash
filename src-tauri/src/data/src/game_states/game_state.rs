@@ -47,7 +47,6 @@ use crate::game_states::this_turn_state::ThisTurnState;
 use crate::game_states::undo_tracker::UndoTracker;
 use crate::player_states::player_state::{PlayerQueries, PlayerState, Players};
 use crate::prompts::game_update::UpdateChannel;
-use crate::prompts::prompt::Prompt;
 
 /// This is the state of a single ongoing game of Magic (i.e. one duel, not a
 /// larger session of the spellclash game client).

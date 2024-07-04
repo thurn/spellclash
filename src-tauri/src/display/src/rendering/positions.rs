@@ -89,8 +89,7 @@ fn position_override(builder: &ResponseBuilder, card: &CardState) -> Option<Obje
                     }
                 }
             }
-            PromptType::PlayCards(_) => {}
-            PromptType::PickNumber(_) => {}
+            _ => {}
         }
     }
     None

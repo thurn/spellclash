@@ -33,3 +33,8 @@ pub fn creature_opponent_controls() -> impl TargetSelector<Target = PermanentId>
 pub fn creature_you_control() -> impl TargetSelector<Target = PermanentId> {
     SinglePermanentSelector::new(PlayerSet::You, card_predicates::creature)
 }
+
+/// Target any permanent on the battlefield
+pub fn permanent() -> impl TargetSelector<Target = PermanentId> {
+    SinglePermanentSelector::new(PlayerSet::AllPlayers, card_predicates::always_true)
+}

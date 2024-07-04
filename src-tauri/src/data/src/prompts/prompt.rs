@@ -18,7 +18,9 @@ use serde::{Deserialize, Serialize};
 use strum::EnumDiscriminants;
 
 use crate::core::primitives::{CardId, EntityId, PlayerName};
-use crate::prompts::choice_prompt::ChoicePrompt;
+use crate::printed_cards::card_subtypes::LandSubtype;
+use crate::prompts::entity_choice_prompt::EntityChoicePrompt;
+use crate::prompts::multiple_choice_prompt::MultipleChoicePrompt;
 use crate::prompts::pick_number_prompt::PickNumberPrompt;
 use crate::prompts::play_cards_prompt::PlayCardsPrompt;
 use crate::prompts::select_order_prompt::{CardOrderLocation, SelectOrderPrompt};
@@ -27,7 +29,7 @@ use crate::text_strings::Text;
 /// Data for showing a prompt to a player.
 ///
 /// Prompts allow players to make a choice within the game interface.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct Prompt {
     /// Player who is being prompted
     pub player: PlayerName,
@@ -38,21 +40,14 @@ pub struct Prompt {
 }
 
 /// Possible types of prompts
-#[derive(Clone, Debug, Serialize, Deserialize, EnumDiscriminants)]
+#[derive(Clone, Debug, EnumDiscriminants)]
 #[strum_discriminants(name(PromptTypeKind))]
 pub enum PromptType {
-    /// A blocking choice for a player to pick one of a list of entities before
-    /// any other game actions can occur.
-    EntityChoice(ChoicePrompt<EntityId>),
-
-    /// A prompt for a player to select and/or reorder cards
+    EntityChoice(EntityChoicePrompt<EntityId>),
     SelectOrder(SelectOrderPrompt),
-
-    /// A prompt for a player to play one or more cards from a set of cards.
     PlayCards(PlayCardsPrompt),
-
-    /// Pick an integer value
     PickNumber(PickNumberPrompt),
+    LandSubtype(MultipleChoicePrompt<LandSubtype>),
 }
 
 impl PromptType {
@@ -61,13 +56,14 @@ impl PromptType {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, EnumDiscriminants)]
+#[derive(Clone, Debug, EnumDiscriminants)]
 #[strum_discriminants(name(PromptResponseKind))]
 pub enum PromptResponse {
     EntityChoice(EntityId),
     SelectOrder(HashMap<CardOrderLocation, Vec<CardId>>),
     PlayCards(Vec<CardId>),
     PickNumber(u32),
+    MultipleChoice(usize),
 }
 
 impl PromptResponse {

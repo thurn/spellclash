@@ -22,7 +22,7 @@ use specta::Type;
 use crate::core::primitives::CardId;
 
 /// Possible locations in which cards can be ordered.
-#[derive(Debug, Hash, EnumSetType, Serialize, Deserialize, Type, Sequence)]
+#[derive(Debug, Hash, EnumSetType, Type, Sequence, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum CardOrderLocation {
     /// Cards which have not yet been ordered
@@ -46,7 +46,7 @@ pub enum Quantity {
 
 /// A prompt for a player to select one or more cards from a set of cards to
 /// reorder, used to implement scry/surveil type effects.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct SelectOrderPrompt {
     /// Cards to order. If a location is valid for this prompt an entry *must*
     /// be created in this map, even if it is empty.

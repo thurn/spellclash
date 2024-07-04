@@ -15,6 +15,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::core::primitives::{CardId, EntityId, PermanentId, PlayerName};
+use crate::printed_cards::card_subtypes::LandSubtype;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum StateValue {
@@ -22,6 +23,36 @@ pub enum StateValue {
     CardId(CardId),
     PermanentId(PermanentId),
     EntityId(EntityId),
+    LandSubtype(LandSubtype),
+    Pair(Box<(StateValue, StateValue)>),
+}
+
+impl<T, U> From<(T, U)> for StateValue
+where
+    T: Into<StateValue>,
+    U: Into<StateValue>,
+{
+    fn from(value: (T, U)) -> Self {
+        Self::Pair(Box::new((value.0.into(), value.1.into())))
+    }
+}
+
+impl<T, U> TryFrom<StateValue> for (T, U)
+where
+    T: TryFrom<StateValue, Error = ()>,
+    U: TryFrom<StateValue, Error = ()>,
+{
+    type Error = ();
+
+    fn try_from(value: StateValue) -> Result<Self, Self::Error> {
+        match value {
+            StateValue::Pair(pair) => {
+                let (left, right) = *pair;
+                Ok((T::try_from(left)?, U::try_from(right)?))
+            }
+            _ => Err(()),
+        }
+    }
 }
 
 impl From<PlayerName> for StateValue {
@@ -87,6 +118,23 @@ impl TryFrom<StateValue> for EntityId {
     fn try_from(value: StateValue) -> Result<Self, Self::Error> {
         match value {
             StateValue::EntityId(id) => Ok(id),
+            _ => Err(()),
+        }
+    }
+}
+
+impl From<LandSubtype> for StateValue {
+    fn from(value: LandSubtype) -> Self {
+        Self::LandSubtype(value)
+    }
+}
+
+impl TryFrom<StateValue> for LandSubtype {
+    type Error = ();
+
+    fn try_from(value: StateValue) -> Result<Self, Self::Error> {
+        match value {
+            StateValue::LandSubtype(subtype) => Ok(subtype),
             _ => Err(()),
         }
     }

@@ -24,7 +24,7 @@ use data::core::primitives::{
 };
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
-use data::prompts::choice_prompt::Choice;
+use data::prompts::entity_choice_prompt::Choice;
 use data::text_strings::Text;
 use either::Either;
 use enum_iterator::Sequence;

@@ -202,7 +202,7 @@ fn find_deck(name: DeckName) -> Deck {
         deck_name::DANDAN => Deck {
             cards: hashmap! {
                 printed_card_id::ISLAND => 30,
-                printed_card_id::RAY_OF_COMMAND => 15,
+                printed_card_id::CRYSTAL_SPRAY => 15,
                 printed_card_id::DANDAN => 15,
                 printed_card_id::DANCE_OF_THE_SKYWISE => 15,
             },
