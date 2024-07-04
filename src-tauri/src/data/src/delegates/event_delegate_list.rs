@@ -92,8 +92,9 @@ impl<TArg: Clone> EventDelegateList<TArg> {
             }
 
             if stored.delegate_type == DelegateType::Ability
-                && card.permanent_id().map_or(false, |id| game.has_lost_all_abilities(id))
+                && card.permanent_id().and_then(|id| game.has_lost_all_abilities(id)).is_some()
             {
+                // Do not fire callbacks for permanents that have lost all abilities.
                 continue;
             }
 

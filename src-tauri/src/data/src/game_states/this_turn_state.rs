@@ -19,7 +19,7 @@ use either::Either;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 
-use crate::core::primitives::{AbilityId, CardId, EffectId, EntityId, PermanentId};
+use crate::core::primitives::{AbilityId, CardId, EffectId, EntityId, PermanentId, Timestamp};
 use crate::delegates::scope::{EffectContext, Scope};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -44,8 +44,10 @@ pub struct ThisTurnState {
     /// turn.
     control_changing_effects: Option<Vec<(EffectId, CardId)>>,
 
-    /// Permanents that have lost all abilities this turn.
-    lost_all_abilities: HashSet<PermanentId>,
+    /// Permanents that have lost all abilities this turn as of a given
+    /// [Timestamp].
+    #[serde_as(as = "Vec<(_, _)>")]
+    lost_all_abilities: HashMap<PermanentId, Timestamp>,
 }
 
 impl ThisTurnState {
@@ -86,12 +88,13 @@ impl ThisTurnState {
     }
 
     /// Marks a permanent as having lost all abilities this turn.
-    pub fn set_lost_all_abilities(&mut self, id: PermanentId) {
-        self.lost_all_abilities.insert(id);
+    pub fn set_lost_all_abilities(&mut self, id: PermanentId, timestamp: Timestamp) {
+        self.lost_all_abilities.insert(id, timestamp);
     }
 
-    /// Returns true if a permanent has lost all abilities this turn.
-    pub fn has_lost_all_abilities(&self, permanent_id: PermanentId) -> bool {
-        self.lost_all_abilities.contains(&permanent_id)
+    /// Checks if a permanent has lost all abilities this turn, and returns the
+    /// [Timestamp] at which all abilities were removed.
+    pub fn has_lost_all_abilities(&self, permanent_id: PermanentId) -> Option<Timestamp> {
+        self.lost_all_abilities.get(&permanent_id).copied()
     }
 }

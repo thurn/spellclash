@@ -27,7 +27,9 @@ use crate::card_states::card_state::CardState;
 use crate::card_states::stack_ability_state::StackAbilityState;
 use crate::card_states::zones::{HasZones, ToCardId, ZoneQueries, Zones};
 use crate::core::numerics::TurnNumber;
-use crate::core::primitives::{AbilityId, EffectId, HasController, ObjectId, PermanentId};
+use crate::core::primitives::{
+    AbilityId, EffectId, HasController, ObjectId, PermanentId, Timestamp,
+};
 #[allow(unused_imports)] // Used in docs
 use crate::core::primitives::{
     CardId, EntityId, GameId, HasPlayerName, HasSource, PlayerName, StackAbilityId, StackItemId,
@@ -224,9 +226,9 @@ impl GameState {
         Some(Scope { controller: card.controller(), ability_id, timestamp: card.timestamp })
     }
 
-    /// Returns true if the [PermanentId] permanent has currently lost all
-    /// abilities.
-    pub fn has_lost_all_abilities(&self, id: PermanentId) -> bool {
+    /// Checks if a permanent has lost all abilities this turn, and returns the
+    /// [Timestamp] at which all abilities were removed.
+    pub fn has_lost_all_abilities(&self, id: PermanentId) -> Option<Timestamp> {
         self.ability_state.this_turn.has_lost_all_abilities(id)
     }
 }

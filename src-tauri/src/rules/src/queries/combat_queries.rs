@@ -14,6 +14,7 @@
 
 use std::iter;
 
+use data::card_definitions::card_name;
 use data::card_states::card_state::TappedState;
 use data::card_states::iter_matching::IterMatching;
 use data::card_states::zones::ZoneQueries;
@@ -77,8 +78,8 @@ pub fn legal_attackers(
 }
 
 /// Returns true if the card with the provided [BlockerId] can block legally in
-/// the current combat phase. Must be invoked while the game is in the
-/// [CombatState::ConfirmedAttackers] state.
+/// the current combat phase. Must be invoked while there are confirmed
+/// attackers.
 ///
 /// > 509.1a. The defending player chooses which creatures they control, if any,
 /// > will block. The chosen creatures must be untapped and they can't also be
@@ -88,6 +89,9 @@ pub fn legal_attackers(
 #[must_use]
 pub fn can_block(game: &GameState, blocker_id: BlockerId) -> Option<bool> {
     let card = game.card(blocker_id)?;
+    if card.card_name == card_name::DANDAN && card.controller() == PlayerName::Two {
+        eprintln!("P2 Dandan");
+    }
     let types = card_queries::card_types(game, card.id)?;
 
     let mut result = true;
@@ -95,9 +99,7 @@ pub fn can_block(game: &GameState, blocker_id: BlockerId) -> Option<bool> {
     result &= card.tapped_state != TappedState::Tapped;
     result &= types.contains(CardType::Creature);
     result &= !types.contains(CardType::Battle);
-    let Some(CombatState::ConfirmedAttackers(attackers)) = &game.combat else {
-        return None;
-    };
+    let attackers = game.combat.as_ref()?.confirmed_attackers()?;
 
     Some(game.delegates.can_be_blocked.query_any(
         game,

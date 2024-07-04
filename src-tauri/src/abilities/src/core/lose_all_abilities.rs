@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::PermanentId;
+use data::core::primitives::{PermanentId, Timestamp};
 use data::game_states::game_state::GameState;
 
 /// Causes the [PermanentId] permanent to lose all abilities for the duration of
 /// the current turn.
-pub fn this_turn(game: &mut GameState, permanent_id: PermanentId) {
-    game.ability_state.this_turn.set_lost_all_abilities(permanent_id);
+pub fn this_turn(game: &mut GameState, permanent_id: PermanentId, timestamp: impl Into<Timestamp>) {
+    game.ability_state.this_turn.set_lost_all_abilities(permanent_id, timestamp.into());
 }

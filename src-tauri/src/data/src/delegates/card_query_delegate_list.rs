@@ -116,12 +116,12 @@ impl<TArg: ToCardId, TResult> CardQueryDelegateList<TArg, TResult> {
         let mut largest_timestamp = Timestamp(0);
         let mut result = current;
         for stored in &self.delegates {
-            let Some(scope) = validate_scope(game, stored) else {
+            let Some(scope) = validate_scope(game, stored, &mut largest_timestamp) else {
                 continue;
             };
 
             match stored.query_fn.invoke(game, scope, arg) {
-                QueryValue::Set(timestamp, value) if timestamp > largest_timestamp => {
+                QueryValue::Set(timestamp, value) if timestamp >= largest_timestamp => {
                     result = value;
                     largest_timestamp = timestamp;
                 }
@@ -152,12 +152,12 @@ impl<TArg: ToCardId, TResult: Add<Output = TResult> + Default>
         let mut result = current;
         let mut add = TResult::default();
         for stored in &self.delegates {
-            let Some(scope) = validate_scope(game, stored) else {
+            let Some(scope) = validate_scope(game, stored, &mut largest_timestamp) else {
                 continue;
             };
 
             match stored.query_fn.invoke(game, scope, arg) {
-                QueryValue::Set(timestamp, value) if timestamp > largest_timestamp => {
+                QueryValue::Set(timestamp, value) if timestamp >= largest_timestamp => {
                     result = value;
                     largest_timestamp = timestamp;
                 }
@@ -221,12 +221,12 @@ impl<TArg: ToCardId> CardQueryDelegateList<TArg, bool> {
         let mut result = current;
         let mut and = true;
         for stored in &self.delegates {
-            let Some(scope) = validate_scope(game, stored) else {
+            let Some(scope) = validate_scope(game, stored, &mut largest_timestamp) else {
                 continue;
             };
 
             match stored.query_fn.invoke(game, scope, arg) {
-                QueryValue::Set(timestamp, value) if timestamp > largest_timestamp => {
+                QueryValue::Set(timestamp, value) if timestamp >= largest_timestamp => {
                     result = value;
                     largest_timestamp = timestamp;
                 }
@@ -267,6 +267,7 @@ impl<TArg: ToCardId, TResult> Default for CardQueryDelegateList<TArg, TResult> {
 fn validate_scope<TArg: ToCardId, TResult>(
     game: &GameState,
     stored: &StoredQueryDelegate<TArg, TResult>,
+    largest_timestamp: &mut Timestamp,
 ) -> Option<Scope> {
     let card = game.card(stored.ability_id.card_id)?;
 
@@ -281,10 +282,15 @@ fn validate_scope<TArg: ToCardId, TResult>(
 
     let scope = game.create_scope(stored.ability_id)?;
 
-    if stored.delegate_type == DelegateType::Ability
-        && card.permanent_id().map_or(false, |id| game.has_lost_all_abilities(id))
-    {
-        return None;
+    if stored.delegate_type == DelegateType::Ability {
+        if let Some(timestamp) = card.permanent_id().and_then(|id| game.has_lost_all_abilities(id))
+        {
+            if timestamp > *largest_timestamp {
+                // Set the largest timestamp to the time at which this permanent lost all
+                // abilities, thus ignoring any earlier effects which set a value.
+                *largest_timestamp = timestamp;
+            }
+        }
     }
 
     Some(scope)

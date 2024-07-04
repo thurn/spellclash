@@ -33,7 +33,7 @@ pub fn dance_of_the_skywise() -> CardDefinition {
             .targets(targets::creature_you_control())
             .effect(|g, c, target| {
                 effects::target_this_turn(g, c, target);
-                lose_all_abilities::this_turn(g, target);
+                lose_all_abilities::this_turn(g, target, c.effect_id);
             })
             .delegates(|d| {
                 colors::for_target_this_turn(d, Color::Blue);
@@ -41,7 +41,7 @@ pub fn dance_of_the_skywise() -> CardDefinition {
                     d,
                     CreatureSubtype::Dragon | CreatureSubtype::Illusion,
                 );
-                base_power_toughness::for_target_this_turn(d, 5, 5);
+                base_power_toughness::for_target_this_turn(d, 4, 4);
                 flying::gain(d, GainAbility::ForTargetThisTurn);
             }),
     )

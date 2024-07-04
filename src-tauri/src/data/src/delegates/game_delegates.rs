@@ -110,9 +110,15 @@ impl GameDelegates {
         self.state_triggered_ability.apply_writes(id, zones);
         self.permanent_controller_changed.apply_writes(id, zones);
         self.can_attack_target.apply_writes(id, zones);
+        self.can_be_blocked.apply_writes(id, zones);
         self.has_haste.apply_writes(id, zones);
+        self.has_flying.apply_writes(id, zones);
         self.power.apply_writes(id, zones);
+        self.base_power.apply_writes(id, zones);
         self.toughness.apply_writes(id, zones);
+        self.base_toughness.apply_writes(id, zones);
+        self.colors.apply_writes(id, zones);
+        self.creature_subtypes.apply_writes(id, zones);
     }
 }
 
