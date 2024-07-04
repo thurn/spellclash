@@ -74,8 +74,9 @@ pub struct GameDelegates {
     /// Queries the creature subtypes of a card.
     pub creature_subtypes: CardQueryDelegateList<CardId, EnumSets<CreatureSubtype>>,
 
-    /// Queries for text-changing effects to change basic land types on a card
-    pub change_basic_land_text: CardQueryDelegateList<CardId, ChangeText<LandSubtype>>,
+    /// Queries for text-changing effects to change a land subtype in the rules
+    /// text of a card
+    pub change_land_subtype_text: CardQueryDelegateList<CardId, ChangeText<LandSubtype>>,
 }
 
 impl Debug for GameDelegates {

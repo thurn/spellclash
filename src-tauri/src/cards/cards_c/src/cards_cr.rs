@@ -54,7 +54,7 @@ pub fn crystal_spray() -> CardDefinition {
                 library::draw(g, c.source(), c.controller());
             })
             .delegates(|d| {
-                d.change_basic_land_text.this_turn(|g, c, _| {
+                d.change_land_subtype_text.this_turn(|g, c, _| {
                     let (old, new) = state.get(g, c.effect_id)?;
                     ChangeText::replace(c, old, new)
                 })
