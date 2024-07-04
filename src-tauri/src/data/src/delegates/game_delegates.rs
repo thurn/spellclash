@@ -23,6 +23,7 @@ use crate::delegates::card_query_delegate_list::CardQueryDelegateList;
 use crate::delegates::delegate_arguments::{
     CanAttackTarget, CanBeBlocked, PermanentControllerChangedEvent,
 };
+use crate::delegates::delegate_data::{EnumSets, Flag, Ints};
 use crate::delegates::event_delegate_list::EventDelegateList;
 use crate::delegates::stores_delegates::StoresDelegates;
 use crate::printed_cards::card_subtypes::CreatureSubtype;
@@ -36,42 +37,42 @@ pub struct GameDelegates {
     pub permanent_controller_changed: EventDelegateList<PermanentControllerChangedEvent>,
 
     /// Can a creature attack the indicated target?
-    pub can_attack_target: CardQueryDelegateList<CanAttackTarget, bool>,
+    pub can_attack_target: CardQueryDelegateList<CanAttackTarget, Flag>,
 
     /// Can this creature be blocked by the indicated blocker?
-    pub can_be_blocked: CardQueryDelegateList<CanBeBlocked, bool>,
+    pub can_be_blocked: CardQueryDelegateList<CanBeBlocked, Flag>,
 
     /// Does this permanent have haste?
-    pub has_haste: CardQueryDelegateList<PermanentId, bool>,
+    pub has_haste: CardQueryDelegateList<PermanentId, Flag>,
 
     /// Does this permanent have flying?
-    pub has_flying: CardQueryDelegateList<PermanentId, bool>,
+    pub has_flying: CardQueryDelegateList<PermanentId, Flag>,
 
     /// Queries the power value for a card.
     ///
     /// This may be invoked for a card in any zone.
-    pub power: CardQueryDelegateList<CardId, Power>,
+    pub power: CardQueryDelegateList<CardId, Ints<Power>>,
 
     /// Queries the base power value for a card. This is added to other
     /// modifiers to compute a final power value.
-    pub base_power: CardQueryDelegateList<CardId, Power>,
+    pub base_power: CardQueryDelegateList<CardId, Ints<Power>>,
 
     /// Queries the toughness value for a card.
     ///
     /// This may be invoked for a card in any zone.
-    pub toughness: CardQueryDelegateList<CardId, Toughness>,
+    pub toughness: CardQueryDelegateList<CardId, Ints<Toughness>>,
 
     /// Queries the base toughness value for a card. This is added to other
     /// modifiers to compute a final power value.
-    pub base_toughness: CardQueryDelegateList<CardId, Toughness>,
+    pub base_toughness: CardQueryDelegateList<CardId, Ints<Toughness>>,
 
     /// Queries the colors of a card.
     ///
     /// An empty set represents colorless.
-    pub colors: CardQueryDelegateList<CardId, EnumSet<Color>>,
+    pub colors: CardQueryDelegateList<CardId, EnumSets<Color>>,
 
     /// Queries the creature subtypes of a card.
-    pub creature_subtypes: CardQueryDelegateList<CardId, EnumSet<CreatureSubtype>>,
+    pub creature_subtypes: CardQueryDelegateList<CardId, EnumSets<CreatureSubtype>>,
 }
 
 impl Debug for GameDelegates {

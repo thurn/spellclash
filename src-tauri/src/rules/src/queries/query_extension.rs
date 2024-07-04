@@ -31,7 +31,7 @@ pub trait QueryExt<TArg, TResult> {
     /// if the card owning this delegate loses all abilities.
     fn this_turn(
         &mut self,
-        transformation: impl Fn(&GameState, Scope, &TArg) -> QueryValue<TResult>
+        transformation: impl Fn(&GameState, Scope, &TArg) -> Option<TResult>
             + Copy
             + Send
             + Sync
@@ -43,7 +43,7 @@ pub trait QueryExt<TArg, TResult> {
     /// invoked if the card owning this delegate loses all abilities.
     fn this_turn_ability(
         &mut self,
-        transformation: impl Fn(&GameState, Scope, &TArg) -> QueryValue<TResult>
+        transformation: impl Fn(&GameState, Scope, &TArg) -> Option<TResult>
             + Copy
             + Send
             + Sync
@@ -51,10 +51,12 @@ pub trait QueryExt<TArg, TResult> {
     );
 }
 
-impl<TArg: ToCardId, TResult> QueryExt<TArg, TResult> for CardQueryDelegateList<TArg, TResult> {
+impl<TArg: ToCardId, TResult: QueryValue> QueryExt<TArg, TResult>
+    for CardQueryDelegateList<TArg, TResult>
+{
     fn this_turn(
         &mut self,
-        transformation: impl Fn(&GameState, Scope, &TArg) -> QueryValue<TResult>
+        transformation: impl Fn(&GameState, Scope, &TArg) -> Option<TResult>
             + Copy
             + Send
             + Sync
@@ -65,7 +67,7 @@ impl<TArg: ToCardId, TResult> QueryExt<TArg, TResult> for CardQueryDelegateList<
 
     fn this_turn_ability(
         &mut self,
-        transformation: impl Fn(&GameState, Scope, &TArg) -> QueryValue<TResult>
+        transformation: impl Fn(&GameState, Scope, &TArg) -> Option<TResult>
             + Copy
             + Send
             + Sync
@@ -75,20 +77,14 @@ impl<TArg: ToCardId, TResult> QueryExt<TArg, TResult> for CardQueryDelegateList<
     }
 }
 
-fn this_turn_impl<TArg: ToCardId, TResult>(
+fn this_turn_impl<TArg: ToCardId, TResult: QueryValue>(
     list: &mut CardQueryDelegateList<TArg, TResult>,
     delegate_type: DelegateType,
-    transformation: impl Fn(&GameState, Scope, &TArg) -> QueryValue<TResult>
-        + Copy
-        + Send
-        + Sync
-        + 'static,
+    transformation: impl Fn(&GameState, Scope, &TArg) -> Option<TResult> + Copy + Send + Sync + 'static,
 ) {
     list.add_delegate(delegate_type, CardDelegateExecution::Any, move |g, s, arg| {
-        let Some(entity_id) = g.card(*arg).map(|c| c.entity_id()) else {
-            return QueryValue::Skip;
-        };
-        let mut result = QueryValue::Skip;
+        let entity_id = g.card(*arg)?.entity_id();
+        let mut result = None;
         for effect_id in g.ability_state.this_turn.active_effects(s.ability_id, entity_id) {
             let scope = Scope {
                 controller: s.controller,

@@ -201,8 +201,8 @@ pub fn power(game: &GameState, source: Source, id: impl ToCardId) -> Option<Powe
         _ => panic!("Cannot compute power for card with multiple active faces"),
     };
 
-    let base = game.delegates.base_power.query_numeric(game, source, &card_id, result);
-    Some(game.delegates.power.query_numeric(game, source, &card_id, base))
+    let base = game.delegates.base_power.query(game, source, &card_id, result);
+    Some(game.delegates.power.query(game, source, &card_id, base))
 }
 
 /// Computes the current toughness on card's characteristic faces. Returns None
@@ -227,8 +227,8 @@ pub fn toughness(game: &GameState, source: Source, id: impl ToCardId) -> Option<
         _ => panic!("Cannot compute toughness for card with multiple active faces"),
     };
 
-    let base = game.delegates.base_toughness.query_numeric(game, source, &card_id, result);
-    Some(game.delegates.toughness.query_numeric(game, source, &card_id, base))
+    let base = game.delegates.base_toughness.query(game, source, &card_id, result);
+    Some(game.delegates.toughness.query(game, source, &card_id, base))
 }
 
 /// Returns the set of colors on a card's characteristic faces. Returns None if

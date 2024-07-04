@@ -17,7 +17,7 @@ use data::card_states::iter_matching::IterMatching;
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::function_types::CardPredicate;
 use data::core::primitives::{CardId, PermanentId, Zone};
-use data::delegates::delegate_data::QueryValue;
+use data::delegates::delegate_data::{Flag, QueryValue};
 use data::delegates::game_delegates::GameDelegates;
 use data::delegates::scope::Scope;
 use rules::queries::combat_queries;
@@ -29,9 +29,7 @@ pub fn cannot_attack_unless_defender_controls(
 ) -> impl Ability {
     StaticAbility::new().delegates(move |d| {
         d.can_attack_target.this(move |g, s, data| {
-            QueryValue::and(
-                g.battlefield(data.target.defending_player()).any_matching(g, s, predicate),
-            )
+            Flag::and(g.battlefield(data.target.defending_player()).any_matching(g, s, predicate))
         })
     })
 }

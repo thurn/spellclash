@@ -58,12 +58,12 @@ pub fn can_attack(game: &GameState, source: Source, attacker_id: AttackerId) -> 
 
 /// Returns true if the indicated permanent has the 'haste' ability.
 pub fn has_haste(game: &GameState, source: Source, permanent_id: PermanentId) -> Option<bool> {
-    Some(game.delegates.has_haste.query_boolean(game, source, &permanent_id, false))
+    Some(game.delegates.has_haste.query(game, source, &permanent_id, false))
 }
 
 /// Returns true if the indicated permanent has the 'flying' ability.
 pub fn has_flying(game: &GameState, source: Source, permanent_id: PermanentId) -> Option<bool> {
-    Some(game.delegates.has_flying.query_boolean(game, source, &permanent_id, false))
+    Some(game.delegates.has_flying.query(game, source, &permanent_id, false))
 }
 
 /// Returns an iterator over all legal attackers for the provided player.

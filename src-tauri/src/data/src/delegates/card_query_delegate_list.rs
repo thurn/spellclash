@@ -16,27 +16,27 @@ use std::collections::HashMap;
 use std::ops::Add;
 
 use dyn_clone::DynClone;
-use enumset::EnumSet;
+use enumset::{EnumSet, EnumSetType};
 
 use crate::card_states::zones::{ToCardId, ZoneQueries};
 use crate::core::primitives::{AbilityId, EntityId, Source, Timestamp, Zone};
-use crate::delegates::delegate_data::{DelegateType, QueryValue};
+use crate::delegates::delegate_data::{DelegateType, EnumSets, Flag, Ints, QueryValue};
 use crate::delegates::scope::Scope;
 use crate::delegates::stores_delegates::StoresDelegates;
 use crate::game_states::game_state::GameState;
 
 /// Wrapper around query functions to enable closures to be cloned.
-trait QueryFnWrapper<TArg, TResult>: DynClone + Send {
-    fn invoke(&self, data: &GameState, scope: Scope, arg: &TArg) -> QueryValue<TResult>;
+trait QueryFnWrapper<TArg, TResult: QueryValue>: DynClone + Send {
+    fn invoke(&self, data: &GameState, scope: Scope, arg: &TArg) -> Option<TResult>;
 }
 
 dyn_clone::clone_trait_object!(<TArg, TResult> QueryFnWrapper<TArg, TResult>);
 
-impl<TArg, TResult, F> QueryFnWrapper<TArg, TResult> for F
+impl<TArg, TResult: QueryValue, F> QueryFnWrapper<TArg, TResult> for F
 where
-    F: Fn(&GameState, Scope, &TArg) -> QueryValue<TResult> + Copy + Send,
+    F: Fn(&GameState, Scope, &TArg) -> Option<TResult> + Copy + Send,
 {
-    fn invoke(&self, data: &GameState, scope: Scope, arg: &TArg) -> QueryValue<TResult> {
+    fn invoke(&self, data: &GameState, scope: Scope, arg: &TArg) -> Option<TResult> {
         self(data, scope, arg)
     }
 }
@@ -71,7 +71,7 @@ pub struct CardQueryDelegateList<TArg: ToCardId, TResult> {
     delegates: Vec<StoredQueryDelegate<TArg, TResult>>,
 }
 
-impl<TArg: ToCardId, TResult> CardQueryDelegateList<TArg, TResult> {
+impl<TArg: ToCardId, TResult: QueryValue> CardQueryDelegateList<TArg, TResult> {
     /// Adds a new query transformation which only applies to the card which
     /// owns this delegate.
     ///
@@ -79,7 +79,7 @@ impl<TArg: ToCardId, TResult> CardQueryDelegateList<TArg, TResult> {
     /// will be automatically disabled if the owning card loses its abilities.
     pub fn this(
         &mut self,
-        value: impl Fn(&GameState, Scope, &TArg) -> QueryValue<TResult> + Copy + Send + Sync + 'static,
+        value: impl Fn(&GameState, Scope, &TArg) -> Option<TResult> + Copy + Send + Sync + 'static,
     ) {
         self.add_delegate(DelegateType::Ability, CardDelegateExecution::This, value);
     }
@@ -91,7 +91,7 @@ impl<TArg: ToCardId, TResult> CardQueryDelegateList<TArg, TResult> {
     /// will be automatically disabled if the owning card loses its abilities.
     pub fn any(
         &mut self,
-        value: impl Fn(&GameState, Scope, &TArg) -> QueryValue<TResult> + Copy + Send + Sync + 'static,
+        value: impl Fn(&GameState, Scope, &TArg) -> Option<TResult> + Copy + Send + Sync + 'static,
     ) {
         self.add_delegate(DelegateType::Ability, CardDelegateExecution::Any, value);
     }
@@ -102,7 +102,7 @@ impl<TArg: ToCardId, TResult> CardQueryDelegateList<TArg, TResult> {
         &mut self,
         delegate_type: DelegateType,
         execution_type: CardDelegateExecution,
-        value: impl Fn(&GameState, Scope, &TArg) -> QueryValue<TResult> + Copy + Send + Sync + 'static,
+        value: impl Fn(&GameState, Scope, &TArg) -> Option<TResult> + Copy + Send + Sync + 'static,
     ) {
         self.current.push(DelegateBuilder {
             delegate_type,
@@ -111,49 +111,17 @@ impl<TArg: ToCardId, TResult> CardQueryDelegateList<TArg, TResult> {
         });
     }
 
-    #[must_use]
-    pub fn query(&self, game: &GameState, _: Source, arg: &TArg, current: TResult) -> TResult {
-        let mut largest_timestamp = Timestamp(0);
-        let mut result = current;
-        for stored in &self.delegates {
-            let Some(scope) = validate_scope(game, stored, &mut largest_timestamp) else {
-                continue;
-            };
-
-            match stored.query_fn.invoke(game, scope, arg) {
-                QueryValue::Set(timestamp, value) if timestamp >= largest_timestamp => {
-                    result = value;
-                    largest_timestamp = timestamp;
-                }
-                QueryValue::Add(_) => {
-                    panic!("Query is not numeric")
-                }
-                QueryValue::And(_) => {
-                    panic!("Query is not boolean")
-                }
-                _ => {}
-            };
-        }
-        result
-    }
-
     /// True if no delegates have been defined for this list.
     pub fn is_empty(&self) -> bool {
         self.delegates.is_empty()
     }
 }
 
-impl<TArg: ToCardId, TResult: Add<Output = TResult> + Default>
-    CardQueryDelegateList<TArg, TResult>
+impl<TArg: ToCardId, TResult: Default + Add<Output = TResult>>
+    CardQueryDelegateList<TArg, Ints<TResult>>
 {
     #[must_use]
-    pub fn query_numeric(
-        &self,
-        game: &GameState,
-        _: Source,
-        arg: &TArg,
-        current: TResult,
-    ) -> TResult {
+    pub fn query(&self, game: &GameState, _: Source, arg: &TArg, current: TResult) -> TResult {
         let mut largest_timestamp = Timestamp(0);
         let mut result = current;
         let mut add = TResult::default();
@@ -163,15 +131,12 @@ impl<TArg: ToCardId, TResult: Add<Output = TResult> + Default>
             };
 
             match stored.query_fn.invoke(game, scope, arg) {
-                QueryValue::Set(timestamp, value) if timestamp >= largest_timestamp => {
+                Some(Ints::Set(timestamp, value)) if timestamp >= largest_timestamp => {
                     result = value;
                     largest_timestamp = timestamp;
                 }
-                QueryValue::Add(value) => {
-                    add = add + value;
-                }
-                QueryValue::And(_) => {
-                    panic!("Query is not boolean")
+                Some(Ints::Add(to_add)) => {
+                    add = add + to_add;
                 }
                 _ => {}
             };
@@ -181,7 +146,7 @@ impl<TArg: ToCardId, TResult: Add<Output = TResult> + Default>
     }
 }
 
-impl<TArg: ToCardId> CardQueryDelegateList<TArg, bool> {
+impl<TArg: ToCardId> CardQueryDelegateList<TArg, Flag> {
     /// Runs a boolean query to see if any item in the provided iterator matches
     /// a predicate. Returns `current` if no delegates are present in the map.
     ///
@@ -198,7 +163,7 @@ impl<TArg: ToCardId> CardQueryDelegateList<TArg, bool> {
         if self.is_empty() {
             current
         } else {
-            iterator.any(|arg| self.query_boolean(game, source, &arg, current))
+            iterator.any(|arg| self.query(game, source, &arg, current))
         }
     }
 
@@ -219,36 +184,66 @@ impl<TArg: ToCardId> CardQueryDelegateList<TArg, bool> {
         if self.is_empty() {
             current
         } else {
-            iterator.all(|arg| self.query_boolean(game, source, &arg, current))
+            iterator.all(|arg| self.query(game, source, &arg, current))
         }
     }
 
     #[must_use]
-    pub fn query_boolean(&self, game: &GameState, _: Source, arg: &TArg, current: bool) -> bool {
+    pub fn query(&self, game: &GameState, _: Source, arg: &TArg, current: bool) -> bool {
         let mut largest_timestamp = Timestamp(0);
         let mut result = current;
         let mut and = true;
+        let mut or = false;
         for stored in &self.delegates {
             let Some(scope) = validate_scope(game, stored, &mut largest_timestamp) else {
                 continue;
             };
 
             match stored.query_fn.invoke(game, scope, arg) {
-                QueryValue::Set(timestamp, value) if timestamp >= largest_timestamp => {
+                Some(Flag::Set(timestamp, value)) if timestamp >= largest_timestamp => {
                     result = value;
                     largest_timestamp = timestamp;
                 }
-                QueryValue::Add(_) => {
-                    panic!("Query is not numeric")
-                }
-                QueryValue::And(value) => {
+                Some(Flag::And(value)) => {
                     and &= value;
+                }
+                Some(Flag::Or(value)) => {
+                    or |= value;
                 }
                 _ => {}
             };
         }
 
-        result & and
+        (result || or) && and
+    }
+}
+
+impl<TArg: ToCardId, TResult: EnumSetType> CardQueryDelegateList<TArg, EnumSets<TResult>> {
+    #[must_use]
+    pub fn query(
+        &self,
+        game: &GameState,
+        _: Source,
+        arg: &TArg,
+        current: EnumSet<TResult>,
+    ) -> EnumSet<TResult> {
+        let mut largest_timestamp = Timestamp(0);
+        let mut result = current;
+        for stored in &self.delegates {
+            let Some(scope) = validate_scope(game, stored, &mut largest_timestamp) else {
+                continue;
+            };
+
+            match stored.query_fn.invoke(game, scope, arg) {
+                Some(EnumSets::Set(timestamp, value)) if timestamp >= largest_timestamp => {
+                    result = value;
+                    largest_timestamp = timestamp;
+                }
+                _ => {}
+            };
+        }
+
+        result
     }
 }
 

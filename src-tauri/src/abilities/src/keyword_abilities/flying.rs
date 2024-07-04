@@ -14,7 +14,7 @@
 
 use data::card_definitions::ability_definition::{Ability, StaticAbility};
 use data::core::primitives::HasSource;
-use data::delegates::delegate_data::QueryValue;
+use data::delegates::delegate_data::{Flag, QueryValue};
 use data::delegates::game_delegates::GameDelegates;
 use rules::queries::combat_queries;
 
@@ -38,9 +38,9 @@ pub fn ability() -> impl Ability {
 /// Adds the flying ability to the given delegates.
 pub fn gain(delegates: &mut GameDelegates, add_ability: GainAbility) {
     gain_ability::add_to_query(&mut delegates.has_flying, add_ability, |_, s, _| {
-        QueryValue::set(s, true)
+        Flag::set(s, true)
     });
     gain_ability::add_to_query(&mut delegates.can_be_blocked, add_ability, |g, s, data| {
-        QueryValue::and_predicate(g, s, data.blocker_id, combat_queries::has_flying)
+        Flag::and_predicate(g, s, data.blocker_id, combat_queries::has_flying)
     });
 }

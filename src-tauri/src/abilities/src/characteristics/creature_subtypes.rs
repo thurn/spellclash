@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use data::core::primitives::Color;
-use data::delegates::delegate_data::QueryValue;
+use data::delegates::delegate_data::{EnumSets, QueryValue};
 use data::delegates::game_delegates::GameDelegates;
 use data::printed_cards::card_subtypes::CreatureSubtype;
 use enumset::EnumSet;
@@ -23,5 +23,5 @@ use rules::queries::query_extension::QueryExt;
 /// card.
 pub fn for_target_this_turn(d: &mut GameDelegates, types: impl Into<EnumSet<CreatureSubtype>>) {
     let types = types.into();
-    d.creature_subtypes.this_turn(move |_, s, _| QueryValue::set(s, types));
+    d.creature_subtypes.this_turn(move |_, s, _| EnumSets::set(s, types));
 }

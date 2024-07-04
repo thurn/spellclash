@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::ops::Add;
+
+use enumset::{EnumSet, EnumSetType};
+
 use crate::card_states::zones::ToCardId;
 use crate::core::function_types::CardPredicate;
 use crate::core::primitives::{HasSource, Timestamp};
@@ -27,49 +31,68 @@ pub enum DelegateType {
     Effect,
 }
 
-/// The result of a query delegate function
-#[derive(Debug, Clone, Copy)]
-pub enum QueryValue<T> {
-    Skip,
-    Set(Timestamp, T),
-    Add(T),
+/// Marker trait for the return value of queries
+pub trait QueryValue {}
+
+#[derive(Clone, Copy, Debug)]
+pub enum Flag {
+    Set(Timestamp, bool),
     And(bool),
+    Or(bool),
 }
 
-impl<T> QueryValue<T> {
-    /// Create a new query response which sets the result to the given value.
-    pub fn set(timestamp: impl Into<Timestamp>, value: T) -> Self {
-        Self::Set(timestamp.into(), value)
+impl Flag {
+    pub fn set(timestamp: impl Into<Timestamp>, value: bool) -> Option<Flag> {
+        Some(Self::Set(timestamp.into(), value))
     }
 
-    /// Create a new query response which adds the given value to the result.
-    pub fn add(value: T) -> Self {
-        Self::Add(value)
+    pub fn and(value: bool) -> Option<Flag> {
+        Some(Self::And(value))
     }
 
-    /// Create a new query response which performs a boolean 'and' operation on
-    /// the given value
-    pub fn and(value: bool) -> Self {
-        Self::And(value)
+    pub fn or(value: bool) -> Option<Flag> {
+        Some(Self::Or(value))
     }
 
-    /// Invokes a [CardPredicate] and passes the result to [Self::and].
     pub fn and_predicate<TId: ToCardId>(
         game: &GameState,
         source: impl HasSource,
         id: TId,
         predicate: impl CardPredicate<TId>,
-    ) -> Self {
-        Self::And(predicate(game, source.source(), id) == Some(true))
+    ) -> Option<Flag> {
+        Some(Self::And(predicate(game, source.source(), id) == Some(true)))
     }
 }
 
-impl QueryValue<bool> {
-    pub fn set_if_true(timestamp: Timestamp, value: bool) -> Self {
-        if value {
-            Self::Set(timestamp, true)
-        } else {
-            Self::Skip
-        }
+impl QueryValue for Flag {}
+
+#[derive(Clone, Copy, Debug)]
+pub enum Ints<T: Default + Add<Output = T>> {
+    Set(Timestamp, T),
+    Add(T),
+}
+
+impl<T: Default + Add<Output = T>> Ints<T> {
+    pub fn set(timestamp: impl Into<Timestamp>, value: T) -> Option<Ints<T>> {
+        Some(Self::Set(timestamp.into(), value))
+    }
+
+    pub fn add(value: T) -> Option<Ints<T>> {
+        Some(Self::Add(value))
     }
 }
+
+impl<T: Default + Add<Output = T>> QueryValue for Ints<T> {}
+
+#[derive(Clone, Copy, Debug)]
+pub enum EnumSets<T: EnumSetType> {
+    Set(Timestamp, EnumSet<T>),
+}
+
+impl<T: EnumSetType> EnumSets<T> {
+    pub fn set(timestamp: impl Into<Timestamp>, value: EnumSet<T>) -> Option<EnumSets<T>> {
+        Some(Self::Set(timestamp.into(), value))
+    }
+}
+
+impl<T: EnumSetType> QueryValue for EnumSets<T> {}
