@@ -93,14 +93,16 @@ fn state_based_actions(game: &mut GameState) -> bool {
                     StateBasedEvent::TokenLeftBattlefield(_) => {}
                     StateBasedEvent::CopyLeftStackOrBattlefield(_) => {}
                     StateBasedEvent::CreatureToughnessChanged(permanent_id) => {
-                        if card_queries::toughness(game, permanent_id)? <= 0 {
+                        if card_queries::toughness(game, Source::Game, permanent_id)? <= 0 {
                             move_card::run(game, Source::Game, permanent_id, Zone::Graveyard)?;
                             performed_action = true;
                         }
                     }
                     StateBasedEvent::CreatureDamaged(permanent_id) => {
                         let card = game.card(permanent_id)?;
-                        if card.damage as i64 >= card_queries::toughness(game, card.id)? {
+                        if card.damage as i64
+                            >= card_queries::toughness(game, Source::Game, card.id)?
+                        {
                             move_card::run(game, Source::Game, card.id, Zone::Graveyard)?;
                             performed_action = true;
                         }

@@ -19,7 +19,7 @@ use std::time::{Duration, Instant};
 use data::actions::game_action::{CombatAction, GameAction};
 use data::actions::prompt_action::PromptAction;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, GameId, PlayerName};
+use data::core::primitives::{CardId, GameId, PlayerName, Source};
 use data::game_states::game_state::GameState;
 use data::game_states::game_step::GamePhaseStep;
 use data::player_states::player_state::{PlayerQueries, PlayerType};
@@ -293,7 +293,7 @@ pub fn auto_pass_action(game: &GameState, player: PlayerName) -> Option<GameActi
         game,
         player,
         &GameAction::CombatAction(CombatAction::ConfirmAttackers),
-    ) && combat_queries::legal_attackers(game, player).next().is_none()
+    ) && combat_queries::legal_attackers(game, Source::Game, player).next().is_none()
     {
         // No attacks available
         return Some(GameAction::CombatAction(CombatAction::ConfirmAttackers));
@@ -303,7 +303,8 @@ pub fn auto_pass_action(game: &GameState, player: PlayerName) -> Option<GameActi
         game,
         player,
         &GameAction::CombatAction(CombatAction::ConfirmBlockers),
-    ) && (combat_queries::legal_blockers(game, player).next().is_none() || empty_combat)
+    ) && (combat_queries::legal_blockers(game, Source::Game, player).next().is_none()
+        || empty_combat)
     {
         // No blocks available
         return Some(GameAction::CombatAction(CombatAction::ConfirmBlockers));

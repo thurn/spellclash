@@ -19,7 +19,7 @@ use dyn_clone::DynClone;
 use enumset::EnumSet;
 
 use crate::card_states::zones::{ToCardId, ZoneQueries};
-use crate::core::primitives::{AbilityId, EntityId, Timestamp, Zone};
+use crate::core::primitives::{AbilityId, EntityId, Source, Timestamp, Zone};
 use crate::delegates::delegate_data::{DelegateType, QueryValue};
 use crate::delegates::scope::Scope;
 use crate::delegates::stores_delegates::StoresDelegates;
@@ -112,7 +112,7 @@ impl<TArg: ToCardId, TResult> CardQueryDelegateList<TArg, TResult> {
     }
 
     #[must_use]
-    pub fn query(&self, game: &GameState, arg: &TArg, current: TResult) -> TResult {
+    pub fn query(&self, game: &GameState, _: Source, arg: &TArg, current: TResult) -> TResult {
         let mut largest_timestamp = Timestamp(0);
         let mut result = current;
         for stored in &self.delegates {
@@ -147,7 +147,13 @@ impl<TArg: ToCardId, TResult: Add<Output = TResult> + Default>
     CardQueryDelegateList<TArg, TResult>
 {
     #[must_use]
-    pub fn query_numeric(&self, game: &GameState, arg: &TArg, current: TResult) -> TResult {
+    pub fn query_numeric(
+        &self,
+        game: &GameState,
+        _: Source,
+        arg: &TArg,
+        current: TResult,
+    ) -> TResult {
         let mut largest_timestamp = Timestamp(0);
         let mut result = current;
         let mut add = TResult::default();
@@ -185,13 +191,14 @@ impl<TArg: ToCardId> CardQueryDelegateList<TArg, bool> {
     pub fn query_any(
         &self,
         game: &GameState,
+        source: Source,
         mut iterator: impl Iterator<Item = TArg>,
         current: bool,
     ) -> bool {
         if self.is_empty() {
             current
         } else {
-            iterator.any(|arg| self.query_boolean(game, &arg, current))
+            iterator.any(|arg| self.query_boolean(game, source, &arg, current))
         }
     }
 
@@ -205,18 +212,19 @@ impl<TArg: ToCardId> CardQueryDelegateList<TArg, bool> {
     pub fn query_all(
         &self,
         game: &GameState,
+        source: Source,
         mut iterator: impl Iterator<Item = TArg>,
         current: bool,
     ) -> bool {
         if self.is_empty() {
             current
         } else {
-            iterator.all(|arg| self.query_boolean(game, &arg, current))
+            iterator.all(|arg| self.query_boolean(game, source, &arg, current))
         }
     }
 
     #[must_use]
-    pub fn query_boolean(&self, game: &GameState, arg: &TArg, current: bool) -> bool {
+    pub fn query_boolean(&self, game: &GameState, _: Source, arg: &TArg, current: bool) -> bool {
         let mut largest_timestamp = Timestamp(0);
         let mut result = current;
         let mut and = true;

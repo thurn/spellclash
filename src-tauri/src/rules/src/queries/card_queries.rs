@@ -17,7 +17,7 @@ use std::iter;
 use data::card_states::play_card_plan::PlayCardPlan;
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::numerics::{Power, Toughness};
-use data::core::primitives::{CardId, CardType, Color, Zone};
+use data::core::primitives::{CardId, CardType, Color, Source, Zone};
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::{CreatureSubtype, LandSubtype};
 use data::printed_cards::layout::CardLayout;
@@ -88,7 +88,11 @@ use enumset::EnumSet;
 ///   > or permanent to be face down.
 ///
 ///   <https://yawgatog.com/resources/magic-rules/#R7082>
-pub fn characteristic_faces(game: &GameState, id: impl ToCardId) -> Option<Vec<&PrintedCardFace>> {
+pub fn characteristic_faces(
+    game: &GameState,
+    _: Source,
+    id: impl ToCardId,
+) -> Option<Vec<&PrintedCardFace>> {
     let card = game.card(id)?;
     Some(match card.zone {
         Zone::Battlefield => card.face_up_printed_face().map_or_else(Vec::new, |face| vec![face]),
@@ -104,17 +108,33 @@ pub fn characteristic_faces(game: &GameState, id: impl ToCardId) -> Option<Vec<&
 /// Returns None if this card no longer exists.
 ///
 /// See [characteristic_faces] for more information.
-pub fn card_types(game: &GameState, id: impl ToCardId) -> Option<EnumSet<CardType>> {
-    Some(characteristic_faces(game, id)?.iter().flat_map(|face| face.card_types.iter()).collect())
+pub fn card_types(
+    game: &GameState,
+    source: Source,
+    id: impl ToCardId,
+) -> Option<EnumSet<CardType>> {
+    Some(
+        characteristic_faces(game, source, id)?
+            .iter()
+            .flat_map(|face| face.card_types.iter())
+            .collect(),
+    )
 }
 
 /// Returns the set of current land subtypes on a card's characteristic faces.
 /// Returns None if this card no longer exists.
 ///
 /// See [characteristic_faces] for more information.
-pub fn land_subtypes(game: &GameState, id: impl ToCardId) -> Option<EnumSet<LandSubtype>> {
+pub fn land_subtypes(
+    game: &GameState,
+    source: Source,
+    id: impl ToCardId,
+) -> Option<EnumSet<LandSubtype>> {
     Some(
-        characteristic_faces(game, id)?.iter().flat_map(|face| face.subtypes.land.iter()).collect(),
+        characteristic_faces(game, source, id)?
+            .iter()
+            .flat_map(|face| face.subtypes.land.iter())
+            .collect(),
     )
 }
 
@@ -132,14 +152,18 @@ pub fn land_subtypes(game: &GameState, id: impl ToCardId) -> Option<EnumSet<Land
 /// <https://yawgatog.com/resources/magic-rules/#R2051a>
 ///
 /// See [characteristic_faces] for more information.
-pub fn creature_subtypes(game: &GameState, id: impl ToCardId) -> Option<EnumSet<CreatureSubtype>> {
+pub fn creature_subtypes(
+    game: &GameState,
+    source: Source,
+    id: impl ToCardId,
+) -> Option<EnumSet<CreatureSubtype>> {
     let card_id = id.to_card_id(game)?;
-    let types = characteristic_faces(game, card_id)?
+    let types = characteristic_faces(game, source, card_id)?
         .iter()
         .flat_map(|face| face.subtypes.creature.iter())
         .collect();
 
-    Some(game.delegates.creature_subtypes.query(game, &card_id, types))
+    Some(game.delegates.creature_subtypes.query(game, source, &card_id, types))
 }
 
 /// Returns the current [ManaCost] that needs to be paid to cast the [CardId]
@@ -159,9 +183,9 @@ pub fn mana_cost_for_casting_card(
 /// this card no longer exists.
 ///
 /// See [characteristic_faces] for more information.
-pub fn power(game: &GameState, id: impl ToCardId) -> Option<Power> {
+pub fn power(game: &GameState, source: Source, id: impl ToCardId) -> Option<Power> {
     let card_id = id.to_card_id(game)?;
-    let characteristic = characteristic_faces(game, card_id)?;
+    let characteristic = characteristic_faces(game, source, card_id)?;
     let result = match characteristic[..] {
         [] => {
             // > 708.2a. If a face-up permanent is turned face down by a spell or ability that
@@ -177,17 +201,17 @@ pub fn power(game: &GameState, id: impl ToCardId) -> Option<Power> {
         _ => panic!("Cannot compute power for card with multiple active faces"),
     };
 
-    let base = game.delegates.base_power.query_numeric(game, &card_id, result);
-    Some(game.delegates.power.query_numeric(game, &card_id, base))
+    let base = game.delegates.base_power.query_numeric(game, source, &card_id, result);
+    Some(game.delegates.power.query_numeric(game, source, &card_id, base))
 }
 
 /// Computes the current toughness on card's characteristic faces. Returns None
 /// if this card no longer exists.
 ///
 /// See [characteristic_faces] for more information.
-pub fn toughness(game: &GameState, id: impl ToCardId) -> Option<Toughness> {
+pub fn toughness(game: &GameState, source: Source, id: impl ToCardId) -> Option<Toughness> {
     let card_id = id.to_card_id(game)?;
-    let characteristic = characteristic_faces(game, card_id)?;
+    let characteristic = characteristic_faces(game, source, card_id)?;
     let result = match characteristic[..] {
         [] => {
             // > 708.2a. If a face-up permanent is turned face down by a spell or ability that
@@ -203,16 +227,18 @@ pub fn toughness(game: &GameState, id: impl ToCardId) -> Option<Toughness> {
         _ => panic!("Cannot compute toughness for card with multiple active faces"),
     };
 
-    let base = game.delegates.base_toughness.query_numeric(game, &card_id, result);
-    Some(game.delegates.toughness.query_numeric(game, &card_id, base))
+    let base = game.delegates.base_toughness.query_numeric(game, source, &card_id, result);
+    Some(game.delegates.toughness.query_numeric(game, source, &card_id, base))
 }
 
 /// Returns the set of colors on a card's characteristic faces. Returns None if
 /// this card no longer exists.
 ///
 /// See [characteristic_faces] for more information.
-pub fn colors(game: &GameState, id: impl ToCardId) -> Option<EnumSet<Color>> {
-    let result =
-        characteristic_faces(game, id)?.iter().flat_map(|face| face.colors.iter()).collect();
-    Some(game.delegates.colors.query(game, &id.to_card_id(game)?, result))
+pub fn colors(game: &GameState, source: Source, id: impl ToCardId) -> Option<EnumSet<Color>> {
+    let result = characteristic_faces(game, source, id)?
+        .iter()
+        .flat_map(|face| face.colors.iter())
+        .collect();
+    Some(game.delegates.colors.query(game, source, &id.to_card_id(game)?, result))
 }

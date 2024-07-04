@@ -33,7 +33,7 @@ pub fn when_controls_no(
     TriggeredAbility::new()
         .delegates(move |d| {
             d.state_triggered_ability.trigger_if_not_on_stack(move |g, s, _| {
-                !g.battlefield(s.controller).any_matching(g, predicate)
+                !g.battlefield(s.controller).any_matching(g, s, predicate)
             })
         })
         .effect(move |g, c| {

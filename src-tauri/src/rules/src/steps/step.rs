@@ -189,14 +189,22 @@ fn combat_damage(game: &mut GameState) {
                 let blocker_id = blockers[0];
                 damage_assignments.push(CombatDamageAssignment::Creature(
                     blocker_id,
-                    numerics::power_to_damage(card_queries::power(game, *attacker_id)?),
+                    numerics::power_to_damage(card_queries::power(
+                        game,
+                        Source::Game,
+                        *attacker_id,
+                    )?),
                 ));
             } else {
                 match target {
                     AttackTarget::Player(player) => {
                         damage_assignments.push(CombatDamageAssignment::Player(
                             *player,
-                            numerics::power_to_damage(card_queries::power(game, *attacker_id)?),
+                            numerics::power_to_damage(card_queries::power(
+                                game,
+                                Source::Game,
+                                *attacker_id,
+                            )?),
                         ));
                     }
                     _ => todo!("Implement attack target"),
@@ -220,7 +228,7 @@ fn combat_damage(game: &mut GameState) {
             let attacker_id = attackers[0];
             damage_assignments.push(CombatDamageAssignment::Creature(
                 attacker_id,
-                numerics::power_to_damage(card_queries::power(game, *blocker_id)?),
+                numerics::power_to_damage(card_queries::power(game, Source::Game, *blocker_id)?),
             ));
 
             outcome::OK

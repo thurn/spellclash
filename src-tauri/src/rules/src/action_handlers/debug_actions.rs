@@ -62,7 +62,9 @@ pub fn execute(game: &mut GameState, player: PlayerName, action: DebugGameAction
         DebugGameAction::DestroyAllLands(target) => {
             for permanent_id in game.battlefield(target).clone() {
                 outcome::execute(|| {
-                    if card_queries::card_types(game, permanent_id)?.contains(CardType::Land) {
+                    if card_queries::card_types(game, Source::Game, permanent_id)?
+                        .contains(CardType::Land)
+                    {
                         move_card::run(game, Source::Game, permanent_id, Zone::Graveyard)?;
                     }
                     outcome::OK

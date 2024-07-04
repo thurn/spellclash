@@ -14,7 +14,8 @@
 
 use data::card_definitions::ability_definition::TargetSelector;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{EntityId, PermanentId};
+use data::core::function_types::CardPredicate;
+use data::core::primitives::{EntityId, HasSource, PermanentId};
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 
@@ -23,7 +24,7 @@ use crate::targeting::{player_set, targets};
 
 pub struct SinglePermanentSelector<TFn>
 where
-    TFn: Fn(&GameState, PermanentId) -> Option<bool> + 'static + Copy + Send + Sync,
+    TFn: CardPredicate<PermanentId>,
 {
     pub players: PlayerSet,
     pub predicate: TFn,
@@ -31,7 +32,7 @@ where
 
 impl<TFn> SinglePermanentSelector<TFn>
 where
-    TFn: Fn(&GameState, PermanentId) -> Option<bool> + 'static + Copy + Send + Sync,
+    TFn: CardPredicate<PermanentId>,
 {
     pub fn new(players: PlayerSet, predicate: TFn) -> Self {
         Self { players, predicate }
@@ -40,7 +41,7 @@ where
 
 impl<TFn> TargetSelector for SinglePermanentSelector<TFn>
 where
-    TFn: Fn(&GameState, PermanentId) -> Option<bool> + 'static + Copy + Send + Sync,
+    TFn: CardPredicate<PermanentId>,
 {
     type Target = PermanentId;
 
@@ -52,7 +53,7 @@ where
         Box::new(player_set::players_in_set(game, scope, self.players).iter().flat_map(
             move |player| {
                 game.battlefield(player).iter().filter_map(move |&permanent_id| {
-                    if (self.predicate)(game, permanent_id) == Some(true) {
+                    if (self.predicate)(game, scope.source(), permanent_id) == Some(true) {
                         Some(permanent_id.into())
                     } else {
                         None

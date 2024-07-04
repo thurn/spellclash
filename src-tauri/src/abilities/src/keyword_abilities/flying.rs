@@ -41,6 +41,6 @@ pub fn gain(delegates: &mut GameDelegates, add_ability: GainAbility) {
         QueryValue::set(s, true)
     });
     gain_ability::add_to_query(&mut delegates.can_be_blocked, add_ability, |g, s, data| {
-        QueryValue::and_predicate(g, data.blocker_id, combat_queries::has_flying)
+        QueryValue::and_predicate(g, s, data.blocker_id, combat_queries::has_flying)
     });
 }

@@ -14,7 +14,7 @@
 
 use data::actions::game_action::{CombatAction, GameAction};
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::PlayerName;
+use data::core::primitives::{PlayerName, Source};
 use data::delegates::delegate_arguments::CanAttackTarget;
 use data::game_states::combat_state::{CombatState, ProposedAttackers};
 use data::game_states::game_state::GameState;
@@ -56,7 +56,7 @@ pub fn append(
         })) => {
             extend_actions(
                 actions,
-                combat_queries::legal_attackers(game, player)
+                combat_queries::legal_attackers(game, Source::Game, player)
                     .filter(|id| {
                         !selected_attackers.contains(id) && !proposed_attacks.contains(*id)
                     })
@@ -65,11 +65,12 @@ pub fn append(
             if !selected_attackers.is_empty() {
                 extend_actions(
                     actions,
-                    combat_queries::attack_targets(game)
+                    combat_queries::attack_targets(game, Source::Game)
                         .filter(|target| {
                             // Only include targets that all selected attackers can legally attack.
                             game.delegates.can_attack_target.query_all(
                                 game,
+                                Source::Game,
                                 selected_attackers.iter().map(|&attacker| CanAttackTarget {
                                     attacker_id: attacker,
                                     target: *target,
@@ -96,7 +97,7 @@ pub fn append(
         Some(CombatState::ProposingBlockers(blockers)) => {
             extend_actions(
                 actions,
-                combat_queries::legal_blockers(game, player)
+                combat_queries::legal_blockers(game, Source::Game, player)
                     .filter(|id| {
                         !blockers.selected_blockers.contains(id)
                             && !blockers.proposed_blocks.contains_key(id)

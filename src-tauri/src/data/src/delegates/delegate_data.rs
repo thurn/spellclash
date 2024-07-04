@@ -14,7 +14,7 @@
 
 use crate::card_states::zones::ToCardId;
 use crate::core::function_types::CardPredicate;
-use crate::core::primitives::Timestamp;
+use crate::core::primitives::{HasSource, Timestamp};
 use crate::game_states::game_state::GameState;
 
 /// Possible high-level types of game delegate
@@ -56,10 +56,11 @@ impl<T> QueryValue<T> {
     /// Invokes a [CardPredicate] and passes the result to [Self::and].
     pub fn and_predicate<TId: ToCardId>(
         game: &GameState,
+        source: impl HasSource,
         id: TId,
         predicate: impl CardPredicate<TId>,
     ) -> Self {
-        Self::And(predicate(game, id) == Some(true))
+        Self::And(predicate(game, source.source(), id) == Some(true))
     }
 }
 

@@ -445,10 +445,11 @@ pub struct UserId(pub Uuid);
 /// Describes the source of some game mutation.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum Source {
-    /// Mutation caused by the rules of the game, e.g. drawing a card for turn.
+    /// Mutation or query caused by the rules of the game, e.g. drawing a card
+    /// for turn.
     Game,
 
-    /// Mutation caused by an ability
+    /// Mutation or query caused by an ability of a card
     Ability { controller: PlayerName, ability_id: AbilityId },
 }
 

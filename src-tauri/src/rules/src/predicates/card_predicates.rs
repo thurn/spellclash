@@ -13,25 +13,25 @@
 // limitations under the License.
 
 use data::card_states::zones::{ToCardId, ZoneQueries};
-use data::core::primitives::{CardType, PermanentId};
+use data::core::primitives::{CardType, PermanentId, Source};
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandSubtype;
 
 use crate::queries::card_queries;
 
-pub fn creature(game: &GameState, id: impl ToCardId) -> Option<bool> {
-    Some(card_queries::card_types(game, id)?.contains(CardType::Creature))
+pub fn creature(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
+    Some(card_queries::card_types(game, source, id)?.contains(CardType::Creature))
 }
 
-pub fn planeswalker(game: &GameState, id: impl ToCardId) -> Option<bool> {
-    Some(card_queries::card_types(game, id)?.contains(CardType::Planeswalker))
+pub fn planeswalker(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
+    Some(card_queries::card_types(game, source, id)?.contains(CardType::Planeswalker))
 }
 
-pub fn battle(game: &GameState, id: impl ToCardId) -> Option<bool> {
-    Some(card_queries::card_types(game, id)?.contains(CardType::Battle))
+pub fn battle(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
+    Some(card_queries::card_types(game, source, id)?.contains(CardType::Battle))
 }
 
-pub fn island(game: &GameState, id: impl ToCardId) -> Option<bool> {
-    Some(card_queries::land_subtypes(game, id)?.contains(LandSubtype::Island))
+pub fn island(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
+    Some(card_queries::land_subtypes(game, source, id)?.contains(LandSubtype::Island))
 }

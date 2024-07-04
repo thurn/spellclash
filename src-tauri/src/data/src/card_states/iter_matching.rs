@@ -16,6 +16,7 @@ use std::collections::HashSet;
 
 use crate::card_states::zones::ToCardId;
 use crate::core::function_types::CardPredicate;
+use crate::core::primitives::{HasSource, Source};
 use crate::delegates::scope::Scope;
 use crate::game_states::game_state::GameState;
 
@@ -23,11 +24,17 @@ pub trait IterMatching<TId: ToCardId, TFn: CardPredicate<TId>> {
     fn iter_matching<'a>(
         &'a self,
         game: &'a GameState,
+        source: impl HasSource + 'a,
         predicate: TFn,
     ) -> impl Iterator<Item = TId> + 'a;
 
-    fn any_matching<'a>(&'a self, game: &'a GameState, predicate: TFn) -> bool {
-        self.iter_matching(game, predicate).next().is_some()
+    fn any_matching<'a>(
+        &'a self,
+        game: &'a GameState,
+        source: impl HasSource,
+        predicate: TFn,
+    ) -> bool {
+        self.iter_matching(game, source, predicate).next().is_some()
     }
 }
 
@@ -35,8 +42,9 @@ impl<TId: ToCardId, TFn: CardPredicate<TId>> IterMatching<TId, TFn> for HashSet<
     fn iter_matching<'a>(
         &'a self,
         game: &'a GameState,
+        source: impl HasSource + 'a,
         predicate: TFn,
     ) -> impl Iterator<Item = TId> + 'a {
-        self.iter().filter(move |&&id| predicate(game, id) == Some(true)).copied()
+        self.iter().filter(move |&&id| predicate(game, source.source(), id) == Some(true)).copied()
     }
 }

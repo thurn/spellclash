@@ -30,7 +30,7 @@ pub fn cannot_attack_unless_defender_controls(
     StaticAbility::new().delegates(move |d| {
         d.can_attack_target.this(move |g, s, data| {
             QueryValue::and(
-                g.battlefield(data.target.defending_player()).any_matching(g, predicate),
+                g.battlefield(data.target.defending_player()).any_matching(g, s, predicate),
             )
         })
     })

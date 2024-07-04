@@ -66,7 +66,7 @@ fn add_selected_attacker(game: &mut GameState, source: Source, card_id: Attacker
     // There is more than one possible attack target because a planeswalker or
     // battle is in play (or there are more than 2 players), must select attack
     // targets.
-    let requires_target = combat_queries::attack_targets(game).nth(1).is_some();
+    let requires_target = combat_queries::attack_targets(game, source).nth(1).is_some();
 
     let Some(CombatState::ProposingAttackers(attackers)) = &mut game.combat else {
         panic!("Not in the 'ProposingAttackers' state");

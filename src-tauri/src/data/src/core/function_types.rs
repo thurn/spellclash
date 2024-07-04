@@ -21,17 +21,17 @@ use crate::game_states::game_state::GameState;
 
 /// Function which performs a boolean query on the state of a card.
 pub trait CardPredicate<TId: ToCardId>:
-    Fn(&GameState, TId) -> Option<bool> + 'static + Copy + Send + Sync
+    Fn(&GameState, Source, TId) -> Option<bool> + 'static + Copy + Send + Sync
 {
 }
 
 impl<TId: ToCardId, F> CardPredicate<TId> for F where
-    F: Fn(&GameState, TId) -> Option<bool> + 'static + Copy + Send + Sync
+    F: Fn(&GameState, Source, TId) -> Option<bool> + 'static + Copy + Send + Sync
 {
 }
 
 pub type CardPredicateFn<TId> =
-    Box<dyn Fn(&GameState, TId) -> Option<bool> + 'static + Send + Sync>;
+    Box<dyn Fn(&GameState, Source, TId) -> Option<bool> + 'static + Send + Sync>;
 
 /// Function which performs a mutation on the state of a card.
 pub trait CardMutation<TId: ToCardId>:
@@ -48,26 +48,27 @@ pub type CardMutationFn<TId> =
     Box<dyn Fn(&mut GameState, Source, TId) -> Outcome + 'static + Send + Sync>;
 
 pub trait PlayerPredicate:
-    Fn(&GameState, PlayerName) -> Option<bool> + 'static + Copy + Send + Sync
+    Fn(&GameState, Source, PlayerName) -> Option<bool> + 'static + Copy + Send + Sync
 {
 }
 
 impl<F> PlayerPredicate for F where
-    F: Fn(&GameState, PlayerName) -> Option<bool> + 'static + Copy + Send + Sync
+    F: Fn(&GameState, Source, PlayerName) -> Option<bool> + 'static + Copy + Send + Sync
 {
 }
 
-pub type PlayerPredicateFn = Box<dyn Fn(&GameState, PlayerName) -> bool + 'static + Send + Sync>;
+pub type PlayerPredicateFn =
+    Box<dyn Fn(&GameState, Source, PlayerName) -> bool + 'static + Send + Sync>;
 
 pub trait StackAbilityPredicate:
-    Fn(&GameState, StackAbilityId) -> Option<bool> + 'static + Copy + Send + Sync
+    Fn(&GameState, Source, StackAbilityId) -> Option<bool> + 'static + Copy + Send + Sync
 {
 }
 
 impl<F> StackAbilityPredicate for F where
-    F: Fn(&GameState, StackAbilityId) -> Option<bool> + 'static + Copy + Send + Sync
+    F: Fn(&GameState, Source, StackAbilityId) -> Option<bool> + 'static + Copy + Send + Sync
 {
 }
 
 pub type StackAbilityPredicateFn =
-    Box<dyn Fn(&GameState, StackAbilityId) -> Option<bool> + 'static + Send + Sync>;
+    Box<dyn Fn(&GameState, Source, StackAbilityId) -> Option<bool> + 'static + Send + Sync>;
