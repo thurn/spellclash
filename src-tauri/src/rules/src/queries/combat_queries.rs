@@ -89,9 +89,6 @@ pub fn legal_attackers(
 #[must_use]
 pub fn can_block(game: &GameState, blocker_id: BlockerId) -> Option<bool> {
     let card = game.card(blocker_id)?;
-    if card.card_name == card_name::DANDAN && card.controller() == PlayerName::Two {
-        eprintln!("P2 Dandan");
-    }
     let types = card_queries::card_types(game, card.id)?;
 
     let mut result = true;
