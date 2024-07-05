@@ -15,7 +15,7 @@
 use data::card_states::stack_ability_state::StackAbilityState;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{AbilityId, EffectId, PlayerName, StackItemId};
-use data::delegates::delegate_data::DelegateType;
+use data::delegates::delegate_type::DelegateType;
 use data::delegates::event_delegate_list::EventDelegateList;
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;

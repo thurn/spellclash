@@ -21,16 +21,6 @@ use crate::core::function_types::CardPredicate;
 use crate::core::primitives::{HasSource, Timestamp};
 use crate::game_states::game_state::GameState;
 
-/// Possible high-level types of game delegate
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub enum DelegateType {
-    /// Ability delegate. Will not be invoked if a permanent loses abilities.
-    Ability,
-
-    /// Effect delegate. Will still be invoked if a permanent loses abilities.
-    Effect,
-}
-
 /// Marker trait for the return value of queries
 pub trait QueryValue {}
 

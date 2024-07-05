@@ -14,13 +14,10 @@
 
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::delegates::card_query_delegate_list::{CardDelegateExecution, CardQueryDelegateList};
-use data::delegates::delegate_data::{DelegateType, QueryValue};
-use data::delegates::event_delegate_list::EventDelegateList;
+use data::delegates::delegate_type::DelegateType;
+use data::delegates::query_value::QueryValue;
 use data::delegates::scope::{EffectContext, Scope};
 use data::game_states::game_state::GameState;
-use utils::outcome;
-
-use crate::mutations::trigger_extension::{is_ability_on_stack, trigger_ability};
 
 pub trait QueryExt<TArg, TResult> {
     /// Apply a transformation function only during turns in which the card's

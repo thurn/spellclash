@@ -18,7 +18,7 @@ use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 use data::core::primitives::HasSource;
-use data::delegates::delegate_data::ChangeText;
+use data::delegates::query_value::ChangeText;
 use data::game_states::effect_state::EffectState;
 use data::printed_cards::card_subtypes::BASIC_LANDS;
 use data::text_strings::Text;

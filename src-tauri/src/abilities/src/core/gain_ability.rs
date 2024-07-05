@@ -15,7 +15,7 @@
 use data::card_states::zones::ToCardId;
 use data::core::primitives::PermanentId;
 use data::delegates::card_query_delegate_list::CardQueryDelegateList;
-use data::delegates::delegate_data::QueryValue;
+use data::delegates::query_value::QueryValue;
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use rules::queries::query_extension::QueryExt;

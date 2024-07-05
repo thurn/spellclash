@@ -20,10 +20,10 @@ use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
 use data::delegates::game_delegates::GameDelegates;
 use data::game_states::ability_state::AbilityState;
+use data::game_states::game_phase_step::GamePhaseStep;
 use data::game_states::game_state::{
     DebugConfiguration, GameConfiguration, GameState, GameStatus, TurnData,
 };
-use data::game_states::game_step::GamePhaseStep;
 use data::game_states::history_data::GameHistory;
 use data::game_states::oracle::Oracle;
 use data::game_states::this_turn_state::ThisTurnState;

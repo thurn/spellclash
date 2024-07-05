@@ -15,8 +15,8 @@
 pub mod ability_state;
 pub mod combat_state;
 pub mod effect_state;
+pub mod game_phase_step;
 pub mod game_state;
-pub mod game_step;
 pub mod history_data;
 pub mod oracle;
 pub mod state_based_event;

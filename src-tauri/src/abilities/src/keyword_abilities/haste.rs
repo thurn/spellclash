@@ -14,8 +14,8 @@
 
 use data::card_definitions::ability_definition::{Ability, StaticAbility};
 use data::core::primitives::HasSource;
-use data::delegates::delegate_data::{Flag, QueryValue};
 use data::delegates::game_delegates::GameDelegates;
+use data::delegates::query_value::{Flag, QueryValue};
 
 use crate::core::gain_ability;
 use crate::core::gain_ability::GainAbility;

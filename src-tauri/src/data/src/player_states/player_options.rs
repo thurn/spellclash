@@ -15,7 +15,7 @@
 use enumset::EnumSet;
 use serde::{Deserialize, Serialize};
 
-use crate::game_states::game_step::GamePhaseStep;
+use crate::game_states::game_phase_step::GamePhaseStep;
 
 /// Configurable options for a player within a game
 #[derive(Debug, Clone, Serialize, Deserialize)]

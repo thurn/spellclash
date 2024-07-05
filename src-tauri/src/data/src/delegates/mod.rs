@@ -15,8 +15,9 @@
 pub mod apply_writes;
 pub mod card_query_delegate_list;
 pub mod delegate_arguments;
-pub mod delegate_data;
+pub mod delegate_type;
 pub mod event_delegate_list;
 pub mod game_delegates;
+pub mod query_value;
 pub mod scope;
 pub mod stores_delegates;

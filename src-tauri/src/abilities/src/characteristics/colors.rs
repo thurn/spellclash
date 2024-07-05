@@ -13,8 +13,8 @@
 // limitations under the License.
 
 use data::core::primitives::Color;
-use data::delegates::delegate_data::{EnumSets, QueryValue};
 use data::delegates::game_delegates::GameDelegates;
+use data::delegates::query_value::{EnumSets, QueryValue};
 use enumset::EnumSet;
 use rules::queries::query_extension::QueryExt;
 

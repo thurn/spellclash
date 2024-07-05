@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashMap;
 use std::ops::Add;
 
 use dyn_clone::DynClone;
 use enumset::{EnumSet, EnumSetType};
 
 use crate::card_states::zones::{ToCardId, ZoneQueries};
-use crate::core::primitives::{AbilityId, EntityId, Source, Timestamp, Zone};
-use crate::delegates::delegate_data::{ChangeText, DelegateType, EnumSets, Flag, Ints, QueryValue};
+use crate::core::primitives::{AbilityId, Source, Timestamp, Zone};
+use crate::delegates::delegate_type::DelegateType;
+use crate::delegates::query_value::{ChangeText, EnumSets, Flag, Ints, QueryValue};
 use crate::delegates::scope::Scope;
 use crate::delegates::stores_delegates::StoresDelegates;
 use crate::game_states::game_state::GameState;

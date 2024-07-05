@@ -39,7 +39,7 @@ use crate::delegates::game_delegates::GameDelegates;
 use crate::delegates::scope::Scope;
 use crate::game_states::ability_state::AbilityState;
 use crate::game_states::combat_state::CombatState;
-use crate::game_states::game_step::GamePhaseStep;
+use crate::game_states::game_phase_step::GamePhaseStep;
 use crate::game_states::history_data::{GameHistory, HistoryCounters, HistoryEvent};
 use crate::game_states::oracle::Oracle;
 use crate::game_states::state_based_event::StateBasedEvent;

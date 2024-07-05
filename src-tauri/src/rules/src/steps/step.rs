@@ -21,8 +21,8 @@ use data::core::primitives::{CardId, CardType, PlayerName, Source};
 use data::game_states::combat_state::{
     AttackTarget, AttackerMap, BlockerId, CombatState, ProposedAttackers, ProposedBlockers,
 };
+use data::game_states::game_phase_step::GamePhaseStep;
 use data::game_states::game_state::GameState;
-use data::game_states::game_step::GamePhaseStep;
 use data::game_states::this_turn_state::ThisTurnState;
 use enumset::EnumSet;
 use utils::outcome;

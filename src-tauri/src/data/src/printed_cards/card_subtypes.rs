@@ -16,7 +16,7 @@ use enumset::{enum_set, EnumSet, EnumSetType};
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 
-use crate::game_states::game_step::GamePhaseStep;
+use crate::game_states::game_phase_step::GamePhaseStep;
 use crate::text_strings::Text;
 
 /// Possible subtypes of a card. Each subtype is connected to a specific card

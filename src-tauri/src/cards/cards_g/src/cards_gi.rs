@@ -17,7 +17,7 @@ use abilities::targeting::targets;
 use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::delegates::delegate_data::Ints;
+use data::delegates::query_value::Ints;
 use rules::queries::query_extension::QueryExt;
 
 pub fn giant_growth() -> CardDefinition {

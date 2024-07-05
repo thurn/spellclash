@@ -12,16 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::Color;
-use data::delegates::game_delegates::GameDelegates;
-use data::delegates::query_value::{EnumSets, QueryValue};
-use data::printed_cards::card_subtypes::CreatureSubtype;
-use enumset::EnumSet;
-use rules::queries::query_extension::QueryExt;
+/// Possible high-level types of game delegate
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum DelegateType {
+    /// Ability delegate. Will not be invoked if a permanent loses abilities.
+    Ability,
 
-/// Sets a card's creature subtypes for the current turn when affected by this
-/// card.
-pub fn for_target_this_turn(d: &mut GameDelegates, types: impl Into<EnumSet<CreatureSubtype>>) {
-    let types = types.into();
-    d.creature_subtypes.this_turn(move |_, s, _| EnumSets::set(s, types));
+    /// Effect delegate. Will still be invoked if a permanent loses abilities.
+    Effect,
 }

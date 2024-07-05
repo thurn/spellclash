@@ -13,8 +13,8 @@
 // limitations under the License.
 
 use data::core::numerics::{Power, Toughness};
-use data::delegates::delegate_data::{Ints, QueryValue};
 use data::delegates::game_delegates::GameDelegates;
+use data::delegates::query_value::{Ints, QueryValue};
 use data::printed_cards::card_subtypes::CreatureSubtype;
 use enumset::EnumSet;
 use rules::queries::query_extension::QueryExt;
