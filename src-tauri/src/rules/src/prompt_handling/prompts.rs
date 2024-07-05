@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use std::collections::HashMap;
+use std::fmt::Debug;
 
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, EntityId, PlayerName};
@@ -156,18 +157,21 @@ pub fn select_ordered_from<'a>(
     .unwrap_or_default()
 }
 
-pub fn choose_land_subtype(
+pub fn multiple_choice<T: Into<Text> + Debug + Clone + Send + 'static>(
     game: &mut GameState,
     player: PlayerName,
     description: Text,
-    choices: Vec<LandSubtype>,
-) -> LandSubtype {
+    choices: Vec<T>,
+) -> T {
     let PromptResponse::MultipleChoice(index) = send(game, Prompt {
         player,
         label: Some(description),
-        prompt_type: PromptType::LandSubtype(MultipleChoicePrompt { choices: choices.clone() }),
+        prompt_type: PromptType::MultipleChoice(Box::new(MultipleChoicePrompt {
+            choices: choices.clone(),
+        })),
     }) else {
         panic!("Unexpected prompt response type!");
     };
-    choices[index]
+
+    choices[index].clone()
 }

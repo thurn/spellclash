@@ -245,9 +245,9 @@ fn prompt_view(state: &DisplayState, prompt: &Prompt, player: PlayerName) -> Vec
 
             result
         }
-        PromptType::LandSubtype(data) => {
+        PromptType::MultipleChoice(data) => {
             let mut result = vec![];
-            for (i, choice) in data.choices.iter().enumerate() {
+            for (i, choice) in data.choices().iter().enumerate() {
                 if legal_prompt_actions::can_take_action(
                     prompt,
                     player,

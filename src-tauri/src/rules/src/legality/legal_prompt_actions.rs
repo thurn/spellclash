@@ -39,8 +39,8 @@ pub fn compute(prompt: &Prompt, player: PlayerName, options: LegalActions) -> Ve
             data.choices.iter().map(|choice| PromptAction::SelectEntity(choice.entity_id)).collect()
         }
         PromptType::PlayCards(_) => todo!("Implement this"),
-        PromptType::LandSubtype(data) => data
-            .choices
+        PromptType::MultipleChoice(data) => data
+            .choices()
             .iter()
             .enumerate()
             .map(|(i, choice)| PromptAction::SelectChoice(i))

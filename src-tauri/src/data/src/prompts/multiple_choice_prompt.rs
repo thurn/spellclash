@@ -12,13 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::fmt::Debug;
+
+use dyn_clone::DynClone;
 use serde::{Deserialize, Serialize};
 
 use crate::text_strings::Text;
 
+pub trait MultipleChoicePromptTrait: Debug + DynClone + Send {
+    fn choices(&self) -> Vec<Text>;
+}
+
+dyn_clone::clone_trait_object!(MultipleChoicePromptTrait);
+
 /// A choice for a player to pick one item from a list of choice buttons.
 #[derive(Clone, Debug)]
-pub struct MultipleChoicePrompt<T: Into<Text>> {
+pub struct MultipleChoicePrompt<T> {
     /// Choices to display for this prompt
     pub choices: Vec<T>,
+}
+
+impl<T: Into<Text> + Debug + Clone + Send> MultipleChoicePromptTrait for MultipleChoicePrompt<T> {
+    fn choices(&self) -> Vec<Text> {
+        self.choices.iter().map(|c| c.clone().into()).collect()
+    }
 }

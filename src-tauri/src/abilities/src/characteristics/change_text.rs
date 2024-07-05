@@ -28,13 +28,13 @@ pub fn choose_basic_land_subtypes(
     game: &mut GameState,
     controller: PlayerName,
 ) -> (LandSubtype, LandSubtype) {
-    let old = prompts::choose_land_subtype(
+    let old = prompts::multiple_choice(
         game,
         controller,
         Text::SelectTypeToChange,
         BASIC_LANDS.iter().collect(),
     );
-    let new = prompts::choose_land_subtype(
+    let new = prompts::multiple_choice(
         game,
         controller,
         Text::SelectNewType,
