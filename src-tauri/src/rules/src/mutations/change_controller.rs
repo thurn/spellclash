@@ -15,7 +15,7 @@
 use data::card_states::card_state::ControlChangingEffect;
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::primitives::{AbilityId, CardId, EffectId, HasController, HasSource, PlayerName};
-use data::delegates::delegate_arguments::PermanentControllerChangedEvent;
+use data::delegates::game_delegate_data::PermanentControllerChangedEvent;
 use data::delegates::scope::{EffectContext, Scope};
 use data::game_states::game_state::GameState;
 use utils::outcome;

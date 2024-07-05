@@ -20,10 +20,10 @@ use crate::card_states::zones::HasZones;
 use crate::core::numerics::{Power, Toughness};
 use crate::core::primitives::{AbilityId, CardId, Color, PermanentId, Zone};
 use crate::delegates::card_query_delegate_list::CardQueryDelegateList;
-use crate::delegates::delegate_arguments::{
+use crate::delegates::event_delegate_list::EventDelegateList;
+use crate::delegates::game_delegate_data::{
     CanAttackTarget, CanBeBlocked, PermanentControllerChangedEvent,
 };
-use crate::delegates::event_delegate_list::EventDelegateList;
 use crate::delegates::query_value::{ChangeText, EnumSets, Flag, Ints};
 use crate::delegates::stores_delegates::StoresDelegates;
 use crate::printed_cards::card_subtypes::{CreatureSubtype, LandSubtype};

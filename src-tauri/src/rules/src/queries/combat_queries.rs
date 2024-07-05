@@ -18,7 +18,7 @@ use data::card_states::card_state::TappedState;
 use data::card_states::iter_matching::IterMatching;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardType, HasController, PermanentId, PlayerName, Source};
-use data::delegates::delegate_arguments::{CanAttackTarget, CanBeBlocked};
+use data::delegates::game_delegate_data::{CanAttackTarget, CanBeBlocked};
 use data::game_states::combat_state::{
     AttackTarget, AttackerId, BlockerId, BlockerMap, CombatState,
 };

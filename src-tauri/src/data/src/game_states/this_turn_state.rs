@@ -78,7 +78,7 @@ impl ThisTurnState {
 
     /// Returns & removes the list of control-changing effects to automatically
     /// clean up at end of turn
-    pub fn take_control_changing_effects(&mut self) -> Vec<(EffectId, CardId)> {
+    pub fn remove_control_changing_effects(&mut self) -> Vec<(EffectId, CardId)> {
         self.control_changing_effects.take().unwrap_or_default()
     }
 
