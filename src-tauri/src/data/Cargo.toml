@@ -16,7 +16,7 @@ color-eyre = "0.6.2"
 dashmap = "5.4.0"
 derive_more = "0.99.17"
 dyn-clone = "1.0.17"
-either = "1.11.0"
+either = { version = "1.11.0", features = ["serde"] }
 enum-iterator = "2.0.0"
 enum-kinds = "0.5.1"
 enum-map = { version = "2.7.3", features = ["serde"] }

@@ -27,9 +27,7 @@ use uuid::Uuid;
 use crate::card_states::zones::{HasZones, ToCardId, ZoneQueries, Zones};
 use crate::game_states::game_state::GameState;
 
-/// Possible colors of cards or effects.
-///
-/// An empty color set represents colorless.
+/// Possible colors of cards, mana, or effects.
 #[derive(Debug, Hash, Ord, PartialOrd, Serialize, Deserialize, EnumSetType, Enum, Sequence)]
 pub enum Color {
     White,
