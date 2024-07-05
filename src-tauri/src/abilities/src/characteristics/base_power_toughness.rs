@@ -14,6 +14,7 @@
 
 use data::core::numerics::{Power, Toughness};
 use data::delegates::game_delegates::GameDelegates;
+use data::delegates::layer::Layer;
 use data::delegates::query_value::{Ints, QueryValue};
 use data::printed_cards::card_subtypes::CreatureSubtype;
 use enumset::EnumSet;
@@ -22,6 +23,7 @@ use rules::queries::query_extension::QueryExt;
 /// Sets a card's base power and toughness for the current turn when affected by
 /// this card.
 pub fn for_target_this_turn(d: &mut GameDelegates, power: Power, toughness: Toughness) {
-    d.base_power.this_turn(move |_, c, _| Ints::set(c, power));
-    d.base_toughness.this_turn(move |_, c, _| Ints::set(c, toughness));
+    d.base_power.this_turn(move |_, c, _| Ints::set(Layer::PowerToughnessSettingEffects, c, power));
+    d.base_toughness
+        .this_turn(move |_, c, _| Ints::set(Layer::PowerToughnessSettingEffects, c, toughness));
 }

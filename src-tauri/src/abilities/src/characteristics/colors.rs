@@ -14,6 +14,7 @@
 
 use data::core::primitives::Color;
 use data::delegates::game_delegates::GameDelegates;
+use data::delegates::layer::Layer;
 use data::delegates::query_value::{EnumSets, QueryValue};
 use enumset::EnumSet;
 use rules::queries::query_extension::QueryExt;
@@ -21,5 +22,5 @@ use rules::queries::query_extension::QueryExt;
 /// Sets a card's colors for the current turn when affected by this card.
 pub fn for_target_this_turn(d: &mut GameDelegates, colors: impl Into<EnumSet<Color>>) {
     let colors = colors.into();
-    d.colors.this_turn(move |_, s, _| EnumSets::set(s, colors));
+    d.colors.this_turn(move |_, s, _| EnumSets::set(Layer::ColorChangingEffects, s, colors));
 }

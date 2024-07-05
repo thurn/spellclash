@@ -20,6 +20,7 @@ use enumset::{EnumSet, EnumSetType};
 use crate::card_states::zones::{ToCardId, ZoneQueries};
 use crate::core::primitives::{AbilityId, Source, Timestamp, Zone};
 use crate::delegates::delegate_type::DelegateType;
+use crate::delegates::layer::{EffectSortingKey, Layer};
 use crate::delegates::query_value::{ChangeText, EnumSets, Flag, Ints, QueryValue};
 use crate::delegates::scope::Scope;
 use crate::delegates::stores_delegates::StoresDelegates;
@@ -122,18 +123,18 @@ impl<TArg: ToCardId, TResult: Default + Add<Output = TResult>>
 {
     #[must_use]
     pub fn query(&self, game: &GameState, _: Source, arg: &TArg, current: TResult) -> TResult {
-        let mut largest_timestamp = Timestamp(0);
+        let mut largest_key = EffectSortingKey::default();
         let mut result = current;
         let mut add = TResult::default();
         for stored in &self.delegates {
-            let Some(scope) = validate_scope(game, stored, &mut largest_timestamp) else {
+            let Some(scope) = validate_scope(game, stored, &mut largest_key) else {
                 continue;
             };
 
             match stored.query_fn.invoke(game, scope, arg) {
-                Some(Ints::Set(timestamp, value)) if timestamp >= largest_timestamp => {
+                Some(Ints::Set(key, value)) if key >= largest_key => {
                     result = value;
-                    largest_timestamp = timestamp;
+                    largest_key = key;
                 }
                 Some(Ints::Add(to_add)) => {
                     add = add + to_add;
@@ -190,19 +191,19 @@ impl<TArg: ToCardId> CardQueryDelegateList<TArg, Flag> {
 
     #[must_use]
     pub fn query(&self, game: &GameState, _: Source, arg: &TArg, current: bool) -> bool {
-        let mut largest_timestamp = Timestamp(0);
+        let mut largest_key = EffectSortingKey::default();
         let mut result = current;
         let mut and = true;
         let mut or = false;
         for stored in &self.delegates {
-            let Some(scope) = validate_scope(game, stored, &mut largest_timestamp) else {
+            let Some(scope) = validate_scope(game, stored, &mut largest_key) else {
                 continue;
             };
 
             match stored.query_fn.invoke(game, scope, arg) {
-                Some(Flag::Set(timestamp, value)) if timestamp >= largest_timestamp => {
+                Some(Flag::Set(key, value)) if key >= largest_key => {
                     result = value;
-                    largest_timestamp = timestamp;
+                    largest_key = key;
                 }
                 Some(Flag::And(value)) => {
                     and &= value;
@@ -227,17 +228,17 @@ impl<TArg: ToCardId, TResult: EnumSetType> CardQueryDelegateList<TArg, EnumSets<
         arg: &TArg,
         current: EnumSet<TResult>,
     ) -> EnumSet<TResult> {
-        let mut largest_timestamp = Timestamp(0);
+        let mut largest_key = EffectSortingKey::default();
         let mut result = current;
         for stored in &self.delegates {
-            let Some(scope) = validate_scope(game, stored, &mut largest_timestamp) else {
+            let Some(scope) = validate_scope(game, stored, &mut largest_key) else {
                 continue;
             };
 
             match stored.query_fn.invoke(game, scope, arg) {
-                Some(EnumSets::Set(timestamp, value)) if timestamp >= largest_timestamp => {
+                Some(EnumSets::Set(key, value)) if key >= largest_key => {
                     result = value;
-                    largest_timestamp = timestamp;
+                    largest_key = key;
                 }
                 _ => {}
             };
@@ -250,22 +251,22 @@ impl<TArg: ToCardId, TResult: EnumSetType> CardQueryDelegateList<TArg, EnumSets<
 impl<TArg: ToCardId, TResult: EnumSetType> CardQueryDelegateList<TArg, ChangeText<TResult>> {
     #[must_use]
     pub fn query(&self, game: &GameState, _: Source, arg: &TArg, current: TResult) -> TResult {
-        let mut largest_timestamp = Timestamp(0);
+        let mut largest_key = EffectSortingKey::default();
         let mut result = current;
         for stored in &self.delegates {
-            let Some(scope) = validate_scope(game, stored, &mut largest_timestamp) else {
+            let Some(scope) = validate_scope(game, stored, &mut largest_key) else {
                 continue;
             };
 
-            match stored.query_fn.invoke(game, scope, arg) {
-                Some(ChangeText::Replace(timestamp, old, new))
-                    if old == current && timestamp >= largest_timestamp =>
-                {
+            if let Some(ChangeText::Replace(timestamp, old, new)) =
+                stored.query_fn.invoke(game, scope, arg)
+            {
+                let key = EffectSortingKey::new(Layer::TextChangingEffects, timestamp);
+                if old == current && key >= largest_key {
                     result = new;
-                    largest_timestamp = timestamp;
+                    largest_key = key;
                 }
-                _ => {}
-            };
+            }
         }
 
         result
@@ -295,7 +296,7 @@ impl<TArg: ToCardId, TResult> Default for CardQueryDelegateList<TArg, TResult> {
 fn validate_scope<TArg: ToCardId, TResult>(
     game: &GameState,
     stored: &StoredQueryDelegate<TArg, TResult>,
-    largest_timestamp: &mut Timestamp,
+    largest_key: &mut EffectSortingKey,
 ) -> Option<Scope> {
     let card = game.card(stored.ability_id.card_id)?;
 
@@ -313,10 +314,11 @@ fn validate_scope<TArg: ToCardId, TResult>(
     if stored.delegate_type == DelegateType::Ability {
         if let Some(timestamp) = card.permanent_id().and_then(|id| game.has_lost_all_abilities(id))
         {
-            if timestamp > *largest_timestamp {
+            let key = EffectSortingKey::new(Layer::AbilityModifyingEffects, timestamp);
+            if key > *largest_key {
                 // Set the largest timestamp to the time at which this permanent lost all
                 // abilities, thus ignoring any earlier effects which set a value.
-                *largest_timestamp = timestamp;
+                *largest_key = key;
             }
         }
     }

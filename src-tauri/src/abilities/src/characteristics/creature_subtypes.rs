@@ -14,6 +14,7 @@
 
 use data::core::primitives::Color;
 use data::delegates::game_delegates::GameDelegates;
+use data::delegates::layer::Layer;
 use data::delegates::query_value::{EnumSets, QueryValue};
 use data::printed_cards::card_subtypes::CreatureSubtype;
 use enumset::EnumSet;
@@ -23,5 +24,6 @@ use rules::queries::query_extension::QueryExt;
 /// card.
 pub fn for_target_this_turn(d: &mut GameDelegates, types: impl Into<EnumSet<CreatureSubtype>>) {
     let types = types.into();
-    d.creature_subtypes.this_turn(move |_, s, _| EnumSets::set(s, types));
+    d.creature_subtypes
+        .this_turn(move |_, c, _| EnumSets::set(Layer::TypeChangingEffects, c, types));
 }
