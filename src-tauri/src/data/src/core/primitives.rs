@@ -16,6 +16,7 @@ use std::fmt::Display;
 use std::str::FromStr;
 
 use derive_more::Display;
+use either::Either;
 use enum_iterator::Sequence;
 use enum_map::Enum;
 use enumset::{enum_set, EnumSet, EnumSetType};
@@ -245,6 +246,15 @@ impl ToCardId for EntityId {
     }
 }
 
+impl<T: Into<EntityId>, U: Into<EntityId>> From<Either<T, U>> for EntityId {
+    fn from(value: Either<T, U>) -> Self {
+        match value {
+            Either::Left(left) => left.into(),
+            Either::Right(right) => right.into(),
+        }
+    }
+}
+
 /// An identifier for a card or ability while it is in a given zone. A new
 /// object ID is assigned each time a card changes zones, meaning that it can be
 /// used for targeting effects that end when the card changes zones.
@@ -298,18 +308,18 @@ pub struct Timestamp(pub u64);
 )]
 pub struct PermanentId {
     object_id: ObjectId,
-    internal_card_id: CardId,
+    card_id: CardId,
 }
 
 impl PermanentId {
-    pub fn new(object_id: ObjectId, internal_card_id: CardId) -> Self {
-        Self { object_id, internal_card_id }
+    pub fn new(object_id: ObjectId, card_id: CardId) -> Self {
+        Self { object_id, card_id }
     }
 }
 
 impl From<PermanentId> for EntityId {
     fn from(value: PermanentId) -> Self {
-        EntityId::Card(value.internal_card_id, value.object_id)
+        EntityId::Card(value.card_id, value.object_id)
     }
 }
 
@@ -326,8 +336,50 @@ impl TryFrom<EntityId> for PermanentId {
 
 impl ToCardId for PermanentId {
     fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
-        if zones.zones().card(self.internal_card_id)?.object_id == self.object_id {
-            Some(self.internal_card_id)
+        if zones.zones().card(self.card_id)?.object_id == self.object_id {
+            Some(self.card_id)
+        } else {
+            None
+        }
+    }
+}
+
+/// Unique identifier for a spell on the stack
+#[derive(
+    Debug, Clone, Copy, Default, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize,
+)]
+pub struct SpellId {
+    object_id: ObjectId,
+    card_id: CardId,
+}
+
+impl SpellId {
+    pub fn new(object_id: ObjectId, card_id: CardId) -> Self {
+        Self { object_id, card_id }
+    }
+}
+
+impl From<SpellId> for EntityId {
+    fn from(value: SpellId) -> Self {
+        EntityId::Card(value.card_id, value.object_id)
+    }
+}
+
+impl TryFrom<EntityId> for SpellId {
+    type Error = ();
+
+    fn try_from(value: EntityId) -> Result<Self, Self::Error> {
+        match value {
+            EntityId::Card(card_id, object_id) => Ok(Self::new(object_id, card_id)),
+            _ => Err(()),
+        }
+    }
+}
+
+impl ToCardId for SpellId {
+    fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+        if zones.zones().card(self.card_id)?.object_id == self.object_id {
+            Some(self.card_id)
         } else {
             None
         }

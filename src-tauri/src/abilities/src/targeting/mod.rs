@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+pub mod pair_selector;
 pub mod permanent_selectors;
 pub mod player_set;
+pub mod spell_selectors;
 pub mod targets;

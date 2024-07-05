@@ -30,7 +30,7 @@ pub fn crystal_spray() -> CardDefinition {
     let state = EffectState::new();
     CardDefinition::new(card_name::CRYSTAL_SPRAY).ability(
         SpellAbility::new()
-            .targets(targets::permanent())
+            .targets(targets::spell_or_permanent())
             .effect(|g, c, target| {
                 let choice = change_text::choose_basic_land_types_or_colors(g, c.controller());
                 state.store(g, c.effect_id, choice);

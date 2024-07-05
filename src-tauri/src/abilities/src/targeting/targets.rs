@@ -13,11 +13,14 @@
 // limitations under the License.
 
 use data::card_definitions::ability_definition::TargetSelector;
-use data::core::primitives::PermanentId;
+use data::core::primitives::{PermanentId, SpellId};
+use either::Either;
 use rules::predicates::card_predicates;
 
+use crate::targeting::pair_selector::PairSelector;
 use crate::targeting::permanent_selectors::SinglePermanentSelector;
 use crate::targeting::player_set::PlayerSet;
+use crate::targeting::spell_selectors::SingleSpellSelector;
 
 /// Target any creature on the battlefield
 pub fn creature() -> impl TargetSelector<Target = PermanentId> {
@@ -37,4 +40,14 @@ pub fn creature_you_control() -> impl TargetSelector<Target = PermanentId> {
 /// Target any permanent on the battlefield
 pub fn permanent() -> impl TargetSelector<Target = PermanentId> {
     SinglePermanentSelector::new(PlayerSet::AllPlayers, card_predicates::always_true)
+}
+
+/// Target any spell on the stack.
+pub fn spell() -> impl TargetSelector<Target = SpellId> {
+    SingleSpellSelector::new(PlayerSet::AllPlayers, card_predicates::always_true)
+}
+
+/// Target any spell or permanent
+pub fn spell_or_permanent() -> impl TargetSelector<Target = Either<SpellId, PermanentId>> {
+    PairSelector { first: spell(), second: permanent() }
 }

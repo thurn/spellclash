@@ -16,6 +16,7 @@ use std::collections::{HashSet, VecDeque};
 use std::fmt::Debug;
 use std::hash::Hash;
 
+use either::Either;
 use enumset::EnumSet;
 use log::debug;
 use rand::prelude::SliceRandom;
@@ -113,6 +114,15 @@ impl ToCardId for CardId {
 impl<T: ToCardId> ToCardId for Option<T> {
     fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
         self.as_ref().and_then(|id| id.to_card_id(zones))
+    }
+}
+
+impl<T: ToCardId, U: ToCardId> ToCardId for Either<T, U> {
+    fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+        match self {
+            Either::Left(t) => t.to_card_id(zones),
+            Either::Right(u) => u.to_card_id(zones),
+        }
     }
 }
 
