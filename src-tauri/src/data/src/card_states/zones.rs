@@ -369,17 +369,16 @@ impl Zones {
     /// The card is added as the top card of the target zone if it is ordered.
     ///
     /// Returns None if this card was not found in the previous zone.
-    pub fn move_card(&mut self, id: impl ToCardId, zone: Zone) -> Outcome {
+    pub fn move_card(&mut self, id: impl ToCardId, zone: Zone, new_object_id: ObjectId) -> Outcome {
         let card = self.card_mut(id)?;
         let card_id = card.id;
         let old_zone = card.zone;
         let owner = card.owner;
         self.remove_from_zone(owner, card_id, old_zone);
-        let object_id = self.new_object_id();
         let timestamp = self.new_timestamp();
         let card = self.card_mut(card_id).expect("Card not found");
         card.zone = zone;
-        card.object_id = object_id;
+        card.object_id = new_object_id;
         card.timestamp = timestamp;
         self.add_to_zone(owner, card_id, zone);
         outcome::OK
@@ -527,7 +526,7 @@ impl Zones {
         result
     }
 
-    fn new_object_id(&mut self) -> ObjectId {
+    pub fn new_object_id(&mut self) -> ObjectId {
         let result = self.next_object_id;
         self.next_object_id = ObjectId(result.0 + 1);
         result

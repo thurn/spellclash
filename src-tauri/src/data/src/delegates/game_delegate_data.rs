@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::card_states::zones::{HasZones, ToCardId};
-use crate::core::primitives::{CardId, PermanentId, PlayerName};
+use crate::core::primitives::{CardId, EntityId, PermanentId, PlayerName};
 use crate::game_states::combat_state::{AttackTarget, AttackerId, BlockerId};
 
 #[derive(Debug, Clone, Copy)]
@@ -46,4 +46,12 @@ pub struct PermanentControllerChangedEvent {
     pub permanent_id: PermanentId,
     pub old_controller: PlayerName,
     pub new_controller: PlayerName,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct WillEnterBattlefieldEvent {
+    pub card_id: CardId,
+
+    /// Note that this is *not yet* the current [PermanentId] of this entity.
+    pub future_permanent_id: PermanentId,
 }

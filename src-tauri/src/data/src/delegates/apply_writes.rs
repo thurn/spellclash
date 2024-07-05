@@ -8,6 +8,7 @@ use crate::delegates::stores_delegates::StoresDelegates;
 
 pub fn run(delegates: &mut GameDelegates, id: AbilityId, zones: EnumSet<Zone>) {
     delegates.state_triggered_ability.apply_writes(id, zones);
+    delegates.will_enter_battlefield.apply_writes(id, zones);
     delegates.permanent_controller_changed.apply_writes(id, zones);
     delegates.can_attack_target.apply_writes(id, zones);
     delegates.can_be_blocked.apply_writes(id, zones);

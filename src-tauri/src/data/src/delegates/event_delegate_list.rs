@@ -29,16 +29,16 @@ use crate::game_states::game_state::GameState;
 
 /// Wrapper around event functions to enable closures to be cloned.
 pub trait EventFnWrapper<TArg>: DynClone + Send {
-    fn invoke(&self, data: &mut GameState, scope: Scope, arg: &TArg) -> Outcome;
+    fn invoke(&self, data: &mut GameState, scope: Scope, arg: &TArg);
 }
 
 dyn_clone::clone_trait_object!(<TArg> EventFnWrapper<TArg>);
 
 impl<TArg, F> EventFnWrapper<TArg> for F
 where
-    F: Fn(&mut GameState, Scope, &TArg) -> Outcome + Copy + Send,
+    F: Fn(&mut GameState, Scope, &TArg) + Copy + Send,
 {
-    fn invoke(&self, data: &mut GameState, scope: Scope, arg: &TArg) -> Outcome {
+    fn invoke(&self, data: &mut GameState, scope: Scope, arg: &TArg) {
         self(data, scope, arg)
     }
 }
@@ -71,7 +71,7 @@ impl<TArg: Clone> EventDelegateList<TArg> {
     pub fn whenever(
         &mut self,
         delegate_type: DelegateType,
-        value: impl Fn(&mut GameState, Scope, &TArg) -> Outcome + Copy + Send + Sync + 'static,
+        value: impl Fn(&mut GameState, Scope, &TArg) + Copy + Send + Sync + 'static,
     ) {
         self.current.push(EventDelegateBuilder { delegate_type, callback: Box::new(value) });
     }

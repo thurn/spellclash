@@ -76,6 +76,27 @@ impl ThisTurnState {
         )
     }
 
+    /// Changes all effects for the [AbilityId] ability to apply to a new target
+    /// entity.
+    pub fn change_affected_entity_id(
+        &mut self,
+        ability_id: AbilityId,
+        old: EntityId,
+        new: EntityId,
+    ) {
+        if self.active_effects(ability_id, old).next().is_none() {
+            return;
+        }
+
+        let active = self.active_effects(ability_id, old).collect::<Vec<_>>();
+        if let Some(effects) = self.effects.get_mut(&old) {
+            effects.retain(|e| e.ability_id != ability_id);
+        }
+        active.into_iter().for_each(|effect_id| {
+            self.add_effect(ability_id, effect_id, new);
+        });
+    }
+
     /// Returns & removes the list of control-changing effects to automatically
     /// clean up at end of turn
     pub fn remove_control_changing_effects(&mut self) -> Vec<(EffectId, CardId)> {

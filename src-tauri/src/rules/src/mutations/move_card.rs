@@ -17,8 +17,9 @@ use data::card_states::card_state::{CardFacing, TappedState};
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::numerics::Damage;
 use data::core::primitives::{
-    CardId, EntityId, HasController, HasSource, Zone, ALL_POSSIBLE_PLAYERS,
+    CardId, EntityId, HasController, HasSource, PermanentId, Zone, ALL_POSSIBLE_PLAYERS,
 };
+use data::delegates::game_delegate_data::WillEnterBattlefieldEvent;
 use data::game_states::game_state::{GameState, TurnData};
 use data::game_states::state_based_event::StateBasedEvent;
 use tracing::debug;
@@ -38,8 +39,19 @@ pub fn run(
     zone: Zone,
 ) -> Outcome {
     let card_id = id.to_card_id(game)?;
-
+    let new_object_id = game.zones.new_object_id();
     debug!(?card_id, ?zone, "Moving card to zone");
+
+    if zone == Zone::Battlefield {
+        game.delegates
+            .will_enter_battlefield
+            .invoke_with(game, &WillEnterBattlefieldEvent {
+                card_id,
+                future_permanent_id: PermanentId::new(new_object_id, card_id),
+            })
+            .run(game);
+    }
+
     let old = game.card(card_id)?.zone;
     on_leave_zone(game, card_id, old)?;
 
@@ -48,7 +60,7 @@ pub fn run(
         game.card_mut(card_id)?.control_changing_effects.clear();
     }
 
-    game.zones.move_card(card_id, zone);
+    game.zones.move_card(card_id, zone, new_object_id);
     on_enter_zone(game, card_id, zone)?;
     outcome::OK
 }

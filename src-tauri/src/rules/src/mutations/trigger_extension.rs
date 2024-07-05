@@ -74,7 +74,6 @@ impl<TArg: Clone> TriggerExt<TArg> for EventDelegateList<TArg> {
             if predicate(g, s, arg) {
                 trigger_ability(g, s.ability_id, s.controller);
             }
-            outcome::OK
         });
     }
 
@@ -84,7 +83,7 @@ impl<TArg: Clone> TriggerExt<TArg> for EventDelegateList<TArg> {
     ) {
         self.whenever(DelegateType::Effect, move |g, s, arg| {
             let Some(effect_ids) = g.ability_state.delayed_triggers.get(&s.ability_id) else {
-                return outcome::SKIPPED;
+                return;
             };
 
             let to_trigger = effect_ids
@@ -98,7 +97,6 @@ impl<TArg: Clone> TriggerExt<TArg> for EventDelegateList<TArg> {
                 ability.delayed_trigger_effect_id = Some(effect_id);
                 delayed_trigger::disable(g, s.ability_id, effect_id);
             }
-            outcome::OK
         });
     }
 
@@ -110,7 +108,6 @@ impl<TArg: Clone> TriggerExt<TArg> for EventDelegateList<TArg> {
             if predicate(g, s, arg) && !is_ability_on_stack(g, s.ability_id) {
                 trigger_ability(g, s.ability_id, s.controller);
             }
-            outcome::OK
         });
     }
 }

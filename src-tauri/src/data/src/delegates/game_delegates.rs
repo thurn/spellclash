@@ -22,7 +22,7 @@ use crate::core::primitives::{AbilityId, CardId, Color, PermanentId, Zone};
 use crate::delegates::card_query_delegate_list::CardQueryDelegateList;
 use crate::delegates::event_delegate_list::EventDelegateList;
 use crate::delegates::game_delegate_data::{
-    CanAttackTarget, CanBeBlocked, PermanentControllerChangedEvent,
+    CanAttackTarget, CanBeBlocked, PermanentControllerChangedEvent, WillEnterBattlefieldEvent,
 };
 use crate::delegates::query_value::{ChangeText, EnumSets, Flag, Ints};
 use crate::delegates::stores_delegates::StoresDelegates;
@@ -32,6 +32,9 @@ use crate::printed_cards::card_subtypes::{CreatureSubtype, LandSubtype};
 pub struct GameDelegates {
     /// Invoked every time game state-triggered abilities are checked.
     pub state_triggered_ability: EventDelegateList<()>,
+
+    /// A permanent is about to enter the battlefield.
+    pub will_enter_battlefield: EventDelegateList<WillEnterBattlefieldEvent>,
 
     /// Invoked when the controller of a permanent changes.
     pub permanent_controller_changed: EventDelegateList<PermanentControllerChangedEvent>,

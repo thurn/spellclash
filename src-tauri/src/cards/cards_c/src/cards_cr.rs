@@ -39,6 +39,7 @@ pub fn crystal_spray() -> CardDefinition {
             })
             .delegates(|d| {
                 change_text::change_basic_land_type_or_color(d, state);
+                effects::preserve_this_turn_effects_when_entering_battlefield(d);
             }),
     )
 }
