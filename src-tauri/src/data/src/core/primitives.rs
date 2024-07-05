@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::fmt::Display;
 use std::str::FromStr;
 
 use derive_more::Display;
 use enum_iterator::Sequence;
 use enum_map::Enum;
-use enumset::{EnumSet, EnumSetType};
+use enumset::{enum_set, EnumSet, EnumSetType};
 use serde::{Deserialize, Serialize};
 use slotmap::{new_key_type, Key, KeyData};
 use specta::{DataType, Generics, Type, TypeMap};
@@ -26,8 +27,10 @@ use uuid::Uuid;
 
 use crate::card_states::zones::{HasZones, ToCardId, ZoneQueries, Zones};
 use crate::game_states::game_state::GameState;
+use crate::printed_cards::card_subtypes::LandSubtype;
+use crate::text_strings::Text;
 
-/// Possible colors of cards, mana, or effects.
+/// Possible colors of cards or effects.
 #[derive(Debug, Hash, Ord, PartialOrd, Serialize, Deserialize, EnumSetType, Enum, Sequence)]
 pub enum Color {
     White,
@@ -35,6 +38,21 @@ pub enum Color {
     Black,
     Red,
     Green,
+}
+
+pub const COLORS: EnumSet<Color> =
+    enum_set!(Color::White | Color::Blue | Color::Black | Color::Red | Color::Green);
+
+impl Display for Color {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Color::White => write!(f, "White"),
+            Color::Blue => write!(f, "Blue"),
+            Color::Black => write!(f, "Black"),
+            Color::Red => write!(f, "Red"),
+            Color::Green => write!(f, "Green"),
+        }
+    }
 }
 
 impl FromStr for Color {
@@ -49,6 +67,12 @@ impl FromStr for Color {
             "G" => Ok(Color::Green),
             _ => Err(()),
         }
+    }
+}
+
+impl From<Color> for Text {
+    fn from(value: Color) -> Self {
+        Text::Color(value)
     }
 }
 

@@ -32,13 +32,13 @@ pub fn crystal_spray() -> CardDefinition {
         SpellAbility::new()
             .targets(targets::permanent())
             .effect(|g, c, target| {
-                let (old, new) = change_text::choose_basic_land_subtypes(g, c.controller());
-                state.store(g, c.effect_id, (old, new));
+                let choice = change_text::choose_basic_land_types_or_colors(g, c.controller());
+                state.store(g, c.effect_id, choice);
                 effects::target_this_turn(g, c, target);
                 library::draw(g, c.source(), c.controller());
             })
             .delegates(|d| {
-                change_text::change_basic_land_type(d, state);
+                change_text::change_basic_land_type_or_color(d, state);
             }),
     )
 }

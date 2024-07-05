@@ -80,6 +80,10 @@ pub struct GameDelegates {
     /// Queries for text-changing effects to change a land subtype in the rules
     /// text of a card
     pub change_land_subtype_text: CardQueryDelegateList<CardId, ChangeText<LandSubtype>>,
+
+    /// Queries for text-changing effects to change a color in the rules
+    /// text of a card
+    pub change_color_text: CardQueryDelegateList<CardId, ChangeText<Color>>,
 }
 
 impl Debug for GameDelegates {

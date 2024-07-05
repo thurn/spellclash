@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use data::card_states::zones::{ToCardId, ZoneQueries};
-use data::core::primitives::{CardType, PermanentId, Source};
+use data::core::primitives::{CardType, Color, PermanentId, Source};
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandSubtype;
@@ -109,4 +109,69 @@ pub fn forest(game: &GameState, source: Source, id: impl ToCardId) -> Option<boo
             LandSubtype::Forest,
         )),
     )
+}
+
+/// Returns true if the given card is white.
+///
+/// If a text-changing effect has been applied to the card which produced
+/// `source` to replace instances of a color in its rules text, this will
+/// check for the new color instead.
+pub fn white(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
+    Some(card_queries::colors(game, source, id)?.contains(text_change_queries::color(
+        game,
+        source,
+        Color::White,
+    )))
+}
+
+/// Returns true if the given card is blue.
+///
+/// If a text-changing effect has been applied to the card which produced
+/// `source` to replace instances of a color in its rules text, this will
+/// check for the new color instead.
+pub fn blue(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
+    Some(card_queries::colors(game, source, id)?.contains(text_change_queries::color(
+        game,
+        source,
+        Color::Blue,
+    )))
+}
+
+/// Returns true if the given card is black.
+///
+/// If a text-changing effect has been applied to the card which produced
+/// `source` to replace instances of a color in its rules text, this will
+/// check for the new color instead.
+pub fn black(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
+    Some(card_queries::colors(game, source, id)?.contains(text_change_queries::color(
+        game,
+        source,
+        Color::Black,
+    )))
+}
+
+/// Returns true if the given card is red.
+///
+/// If a text-changing effect has been applied to the card which produced
+/// `source` to replace instances of a color in its rules text, this will
+/// check for the new color instead.
+pub fn red(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
+    Some(card_queries::colors(game, source, id)?.contains(text_change_queries::color(
+        game,
+        source,
+        Color::Red,
+    )))
+}
+
+/// Returns true if the given card is green.
+///
+/// If a text-changing effect has been applied to the card which produced
+/// `source` to replace instances of a color in its rules text, this will
+/// check for the new color instead.
+pub fn green(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
+    Some(card_queries::colors(game, source, id)?.contains(text_change_queries::color(
+        game,
+        source,
+        Color::Green,
+    )))
 }

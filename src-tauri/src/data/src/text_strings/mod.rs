@@ -14,8 +14,10 @@
 
 use std::fmt::{Display, Formatter};
 
+use either::Either;
 use serde::{Deserialize, Serialize};
 
+use crate::core::primitives::Color;
 use crate::printed_cards::card_subtypes::LandSubtype;
 
 /// Canonical text displayed in the user interface, suitable for localization
@@ -24,9 +26,19 @@ pub enum Text {
     HandToTopOfLibraryPrompt,
     SelectNumber,
     SelectTarget,
+    Color(Color),
     LandSubtype(LandSubtype),
     SelectTypeToChange,
     SelectNewType,
+}
+
+impl<T: Into<Text>, U: Into<Text>> From<Either<T, U>> for Text {
+    fn from(value: Either<T, U>) -> Self {
+        match value {
+            Either::Left(left) => left.into(),
+            Either::Right(right) => right.into(),
+        }
+    }
 }
 
 impl Display for Text {
@@ -37,6 +49,7 @@ impl Display for Text {
             }
             Text::SelectNumber => write!(f, "Select number"),
             Text::SelectTarget => write!(f, "Select target"),
+            Text::Color(color) => write!(f, "{}", color),
             Text::LandSubtype(subtype) => write!(f, "{}", subtype),
             Text::SelectTypeToChange => write!(f, "Select type to change"),
             Text::SelectNewType => write!(f, "Select new type"),

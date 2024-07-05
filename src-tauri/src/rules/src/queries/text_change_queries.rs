@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::Source;
+use data::core::primitives::{Color, Source};
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandSubtype;
 
@@ -28,5 +28,17 @@ pub fn land_subtype(game: &GameState, source: Source, subtype: LandSubtype) -> L
             &ability_id.card_id,
             subtype,
         ),
+    }
+}
+
+/// Returns the [Color] which has replaced the given `color` for the
+/// card providing the given [Source], if any. Otherwise, returns the original
+/// color.
+pub fn color(game: &GameState, source: Source, color: Color) -> Color {
+    match source {
+        Source::Game => color,
+        Source::Ability { ability_id, .. } => {
+            game.delegates.change_color_text.query(game, source, &ability_id.card_id, color)
+        }
     }
 }
