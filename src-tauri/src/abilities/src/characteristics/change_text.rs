@@ -37,7 +37,7 @@ pub fn choose_basic_land_subtypes(
     let new = prompts::choose_land_subtype(
         game,
         controller,
-        Text::SelectTypeToChange,
+        Text::SelectNewType,
         BASIC_LANDS.iter().filter(|&subtype| subtype != old).collect(),
     );
     (old, new)
