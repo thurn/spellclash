@@ -78,6 +78,7 @@ impl<T: Default + Add<Output = T>> QueryValue for Ints<T> {}
 #[derive(Clone, Copy, Debug)]
 pub enum EnumSets<T: EnumSetType> {
     Set(EffectSortingKey, EnumSet<T>),
+    Replace(EffectSortingKey, T, T),
 }
 
 impl<T: EnumSetType> EnumSets<T> {
@@ -87,6 +88,15 @@ impl<T: EnumSetType> EnumSets<T> {
         value: EnumSet<T>,
     ) -> Option<EnumSets<T>> {
         Some(Self::Set(EffectSortingKey::new(layer, timestamp.into()), value))
+    }
+
+    pub fn replace(
+        layer: Layer,
+        timestamp: impl Into<Timestamp>,
+        old: T,
+        new: T,
+    ) -> Option<EnumSets<T>> {
+        Some(Self::Replace(EffectSortingKey::new(layer, timestamp.into()), old, new))
     }
 }
 

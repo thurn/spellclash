@@ -240,6 +240,13 @@ impl<TArg: ToCardId, TResult: EnumSetType> CardQueryDelegateList<TArg, EnumSets<
                     result = value;
                     largest_key = key;
                 }
+                Some(EnumSets::Replace(key, old, new))
+                    if result.contains(old) && key >= largest_key =>
+                {
+                    result.remove(old);
+                    result.insert(new);
+                    largest_key = key;
+                }
                 _ => {}
             };
         }

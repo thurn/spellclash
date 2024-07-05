@@ -18,7 +18,7 @@ use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandSubtype;
 
-use crate::queries::{card_queries, text_changes};
+use crate::queries::{card_queries, text_change_queries};
 
 pub fn always_true(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
     Some(true)
@@ -42,11 +42,13 @@ pub fn battle(game: &GameState, source: Source, id: impl ToCardId) -> Option<boo
 /// `source` to replace instances of a land subtype in its rules text, this will
 /// check for the new land subtype instead.
 pub fn plains(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
-    Some(card_queries::land_subtypes(game, source, id)?.contains(text_changes::land_subtype(
-        game,
-        source,
-        LandSubtype::Plains,
-    )))
+    Some(
+        card_queries::land_subtypes(game, source, id)?.contains(text_change_queries::land_subtype(
+            game,
+            source,
+            LandSubtype::Plains,
+        )),
+    )
 }
 
 /// Returns true if the given card is an island.
@@ -55,11 +57,13 @@ pub fn plains(game: &GameState, source: Source, id: impl ToCardId) -> Option<boo
 /// `source` to replace instances of a land subtype in its rules text, this will
 /// check for the new land subtype instead.
 pub fn island(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
-    Some(card_queries::land_subtypes(game, source, id)?.contains(text_changes::land_subtype(
-        game,
-        source,
-        LandSubtype::Island,
-    )))
+    Some(
+        card_queries::land_subtypes(game, source, id)?.contains(text_change_queries::land_subtype(
+            game,
+            source,
+            LandSubtype::Island,
+        )),
+    )
 }
 
 /// Returns true if the given card is a swamp.
@@ -68,11 +72,13 @@ pub fn island(game: &GameState, source: Source, id: impl ToCardId) -> Option<boo
 /// `source` to replace instances of a land subtype in its rules text, this will
 /// check for the new land subtype instead.
 pub fn swamp(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
-    Some(card_queries::land_subtypes(game, source, id)?.contains(text_changes::land_subtype(
-        game,
-        source,
-        LandSubtype::Swamp,
-    )))
+    Some(
+        card_queries::land_subtypes(game, source, id)?.contains(text_change_queries::land_subtype(
+            game,
+            source,
+            LandSubtype::Swamp,
+        )),
+    )
 }
 
 /// Returns true if the given card is a mountain.
@@ -81,11 +87,13 @@ pub fn swamp(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool
 /// `source` to replace instances of a land subtype in its rules text, this will
 /// check for the new land subtype instead.
 pub fn mountain(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
-    Some(card_queries::land_subtypes(game, source, id)?.contains(text_changes::land_subtype(
-        game,
-        source,
-        LandSubtype::Mountain,
-    )))
+    Some(
+        card_queries::land_subtypes(game, source, id)?.contains(text_change_queries::land_subtype(
+            game,
+            source,
+            LandSubtype::Mountain,
+        )),
+    )
 }
 
 /// Returns true if the given card is a forest.
@@ -94,9 +102,11 @@ pub fn mountain(game: &GameState, source: Source, id: impl ToCardId) -> Option<b
 /// `source` to replace instances of a land subtype in its rules text, this will
 /// check for the new land subtype instead.
 pub fn forest(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
-    Some(card_queries::land_subtypes(game, source, id)?.contains(text_changes::land_subtype(
-        game,
-        source,
-        LandSubtype::Forest,
-    )))
+    Some(
+        card_queries::land_subtypes(game, source, id)?.contains(text_change_queries::land_subtype(
+            game,
+            source,
+            LandSubtype::Forest,
+        )),
+    )
 }

@@ -130,12 +130,12 @@ pub fn land_subtypes(
     source: Source,
     id: impl ToCardId,
 ) -> Option<EnumSet<LandSubtype>> {
-    Some(
-        characteristic_faces(game, source, id)?
-            .iter()
-            .flat_map(|face| face.subtypes.land.iter())
-            .collect(),
-    )
+    let card_id = id.to_card_id(game)?;
+    let types = characteristic_faces(game, source, id)?
+        .iter()
+        .flat_map(|face| face.subtypes.land.iter())
+        .collect();
+    Some(game.delegates.land_subtypes.query(game, source, &card_id, types))
 }
 
 /// Returns the set of current creature subtypes on a card's characteristic

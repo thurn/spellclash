@@ -19,5 +19,6 @@ pub fn run(delegates: &mut GameDelegates, id: AbilityId, zones: EnumSet<Zone>) {
     delegates.base_toughness.apply_writes(id, zones);
     delegates.colors.apply_writes(id, zones);
     delegates.creature_subtypes.apply_writes(id, zones);
+    delegates.land_subtypes.apply_writes(id, zones);
     delegates.change_land_subtype_text.apply_writes(id, zones);
 }
