@@ -21,6 +21,7 @@ pub struct DeckName(pub Uuid);
 
 pub const GREEN_VANILLA: DeckName = DeckName(uuid!("9eefebd4-25c0-4f46-91ab-6b3efff302e4"));
 pub const ALL_DANDANS: DeckName = DeckName(uuid!("73af6e3b-822e-4294-affc-d2e6a96e9c54"));
+pub const SOME_DANDANS: DeckName = DeckName(uuid!("fe462f9b-7bcf-44da-9003-7d8a38e6a436"));
 pub const GRIZZLY_BEAR_GIANT_GROWTH: DeckName =
     DeckName(uuid!("9420275f-d9aa-4447-999e-205c013efcc5"));
 pub const DANDAN: DeckName = DeckName(uuid!("c66ab7d9-5016-4d27-b1a1-6af8336af986"));

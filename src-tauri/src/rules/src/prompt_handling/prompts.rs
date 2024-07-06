@@ -30,11 +30,14 @@ use data::prompts::select_order_prompt::{CardOrderLocation, Quantity, SelectOrde
 use data::text_strings::Text;
 use enumset::EnumSet;
 use maplit::hashmap;
+use rand::prelude::SliceRandom;
 use tokio::sync::oneshot;
 use tracing::info;
 
 use crate::action_handlers::prompt_actions;
 use crate::action_handlers::prompt_actions::PromptExecutionResult;
+use crate::legality::legal_actions::LegalActions;
+use crate::legality::legal_prompt_actions;
 
 /// Sends a new [Prompt] to the player and blocks until they respond with a
 /// [PromptResponse].
@@ -51,6 +54,21 @@ pub fn send(game: &mut GameState, mut prompt: Prompt) -> PromptResponse {
                 prompt_agent.top_level_prompt_action(game, &prompt, prompt.player)
             };
             match prompt_actions::execute(prompt, action) {
+                PromptExecutionResult::Prompt(p) => {
+                    prompt = p;
+                }
+                PromptExecutionResult::PromptResponse(response) => {
+                    return response;
+                }
+            }
+        }
+    } else if matches!(game.player(agent_player).player_type, PlayerType::None) {
+        loop {
+            let actions = legal_prompt_actions::compute(&prompt, agent_player, LegalActions {
+                for_human_player: false,
+            });
+            let action = actions.choose(&mut game.rng).expect("No legal prompt actions available");
+            match prompt_actions::execute(prompt, *action) {
                 PromptExecutionResult::Prompt(p) => {
                     prompt = p;
                 }

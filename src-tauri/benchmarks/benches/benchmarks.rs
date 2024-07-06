@@ -135,6 +135,14 @@ pub fn random_playout_evaluator(c: &mut Criterion) {
             b.iter(|| evaluator.evaluate(&game, PlayerName::One));
         });
     });
+
+    let game = test_games::create(deck_name::SOME_DANDANS);
+    let error_subscriber = tracing_subscriber::fmt().with_max_level(Level::ERROR).finish();
+    subscriber::with_default(error_subscriber, || {
+        group.bench_function("some_dandans", |b| {
+            b.iter(|| evaluator.evaluate(&game, PlayerName::One));
+        });
+    });
 }
 
 pub fn alpha_beta(c: &mut Criterion) {

@@ -28,3 +28,11 @@ fn all_dandans() {
     let game = test_games::create(deck_name::ALL_DANDANS);
     evaluator.evaluate(&game, PlayerName::One);
 }
+
+#[test]
+fn some_dandans() {
+    let evaluator =
+        RandomPlayoutEvaluator { evaluator: WinLossEvaluator, phantom_data: PhantomData };
+    let game = test_games::create(deck_name::SOME_DANDANS);
+    evaluator.evaluate(&game, PlayerName::One);
+}
