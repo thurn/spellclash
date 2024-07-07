@@ -23,29 +23,53 @@ use ai::monte_carlo::monte_carlo_search::RandomPlayoutEvaluator;
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use data::actions::game_action::GameAction;
 use data::card_definitions::card_name;
+use data::card_states::play_card_plan::{PlayAs, PlayCardPlan, PlayCardTiming};
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::PlayerName;
+use data::core::primitives::{PlayerName, Source};
 use data::decks::deck_name;
+use data::printed_cards::printed_card::Face;
+use enumset::EnumSet;
 use rules::action_handlers::actions;
 use rules::action_handlers::actions::ExecuteAction;
 use rules::legality::legal_actions;
 use rules::legality::legal_actions::LegalActions;
+use rules::planner::spell_planner;
 use testing::ai_testing::test_games;
 use tracing::{subscriber, Level};
 use utils::command_line;
 use utils::command_line::CommandLine;
 
 criterion_main!(benches);
-criterion_group!(benches, green_vanilla, uct1, alpha_beta, random_playout_evaluator);
+criterion_group!(benches, vanilla, uct1, alpha_beta, random_playout_evaluator);
 
-pub fn green_vanilla(c: &mut Criterion) {
-    let mut group = c.benchmark_group("green_vanilla");
+pub fn vanilla(c: &mut Criterion) {
+    let mut group = c.benchmark_group("vanilla");
     command_line::FLAGS.set(CommandLine::default()).ok();
 
     let game = test_games::vanilla_game_scenario();
+    let creature_id = *game
+        .hand(PlayerName::One)
+        .iter()
+        .find(|&card_id| game.card(*card_id).unwrap().card_name == card_name::KALONIAN_TUSKER)
+        .expect("Creature not found");
+
     group.bench_function("legal_actions", |b| {
         b.iter(|| {
             legal_actions::compute(&game, PlayerName::One, LegalActions { for_human_player: false })
+        })
+    });
+
+    group.bench_function("mana_payment_plan", |b| {
+        b.iter(|| {
+            spell_planner::mana_payment(
+                &game,
+                Source::Game,
+                creature_id,
+                &PlayCardPlan::new(PlayAs {
+                    faces: EnumSet::only(Face::Primary),
+                    timing: PlayCardTiming::Sorcery,
+                }),
+            );
         })
     });
 
