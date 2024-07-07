@@ -48,7 +48,7 @@ pub fn connect(response_channel: UnboundedSender<GameResponse>, user: &UserState
 }
 
 pub fn main_menu_view() -> MainMenuView {
-    let deck = deck_name::DANDAN;
+    let deck = deck_name::GREEN_VANILLA;
     let opponent_id = UserId(uuid!("d5f8cda2-0916-4655-8353-aaf435d562a5"));
     let new_local = UserAction::NewGameAction(NewGameAction {
         deck,

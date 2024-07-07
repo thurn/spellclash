@@ -204,7 +204,7 @@ fn find_deck(name: DeckName) -> Deck {
                 printed_card_id::ISLAND => 30,
                 printed_card_id::BRAINSTORM => 5,
                 printed_card_id::CRYSTAL_SPRAY => 5,
-                printed_card_id::DANDAN => 10,
+                printed_card_id::DANDAN => 20,
                 printed_card_id::DANCE_OF_THE_SKYWISE => 5,
                 printed_card_id::RAY_OF_COMMAND => 5,
             },

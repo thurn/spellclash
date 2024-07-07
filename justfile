@@ -108,3 +108,9 @@ run-matchup *args='':
 
 run-tournament *args='':
     cargo run --manifest-path src-tauri/Cargo.toml --bin run_tournament -- "$@"
+
+build-release-with-debug:
+    cargo build --manifest-path src-tauri/Cargo.toml --no-default-features --bin client  --profile=release-with-debug
+
+samply: build-release-with-debug
+    samply record ./src-tauri/target/release-with-debug/client
