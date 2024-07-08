@@ -34,6 +34,8 @@ use data::game_states::game_state::GameState;
 use petgraph::prelude::{EdgeRef, NodeIndex};
 use petgraph::Direction;
 use rand::prelude::IteratorRandom;
+use rand::SeedableRng;
+use rand_xoshiro::SplitMix64;
 use tracing::{info, instrument};
 use utils::command_line;
 use utils::command_line::TracingStyle;
@@ -71,6 +73,7 @@ impl<TState: GameStateNode + Send, TEvaluator: StateEvaluator<TState>> StateEval
             graph: SearchGraph::new(),
             search_operation: Some(SearchOperation::EvaluateNode),
         }));
+        let mut rng = SplitMix64::seed_from_u64(156562599311216480);
         loop {
             match game.status() {
                 GameStatus::Completed { .. } => {
@@ -79,7 +82,7 @@ impl<TState: GameStateNode + Send, TEvaluator: StateEvaluator<TState>> StateEval
                 GameStatus::InProgress { current_turn } => {
                     let action = game
                         .legal_actions(current_turn)
-                        .choose(&mut rand::thread_rng())
+                        .choose(&mut rng)
                         .expect("No actions found");
                     game.execute_action(current_turn, action);
                 }
