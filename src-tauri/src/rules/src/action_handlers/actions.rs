@@ -23,6 +23,7 @@ use utils::outcome;
 use utils::outcome::Outcome;
 
 use crate::action_handlers::{combat_actions, debug_actions, prompt_actions};
+use crate::core::debug_snapshot;
 use crate::legality::legal_actions;
 use crate::mutations::{permanents, priority, state_based_actions};
 use crate::play_cards::{pick_face_to_play, play_card};

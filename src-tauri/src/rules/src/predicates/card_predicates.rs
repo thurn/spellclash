@@ -32,6 +32,14 @@ pub fn planeswalker(game: &GameState, source: Source, id: impl ToCardId) -> Opti
     Some(card_queries::card_types(game, source, id)?.contains(CardType::Planeswalker))
 }
 
+pub fn land(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
+    Some(card_queries::card_types(game, source, id)?.contains(CardType::Land))
+}
+
+pub fn nonland(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
+    Some(!land(game, source, id)?)
+}
+
 pub fn battle(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
     Some(card_queries::card_types(game, source, id)?.contains(CardType::Battle))
 }
