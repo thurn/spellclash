@@ -49,7 +49,7 @@ pub fn run(delegates: &mut GameDelegates, id: AbilityId, zones: EnumSet<Zone>) {
         }
     }
 
-    output.push_str("}\n");
+    output.push('}');
 
     let out_path = Path::new("src/delegates/apply_writes.rs");
     if out_path.exists() {
