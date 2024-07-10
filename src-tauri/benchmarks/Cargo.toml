@@ -16,9 +16,11 @@ rules = { path = "../src/rules", version = "0.0.0" }
 testing = { path = "../src/testing", version = "0.0.0" }
 utils = { path = "../src/utils", version = "0.0.0" }
 
-uuid = { version = "1.8.0", features = ["v4"] }
+rand = "0.8.5"
+rand_xoshiro = { version = "0.6.0", features = ["serde1"] }
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.17", features = ["env-filter", "serde"] }
+uuid = { version = "1.8.0", features = ["v4"] }
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }

@@ -322,6 +322,8 @@ dependencies = [
  "data",
  "database",
  "enumset",
+ "rand 0.8.5",
+ "rand_xoshiro",
  "rules",
  "testing",
  "tracing",
