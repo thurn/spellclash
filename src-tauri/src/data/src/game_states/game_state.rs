@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::{HashSet, VecDeque};
+use std::collections::{BTreeSet, VecDeque};
 use std::sync::Arc;
 
 use ai_core::core::agent_state::AgentState;
@@ -259,7 +259,7 @@ impl ZoneQueries for GameState {
         self.zones.library(player)
     }
 
-    fn hand(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
+    fn hand(&self, player: impl HasPlayerName) -> &BTreeSet<CardId> {
         self.zones.hand(player)
     }
 
@@ -267,15 +267,15 @@ impl ZoneQueries for GameState {
         self.zones.graveyard(player)
     }
 
-    fn battlefield(&self, player: impl HasPlayerName) -> &HashSet<PermanentId> {
+    fn battlefield(&self, player: impl HasPlayerName) -> &BTreeSet<PermanentId> {
         self.zones.battlefield(player)
     }
 
-    fn battlefield_owned(&self, player: impl HasPlayerName) -> &HashSet<PermanentId> {
+    fn battlefield_owned(&self, player: impl HasPlayerName) -> &BTreeSet<PermanentId> {
         self.zones.battlefield_owned(player)
     }
 
-    fn exile(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
+    fn exile(&self, player: impl HasPlayerName) -> &BTreeSet<CardId> {
         self.zones.exile(player)
     }
 
@@ -283,11 +283,11 @@ impl ZoneQueries for GameState {
         self.zones.stack()
     }
 
-    fn command_zone(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
+    fn command_zone(&self, player: impl HasPlayerName) -> &BTreeSet<CardId> {
         self.zones.command_zone(player)
     }
 
-    fn outside_the_game_zone(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
+    fn outside_the_game_zone(&self, player: impl HasPlayerName) -> &BTreeSet<CardId> {
         self.zones.outside_the_game_zone(player)
     }
 }

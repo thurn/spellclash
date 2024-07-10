@@ -22,7 +22,7 @@ use crate::core::primitives::CardId;
 use crate::game_states::combat_state::{AttackTarget, AttackerId, BlockerId};
 
 /// Actions within a combat phase
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Ord, PartialOrd, Serialize, Deserialize)]
 pub enum CombatAction {
     /// Adds a creature as an 'selected attacker'
     ///
@@ -97,7 +97,7 @@ impl From<CombatAction> for UserAction {
     }
 }
 
-#[derive(Clone, Copy, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash, Debug, Ord, PartialOrd, Serialize, Deserialize)]
 pub enum GameAction {
     /// Debugging action.
     DebugAction(DebugGameAction),

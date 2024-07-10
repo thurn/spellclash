@@ -15,10 +15,12 @@
 use ai_core::core::agent_state::AgentState;
 use data::actions::agent_action::AgentAction;
 use data::core::primitives;
+use data::game_states::game_phase_step::GamePhaseStep;
 use data::game_states::game_state;
 use data::game_states::game_state::GameState;
 use rules::action_handlers::actions;
 use rules::action_handlers::actions::ExecuteAction;
+use rules::core::debug_snapshot;
 use rules::legality::legal_actions;
 use rules::legality::legal_actions::LegalActions;
 
@@ -45,11 +47,8 @@ impl GameStateNode for GameState {
         &'a self,
         player: primitives::PlayerName,
     ) -> Box<dyn Iterator<Item = AgentAction> + 'a> {
-        Box::new(
-            legal_actions::compute(self, player, LegalActions { for_human_player: false })
-                .into_iter()
-                .map(AgentAction::GameAction),
-        )
+        let legal = legal_actions::compute(self, player, LegalActions { for_human_player: false });
+        Box::new(legal.into_iter().map(AgentAction::GameAction))
     }
 
     fn execute_action(&mut self, player: primitives::PlayerName, action: AgentAction) {

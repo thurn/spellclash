@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet};
 
 use data::card_states::zones::ZoneQueries;
 use data::core::numerics;
@@ -123,7 +123,7 @@ fn declare_attackers(game: &mut GameState) {
 
     game.combat = Some(CombatState::ProposingAttackers(ProposedAttackers {
         proposed_attacks: AttackerMap::default(),
-        selected_attackers: HashSet::new(),
+        selected_attackers: BTreeSet::new(),
     }));
 }
 
@@ -148,8 +148,8 @@ fn declare_blockers(game: &mut GameState) {
     game.combat = Some(CombatState::ProposingBlockers(ProposedBlockers {
         defender: next,
         attackers,
-        selected_blockers: HashSet::new(),
-        proposed_blocks: HashMap::new(),
+        selected_blockers: BTreeSet::new(),
+        proposed_blocks: BTreeMap::new(),
     }));
 }
 

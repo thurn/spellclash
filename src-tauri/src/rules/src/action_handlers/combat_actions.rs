@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use data::actions::debug_action::DebugGameAction;
 use data::actions::game_action::CombatAction;
@@ -169,7 +169,7 @@ fn confirm_blockers(game: &mut GameState, source: Source) {
     let Some(CombatState::ProposingBlockers(blockers)) = game.combat.take() else {
         panic!("Not in the 'ProposingBlockers' state");
     };
-    let mut attackers_to_blockers = HashMap::new();
+    let mut attackers_to_blockers = BTreeMap::new();
     for (&blocker_id, attackers) in &blockers.proposed_blocks {
         if attackers.len() != 1 {
             todo!("Implement support for blocking multiple attackers");

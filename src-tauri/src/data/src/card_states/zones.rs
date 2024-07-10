@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::{HashSet, VecDeque};
+use std::collections::{BTreeSet, VecDeque};
 use std::fmt::Debug;
 use std::hash::Hash;
 
@@ -69,7 +69,7 @@ pub trait ZoneQueries {
 
     /// Returns the IDs of cards and card-like objects owned by a player in
     /// their hand
-    fn hand(&self, player: impl HasPlayerName) -> &HashSet<CardId>;
+    fn hand(&self, player: impl HasPlayerName) -> &BTreeSet<CardId>;
 
     /// Returns the IDs of cards and card-like objects owned by a player in
     /// their graveyard, in order (`.back()` element in result is top card).
@@ -77,15 +77,15 @@ pub trait ZoneQueries {
 
     /// Returns the IDs of cards and card-like objects ***controlled*** by a
     /// player on the battlefield
-    fn battlefield(&self, player: impl HasPlayerName) -> &HashSet<PermanentId>;
+    fn battlefield(&self, player: impl HasPlayerName) -> &BTreeSet<PermanentId>;
 
     /// Returns the IDs of cards and card-like objects owned by a player on the
     /// battlefield
-    fn battlefield_owned(&self, player: impl HasPlayerName) -> &HashSet<PermanentId>;
+    fn battlefield_owned(&self, player: impl HasPlayerName) -> &BTreeSet<PermanentId>;
 
     /// Returns the IDs of cards and card-like objects owned by a player in
     /// exile
-    fn exile(&self, player: impl HasPlayerName) -> &HashSet<CardId>;
+    fn exile(&self, player: impl HasPlayerName) -> &BTreeSet<CardId>;
 
     /// Returns the IDs of all cards and activated or triggered abilities on the
     /// stack (last element in result is top of stack).
@@ -93,11 +93,11 @@ pub trait ZoneQueries {
 
     /// Returns the IDs of cards and card-like objects owned by a player in the
     /// command zone
-    fn command_zone(&self, player: impl HasPlayerName) -> &HashSet<CardId>;
+    fn command_zone(&self, player: impl HasPlayerName) -> &BTreeSet<CardId>;
 
     /// Returns the IDs of cards and card-like objects owned by a player outside
     /// the game
-    fn outside_the_game_zone(&self, player: impl HasPlayerName) -> &HashSet<CardId>;
+    fn outside_the_game_zone(&self, player: impl HasPlayerName) -> &BTreeSet<CardId>;
 }
 
 /// Identifies a struct that can be converted into a [CardId].
@@ -214,7 +214,7 @@ impl ZoneQueries for Zones {
         self.libraries.cards(player.player_name())
     }
 
-    fn hand(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
+    fn hand(&self, player: impl HasPlayerName) -> &BTreeSet<CardId> {
         self.hands.cards(player.player_name())
     }
 
@@ -222,15 +222,15 @@ impl ZoneQueries for Zones {
         self.graveyards.cards(player.player_name())
     }
 
-    fn battlefield(&self, player: impl HasPlayerName) -> &HashSet<PermanentId> {
+    fn battlefield(&self, player: impl HasPlayerName) -> &BTreeSet<PermanentId> {
         self.battlefield_controlled.cards(player.player_name())
     }
 
-    fn battlefield_owned(&self, player: impl HasPlayerName) -> &HashSet<PermanentId> {
+    fn battlefield_owned(&self, player: impl HasPlayerName) -> &BTreeSet<PermanentId> {
         self.battlefield_owned.cards(player.player_name())
     }
 
-    fn exile(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
+    fn exile(&self, player: impl HasPlayerName) -> &BTreeSet<CardId> {
         self.exile.cards(player.player_name())
     }
 
@@ -238,11 +238,11 @@ impl ZoneQueries for Zones {
         &self.stack
     }
 
-    fn command_zone(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
+    fn command_zone(&self, player: impl HasPlayerName) -> &BTreeSet<CardId> {
         self.command_zone.cards(player.player_name())
     }
 
-    fn outside_the_game_zone(&self, player: impl HasPlayerName) -> &HashSet<CardId> {
+    fn outside_the_game_zone(&self, player: impl HasPlayerName) -> &BTreeSet<CardId> {
         self.outside_the_game_zone.cards(player.player_name())
     }
 }
@@ -534,15 +534,15 @@ impl Zones {
 }
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
-struct UnorderedZone<T: ToCardId + Hash + Eq + PartialEq + Debug> {
-    player1: HashSet<T>,
-    player2: HashSet<T>,
-    player3: HashSet<T>,
-    player4: HashSet<T>,
+struct UnorderedZone<T: ToCardId + Hash + Eq + PartialEq + Debug + Ord> {
+    player1: BTreeSet<T>,
+    player2: BTreeSet<T>,
+    player3: BTreeSet<T>,
+    player4: BTreeSet<T>,
 }
 
-impl<T: ToCardId + Hash + Eq + PartialEq + Debug> UnorderedZone<T> {
-    pub fn cards(&self, player_name: PlayerName) -> &HashSet<T> {
+impl<T: ToCardId + Hash + Eq + PartialEq + Debug + Ord> UnorderedZone<T> {
+    pub fn cards(&self, player_name: PlayerName) -> &BTreeSet<T> {
         match player_name {
             PlayerName::One => &self.player1,
             PlayerName::Two => &self.player2,
@@ -551,7 +551,7 @@ impl<T: ToCardId + Hash + Eq + PartialEq + Debug> UnorderedZone<T> {
         }
     }
 
-    pub fn cards_mut(&mut self, player_name: PlayerName) -> &mut HashSet<T> {
+    pub fn cards_mut(&mut self, player_name: PlayerName) -> &mut BTreeSet<T> {
         match player_name {
             PlayerName::One => &mut self.player1,
             PlayerName::Two => &mut self.player2,

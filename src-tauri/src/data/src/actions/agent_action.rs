@@ -15,7 +15,7 @@
 use crate::actions::game_action::GameAction;
 use crate::actions::prompt_action::PromptAction;
 
-#[derive(Clone, Copy, Eq, PartialEq, Hash, Debug)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash, Debug, Ord, PartialOrd)]
 pub enum AgentAction {
     GameAction(GameAction),
     PromptAction(PromptAction),

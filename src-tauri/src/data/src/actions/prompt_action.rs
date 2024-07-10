@@ -21,7 +21,7 @@ use crate::core::primitives::{CardId, EntityId};
 use crate::prompts::select_order_prompt::CardOrderLocation;
 
 /// Action to respond to a prompt within an ongoing game
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Ord, PartialOrd, Serialize, Deserialize)]
 pub enum PromptAction {
     /// Pick an integer for a number selection prompt
     PickNumber(u32),

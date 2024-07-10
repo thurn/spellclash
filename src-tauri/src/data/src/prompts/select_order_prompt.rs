@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap};
 
 use enum_iterator::Sequence;
 use enumset::{EnumSet, EnumSetType};
@@ -22,7 +22,7 @@ use specta::Type;
 use crate::core::primitives::CardId;
 
 /// Possible locations in which cards can be ordered.
-#[derive(Debug, Hash, EnumSetType, Type, Sequence, Serialize, Deserialize)]
+#[derive(Debug, Hash, Ord, PartialOrd, EnumSetType, Type, Sequence, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum CardOrderLocation {
     /// Cards which have not yet been ordered
@@ -64,12 +64,12 @@ pub struct SelectOrderPrompt {
     ///
     /// In order to prevent infinite loops in AI action selection, we only allow
     /// it to move each card one time.
-    pub moved: HashSet<CardId>,
+    pub moved: BTreeSet<CardId>,
 }
 
 impl SelectOrderPrompt {
     pub fn new(cards: HashMap<CardOrderLocation, Vec<CardId>>) -> Self {
-        SelectOrderPrompt { cards, quantity: Quantity::AnyNumber, moved: HashSet::new() }
+        SelectOrderPrompt { cards, quantity: Quantity::AnyNumber, moved: BTreeSet::new() }
     }
 
     pub fn quantity(mut self, quantity: Quantity) -> Self {

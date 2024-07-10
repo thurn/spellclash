@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashSet;
+use std::collections::{BTreeSet, HashSet};
 
 use crate::card_states::zones::ToCardId;
 use crate::core::function_types::CardPredicate;
@@ -38,7 +38,7 @@ pub trait IterMatching<TId: ToCardId, TFn: CardPredicate<TId>> {
     }
 }
 
-impl<TId: ToCardId, TFn: CardPredicate<TId>> IterMatching<TId, TFn> for HashSet<TId> {
+impl<TId: ToCardId, TFn: CardPredicate<TId>> IterMatching<TId, TFn> for BTreeSet<TId> {
     fn iter_matching<'a>(
         &'a self,
         game: &'a GameState,

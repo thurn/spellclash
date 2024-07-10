@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashSet;
+use std::collections::{BTreeSet, HashSet};
 use std::time::Instant;
 
 use crate::core::game_state_node::GameStateNode;
@@ -44,7 +44,7 @@ where
         &self,
         _game: &mut TState,
         _player: TState::PlayerName,
-        actions: HashSet<TState::Action>,
+        actions: BTreeSet<TState::Action>,
     ) -> TState::Action {
         *actions.iter().next().expect("No actions provided!")
     }

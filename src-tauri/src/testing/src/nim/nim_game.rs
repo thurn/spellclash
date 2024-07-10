@@ -72,7 +72,7 @@ pub enum NimPlayer {
     Two,
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub enum NimPile {
     PileA,
     PileB,
@@ -89,7 +89,7 @@ impl Display for NimPile {
     }
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub struct NimAction {
     pub pile: NimPile,
     pub amount: u32,

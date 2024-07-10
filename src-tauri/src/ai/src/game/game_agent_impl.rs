@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashSet;
+use std::collections::{BTreeSet, HashSet};
 use std::fmt::Debug;
 use std::time::{Duration, Instant};
 
@@ -56,7 +56,7 @@ where
             legal_prompt_actions::compute(prompt, player, LegalActions { for_human_player: false })
                 .into_iter()
                 .map(AgentAction::PromptAction)
-                .collect::<HashSet<_>>();
+                .collect::<BTreeSet<_>>();
         assert!(!legal.is_empty(), "No legal prompt actions available");
         self.selector.pick_prompt_action(game, player, legal).as_prompt_action()
     }

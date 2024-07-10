@@ -18,7 +18,7 @@
 //! Carlo Tree Search Methods" by Browne et al. in IEEE Transactions on
 //! Computational Intelligence and AI in Games, Vol. 4, No. 1, March 2012.
 
-use std::collections::HashSet;
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::time::Instant;
@@ -160,7 +160,7 @@ where
         &self,
         game: &mut TState,
         player: TState::PlayerName,
-        actions: HashSet<TState::Action>,
+        actions: BTreeSet<TState::Action>,
     ) -> TState::Action {
         let current_position = match &mut game.state_mut().search_operation {
             Some(SearchOperation::EvaluateNode { rng }) => {
@@ -320,13 +320,13 @@ where
     #[instrument(level = "debug", skip_all)]
     fn tree_policy(&self, game: &mut TState, mut node_index: NodeIndex) -> NodeIndex {
         while let GameStatus::InProgress { current_turn } = game.status() {
-            let actions = game.legal_actions(current_turn).collect::<HashSet<_>>();
+            let actions = game.legal_actions(current_turn).collect::<BTreeSet<_>>();
             let explored = game
                 .state()
                 .graph
                 .edges(node_index)
                 .map(|e| e.weight().action)
-                .collect::<HashSet<_>>();
+                .collect::<BTreeSet<_>>();
             if let Some(action) = actions.iter().find(|a| !explored.contains(a)) {
                 // An action exists which has not yet been tried
                 return self.expand(game, current_turn, node_index, *action);
@@ -382,7 +382,7 @@ where
         &self,
         graph: &SearchGraph<TState::PlayerName, TState::Action>,
         node: NodeIndex,
-        legal: HashSet<TState::Action>,
+        legal: BTreeSet<TState::Action>,
         selection_mode: SelectionMode,
     ) -> (TState::Action, NodeIndex) {
         let parent_visits = graph[node].visit_count;
