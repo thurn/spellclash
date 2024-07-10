@@ -94,6 +94,7 @@ internal-clean:
   rm -rf src-tauri/target/debug
   rm -rf src-tauri/target/release
   rm -rf src-tauri/target/tmp
+  rm -rf src-tauri/target/release-with-debug
 
 clean: internal-clean dropbox
 
@@ -114,3 +115,12 @@ build-release-with-debug:
 
 samply: build-release-with-debug
     samply record ./src-tauri/target/release-with-debug/client
+
+samply-benchmark *args='':
+    #!/bin/zsh
+    cargo criterion --manifest-path src-tauri/Cargo.toml --no-run
+    ALL_BENCHMARKS=`echo ./src-tauri/target/release/deps/benchmarks-*`
+    echo "Found benchmark binaries" $ALL_BENCHMARKS
+    BENCHMARK=`echo ./src-tauri/target/release/deps/benchmarks-*([1])`
+    echo "Running" $BENCHMARK
+    samply record $BENCHMARK --bench --profile-time 5 "$@"
