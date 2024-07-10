@@ -40,11 +40,12 @@ use utils::command_line;
 use utils::command_line::CommandLine;
 
 criterion_main!(benches);
-criterion_group!(benches, vanilla, uct1, alpha_beta, random_playout_evaluator);
+criterion_group!(benches, vanilla, uct1, random_playout_evaluator);
 
 pub fn vanilla(c: &mut Criterion) {
-    let mut group = c.benchmark_group("vanilla");
     command_line::FLAGS.set(CommandLine::default()).ok();
+    let mut group = c.benchmark_group("vanilla");
+    group.significance_level(0.01).sample_size(500).noise_threshold(0.03);
 
     let game = test_games::vanilla_game_scenario();
     let creature_id = *game
@@ -125,6 +126,7 @@ pub fn vanilla(c: &mut Criterion) {
 pub fn uct1(c: &mut Criterion) {
     command_line::FLAGS.set(CommandLine::default()).ok();
     let mut group = c.benchmark_group("uct1");
+    group.significance_level(0.01).sample_size(500).noise_threshold(0.03);
     let game = test_games::vanilla_game_scenario();
 
     let error_subscriber = tracing_subscriber::fmt().with_max_level(Level::ERROR).finish();
@@ -141,7 +143,7 @@ pub fn uct1(c: &mut Criterion) {
 pub fn random_playout_evaluator(c: &mut Criterion) {
     command_line::FLAGS.set(CommandLine::default()).ok();
     let mut group = c.benchmark_group("random_playout_evaluator");
-    group.significance_level(0.01).sample_size(500);
+    group.significance_level(0.01).sample_size(500).noise_threshold(0.03);
     let game = test_games::vanilla_game_scenario();
     let evaluator =
         RandomPlayoutEvaluator { evaluator: WinLossEvaluator, phantom_data: PhantomData };
@@ -166,18 +168,5 @@ pub fn random_playout_evaluator(c: &mut Criterion) {
         group.bench_function("some_dandans", |b| {
             b.iter(|| evaluator.evaluate(&game, PlayerName::One));
         });
-    });
-}
-
-pub fn alpha_beta(c: &mut Criterion) {
-    command_line::FLAGS.set(CommandLine::default()).ok();
-    let mut group = c.benchmark_group("alpha_beta");
-    let game = test_games::vanilla_game_scenario();
-
-    group.bench_function("alpha_beta", |b| {
-        b.iter(|| {
-            let agent = agents::get_agent(AgentName::AlphaBetaDepth5);
-            agent.pick_action(Instant::now() + Duration::from_secs(100), &game)
-        })
     });
 }
