@@ -31,31 +31,35 @@ fn main() {
         }
     }
 
-    let out_path = Path::new("src/delegates/apply_writes.rs");
-    if out_path.exists() {
-        fs::remove_file(out_path).expect("Error removing file");
-    }
-    let mut file = LineWriter::new(File::create(out_path).expect("Error creating file"));
-    writeln!(
-        file,
-        "//! GENERATED CODE - DO NOT MODIFY
+    let mut output = "//! GENERATED CODE - DO NOT MODIFY
 
 use enumset::EnumSet;
 
-use crate::core::primitives::{{AbilityId, Zone}};
+use crate::core::primitives::{AbilityId, Zone};
 use crate::delegates::game_delegates::GameDelegates;
 use crate::delegates::stores_delegates::StoresDelegates;
 
-pub fn run(delegates: &mut GameDelegates, id: AbilityId, zones: EnumSet<Zone>) {{"
-    )
-    .expect("Error writing file");
+pub fn run(delegates: &mut GameDelegates, id: AbilityId, zones: EnumSet<Zone>) {
+"
+    .to_string();
 
     for line in &result {
         if line != "struct" {
-            writeln!(file, "    delegates.{line}.apply_writes(id, zones);")
-                .expect("Error writing file");
+            output.push_str(&format!("    delegates.{line}.apply_writes(id, zones);\n"));
         }
     }
 
-    writeln!(file, "}}").expect("Error writing file");
+    output.push_str("}\n");
+
+    let out_path = Path::new("src/delegates/apply_writes.rs");
+    if out_path.exists() {
+        let mut text = fs::read_to_string(out_path).expect("Error reading file");
+        text.pop(); // Remove EOF
+        if text == output {
+            return;
+        }
+        fs::remove_file(out_path).expect("Error removing file");
+    }
+    let mut file = LineWriter::new(File::create(out_path).expect("Error creating file"));
+    writeln!(file, "{}", output).expect("Error writing to file");
 }

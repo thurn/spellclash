@@ -41,15 +41,9 @@ fn main() {
         }
     }
 
-    let out_path = Path::new("../all_cards/src/card_list.rs");
-    if out_path.exists() {
-        fs::remove_file(out_path).expect("Error removing file");
-    }
-    let mut file = LineWriter::new(File::create(out_path).expect("Error creating file"));
-    writeln!(file, "//! GENERATED CODE - DO NOT MODIFY\n").expect("Error writing file");
-
-    writeln!(file, "use data::card_definitions::definitions::DEFINITIONS;\n")
-        .expect("Error writing file");
+    let mut output = String::new();
+    output.push_str(&"//! GENERATED CODE - DO NOT MODIFY\n\n");
+    output.push_str(&"use data::card_definitions::definitions::DEFINITIONS;\n\n");
 
     let mut modules = functions
         .iter()
@@ -58,16 +52,27 @@ fn main() {
         .collect::<Vec<_>>();
     modules.sort();
 
-    writeln!(file, "\npub fn initialize() {{").expect("Error writing file");
+    output.push_str(&"\npub fn initialize() {\n");
     for module in &modules {
         if let Some(list) = functions.get(module) {
             for function in list {
-                writeln!(file, "    DEFINITIONS.insert({module}::{function});")
-                    .expect("Error writing file");
+                output.push_str(&format!("    DEFINITIONS.insert({module}::{function});\n"));
             }
         }
     }
-    writeln!(file, "}}").expect("Error writing file");
+    output.push_str(&"}");
+
+    let out_path = Path::new("../all_cards/src/card_list.rs");
+    if out_path.exists() {
+        let mut text = fs::read_to_string(out_path).expect("Error reading file");
+        text.pop(); // Remove EOF
+        if text == output {
+            return;
+        }
+        fs::remove_file(out_path).expect("Error removing file");
+    }
+    let mut file = LineWriter::new(File::create(out_path).expect("Error creating file"));
+    writeln!(file, "{}", output).expect("Error writing to file");
 }
 
 fn find_functions(path: impl AsRef<Path>) -> Vec<String> {
