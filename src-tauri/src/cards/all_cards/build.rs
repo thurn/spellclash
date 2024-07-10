@@ -15,7 +15,7 @@
 //! Generates cards_all.rs. This used to be automatic via the 'linkme' crate,
 //! but it has a bunch of problems on e.g. OSX
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader, LineWriter, Write};
 use std::path::Path;
@@ -28,7 +28,7 @@ fn main() {
     println!("Generating cards_all.rs in {:?}", env::current_dir().unwrap());
 
     // crate name -> vec of function names
-    let mut functions = HashMap::new();
+    let mut functions = BTreeMap::new();
     for e in WalkDir::new("..") {
         let entry = e.expect("Error loading entry");
         let re = Regex::new(r"../(?P<module>\w+)/src/(?P<file>\w+).rs").expect("Invalid regex");

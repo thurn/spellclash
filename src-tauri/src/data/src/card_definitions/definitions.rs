@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use dashmap::DashSet;
 use once_cell::sync::Lazy;
@@ -25,8 +25,8 @@ pub type CardFn = fn() -> CardDefinition;
 pub static DEFINITIONS: Lazy<DashSet<CardFn>> = Lazy::new(DashSet::new);
 
 /// Contains [CardDefinition]s for all known cards, keyed by [CardName]
-static CARDS: Lazy<HashMap<CardName, CardDefinition>> = Lazy::new(|| {
-    let mut map = HashMap::new();
+static CARDS: Lazy<BTreeMap<CardName, CardDefinition>> = Lazy::new(|| {
+    let mut map = BTreeMap::new();
     for card_fn in DEFINITIONS.iter() {
         let card = card_fn();
         assert!(!map.contains_key(&card.card_name()), "Duplicate card name found");

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use data::actions::user_action::UserAction;
 use data::game_states::game_state::GameState;
@@ -31,7 +31,7 @@ use crate::commands::field_state::{FieldKey, FieldValue};
 #[derive(Debug, Default)]
 pub struct DisplayState {
     /// States of displayed input fields.
-    pub fields: HashMap<FieldKey, FieldValue>,
+    pub fields: BTreeMap<FieldKey, FieldValue>,
 
     /// A prompt currently being shown to the player.
     pub prompt: Option<Prompt>,

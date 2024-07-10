@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use data::core::primitives::PlayerName;
@@ -78,7 +78,7 @@ pub struct ResponseBuilder<'a> {
     /// This is used to customize animation behavior, mostly in order to not
     /// move cards to the "display" browser when they're already in another
     /// similar card browser.
-    pub last_snapshot_positions: HashMap<ClientCardId, ObjectPosition>,
+    pub last_snapshot_positions: BTreeMap<ClientCardId, ObjectPosition>,
 }
 
 impl<'a> ResponseBuilder<'a> {
@@ -87,7 +87,7 @@ impl<'a> ResponseBuilder<'a> {
             player,
             response_state: state,
             commands: vec![],
-            last_snapshot_positions: HashMap::default(),
+            last_snapshot_positions: BTreeMap::default(),
         }
     }
 

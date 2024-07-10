@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeMap, BTreeSet};
 
 use enum_iterator::Sequence;
 use enumset::{EnumSet, EnumSetType};
@@ -55,7 +55,7 @@ pub struct SelectOrderPrompt {
     /// 'unselected' location if cards need to be explicitly chosen to order.
     /// Each vector indicates the order chosen for elements
     /// in that selection location.
-    pub cards: HashMap<CardOrderLocation, Vec<CardId>>,
+    pub cards: BTreeMap<CardOrderLocation, Vec<CardId>>,
 
     /// Validation for the number of cards selected.
     pub quantity: Quantity,
@@ -68,7 +68,7 @@ pub struct SelectOrderPrompt {
 }
 
 impl SelectOrderPrompt {
-    pub fn new(cards: HashMap<CardOrderLocation, Vec<CardId>>) -> Self {
+    pub fn new(cards: BTreeMap<CardOrderLocation, Vec<CardId>>) -> Self {
         SelectOrderPrompt { cards, quantity: Quantity::AnyNumber, moved: BTreeSet::new() }
     }
 

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use data::card_states::play_card_plan::{ManaPaymentPlan, PlayCardPlan};
 use data::card_states::zones::ZoneQueries;
@@ -29,7 +29,7 @@ use crate::queries::card_queries;
 // Map from mana colors to lists of card id which can produce that color of mana
 // and number of land subtypes that card has.
 type SubtypeCount = usize;
-type LandAbilityMap = HashMap<ManaColor, Vec<(PermanentId, SubtypeCount)>>;
+type LandAbilityMap = BTreeMap<ManaColor, Vec<(PermanentId, SubtypeCount)>>;
 
 /// Builds a plan for paying a spell's mana costs.
 ///
@@ -49,7 +49,7 @@ pub fn mana_payment(
 ) -> Option<ManaPaymentPlan> {
     let controller = game.card(card_id)?.controller();
 
-    let mut lands: LandAbilityMap = HashMap::new();
+    let mut lands: LandAbilityMap = BTreeMap::new();
     for card in game.battlefield(controller) {
         add_land_to_map(game, *card, &mut lands, ManaColor::White, LandSubtype::Plains);
         add_land_to_map(game, *card, &mut lands, ManaColor::Blue, LandSubtype::Island);

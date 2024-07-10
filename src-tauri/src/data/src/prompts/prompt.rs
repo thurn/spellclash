@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 use strum::EnumDiscriminants;
@@ -60,7 +60,7 @@ impl PromptType {
 #[strum_discriminants(name(PromptResponseKind))]
 pub enum PromptResponse {
     EntityChoice(EntityId),
-    SelectOrder(HashMap<CardOrderLocation, Vec<CardId>>),
+    SelectOrder(BTreeMap<CardOrderLocation, Vec<CardId>>),
     PlayCards(Vec<CardId>),
     PickNumber(u32),
     MultipleChoice(usize),

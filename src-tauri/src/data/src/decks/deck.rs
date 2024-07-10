@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use enumset::EnumSet;
 use serde::{Deserialize, Serialize};
@@ -27,5 +27,5 @@ use crate::printed_cards::printed_card_id::PrintedCardId;
 pub struct Deck {
     /// Quantities of cards in this deck
     #[serde_as(as = "Vec<(_, _)>")]
-    pub cards: HashMap<PrintedCardId, u64>,
+    pub cards: BTreeMap<PrintedCardId, u64>,
 }

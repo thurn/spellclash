@@ -72,7 +72,7 @@ pub struct CardView {
 ///
 /// Serialized u64, represented as string because JavaScript is a silly
 /// language.
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Serialize, Deserialize, Type)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub enum ClientCardId {
     CardId(String),

@@ -331,7 +331,7 @@ pub enum GameStatus {
 }
 
 /// Identifies a turn within the game.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub struct TurnData {
     /// Player whose turn it is or was.
     pub active_player: PlayerName,

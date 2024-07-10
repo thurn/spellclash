@@ -18,7 +18,7 @@
 //! Carlo Tree Search Methods" by Browne et al. in IEEE Transactions on
 //! Computational Intelligence and AI in Games, Vol. 4, No. 1, March 2012.
 
-use std::collections::{BTreeMap, BTreeSet, HashSet};
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::time::Instant;
@@ -177,7 +177,7 @@ where
             .graph
             .edges(current_position)
             .map(|e| e.weight().action)
-            .collect::<HashSet<_>>();
+            .collect::<BTreeSet<_>>();
         if let Some(action) = actions.iter().find(|a| !explored.contains(a)) {
             // An action exists which has not yet been tried
             let target = game.state_mut().graph.add_node(SearchNode {

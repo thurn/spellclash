@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
@@ -28,10 +28,10 @@ pub struct Counters {
     /// The quantity of Loyalty counters on this object,
     pub loyalty: Loyalty,
     /// Quantity of counters other than the above options on this player
-    pub other_counters: HashMap<CounterType, u32>,
+    pub other_counters: BTreeMap<CounterType, u32>,
 }
 
-#[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 pub enum CounterType {
     Acorn,
     Aegis,

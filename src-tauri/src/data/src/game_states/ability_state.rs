@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
@@ -37,12 +37,12 @@ pub struct AbilityState {
     /// This is mutated via the `delayed_trigger` module, do not access this
     /// field directly.
     #[serde_as(as = "Vec<(_, _)>")]
-    pub delayed_triggers: HashMap<AbilityId, Vec<EffectId>>,
+    pub delayed_triggers: BTreeMap<AbilityId, Vec<EffectId>>,
 
     /// Stores arbitrary state values associated with a given [EffectId].
     ///
     /// This is always manipulated via [EffectState], do not access this field
     /// directly.
     #[serde_as(as = "Vec<(_, _)>")]
-    pub effect_state: HashMap<EffectId, StateValue>,
+    pub effect_state: BTreeMap<EffectId, StateValue>,
 }

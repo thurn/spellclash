@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet};
 use std::iter;
 
 use either::Either;
@@ -38,7 +38,7 @@ pub struct ThisTurnState {
     /// Map from entities to lists of effects active this turn affecting that
     /// entity.
     #[serde_as(as = "Vec<(_, _)>")]
-    effects: HashMap<EntityId, Vec<AbilityEffectId>>,
+    effects: BTreeMap<EntityId, Vec<AbilityEffectId>>,
 
     /// List of control-changing effects to automatically clean up at end of
     /// turn.
@@ -47,7 +47,7 @@ pub struct ThisTurnState {
     /// Permanents that have lost all abilities this turn as of a given
     /// [Timestamp].
     #[serde_as(as = "Vec<(_, _)>")]
-    lost_all_abilities: HashMap<PermanentId, Timestamp>,
+    lost_all_abilities: BTreeMap<PermanentId, Timestamp>,
 }
 
 impl ThisTurnState {

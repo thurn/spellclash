@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::time::{Duration, Instant};
@@ -97,7 +97,7 @@ pub struct NimAction {
 
 #[derive(Debug, Clone)]
 pub struct NimState {
-    pub piles: HashMap<NimPile, u32>,
+    pub piles: BTreeMap<NimPile, u32>,
     pub turn: NimPlayer,
     pub agent_state: Option<AgentState<NimPlayer, NimAction>>,
 }
@@ -108,7 +108,7 @@ impl NimState {
     }
 
     pub fn new_with_piles(a: u32, b: u32, c: u32) -> Self {
-        let mut piles = HashMap::new();
+        let mut piles = BTreeMap::new();
         piles.insert(NimPile::PileA, a);
         piles.insert(NimPile::PileB, b);
         piles.insert(NimPile::PileC, c);

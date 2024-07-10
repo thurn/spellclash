@@ -32,7 +32,7 @@ use data::player_states::player_state::{PlayerType, Players};
 use data::printed_cards::printed_card_id;
 use database::sqlite_database::SqliteDatabase;
 use enumset::EnumSet;
-use maplit::hashmap;
+use maplit::btreemap;
 use oracle::oracle_impl::OracleImpl;
 use rand::SeedableRng;
 use rand_xoshiro::Xoshiro256StarStar;
@@ -149,7 +149,7 @@ fn create_cards_in_deck(
 fn find_deck(name: DeckName) -> Deck {
     match name {
         deck_name::GREEN_VANILLA => Deck {
-            cards: hashmap! {
+            cards: btreemap! {
                 printed_card_id::FOREST => 35,
                 printed_card_id::GRIZZLY_BEARS => 1,
                 printed_card_id::GIGANTOSAURUS => 1,
@@ -189,20 +189,20 @@ fn find_deck(name: DeckName) -> Deck {
             },
         },
         deck_name::ALL_DANDANS => Deck {
-            cards: hashmap! {
+            cards: btreemap! {
                 printed_card_id::ISLAND => 30,
                 printed_card_id::DANDAN => 30,
             },
         },
         deck_name::GRIZZLY_BEAR_GIANT_GROWTH => Deck {
-            cards: hashmap! {
+            cards: btreemap! {
                 printed_card_id::FOREST => 20,
                 printed_card_id::GRIZZLY_BEARS => 20,
                 printed_card_id::GIANT_GROWTH => 20,
             },
         },
         deck_name::SOME_DANDANS => Deck {
-            cards: hashmap! {
+            cards: btreemap! {
                 printed_card_id::ISLAND => 30,
                 printed_card_id::BRAINSTORM => 5,
                 printed_card_id::CRYSTAL_SPRAY => 5,
@@ -212,7 +212,7 @@ fn find_deck(name: DeckName) -> Deck {
             },
         },
         deck_name::DANDAN => Deck {
-            cards: hashmap! {
+            cards: btreemap! {
                 printed_card_id::ISLAND => 30,
                 printed_card_id::CRYSTAL_SPRAY => 15,
                 printed_card_id::DANDAN => 15,

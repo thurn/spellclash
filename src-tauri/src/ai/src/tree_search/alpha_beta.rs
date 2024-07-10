@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use std::cmp;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 use std::time::Instant;
 
 use data::game_states::game_state::GameState;

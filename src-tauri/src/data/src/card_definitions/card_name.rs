@@ -30,7 +30,7 @@ use uuid::{uuid, Uuid};
 /// "Copy-pasteable JSON" and copying the oracle_id field.
 ///
 /// See <https://scryfall.com/docs/api/cards>
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct CardName(pub Uuid);
 
 pub const BRAINSTORM: CardName = CardName(uuid!("36cd2364-d113-47d1-b2c4-b088d9eb88dd"));

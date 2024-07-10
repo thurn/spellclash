@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::fmt::Debug;
 
 use data::card_states::zones::ZoneQueries;
@@ -29,7 +29,7 @@ use data::prompts::prompt::{Prompt, PromptResponse, PromptType};
 use data::prompts::select_order_prompt::{CardOrderLocation, Quantity, SelectOrderPrompt};
 use data::text_strings::Text;
 use enumset::EnumSet;
-use maplit::hashmap;
+use maplit::btreemap;
 use rand::prelude::SliceRandom;
 use tokio::sync::oneshot;
 use tracing::info;
@@ -118,7 +118,7 @@ pub fn select_order(
     player: PlayerName,
     description: Text,
     prompt: SelectOrderPrompt,
-) -> HashMap<CardOrderLocation, Vec<CardId>> {
+) -> BTreeMap<CardOrderLocation, Vec<CardId>> {
     let PromptResponse::SelectOrder(ids) = send(game, Prompt {
         player,
         label: Some(description),
@@ -165,7 +165,7 @@ pub fn select_ordered_from<'a>(
         game,
         player,
         text,
-        SelectOrderPrompt::new(hashmap! {
+        SelectOrderPrompt::new(btreemap! {
             CardOrderLocation::Unordered => cards.into_iter().copied().collect(),
             target => vec![]
         })

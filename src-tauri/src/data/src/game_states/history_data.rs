@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use enum_kinds::EnumKind;
 use serde::{Deserialize, Serialize};
@@ -74,11 +74,11 @@ pub struct HistoryCounters {
 pub struct GameHistory {
     current: Vec<HistoryEntry>,
     #[serde_as(as = "Vec<(_, _)>")]
-    entries: HashMap<TurnData, Vec<HistoryEvent>>,
+    entries: BTreeMap<TurnData, Vec<HistoryEvent>>,
     #[serde_as(as = "Vec<(_, _)>")]
-    p1_counters: HashMap<TurnData, HistoryCounters>,
+    p1_counters: BTreeMap<TurnData, HistoryCounters>,
     #[serde_as(as = "Vec<(_, _)>")]
-    p2_counters: HashMap<TurnData, HistoryCounters>,
+    p2_counters: BTreeMap<TurnData, HistoryCounters>,
 }
 
 impl GameHistory {
