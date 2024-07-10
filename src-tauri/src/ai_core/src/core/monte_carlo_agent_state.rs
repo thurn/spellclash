@@ -14,6 +14,7 @@
 
 use petgraph::graph::NodeIndex;
 use petgraph::Graph;
+use rand_xoshiro::SplitMix64;
 
 #[derive(Debug, Clone)]
 pub struct SearchNode<TPlayerName> {
@@ -32,10 +33,10 @@ pub struct SearchEdge<TAction> {
 
 pub type SearchGraph<TPlayerName, TAction> = Graph<SearchNode<TPlayerName>, SearchEdge<TAction>>;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum SearchOperation {
     TreeSearch { source_position: NodeIndex, target_position: NodeIndex },
-    EvaluateNode,
+    EvaluateNode { rng: SplitMix64 },
 }
 
 #[derive(Debug, Clone)]

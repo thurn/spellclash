@@ -71,7 +71,9 @@ impl<TState: GameStateNode + Send, TEvaluator: StateEvaluator<TState>> StateEval
         let mut game = input.make_copy();
         game.set_agent_state(AgentState::MonteCarlo(MonteCarloAgentState {
             graph: SearchGraph::new(),
-            search_operation: Some(SearchOperation::EvaluateNode),
+            search_operation: Some(SearchOperation::EvaluateNode {
+                rng: SplitMix64::seed_from_u64(156562599311216480),
+            }),
         }));
         let mut rng = SplitMix64::seed_from_u64(156562599311216480);
         loop {
@@ -160,11 +162,11 @@ where
         player: TState::PlayerName,
         actions: HashSet<TState::Action>,
     ) -> TState::Action {
-        let current_position = match game.state().search_operation {
-            Some(SearchOperation::EvaluateNode) => {
-                return actions.iter().choose(&mut rand::thread_rng()).copied().unwrap()
+        let current_position = match &mut game.state_mut().search_operation {
+            Some(SearchOperation::EvaluateNode { rng }) => {
+                return actions.iter().choose(rng).copied().unwrap()
             }
-            Some(SearchOperation::TreeSearch { target_position, .. }) => target_position,
+            Some(SearchOperation::TreeSearch { target_position, .. }) => *target_position,
             None => {
                 panic!("Expected search operation")
             }
@@ -232,7 +234,9 @@ where
             let mut game_copy = initial_game.make_copy();
             game_copy.set_state(agent_state);
             let node = self.tree_policy(&mut game_copy, root);
-            game_copy.state_mut().search_operation = Some(SearchOperation::EvaluateNode);
+            game_copy.state_mut().search_operation = Some(SearchOperation::EvaluateNode {
+                rng: SplitMix64::seed_from_u64(156562599311216480),
+            });
             let reward = f64::from(evaluator.evaluate(&game_copy, player));
             Self::backup(&mut game_copy.state_mut().graph, player, node, reward);
             i += 1;

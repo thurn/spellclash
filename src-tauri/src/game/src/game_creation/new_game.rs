@@ -137,7 +137,9 @@ fn create_cards_in_deck(
     owner: PlayerName,
     turn: TurnData,
 ) {
-    for (&id, &quantity) in &deck.cards {
+    let mut cards = deck.cards.iter().collect::<Vec<_>>();
+    cards.sort();
+    for (&id, &quantity) in &cards {
         for _ in 0..quantity {
             zones.create_card_in_library(oracle.card(id), CardKind::Normal, owner, turn);
         }

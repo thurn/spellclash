@@ -23,7 +23,7 @@ use crate::card_definitions::card_name::CardName;
 /// "copy-pasteable JSON' on scryfall, this is the identifier in the "id" field.
 ///
 /// See <https://scryfall.com/docs/api/cards>
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Ord, PartialOrd)]
 pub struct PrintedCardId(pub Uuid);
 
 pub const GRIZZLY_BEARS: PrintedCardId =

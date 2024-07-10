@@ -21,28 +21,18 @@ use data::game_states::game_state::GameState;
 use crate::predicates::card_predicates;
 
 pub fn capture(game: &GameState) -> Vec<String> {
-    let mut result = vec![];
-    result.push(in_zone(
-        "G2",
-        game,
-        PlayerName::Two,
-        Zone::Graveyard,
-        card_predicates::always_true,
-    ));
-    result.push(in_zone("H2", game, PlayerName::Two, Zone::Hand, card_predicates::always_true));
-    result.push(in_zone("L2", game, PlayerName::Two, Zone::Battlefield, card_predicates::land));
-    result.push(in_zone("B2", game, PlayerName::Two, Zone::Battlefield, card_predicates::nonland));
-    result.push(in_zone("B1", game, PlayerName::One, Zone::Battlefield, card_predicates::nonland));
-    result.push(in_zone("L1", game, PlayerName::One, Zone::Battlefield, card_predicates::land));
-    result.push(in_zone("H1", game, PlayerName::One, Zone::Hand, card_predicates::always_true));
-    result.push(in_zone(
-        "G1",
-        game,
-        PlayerName::One,
-        Zone::Graveyard,
-        card_predicates::always_true,
-    ));
-    result
+    vec![
+        library("LIB2", game, PlayerName::Two),
+        in_zone("G2", game, PlayerName::Two, Zone::Graveyard, card_predicates::always_true),
+        in_zone("H2", game, PlayerName::Two, Zone::Hand, card_predicates::always_true),
+        in_zone("M2", game, PlayerName::Two, Zone::Battlefield, card_predicates::land),
+        in_zone("B2", game, PlayerName::Two, Zone::Battlefield, card_predicates::nonland),
+        in_zone("B1", game, PlayerName::One, Zone::Battlefield, card_predicates::nonland),
+        in_zone("M1", game, PlayerName::One, Zone::Battlefield, card_predicates::land),
+        in_zone("H1", game, PlayerName::One, Zone::Hand, card_predicates::always_true),
+        in_zone("G1", game, PlayerName::One, Zone::Graveyard, card_predicates::always_true),
+        library("LIB1", game, PlayerName::One),
+    ]
 }
 
 fn in_zone(
@@ -62,11 +52,20 @@ fn in_zone(
     format!("{} [{}]", key, cards)
 }
 
+fn library(key: &'static str, game: &GameState, player: PlayerName) -> String {
+    let cards = game
+        .zones
+        .library(player)
+        .iter()
+        .rev()
+        .take(3)
+        .filter_map(|&card_id| Some(card_string(game.card(card_id)?)))
+        .collect::<Vec<_>>()
+        .join(", ");
+    format!("{} [{}]", key, cards)
+}
+
 fn card_string(card: &CardState) -> String {
     let id = format!("{:?}", card.id);
-    format!(
-        "{}{}",
-        card.displayed_name(),
-        id.replace("CardId", "").replace("(", "").replace(")", "")
-    )
+    format!("{}{}", card.displayed_name(), id.replace("CardId", "").replace(['(', ')'], ""))
 }
