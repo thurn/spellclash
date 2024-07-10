@@ -27,7 +27,7 @@ use crate::delegates::stores_delegates::StoresDelegates;
 use crate::game_states::game_state::GameState;
 
 /// Wrapper around query functions to enable closures to be cloned.
-trait QueryFnWrapper<TArg, TResult: QueryValue>: DynClone + Send {
+pub trait QueryFnWrapper<TArg, TResult: QueryValue>: DynClone + Send {
     fn invoke(&self, data: &GameState, scope: Scope, arg: &TArg) -> Option<TResult>;
 }
 
@@ -48,13 +48,13 @@ pub enum CardDelegateExecution {
     Any,
 }
 
-type BoxedQueryFn<TArg, TResult> = Box<dyn QueryFnWrapper<TArg, TResult>>;
+pub type BoxedQueryFn<TArg, TResult> = Box<dyn QueryFnWrapper<TArg, TResult>>;
 
 #[derive(Clone)]
-struct DelegateBuilder<TArg: ToCardId, TResult> {
-    delegate_type: DelegateType,
-    execution_type: CardDelegateExecution,
-    query: BoxedQueryFn<TArg, TResult>,
+pub struct DelegateBuilder<TArg: ToCardId, TResult> {
+    pub delegate_type: DelegateType,
+    pub execution_type: CardDelegateExecution,
+    pub query: BoxedQueryFn<TArg, TResult>,
 }
 
 #[derive(Clone)]
@@ -82,7 +82,11 @@ impl<TArg: ToCardId, TResult: QueryValue> CardQueryDelegateList<TArg, TResult> {
         &mut self,
         value: impl Fn(&GameState, Scope, &TArg) -> Option<TResult> + Copy + Send + Sync + 'static,
     ) {
-        self.add_delegate(DelegateType::Ability, CardDelegateExecution::This, value);
+        self.add_delegate(DelegateBuilder {
+            delegate_type: DelegateType::Ability,
+            execution_type: CardDelegateExecution::This,
+            query: Box::new(value),
+        });
     }
 
     /// Adds a new query transformation which applies to *any* query of this
@@ -94,22 +98,17 @@ impl<TArg: ToCardId, TResult: QueryValue> CardQueryDelegateList<TArg, TResult> {
         &mut self,
         value: impl Fn(&GameState, Scope, &TArg) -> Option<TResult> + Copy + Send + Sync + 'static,
     ) {
-        self.add_delegate(DelegateType::Ability, CardDelegateExecution::Any, value);
+        self.add_delegate(DelegateBuilder {
+            delegate_type: DelegateType::Ability,
+            execution_type: CardDelegateExecution::Any,
+            query: Box::new(value),
+        });
     }
 
     /// Adds a new query transformation with the given [DelegateType] and
     /// [CardDelegateExecution].
-    pub fn add_delegate(
-        &mut self,
-        delegate_type: DelegateType,
-        execution_type: CardDelegateExecution,
-        value: impl Fn(&GameState, Scope, &TArg) -> Option<TResult> + Copy + Send + Sync + 'static,
-    ) {
-        self.current.push(DelegateBuilder {
-            delegate_type,
-            execution_type,
-            query: Box::new(value),
-        });
+    pub fn add_delegate(&mut self, builder: DelegateBuilder<TArg, TResult>) {
+        self.current.push(builder);
     }
 
     /// True if no delegates have been defined for this list.

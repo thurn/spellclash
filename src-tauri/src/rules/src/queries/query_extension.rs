@@ -13,7 +13,9 @@
 // limitations under the License.
 
 use data::card_states::zones::{ToCardId, ZoneQueries};
-use data::delegates::card_query_delegate_list::{CardDelegateExecution, CardQueryDelegateList};
+use data::delegates::card_query_delegate_list::{
+    CardDelegateExecution, CardQueryDelegateList, DelegateBuilder,
+};
 use data::delegates::delegate_type::DelegateType;
 use data::delegates::query_value::QueryValue;
 use data::delegates::scope::{EffectContext, Scope};
@@ -84,20 +86,24 @@ fn this_turn_impl<TArg: ToCardId, TResult: QueryValue>(
         + Sync
         + 'static,
 ) {
-    list.add_delegate(delegate_type, CardDelegateExecution::Any, move |g, s, arg| {
-        let entity_id = g.card(*arg)?.entity_id();
-        let mut result = None;
-        for effect_id in g.ability_state.this_turn.active_effects(s.ability_id, entity_id) {
-            let context = EffectContext {
-                scope: Scope {
-                    controller: s.controller,
-                    ability_id: s.ability_id,
-                    timestamp: effect_id.timestamp(),
-                },
-                effect_id,
-            };
-            result = transformation(g, context, arg);
-        }
-        result
-    })
+    list.add_delegate(DelegateBuilder {
+        delegate_type,
+        execution_type: CardDelegateExecution::Any,
+        query: Box::new(move |g: &GameState, s: Scope, arg: &TArg| {
+            let entity_id = g.card(*arg)?.entity_id();
+            let mut result = None;
+            for effect_id in g.ability_state.this_turn.active_effects(s.ability_id, entity_id) {
+                let context = EffectContext {
+                    scope: Scope {
+                        controller: s.controller,
+                        ability_id: s.ability_id,
+                        timestamp: effect_id.timestamp(),
+                    },
+                    effect_id,
+                };
+                result = transformation(g, context, arg);
+            }
+            result
+        }),
+    });
 }
