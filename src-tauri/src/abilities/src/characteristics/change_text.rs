@@ -24,111 +24,121 @@ use data::delegates::query_value::{ChangeText, EnumSets};
 use data::delegates::scope::EffectContext;
 use data::game_states::effect_state::EffectState;
 use data::game_states::game_state::GameState;
-use data::printed_cards::card_subtypes::{LandSubtype, BASIC_LANDS};
+use data::printed_cards::card_subtypes::{LandType, BASIC_LANDS};
 use data::queries::card_modifier::CardModifier;
 use data::queries::duration::Duration;
+use data::queries::query_names::{
+    ChangeColorTextQuery, ChangeLandTypeTextQuery, ColorsQuery, LandTypesQuery,
+};
 use data::text_strings::Text;
 use either::Either;
 use rules::prompt_handling::prompts;
 use rules::queries::query_extension::QueryExt;
 
-pub type LandSubtypesOrColors = Either<(LandSubtype, LandSubtype), (Color, Color)>;
+use crate::core::effects;
+
+pub type LandSubtypesOrColors = Either<(LandType, LandType), (Color, Color)>;
 
 pub fn change_basic_land_types_or_colors_this_turn(
     game: &mut GameState,
     context: EffectContext,
     target: Either<SpellId, PermanentId>,
 ) {
-    let turn = game.turn;
     let choice = choose_basic_land_types_or_colors(game, context.controller());
     match (choice, target) {
-        (LandSubtypesOrColors::Left((old_land_type, new_land_type)), Either::Left(spell_id)) => {
-            if let Some(card) = game.card_mut(spell_id) {
-                card.queries.land_types.add(CardModifier {
-                    source: context.source(),
-                    duration: Duration::WhileOnStack(spell_id),
-                    delegate_type: DelegateType::Effect,
-                    effect: EnumSets::replace(
-                        Layer::TextChangingEffects,
-                        context.effect_id,
-                        old_land_type,
-                        new_land_type,
-                    ),
-                });
-                card.queries.change_land_type_text.add(CardModifier {
-                    source: context.source(),
-                    duration: Duration::WhileOnStack(spell_id),
-                    delegate_type: DelegateType::Effect,
-                    effect: ChangeText::replace(context.effect_id, old_land_type, new_land_type),
-                });
-            }
+        (LandSubtypesOrColors::Left((old_type, new_type)), Either::Left(spell_id)) => {
+            change_spell_land_type_text(game, context, spell_id, new_type, old_type);
         }
-        (
-            LandSubtypesOrColors::Left((old_land_type, new_land_type)),
-            Either::Right(permanent_id),
-        ) => {
-            if let Some(card) = game.card_mut(permanent_id) {
-                card.queries.land_types.add(CardModifier {
-                    source: context.source(),
-                    duration: Duration::WhileOnBattlefieldThisTurn(permanent_id, turn),
-                    delegate_type: DelegateType::Effect,
-                    effect: EnumSets::replace(
-                        Layer::TextChangingEffects,
-                        context.effect_id,
-                        old_land_type,
-                        new_land_type,
-                    ),
-                });
-                card.queries.change_land_type_text.add(CardModifier {
-                    source: context.source(),
-                    duration: Duration::WhileOnBattlefieldThisTurn(permanent_id, turn),
-                    delegate_type: DelegateType::Effect,
-                    effect: ChangeText::replace(context.effect_id, old_land_type, new_land_type),
-                });
-            }
+        (LandSubtypesOrColors::Left((old_type, new_type)), Either::Right(permanent_id)) => {
+            change_permanent_land_type_text(game, context, permanent_id, old_type, new_type);
         }
         (LandSubtypesOrColors::Right((old_color, new_color)), Either::Left(spell_id)) => {
-            if let Some(card) = game.card_mut(spell_id) {
-                card.queries.colors.add(CardModifier {
-                    source: context.source(),
-                    duration: Duration::WhileOnStack(spell_id),
-                    delegate_type: DelegateType::Effect,
-                    effect: EnumSets::replace(
-                        Layer::ColorChangingEffects,
-                        context.effect_id,
-                        old_color,
-                        new_color,
-                    ),
-                });
-                card.queries.change_color_text.add(CardModifier {
-                    source: context.source(),
-                    duration: Duration::WhileOnStack(spell_id),
-                    delegate_type: DelegateType::Effect,
-                    effect: ChangeText::replace(context.effect_id, old_color, new_color),
-                });
-            }
+            change_spell_color_text(game, context, spell_id, old_color, new_color);
         }
         (LandSubtypesOrColors::Right((old_color, new_color)), Either::Right(permanent_id)) => {
-            if let Some(card) = game.card_mut(permanent_id) {
-                card.queries.colors.add(CardModifier {
-                    source: context.source(),
-                    duration: Duration::WhileOnBattlefieldThisTurn(permanent_id, turn),
-                    delegate_type: DelegateType::Effect,
-                    effect: EnumSets::replace(
-                        Layer::ColorChangingEffects,
-                        context.effect_id,
-                        old_color,
-                        new_color,
-                    ),
-                });
-                card.queries.change_color_text.add(CardModifier {
-                    source: context.source(),
-                    duration: Duration::WhileOnBattlefieldThisTurn(permanent_id, turn),
-                    delegate_type: DelegateType::Effect,
-                    effect: ChangeText::replace(context.effect_id, old_color, new_color),
-                });
-            }
+            change_permanent_color_text(game, context, permanent_id, old_color, new_color);
         }
+    }
+}
+
+fn change_permanent_color_text(
+    game: &mut GameState,
+    context: EffectContext,
+    permanent_id: PermanentId,
+    old_color: Color,
+    new_color: Color,
+) {
+    effects::modify_permanent_this_turn::<ChangeColorTextQuery>(
+        game,
+        context,
+        permanent_id,
+        ChangeText::replace(context.effect_id, old_color, new_color),
+    );
+}
+
+fn change_spell_color_text(
+    game: &mut GameState,
+    context: EffectContext,
+    spell_id: SpellId,
+    old_color: Color,
+    new_color: Color,
+) {
+    if let Some(card) = game.card_mut(spell_id) {
+        card.queries.change_color_text.add(CardModifier {
+            source: context.source(),
+            duration: Duration::WhileOnStackOrBattlefield(spell_id),
+            delegate_type: DelegateType::Effect,
+            effect: ChangeText::replace(context.effect_id, old_color, new_color),
+        });
+    }
+}
+
+fn change_permanent_land_type_text(
+    game: &mut GameState,
+    context: EffectContext,
+    permanent_id: PermanentId,
+    old_type: LandType,
+    new_type: LandType,
+) {
+    effects::modify_permanent_this_turn::<LandTypesQuery>(
+        game,
+        context,
+        permanent_id,
+        EnumSets::replace(Layer::TextChangingEffects, context.effect_id, old_type, new_type),
+    );
+    effects::modify_permanent_this_turn::<ChangeLandTypeTextQuery>(
+        game,
+        context,
+        permanent_id,
+        ChangeText::replace(context.effect_id, old_type, new_type),
+    );
+}
+
+fn change_spell_land_type_text(
+    game: &mut GameState,
+    context: EffectContext,
+    spell_id: SpellId,
+    new_type: LandType,
+    old_type: LandType,
+) {
+    if let Some(card) = game.card_mut(spell_id) {
+        card.queries.land_types.add(CardModifier {
+            source: context.source(),
+            duration: Duration::WhileOnStackOrBattlefield(spell_id),
+            delegate_type: DelegateType::Effect,
+            effect: EnumSets::replace(
+                Layer::TextChangingEffects,
+                context.effect_id,
+                old_type,
+                new_type,
+            ),
+        });
+        card.queries.change_land_type_text.add(CardModifier {
+            source: context.source(),
+            duration: Duration::WhileOnStackOrBattlefield(spell_id),
+            delegate_type: DelegateType::Effect,
+            effect: ChangeText::replace(context.effect_id, old_type, new_type),
+        });
     }
 }
 

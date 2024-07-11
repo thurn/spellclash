@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::card_states::zones::{ToCardId, ZoneQueries};
-use crate::core::primitives::{HasObjectId, PermanentId, SpellId};
+use crate::core::primitives::{HasObjectId, PermanentId, SpellId, Zone};
 use crate::game_states::game_state::{GameState, TurnData};
 
 /// Controls how long an effect should apply to the game.
@@ -27,6 +27,10 @@ pub enum Duration {
 
     /// Effect applies while the [SpellId] spell is on the stack.
     WhileOnStack(SpellId),
+
+    /// Effect applies while the [SpellId] spell is on the stack or after it has
+    /// resolved and is on the battlefield.
+    WhileOnStackOrBattlefield(SpellId),
 
     /// Effect applies while the [PermanentId] permanent is on the battlefield
     /// during the [TurnData] turn.
@@ -45,6 +49,11 @@ impl Duration {
             Duration::Continuous => true,
             Duration::WhileOnBattlefield(permanent_id) => self.is_valid(game, *permanent_id)?,
             Duration::WhileOnStack(spell_id) => self.is_valid(game, *spell_id)?,
+            Duration::WhileOnStackOrBattlefield(spell_id) => {
+                self.is_valid(game, *spell_id)?
+                    || (game.card(*spell_id)?.zone == Zone::Battlefield
+                        && game.card(*spell_id)?.previous_object_id == Some(spell_id.object_id()))
+            }
             Duration::WhileOnBattlefieldThisTurn(permanent_id, turn) => {
                 game.turn == *turn && self.is_valid(game, *permanent_id)?
             }

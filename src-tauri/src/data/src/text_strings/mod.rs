@@ -18,7 +18,7 @@ use either::Either;
 use serde::{Deserialize, Serialize};
 
 use crate::core::primitives::Color;
-use crate::printed_cards::card_subtypes::LandSubtype;
+use crate::printed_cards::card_subtypes::LandType;
 
 /// Canonical text displayed in the user interface, suitable for localization
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -27,7 +27,7 @@ pub enum Text {
     SelectNumber,
     SelectTarget,
     Color(Color),
-    LandSubtype(LandSubtype),
+    LandSubtype(LandType),
     SelectTypeToChange,
     SelectNewType,
 }

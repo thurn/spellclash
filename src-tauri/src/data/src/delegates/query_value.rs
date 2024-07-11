@@ -35,7 +35,7 @@ pub enum Flag {
 }
 
 impl Flag {
-    pub fn set(layer: Layer, timestamp: impl Into<Timestamp>, value: bool) -> Option<Flag> {
+    pub fn overwrite(layer: Layer, timestamp: impl Into<Timestamp>, value: bool) -> Option<Flag> {
         Some(Self::Set(EffectSortingKey::new(layer, timestamp.into()), value))
     }
 

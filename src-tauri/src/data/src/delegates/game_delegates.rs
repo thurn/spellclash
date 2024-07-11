@@ -26,7 +26,7 @@ use crate::delegates::game_delegate_data::{
 };
 use crate::delegates::query_value::{ChangeText, EnumSets, Flag, Ints};
 use crate::delegates::stores_delegates::StoresDelegates;
-use crate::printed_cards::card_subtypes::{CreatureType, LandSubtype};
+use crate::printed_cards::card_subtypes::{CreatureType, LandType};
 
 #[derive(Default, Clone)]
 pub struct GameDelegates {
@@ -78,11 +78,11 @@ pub struct GameDelegates {
     pub creature_subtypes: CardQueryDelegateList<CardId, EnumSets<CreatureType>>,
 
     /// Queries the land subtypes of a card.
-    pub land_subtypes: CardQueryDelegateList<CardId, EnumSets<LandSubtype>>,
+    pub land_subtypes: CardQueryDelegateList<CardId, EnumSets<LandType>>,
 
     /// Queries for text-changing effects to change a land subtype in the rules
     /// text of a card
-    pub change_land_subtype_text: CardQueryDelegateList<CardId, ChangeText<LandSubtype>>,
+    pub change_land_subtype_text: CardQueryDelegateList<CardId, ChangeText<LandType>>,
 
     /// Queries for text-changing effects to change a color in the rules
     /// text of a card

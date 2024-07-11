@@ -28,7 +28,7 @@ use uuid::Uuid;
 
 use crate::card_states::zones::{HasZones, ToCardId, ZoneQueries, Zones};
 use crate::game_states::game_state::GameState;
-use crate::printed_cards::card_subtypes::LandSubtype;
+use crate::printed_cards::card_subtypes::LandType;
 use crate::text_strings::Text;
 
 /// Possible colors of cards or effects.

@@ -12,11 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod card_modifier;
-pub mod card_queries;
-pub mod card_query;
-pub mod duration;
-pub mod flag;
-pub mod query_condition;
-pub mod query_name;
-pub mod query_names;
+use crate::delegates::query_value::QueryValue;
+use crate::queries::card_queries::CardQueries;
+use crate::queries::card_query::{CardArgumentQuery, CardQuery};
+
+pub trait QueryName {
+    type Arg;
+    type Modifier: QueryValue;
+
+    fn query(queries: &CardQueries) -> &CardArgumentQuery<Self::Arg, Self::Modifier>;
+
+    fn query_mut(queries: &mut CardQueries) -> &mut CardArgumentQuery<Self::Arg, Self::Modifier>;
+}

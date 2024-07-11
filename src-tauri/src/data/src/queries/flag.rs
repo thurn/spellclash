@@ -28,7 +28,7 @@ pub enum Flag<TArg> {
 }
 
 impl<TArg> Flag<TArg> {
-    pub fn set(layer: Layer, timestamp: impl Into<Timestamp>, value: bool) -> Flag<TArg> {
+    pub fn overwrite(layer: Layer, timestamp: impl Into<Timestamp>, value: bool) -> Flag<TArg> {
         Self::Overwrite(EffectSortingKey::new(layer, timestamp.into()), value)
     }
 

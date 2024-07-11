@@ -181,6 +181,10 @@ pub struct CardState {
     /// mutate this field directly, use the `change_controller` module instead.
     pub last_changed_control: TurnData,
 
+    /// The [ObjectId] which was associated with this card immediately before it
+    /// obtained its current [ObjectId], if any.
+    pub previous_object_id: Option<ObjectId>,
+
     /// Printed Card associated with this card. Use the [Self::printed] method
     /// instead of accessing this directly.
     ///

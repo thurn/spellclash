@@ -18,7 +18,7 @@ use data::card_definitions::card_name::CardName;
 use data::core::primitives::{CardSupertype, CardType, Color, ManaColor};
 use data::printed_cards::card_subtypes::{
     ArtifactSubtype, BattleSubtype, CardSubtypes, CreatureType, DungeonSubtype, EnchantmentSubtype,
-    InstantOrSorcerySubtype, LandSubtype, PlaneSubtype, PlaneswalkerSubtype,
+    InstantOrSorcerySubtype, LandType, PlaneSubtype, PlaneswalkerSubtype,
 };
 use data::printed_cards::database_card::DatabaseCardFace;
 use data::printed_cards::layout::{CardLayout, FaceLayout};
@@ -130,7 +130,7 @@ fn subtypes(types: Vec<&str>) -> CardSubtypes {
         if let Ok(s) = subtype.parse::<EnchantmentSubtype>() {
             result.enchantment.insert(s);
         }
-        if let Ok(s) = subtype.parse::<LandSubtype>() {
+        if let Ok(s) = subtype.parse::<LandType>() {
             result.land.insert(s);
         }
         if let Ok(s) = subtype.parse::<PlaneswalkerSubtype>() {

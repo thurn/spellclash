@@ -27,7 +27,7 @@ use crate::text_strings::Text;
 pub struct CardSubtypes {
     pub artifact: EnumSet<ArtifactSubtype>,
     pub enchantment: EnumSet<EnchantmentSubtype>,
-    pub land: EnumSet<LandSubtype>,
+    pub land: EnumSet<LandType>,
     pub planeswalker: EnumSet<PlaneswalkerSubtype>,
     pub instant_or_sorcery_subtype: EnumSet<InstantOrSorcerySubtype>,
     pub creature: EnumSet<CreatureType>,
@@ -80,7 +80,7 @@ pub enum EnchantmentSubtype {
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R2053ia>
 #[derive(Debug, Display, EnumSetType, EnumString, Serialize, Deserialize)]
-pub enum LandSubtype {
+pub enum LandType {
     Cave,
     Desert,
     Forest,
@@ -98,16 +98,12 @@ pub enum LandSubtype {
     Urzas,
 }
 
-pub const BASIC_LANDS: EnumSet<LandSubtype> = enum_set!(
-    LandSubtype::Plains
-        | LandSubtype::Island
-        | LandSubtype::Swamp
-        | LandSubtype::Mountain
-        | LandSubtype::Forest
+pub const BASIC_LANDS: EnumSet<LandType> = enum_set!(
+    LandType::Plains | LandType::Island | LandType::Swamp | LandType::Mountain | LandType::Forest
 );
 
-impl From<LandSubtype> for Text {
-    fn from(value: LandSubtype) -> Self {
+impl From<LandType> for Text {
+    fn from(value: LandType) -> Self {
         Text::LandSubtype(value)
     }
 }

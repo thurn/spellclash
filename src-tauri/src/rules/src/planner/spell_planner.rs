@@ -18,7 +18,7 @@ use data::card_states::play_card_plan::{ManaPaymentPlan, PlayCardPlan};
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, HasController, ManaColor, PermanentId, Source};
 use data::game_states::game_state::GameState;
-use data::printed_cards::card_subtypes::LandSubtype;
+use data::printed_cards::card_subtypes::LandType;
 use data::printed_cards::mana_cost::ManaCostItem;
 use tracing::instrument;
 use utils::outcome;
@@ -51,11 +51,11 @@ pub fn mana_payment(
 
     let mut lands: LandAbilityMap = BTreeMap::new();
     for card in game.battlefield(controller) {
-        add_land_to_map(game, *card, &mut lands, ManaColor::White, LandSubtype::Plains);
-        add_land_to_map(game, *card, &mut lands, ManaColor::Blue, LandSubtype::Island);
-        add_land_to_map(game, *card, &mut lands, ManaColor::Black, LandSubtype::Swamp);
-        add_land_to_map(game, *card, &mut lands, ManaColor::Red, LandSubtype::Mountain);
-        add_land_to_map(game, *card, &mut lands, ManaColor::Green, LandSubtype::Forest);
+        add_land_to_map(game, *card, &mut lands, ManaColor::White, LandType::Plains);
+        add_land_to_map(game, *card, &mut lands, ManaColor::Blue, LandType::Island);
+        add_land_to_map(game, *card, &mut lands, ManaColor::Black, LandType::Swamp);
+        add_land_to_map(game, *card, &mut lands, ManaColor::Red, LandType::Mountain);
+        add_land_to_map(game, *card, &mut lands, ManaColor::Green, LandType::Forest);
     }
     lands.values_mut().for_each(|v| v.sort_by_key(|(_, subtypes)| *subtypes));
 
@@ -73,7 +73,7 @@ fn add_land_to_map(
     land_id: PermanentId,
     lands: &mut LandAbilityMap,
     color: ManaColor,
-    subtype: LandSubtype,
+    subtype: LandType,
 ) -> Outcome {
     if game.card(land_id)?.tapped_state.is_tapped() {
         return outcome::OK;

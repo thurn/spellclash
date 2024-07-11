@@ -16,11 +16,11 @@ use std::fmt::{Debug, Formatter};
 
 use crate::core::card_tags::CardTag;
 use crate::core::numerics::{Power, Toughness};
-use crate::core::primitives::{CardId, Color};
+use crate::core::primitives::{CardId, Color, PermanentId};
 use crate::delegates::card_query_delegate_list::CardQueryDelegateList;
 use crate::delegates::game_delegate_data::{CanAttackTarget, CanBeBlocked};
 use crate::delegates::query_value::{ChangeText, EnumSets, Ints};
-use crate::printed_cards::card_subtypes::{CreatureType, LandSubtype};
+use crate::printed_cards::card_subtypes::{CreatureType, LandType};
 use crate::queries::card_query::{CardArgumentQuery, CardQuery};
 use crate::queries::flag::Flag;
 
@@ -35,6 +35,9 @@ pub struct CardQueries {
     /// Can this creature be blocked by the indicated blocker?
     pub can_be_blocked: CardArgumentQuery<CanBeBlocked, Flag<CanBeBlocked>>,
 
+    /// Does this card have haste?
+    pub has_haste: CardQuery<Flag<()>>,
+
     /// Queries the colors of a card.
     ///
     /// An empty set represents colorless.
@@ -44,11 +47,11 @@ pub struct CardQueries {
     pub creature_types: CardQuery<EnumSets<CreatureType>>,
 
     /// Queries the land subtypes of a card.
-    pub land_types: CardQuery<EnumSets<LandSubtype>>,
+    pub land_types: CardQuery<EnumSets<LandType>>,
 
     /// Queries for text-changing effects to change a land subtype in the rules
     /// text of a card
-    pub change_land_type_text: CardQuery<ChangeText<LandSubtype>>,
+    pub change_land_type_text: CardQuery<ChangeText<LandType>>,
 
     /// Queries for text-changing effects to change a color in the rules
     /// text of a card

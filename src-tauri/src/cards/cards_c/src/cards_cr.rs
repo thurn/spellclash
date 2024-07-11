@@ -13,7 +13,6 @@
 // limitations under the License.
 
 use abilities::characteristics::change_text;
-use abilities::core::effects;
 use abilities::targeting::targets;
 use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
@@ -27,14 +26,9 @@ pub fn craw_wurm() -> CardDefinition {
 
 pub fn crystal_spray() -> CardDefinition {
     CardDefinition::new(card_name::CRYSTAL_SPRAY).ability(
-        SpellAbility::new()
-            .targets(targets::spell_or_permanent())
-            .effect(|g, c, target| {
-                change_text::change_basic_land_types_or_colors_this_turn(g, c, target);
-                library::draw(g, c.source(), c.controller());
-            })
-            .delegates(|d| {
-                effects::preserve_this_turn_effects_when_entering_battlefield(d);
-            }),
+        SpellAbility::new().targets(targets::spell_or_permanent()).effect(|g, c, target| {
+            change_text::change_basic_land_types_or_colors_this_turn(g, c, target);
+            library::draw(g, c.source(), c.controller());
+        }),
     )
 }

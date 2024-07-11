@@ -16,7 +16,7 @@ use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::primitives::{CardType, Color, PermanentId, Source};
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
-use data::printed_cards::card_subtypes::LandSubtype;
+use data::printed_cards::card_subtypes::LandType;
 
 use crate::queries::{card_queries, text_change_queries};
 
@@ -54,7 +54,7 @@ pub fn plains(game: &GameState, source: Source, id: impl ToCardId) -> Option<boo
         card_queries::land_subtypes(game, source, id)?.contains(text_change_queries::land_subtype(
             game,
             source,
-            LandSubtype::Plains,
+            LandType::Plains,
         )),
     )
 }
@@ -69,7 +69,7 @@ pub fn island(game: &GameState, source: Source, id: impl ToCardId) -> Option<boo
         card_queries::land_subtypes(game, source, id)?.contains(text_change_queries::land_subtype(
             game,
             source,
-            LandSubtype::Island,
+            LandType::Island,
         )),
     )
 }
@@ -84,7 +84,7 @@ pub fn swamp(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool
         card_queries::land_subtypes(game, source, id)?.contains(text_change_queries::land_subtype(
             game,
             source,
-            LandSubtype::Swamp,
+            LandType::Swamp,
         )),
     )
 }
@@ -99,7 +99,7 @@ pub fn mountain(game: &GameState, source: Source, id: impl ToCardId) -> Option<b
         card_queries::land_subtypes(game, source, id)?.contains(text_change_queries::land_subtype(
             game,
             source,
-            LandSubtype::Mountain,
+            LandType::Mountain,
         )),
     )
 }
@@ -114,7 +114,7 @@ pub fn forest(game: &GameState, source: Source, id: impl ToCardId) -> Option<boo
         card_queries::land_subtypes(game, source, id)?.contains(text_change_queries::land_subtype(
             game,
             source,
-            LandSubtype::Forest,
+            LandType::Forest,
         )),
     )
 }

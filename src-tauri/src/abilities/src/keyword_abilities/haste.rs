@@ -13,10 +13,20 @@
 // limitations under the License.
 
 use data::card_definitions::ability_definition::{Ability, StaticAbility};
-use data::core::primitives::HasSource;
+use data::card_states::zones::ZoneQueries;
+use data::core::card_tags::CardTag;
+use data::core::primitives::{HasSource, PermanentId};
+use data::delegates::delegate_type::DelegateType;
+use data::delegates::game_delegate_data::CanBeBlocked;
 use data::delegates::game_delegates::GameDelegates;
 use data::delegates::layer::Layer;
-use data::delegates::query_value::{Flag, QueryValue};
+use data::delegates::query_value::{EnumSets, QueryValue};
+use data::delegates::scope::EffectContext;
+use data::game_states::game_state::GameState;
+use data::queries::card_modifier::CardModifier;
+use data::queries::duration::Duration;
+use data::queries::flag::Flag;
+use enumset::EnumSet;
 
 use crate::core::gain_ability;
 use crate::core::gain_ability::GainAbility;
@@ -35,13 +45,24 @@ use crate::core::gain_ability::GainAbility;
 /// > 702.10d. Multiple instances of haste on the same creature are redundant.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R70210>
-pub fn ability() -> impl Ability {
-    StaticAbility::new().delegates(|d| gain(d, GainAbility::ThisCard))
-}
-
-/// Adds the haste ability to the given delegates.
-pub fn gain(delegates: &mut GameDelegates, add_ability: GainAbility) {
-    gain_ability::add_to_query(&mut delegates.has_haste, add_ability, |_, s, _| {
-        Flag::set(Layer::AbilityModifyingEffects, s, true)
-    });
+pub fn gain_this_turn(game: &mut GameState, context: EffectContext, id: PermanentId) {
+    let turn = game.turn;
+    if let Some(card) = game.card_mut(id) {
+        card.queries.tags.add(CardModifier {
+            source: context.source(),
+            duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
+            delegate_type: DelegateType::Effect,
+            effect: EnumSets::add(Layer::AbilityModifyingEffects, context, CardTag::Haste),
+        });
+        card.queries.has_haste.add(CardModifier {
+            source: context.source(),
+            duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
+            delegate_type: DelegateType::Effect,
+            effect: Flag::overwrite(
+                Layer::AbilityModifyingEffects,
+                context.effect_id.timestamp(),
+                true,
+            ),
+        });
+    }
 }

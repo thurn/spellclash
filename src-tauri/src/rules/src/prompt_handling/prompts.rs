@@ -20,7 +20,7 @@ use data::core::primitives::{CardId, EntityId, PlayerName};
 use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use data::player_states::player_state::{PlayerQueries, PlayerType};
-use data::printed_cards::card_subtypes::LandSubtype;
+use data::printed_cards::card_subtypes::LandType;
 use data::prompts::entity_choice_prompt::{Choice, EntityChoicePrompt};
 use data::prompts::game_update::GameUpdate;
 use data::prompts::multiple_choice_prompt::MultipleChoicePrompt;

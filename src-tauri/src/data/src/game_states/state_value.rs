@@ -16,7 +16,7 @@ use either::Either;
 use serde::{Deserialize, Serialize};
 
 use crate::core::primitives::{CardId, Color, EntityId, PermanentId, PlayerName};
-use crate::printed_cards::card_subtypes::LandSubtype;
+use crate::printed_cards::card_subtypes::LandType;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum StateValue {
@@ -25,7 +25,7 @@ pub enum StateValue {
     PermanentId(PermanentId),
     EntityId(EntityId),
     Color(Color),
-    LandSubtype(LandSubtype),
+    LandSubtype(LandType),
     Pair(Box<(StateValue, StateValue)>),
     Either(Box<Either<StateValue, StateValue>>),
 }
@@ -174,13 +174,13 @@ impl TryFrom<StateValue> for Color {
     }
 }
 
-impl From<LandSubtype> for StateValue {
-    fn from(value: LandSubtype) -> Self {
+impl From<LandType> for StateValue {
+    fn from(value: LandType) -> Self {
         Self::LandSubtype(value)
     }
 }
 
-impl TryFrom<StateValue> for LandSubtype {
+impl TryFrom<StateValue> for LandType {
     type Error = ();
 
     fn try_from(value: StateValue) -> Result<Self, Self::Error> {

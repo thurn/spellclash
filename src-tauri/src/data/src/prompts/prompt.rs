@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 use strum::EnumDiscriminants;
 
 use crate::core::primitives::{CardId, EntityId, PlayerName};
-use crate::printed_cards::card_subtypes::LandSubtype;
+use crate::printed_cards::card_subtypes::LandType;
 use crate::prompts::entity_choice_prompt::EntityChoicePrompt;
 use crate::prompts::multiple_choice_prompt::{MultipleChoicePrompt, MultipleChoicePromptTrait};
 use crate::prompts::pick_number_prompt::PickNumberPrompt;

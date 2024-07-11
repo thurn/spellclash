@@ -304,6 +304,7 @@ impl Zones {
             custom_state: CustomCardStateList::default(),
             entered_current_zone: current_turn,
             last_changed_control: current_turn,
+            previous_object_id: None,
             printed_card_reference: Some(reference.printed_card_reference),
         });
 
@@ -380,6 +381,7 @@ impl Zones {
         let timestamp = self.new_timestamp();
         let card = self.card_mut(card_id).expect("Card not found");
         card.zone = zone;
+        card.previous_object_id = Some(card.object_id);
         card.object_id = new_object_id;
         card.timestamp = timestamp;
         self.add_to_zone(owner, card_id, zone);
