@@ -43,6 +43,7 @@ use crate::delegates::scope::Scope;
 use crate::game_states::game_state::GameState;
 use crate::game_states::game_state::TurnData;
 use crate::printed_cards::printed_card_id::PrintedCardId;
+use crate::queries::card_queries::CardQueries;
 
 pub trait ZoneQueries {
     /// Looks up the state for a card.
@@ -288,6 +289,7 @@ impl Zones {
             timestamp: Timestamp(0),
             kind,
             owner,
+            queries: CardQueries::default(),
             control_changing_effects: vec![],
             zone: Zone::Library,
             facing: CardFacing::FaceDown,

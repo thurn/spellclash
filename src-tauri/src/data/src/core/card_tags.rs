@@ -12,8 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod card_tags;
-pub mod function_types;
-pub mod numerics;
-pub mod panel_address;
-pub mod primitives;
+use enumset::EnumSetType;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Hash, Ord, PartialOrd, Serialize, Deserialize, EnumSetType)]
+pub enum CardTag {
+    Flying,
+    Haste,
+}

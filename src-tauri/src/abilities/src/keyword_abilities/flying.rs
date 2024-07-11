@@ -13,10 +13,21 @@
 // limitations under the License.
 
 use data::card_definitions::ability_definition::{Ability, StaticAbility};
-use data::core::primitives::HasSource;
+use data::card_states::zones::ZoneQueries;
+use data::core::card_tags::CardTag;
+use data::core::primitives::{HasSource, PermanentId};
+use data::delegates::delegate_type::DelegateType;
+use data::delegates::game_delegate_data::CanBeBlocked;
 use data::delegates::game_delegates::GameDelegates;
 use data::delegates::layer::Layer;
-use data::delegates::query_value::{Flag, QueryValue};
+use data::delegates::query_value::{EnumSets, QueryValue};
+use data::delegates::scope::EffectContext;
+use data::game_states::game_state::GameState;
+use data::printed_cards::card_subtypes::CreatureType;
+use data::queries::card_modifier::CardModifier;
+use data::queries::duration::Duration;
+use data::queries::flag::Flag;
+use enumset::EnumSet;
 use rules::queries::combat_queries;
 
 use crate::core::gain_ability;
@@ -32,16 +43,28 @@ use crate::core::gain_ability::GainAbility;
 /// > 702.9c. Multiple instances of flying on the same creature are redundant.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R7029>
-pub fn ability() -> impl Ability {
-    StaticAbility::new().delegates(|d| gain(d, GainAbility::ThisCard))
-}
-
-/// Adds the flying ability to the given delegates.
-pub fn gain(delegates: &mut GameDelegates, add_ability: GainAbility) {
-    gain_ability::add_to_query(&mut delegates.has_flying, add_ability, |_, s, _| {
-        Flag::set(Layer::AbilityModifyingEffects, s, true)
-    });
-    gain_ability::add_to_query(&mut delegates.can_be_blocked, add_ability, |g, s, data| {
-        Flag::and_predicate(g, s, data.blocker_id, combat_queries::has_flying)
-    });
+pub fn gain_this_turn(game: &mut GameState, context: EffectContext, id: PermanentId) {
+    let turn = game.turn;
+    if let Some(card) = game.card_mut(id) {
+        card.queries.tags.add(CardModifier {
+            source: context.source(),
+            duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
+            delegate_type: DelegateType::Effect,
+            effect: EnumSets::add(Layer::AbilityModifyingEffects, context, CardTag::Flying),
+        });
+        card.queries.can_be_blocked.add(CardModifier {
+            source: context.source(),
+            duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
+            delegate_type: DelegateType::Effect,
+            effect: Flag::and_predicate(|g, s, data: &CanBeBlocked| {
+                Some(
+                    g.card(data.blocker_id)?
+                        .queries
+                        .tags
+                        .query(g, s, EnumSet::empty())
+                        .contains(CardTag::Flying),
+                )
+            }),
+        });
+    }
 }

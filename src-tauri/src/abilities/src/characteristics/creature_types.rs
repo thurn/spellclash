@@ -13,12 +13,11 @@
 // limitations under the License.
 
 use data::card_states::zones::ZoneQueries;
-use data::core::numerics::{Power, Toughness};
-use data::core::primitives::{HasSource, PermanentId};
+use data::core::primitives::{Color, HasSource, PermanentId};
 use data::delegates::delegate_type::DelegateType;
 use data::delegates::game_delegates::GameDelegates;
 use data::delegates::layer::Layer;
-use data::delegates::query_value::{EnumSets, Ints, QueryValue};
+use data::delegates::query_value::{EnumSets, QueryValue};
 use data::delegates::scope::EffectContext;
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::CreatureType;
@@ -27,27 +26,20 @@ use data::queries::duration::Duration;
 use enumset::EnumSet;
 use rules::queries::query_extension::QueryExt;
 
-/// Sets a card's base power and toughness for the current turn
+/// Sets a card's creature subtypes for the current turn
 pub fn set_this_turn(
     game: &mut GameState,
     context: EffectContext,
     id: PermanentId,
-    power: Power,
-    toughness: Toughness,
+    colors: impl Into<EnumSet<CreatureType>>,
 ) {
     let turn = game.turn;
     if let Some(card) = game.card_mut(id) {
-        card.queries.base_power.add(CardModifier {
+        card.queries.creature_types.add(CardModifier {
             source: context.source(),
             duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
             delegate_type: DelegateType::Effect,
-            effect: Ints::set(Layer::PowerToughnessSettingEffects, context, power),
-        });
-        card.queries.base_toughness.add(CardModifier {
-            source: context.source(),
-            duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
-            delegate_type: DelegateType::Effect,
-            effect: Ints::set(Layer::PowerToughnessSettingEffects, context, toughness),
+            effect: EnumSets::set(Layer::TypeChangingEffects, context, colors.into()),
         });
     }
 }

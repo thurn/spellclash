@@ -27,8 +27,8 @@ use data::queries::duration::Duration;
 use enumset::EnumSet;
 use rules::queries::query_extension::QueryExt;
 
-/// Sets a card's base power and toughness for the current turn
-pub fn set_this_turn(
+/// Adds to a card's power and toughness for the current turn
+pub fn add_this_turn(
     game: &mut GameState,
     context: EffectContext,
     id: PermanentId,
@@ -37,17 +37,17 @@ pub fn set_this_turn(
 ) {
     let turn = game.turn;
     if let Some(card) = game.card_mut(id) {
-        card.queries.base_power.add(CardModifier {
+        card.queries.power.add(CardModifier {
             source: context.source(),
             duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
             delegate_type: DelegateType::Effect,
-            effect: Ints::set(Layer::PowerToughnessSettingEffects, context, power),
+            effect: Ints::add(power),
         });
-        card.queries.base_toughness.add(CardModifier {
+        card.queries.toughness.add(CardModifier {
             source: context.source(),
             duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
             delegate_type: DelegateType::Effect,
-            effect: Ints::set(Layer::PowerToughnessSettingEffects, context, toughness),
+            effect: Ints::add(toughness),
         });
     }
 }

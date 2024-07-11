@@ -23,7 +23,9 @@ use crate::delegates::layer::{EffectSortingKey, Layer};
 use crate::game_states::game_state::GameState;
 
 /// Marker trait for the return value of queries
-pub trait QueryValue {}
+pub trait QueryValue {
+    fn effect_sorting_key(&self) -> Option<EffectSortingKey>;
+}
 
 #[derive(Clone, Copy, Debug)]
 pub enum Flag {
@@ -55,7 +57,15 @@ impl Flag {
     }
 }
 
-impl QueryValue for Flag {}
+impl QueryValue for Flag {
+    fn effect_sorting_key(&self) -> Option<EffectSortingKey> {
+        match self {
+            Self::Set(key, _) => Some(*key),
+            Self::And(_) => None,
+            Self::Or(_) => None,
+        }
+    }
+}
 
 #[derive(Clone, Copy, Debug)]
 pub enum Ints<T: Default + Add<Output = T>> {
@@ -64,20 +74,28 @@ pub enum Ints<T: Default + Add<Output = T>> {
 }
 
 impl<T: Default + Add<Output = T>> Ints<T> {
-    pub fn set(layer: Layer, timestamp: impl Into<Timestamp>, value: T) -> Option<Ints<T>> {
-        Some(Self::Set(EffectSortingKey::new(layer, timestamp.into()), value))
+    pub fn set(layer: Layer, timestamp: impl Into<Timestamp>, value: T) -> Ints<T> {
+        Self::Set(EffectSortingKey::new(layer, timestamp.into()), value)
     }
 
-    pub fn add(value: T) -> Option<Ints<T>> {
-        Some(Self::Add(value))
+    pub fn add(value: T) -> Ints<T> {
+        Self::Add(value)
     }
 }
 
-impl<T: Default + Add<Output = T>> QueryValue for Ints<T> {}
+impl<T: Default + Add<Output = T>> QueryValue for Ints<T> {
+    fn effect_sorting_key(&self) -> Option<EffectSortingKey> {
+        match self {
+            Self::Set(key, _) => Some(*key),
+            Self::Add(_) => None,
+        }
+    }
+}
 
 #[derive(Clone, Copy, Debug)]
 pub enum EnumSets<T: EnumSetType> {
     Set(EffectSortingKey, EnumSet<T>),
+    Add(EffectSortingKey, EnumSet<T>),
     Replace(EffectSortingKey, T, T),
 }
 
@@ -85,22 +103,33 @@ impl<T: EnumSetType> EnumSets<T> {
     pub fn set(
         layer: Layer,
         timestamp: impl Into<Timestamp>,
-        value: EnumSet<T>,
-    ) -> Option<EnumSets<T>> {
-        Some(Self::Set(EffectSortingKey::new(layer, timestamp.into()), value))
+        value: impl Into<EnumSet<T>>,
+    ) -> EnumSets<T> {
+        Self::Set(EffectSortingKey::new(layer, timestamp.into()), value.into())
     }
 
-    pub fn replace(
+    pub fn add(
         layer: Layer,
         timestamp: impl Into<Timestamp>,
-        old: T,
-        new: T,
-    ) -> Option<EnumSets<T>> {
-        Some(Self::Replace(EffectSortingKey::new(layer, timestamp.into()), old, new))
+        value: impl Into<EnumSet<T>>,
+    ) -> EnumSets<T> {
+        Self::Add(EffectSortingKey::new(layer, timestamp.into()), value.into())
+    }
+
+    pub fn replace(layer: Layer, timestamp: impl Into<Timestamp>, old: T, new: T) -> EnumSets<T> {
+        Self::Replace(EffectSortingKey::new(layer, timestamp.into()), old, new)
     }
 }
 
-impl<T: EnumSetType> QueryValue for EnumSets<T> {}
+impl<T: EnumSetType> QueryValue for EnumSets<T> {
+    fn effect_sorting_key(&self) -> Option<EffectSortingKey> {
+        match self {
+            Self::Set(key, _) => Some(*key),
+            Self::Add(key, _) => Some(*key),
+            Self::Replace(key, _, _) => Some(*key),
+        }
+    }
+}
 
 #[derive(Clone, Copy, Debug)]
 pub enum ChangeText<T: EnumSetType> {
@@ -108,9 +137,17 @@ pub enum ChangeText<T: EnumSetType> {
 }
 
 impl<T: EnumSetType> ChangeText<T> {
-    pub fn replace(timestamp: impl Into<Timestamp>, old: T, new: T) -> Option<ChangeText<T>> {
-        Some(Self::Replace(timestamp.into(), old, new))
+    pub fn replace(timestamp: impl Into<Timestamp>, old: T, new: T) -> ChangeText<T> {
+        Self::Replace(timestamp.into(), old, new)
     }
 }
 
-impl<T: EnumSetType> QueryValue for ChangeText<T> {}
+impl<T: EnumSetType> QueryValue for ChangeText<T> {
+    fn effect_sorting_key(&self) -> Option<EffectSortingKey> {
+        match self {
+            Self::Replace(timestamp, _, _) => {
+                Some(EffectSortingKey::new(Layer::TextChangingEffects, *timestamp))
+            }
+        }
+    }
+}

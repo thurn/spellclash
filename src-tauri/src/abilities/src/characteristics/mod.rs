@@ -15,4 +15,5 @@
 pub mod base_power_toughness;
 pub mod change_text;
 pub mod colors;
-pub mod creature_subtypes;
+pub mod creature_types;
+pub mod power_toughness;

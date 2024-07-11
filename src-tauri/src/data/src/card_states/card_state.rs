@@ -34,6 +34,7 @@ use crate::core::primitives::{
 use crate::game_states::game_state::{GameState, TurnData};
 use crate::printed_cards::printed_card::{Face, PrintedCard, PrintedCardFace};
 use crate::printed_cards::printed_card_id::PrintedCardId;
+use crate::queries::card_queries::CardQueries;
 
 /// Represents the state of a card or card-like object.
 ///
@@ -92,6 +93,9 @@ pub struct CardState {
     ///
     /// See <https://yawgatog.com/resources/magic-rules/#R1083>
     pub owner: PlayerName,
+
+    #[serde(skip)]
+    pub queries: CardQueries,
 
     /// Effects which are applying to this card to change its controller.
     ///

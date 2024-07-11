@@ -19,7 +19,7 @@ use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::numerics::{Power, Toughness};
 use data::core::primitives::{CardId, CardType, Color, Source, Zone};
 use data::game_states::game_state::GameState;
-use data::printed_cards::card_subtypes::{CreatureSubtype, LandSubtype};
+use data::printed_cards::card_subtypes::{CreatureType, LandSubtype};
 use data::printed_cards::layout::CardLayout;
 #[allow(unused)] // Used in docs
 use data::printed_cards::mana_cost::{ManaCost, ManaCostItem};
@@ -156,7 +156,7 @@ pub fn creature_subtypes(
     game: &GameState,
     source: Source,
     id: impl ToCardId,
-) -> Option<EnumSet<CreatureSubtype>> {
+) -> Option<EnumSet<CreatureType>> {
     let card_id = id.to_card_id(game)?;
     let types = characteristic_faces(game, source, card_id)?
         .iter()

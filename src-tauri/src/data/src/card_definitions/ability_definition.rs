@@ -27,6 +27,7 @@ use crate::costs::cost::Cost;
 use crate::delegates::game_delegates::GameDelegates;
 use crate::delegates::scope::{EffectContext, Scope};
 use crate::game_states::game_state::GameState;
+use crate::queries::card_queries::CardQueries;
 
 /// An event callback function.
 pub struct Delegate {
@@ -104,6 +105,7 @@ impl SpellAbility {
     pub fn new() -> AbilityBuilder<NoEffect, DelayedTrigger<NoEffect>> {
         AbilityBuilder {
             ability_type: AbilityType::Spell,
+            initialize: None,
             delegates: vec![],
             effect: NoEffect,
             delayed_trigger_effect: DelayedTrigger { delayed_trigger_effect: NoEffect },
@@ -118,6 +120,7 @@ impl TriggeredAbility {
     pub fn new() -> AbilityBuilder<NoEffect, DelayedTrigger<NoEffect>> {
         AbilityBuilder {
             ability_type: AbilityType::Triggered,
+            initialize: None,
             delegates: vec![],
             effect: NoEffect,
             delayed_trigger_effect: DelayedTrigger { delayed_trigger_effect: NoEffect },
@@ -132,6 +135,7 @@ impl StaticAbility {
     pub fn new() -> AbilityBuilder<StaticEffect, DelayedTrigger<StaticEffect>> {
         AbilityBuilder {
             ability_type: AbilityType::Static,
+            initialize: None,
             delegates: vec![],
             effect: StaticEffect,
             delayed_trigger_effect: DelayedTrigger { delayed_trigger_effect: StaticEffect },
@@ -169,6 +173,8 @@ pub trait DelayedTriggerEffect {
 pub struct AbilityBuilder<TEffect, TDelayed: DelayedTriggerEffect> {
     ability_type: AbilityType,
 
+    initialize: Option<Box<dyn Fn(&mut CardQueries) + Send + Sync + 'static>>,
+
     delegates: Vec<Delegate>,
 
     effect: TEffect,
@@ -177,6 +183,14 @@ pub struct AbilityBuilder<TEffect, TDelayed: DelayedTriggerEffect> {
 }
 
 impl<TEffect, TDelayed: DelayedTriggerEffect> AbilityBuilder<TEffect, TDelayed> {
+    pub fn initialize(
+        mut self,
+        initialize: impl Fn(&mut CardQueries) + 'static + Copy + Send + Sync,
+    ) -> Self {
+        self.initialize = Some(Box::new(initialize));
+        self
+    }
+
     /// Adds new [Delegate]s to this ability which functions only for the
     /// default zones.
     ///
@@ -216,6 +230,7 @@ impl<TEffect, TDelayed: DelayedTriggerEffect> AbilityBuilder<TEffect, TDelayed> 
     ) -> AbilityBuilder<TEffect, TNew> {
         AbilityBuilder {
             ability_type: self.ability_type,
+            initialize: self.initialize,
             delegates: self.delegates,
             effect: self.effect,
             delayed_trigger_effect: trigger,
@@ -234,6 +249,7 @@ where
         AbilityBuilder {
             ability_type: self.ability_type,
             effect: UntargetedEffect { function: effect },
+            initialize: self.initialize,
             delegates: self.delegates,
             delayed_trigger_effect: self.delayed_trigger_effect,
         }
@@ -249,6 +265,7 @@ where
         AbilityBuilder {
             ability_type: self.ability_type,
             effect: WithSelector { selector },
+            initialize: self.initialize,
             delegates: self.delegates,
             delayed_trigger_effect: self.delayed_trigger_effect,
         }
@@ -270,6 +287,7 @@ where
         AbilityBuilder {
             ability_type: self.ability_type,
             effect: TargetedEffect { selector: self.effect.selector, function: effect },
+            initialize: self.initialize,
             delegates: self.delegates,
             delayed_trigger_effect: self.delayed_trigger_effect,
         }

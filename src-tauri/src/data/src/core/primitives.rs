@@ -279,6 +279,11 @@ impl ObjectId {
     }
 }
 
+/// Marker trait for types which contain an [ObjectId].
+pub trait HasObjectId {
+    fn object_id(&self) -> ObjectId;
+}
+
 /// Identifies the time at which an effect started to apply.
 ///
 /// > 613.7. Within a layer or sublayer, determining which order effects are
@@ -314,6 +319,12 @@ pub struct PermanentId {
 impl PermanentId {
     pub fn new(object_id: ObjectId, card_id: CardId) -> Self {
         Self { object_id, card_id }
+    }
+}
+
+impl HasObjectId for PermanentId {
+    fn object_id(&self) -> ObjectId {
+        self.object_id
     }
 }
 
@@ -356,6 +367,12 @@ pub struct SpellId {
 impl SpellId {
     pub fn new(object_id: ObjectId, card_id: CardId) -> Self {
         Self { object_id, card_id }
+    }
+}
+
+impl HasObjectId for SpellId {
+    fn object_id(&self) -> ObjectId {
+        self.object_id
     }
 }
 

@@ -15,13 +15,18 @@
 use std::io::Read;
 
 use data::card_states::card_state::ControlChangingEffect;
-use data::core::primitives::{Color, PlayerName, COLORS};
+use data::card_states::zones::ZoneQueries;
+use data::core::primitives::{Color, HasSource, PermanentId, PlayerName, SpellId, COLORS};
+use data::delegates::delegate_type::DelegateType;
 use data::delegates::game_delegates::GameDelegates;
 use data::delegates::layer::Layer;
 use data::delegates::query_value::{ChangeText, EnumSets};
+use data::delegates::scope::EffectContext;
 use data::game_states::effect_state::EffectState;
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::{LandSubtype, BASIC_LANDS};
+use data::queries::card_modifier::CardModifier;
+use data::queries::duration::Duration;
 use data::text_strings::Text;
 use either::Either;
 use rules::prompt_handling::prompts;
@@ -29,7 +34,105 @@ use rules::queries::query_extension::QueryExt;
 
 pub type LandSubtypesOrColors = Either<(LandSubtype, LandSubtype), (Color, Color)>;
 
-pub fn choose_basic_land_types_or_colors(
+pub fn change_basic_land_types_or_colors_this_turn(
+    game: &mut GameState,
+    context: EffectContext,
+    target: Either<SpellId, PermanentId>,
+) {
+    let turn = game.turn;
+    let choice = choose_basic_land_types_or_colors(game, context.controller());
+    match (choice, target) {
+        (LandSubtypesOrColors::Left((old_land_type, new_land_type)), Either::Left(spell_id)) => {
+            if let Some(card) = game.card_mut(spell_id) {
+                card.queries.land_types.add(CardModifier {
+                    source: context.source(),
+                    duration: Duration::WhileOnStack(spell_id),
+                    delegate_type: DelegateType::Effect,
+                    effect: EnumSets::replace(
+                        Layer::TextChangingEffects,
+                        context.effect_id,
+                        old_land_type,
+                        new_land_type,
+                    ),
+                });
+                card.queries.change_land_type_text.add(CardModifier {
+                    source: context.source(),
+                    duration: Duration::WhileOnStack(spell_id),
+                    delegate_type: DelegateType::Effect,
+                    effect: ChangeText::replace(context.effect_id, old_land_type, new_land_type),
+                });
+            }
+        }
+        (
+            LandSubtypesOrColors::Left((old_land_type, new_land_type)),
+            Either::Right(permanent_id),
+        ) => {
+            if let Some(card) = game.card_mut(permanent_id) {
+                card.queries.land_types.add(CardModifier {
+                    source: context.source(),
+                    duration: Duration::WhileOnBattlefieldThisTurn(permanent_id, turn),
+                    delegate_type: DelegateType::Effect,
+                    effect: EnumSets::replace(
+                        Layer::TextChangingEffects,
+                        context.effect_id,
+                        old_land_type,
+                        new_land_type,
+                    ),
+                });
+                card.queries.change_land_type_text.add(CardModifier {
+                    source: context.source(),
+                    duration: Duration::WhileOnBattlefieldThisTurn(permanent_id, turn),
+                    delegate_type: DelegateType::Effect,
+                    effect: ChangeText::replace(context.effect_id, old_land_type, new_land_type),
+                });
+            }
+        }
+        (LandSubtypesOrColors::Right((old_color, new_color)), Either::Left(spell_id)) => {
+            if let Some(card) = game.card_mut(spell_id) {
+                card.queries.colors.add(CardModifier {
+                    source: context.source(),
+                    duration: Duration::WhileOnStack(spell_id),
+                    delegate_type: DelegateType::Effect,
+                    effect: EnumSets::replace(
+                        Layer::ColorChangingEffects,
+                        context.effect_id,
+                        old_color,
+                        new_color,
+                    ),
+                });
+                card.queries.change_color_text.add(CardModifier {
+                    source: context.source(),
+                    duration: Duration::WhileOnStack(spell_id),
+                    delegate_type: DelegateType::Effect,
+                    effect: ChangeText::replace(context.effect_id, old_color, new_color),
+                });
+            }
+        }
+        (LandSubtypesOrColors::Right((old_color, new_color)), Either::Right(permanent_id)) => {
+            if let Some(card) = game.card_mut(permanent_id) {
+                card.queries.colors.add(CardModifier {
+                    source: context.source(),
+                    duration: Duration::WhileOnBattlefieldThisTurn(permanent_id, turn),
+                    delegate_type: DelegateType::Effect,
+                    effect: EnumSets::replace(
+                        Layer::ColorChangingEffects,
+                        context.effect_id,
+                        old_color,
+                        new_color,
+                    ),
+                });
+                card.queries.change_color_text.add(CardModifier {
+                    source: context.source(),
+                    duration: Duration::WhileOnBattlefieldThisTurn(permanent_id, turn),
+                    delegate_type: DelegateType::Effect,
+                    effect: ChangeText::replace(context.effect_id, old_color, new_color),
+                });
+            }
+        }
+    }
+}
+
+fn choose_basic_land_types_or_colors(
     game: &mut GameState,
     controller: PlayerName,
 ) -> LandSubtypesOrColors {
@@ -59,69 +162,4 @@ pub fn choose_basic_land_types_or_colors(
             Either::Right((old_color, new_color))
         }
     }
-}
-
-/// Prompts the player to choose two basic land subtypes to swap.
-pub fn choose_basic_land_types(
-    game: &mut GameState,
-    controller: PlayerName,
-) -> (LandSubtype, LandSubtype) {
-    let old = prompts::multiple_choice(
-        game,
-        controller,
-        Text::SelectTypeToChange,
-        BASIC_LANDS.iter().collect(),
-    );
-    let new = prompts::multiple_choice(
-        game,
-        controller,
-        Text::SelectNewType,
-        BASIC_LANDS.iter().filter(|&subtype| subtype != old).collect(),
-    );
-    (old, new)
-}
-
-/// Changes the text of a card to change instances of a basic land subtype in
-/// its rules text.
-pub fn change_basic_land_type_or_color(
-    delegates: &mut GameDelegates,
-    state: &'static EffectState<LandSubtypesOrColors>,
-) {
-    delegates.change_land_subtype_text.this_turn(|g, c, _| {
-        if let Either::Left((old, new)) = state.get(g, c.effect_id)? {
-            ChangeText::replace(c, old, new)
-        } else {
-            None
-        }
-    });
-    delegates.land_subtypes.this_turn(|g, c, _| {
-        if let Either::Left((old, new)) = state.get(g, c.effect_id)? {
-            EnumSets::replace(Layer::TextChangingEffects, c, old, new)
-        } else {
-            None
-        }
-    });
-    delegates.change_color_text.this_turn(|g, c, _| {
-        if let Either::Right((old, new)) = state.get(g, c.effect_id)? {
-            ChangeText::replace(c, old, new)
-        } else {
-            None
-        }
-    });
-}
-
-/// Changes the text of a card to change instances of a basic land subtype in
-/// its rules text.
-pub fn change_basic_land_type(
-    delegates: &mut GameDelegates,
-    state: &'static EffectState<(LandSubtype, LandSubtype)>,
-) {
-    delegates.change_land_subtype_text.this_turn(|g, c, _| {
-        let (old, new) = state.get(g, c.effect_id)?;
-        ChangeText::replace(c, old, new)
-    });
-    delegates.land_subtypes.this_turn(|g, c, _| {
-        let (old, new) = state.get(g, c.effect_id)?;
-        EnumSets::replace(Layer::TextChangingEffects, c, old, new)
-    });
 }

@@ -30,7 +30,7 @@ pub struct CardSubtypes {
     pub land: EnumSet<LandSubtype>,
     pub planeswalker: EnumSet<PlaneswalkerSubtype>,
     pub instant_or_sorcery_subtype: EnumSet<InstantOrSorcerySubtype>,
-    pub creature: EnumSet<CreatureSubtype>,
+    pub creature: EnumSet<CreatureType>,
     pub plane: EnumSet<PlaneSubtype>,
     pub dungeon: EnumSet<DungeonSubtype>,
     pub battle: EnumSet<BattleSubtype>,
@@ -212,7 +212,7 @@ pub enum InstantOrSorcerySubtype {
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R2053m>
 #[derive(Debug, EnumSetType, EnumString)]
-pub enum CreatureSubtype {
+pub enum CreatureType {
     Advisor,
     Aetherborn,
     Alien,

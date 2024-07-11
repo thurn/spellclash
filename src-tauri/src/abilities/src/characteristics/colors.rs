@@ -12,15 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::Color;
+use data::card_states::zones::{ToCardId, ZoneQueries};
+use data::core::primitives::{Color, HasSource, PermanentId};
+use data::delegates::delegate_type::DelegateType;
 use data::delegates::game_delegates::GameDelegates;
 use data::delegates::layer::Layer;
 use data::delegates::query_value::{EnumSets, QueryValue};
+use data::delegates::scope::EffectContext;
+use data::game_states::game_state::GameState;
+use data::queries::card_modifier::CardModifier;
+use data::queries::duration::Duration;
 use enumset::EnumSet;
 use rules::queries::query_extension::QueryExt;
 
-/// Sets a card's colors for the current turn when affected by this card.
-pub fn for_target_this_turn(d: &mut GameDelegates, colors: impl Into<EnumSet<Color>>) {
-    let colors = colors.into();
-    d.colors.this_turn(move |_, s, _| EnumSets::set(Layer::ColorChangingEffects, s, colors));
+pub fn set_this_turn(
+    game: &mut GameState,
+    context: EffectContext,
+    id: PermanentId,
+    colors: impl Into<EnumSet<Color>>,
+) {
+    let turn = game.turn;
+    if let Some(card) = game.card_mut(id) {
+        card.queries.colors.add(CardModifier {
+            source: context.source(),
+            duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
+            delegate_type: DelegateType::Effect,
+            effect: EnumSets::set(Layer::ColorChangingEffects, context, colors.into()),
+        });
+    }
 }

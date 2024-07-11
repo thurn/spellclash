@@ -17,9 +17,10 @@ use data::card_states::iter_matching::IterMatching;
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::function_types::CardPredicate;
 use data::core::primitives::{CardId, PermanentId, Zone};
+use data::delegates::game_delegate_data::CanAttackTarget;
 use data::delegates::game_delegates::GameDelegates;
-use data::delegates::query_value::{Flag, QueryValue};
 use data::delegates::scope::Scope;
+use data::queries::flag::Flag;
 use rules::queries::combat_queries;
 
 /// Prevent this creature from attacking unless the defending player controls a
@@ -27,9 +28,9 @@ use rules::queries::combat_queries;
 pub fn cannot_attack_unless_defender_controls(
     predicate: impl CardPredicate<PermanentId>,
 ) -> impl Ability {
-    StaticAbility::new().delegates(move |d| {
-        d.can_attack_target.this(move |g, s, data| {
-            Flag::and(g.battlefield(data.target.defending_player()).any_matching(g, s, predicate))
-        })
+    StaticAbility::new().initialize(move |q| {
+        q.can_attack_target.add_static(Flag::and_predicate(move |g, s, data: &CanAttackTarget| {
+            Some(g.battlefield(data.target.defending_player()).any_matching(g, s, predicate))
+        }))
     })
 }

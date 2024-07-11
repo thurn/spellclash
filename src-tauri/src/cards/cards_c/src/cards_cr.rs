@@ -19,7 +19,6 @@ use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 use data::core::primitives::HasSource;
-use data::game_states::effect_state::EffectState;
 use rules::mutations::library;
 
 pub fn craw_wurm() -> CardDefinition {
@@ -27,18 +26,14 @@ pub fn craw_wurm() -> CardDefinition {
 }
 
 pub fn crystal_spray() -> CardDefinition {
-    let state = EffectState::new();
     CardDefinition::new(card_name::CRYSTAL_SPRAY).ability(
         SpellAbility::new()
             .targets(targets::spell_or_permanent())
             .effect(|g, c, target| {
-                let choice = change_text::choose_basic_land_types_or_colors(g, c.controller());
-                state.store(g, c.effect_id, choice);
-                effects::target_this_turn(g, c, target);
+                change_text::change_basic_land_types_or_colors_this_turn(g, c, target);
                 library::draw(g, c.source(), c.controller());
             })
             .delegates(|d| {
-                change_text::change_basic_land_type_or_color(d, state);
                 effects::preserve_this_turn_effects_when_entering_battlefield(d);
             }),
     )

@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use abilities::characteristics::{base_power_toughness, colors, creature_subtypes};
-use abilities::core::gain_ability::GainAbility;
-use abilities::core::{effects, lose_all_abilities};
+use abilities::characteristics::{base_power_toughness, colors, creature_types};
+use abilities::core::lose_all_abilities;
 use abilities::keyword_abilities::flying;
 use abilities::restrictions::attack_restrictions;
 use abilities::targeting::targets;
@@ -23,27 +22,24 @@ use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 use data::core::primitives::Color;
-use data::printed_cards::card_subtypes::CreatureSubtype;
+use data::printed_cards::card_subtypes::CreatureType;
 use rules::mutations::permanents;
 use rules::predicates::card_predicates;
 
 pub fn dance_of_the_skywise() -> CardDefinition {
     CardDefinition::new(card_name::DANCE_OF_THE_SKYWISE).ability(
-        SpellAbility::new()
-            .targets(targets::creature_you_control())
-            .effect(|g, c, target| {
-                effects::target_this_turn(g, c, target);
-                lose_all_abilities::this_turn(g, target, c.effect_id);
-            })
-            .delegates(|d| {
-                colors::for_target_this_turn(d, Color::Blue);
-                creature_subtypes::for_target_this_turn(
-                    d,
-                    CreatureSubtype::Dragon | CreatureSubtype::Illusion,
-                );
-                base_power_toughness::for_target_this_turn(d, 4, 4);
-                flying::gain(d, GainAbility::ForTargetThisTurn);
-            }),
+        SpellAbility::new().targets(targets::creature_you_control()).effect(|g, c, target| {
+            colors::set_this_turn(g, c, target, Color::Blue);
+            creature_types::set_this_turn(
+                g,
+                c,
+                target,
+                CreatureType::Dragon | CreatureType::Illusion,
+            );
+            base_power_toughness::set_this_turn(g, c, target, 4, 4);
+            lose_all_abilities::this_turn(g, target, c.effect_id);
+            flying::gain_this_turn(g, c, target);
+        }),
     )
 }
 
