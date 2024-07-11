@@ -16,9 +16,9 @@ use crate::core::card_tags::CardTag;
 use crate::core::primitives::Color;
 use crate::delegates::query_value::{ChangeText, EnumSets};
 use crate::printed_cards::card_subtypes::LandType;
-use crate::queries::card_queries::CardQueries;
-use crate::queries::card_query::CardArgumentQuery;
-use crate::queries::query_name::QueryName;
+use crate::properties::card_properties::CardProperties;
+use crate::properties::card_query::CardArgumentProperty;
+use crate::properties::query_name::QueryName;
 
 pub struct TagsQuery;
 
@@ -26,11 +26,11 @@ impl QueryName for TagsQuery {
     type Arg = ();
     type Modifier = EnumSets<CardTag>;
 
-    fn query(queries: &CardQueries) -> &CardArgumentQuery<(), EnumSets<CardTag>> {
+    fn query(queries: &CardProperties) -> &CardArgumentProperty<(), EnumSets<CardTag>> {
         &queries.tags
     }
 
-    fn query_mut(queries: &mut CardQueries) -> &mut CardArgumentQuery<(), EnumSets<CardTag>> {
+    fn query_mut(queries: &mut CardProperties) -> &mut CardArgumentProperty<(), EnumSets<CardTag>> {
         &mut queries.tags
     }
 }
@@ -41,11 +41,11 @@ impl QueryName for ColorsQuery {
     type Arg = ();
     type Modifier = EnumSets<Color>;
 
-    fn query(queries: &CardQueries) -> &CardArgumentQuery<(), EnumSets<Color>> {
+    fn query(queries: &CardProperties) -> &CardArgumentProperty<(), EnumSets<Color>> {
         &queries.colors
     }
 
-    fn query_mut(queries: &mut CardQueries) -> &mut CardArgumentQuery<(), EnumSets<Color>> {
+    fn query_mut(queries: &mut CardProperties) -> &mut CardArgumentProperty<(), EnumSets<Color>> {
         &mut queries.colors
     }
 }
@@ -56,11 +56,13 @@ impl QueryName for LandTypesQuery {
     type Arg = ();
     type Modifier = EnumSets<LandType>;
 
-    fn query(queries: &CardQueries) -> &CardArgumentQuery<(), EnumSets<LandType>> {
+    fn query(queries: &CardProperties) -> &CardArgumentProperty<(), EnumSets<LandType>> {
         &queries.land_types
     }
 
-    fn query_mut(queries: &mut CardQueries) -> &mut CardArgumentQuery<(), EnumSets<LandType>> {
+    fn query_mut(
+        queries: &mut CardProperties,
+    ) -> &mut CardArgumentProperty<(), EnumSets<LandType>> {
         &mut queries.land_types
     }
 }
@@ -71,11 +73,13 @@ impl QueryName for ChangeLandTypeTextQuery {
     type Arg = ();
     type Modifier = ChangeText<LandType>;
 
-    fn query(queries: &CardQueries) -> &CardArgumentQuery<(), ChangeText<LandType>> {
+    fn query(queries: &CardProperties) -> &CardArgumentProperty<(), ChangeText<LandType>> {
         &queries.change_land_type_text
     }
 
-    fn query_mut(queries: &mut CardQueries) -> &mut CardArgumentQuery<(), ChangeText<LandType>> {
+    fn query_mut(
+        queries: &mut CardProperties,
+    ) -> &mut CardArgumentProperty<(), ChangeText<LandType>> {
         &mut queries.change_land_type_text
     }
 }
@@ -86,11 +90,11 @@ impl QueryName for ChangeColorTextQuery {
     type Arg = ();
     type Modifier = ChangeText<Color>;
 
-    fn query(queries: &CardQueries) -> &CardArgumentQuery<(), ChangeText<Color>> {
+    fn query(queries: &CardProperties) -> &CardArgumentProperty<(), ChangeText<Color>> {
         &queries.change_color_text
     }
 
-    fn query_mut(queries: &mut CardQueries) -> &mut CardArgumentQuery<(), ChangeText<Color>> {
+    fn query_mut(queries: &mut CardProperties) -> &mut CardArgumentProperty<(), ChangeText<Color>> {
         &mut queries.change_color_text
     }
 }

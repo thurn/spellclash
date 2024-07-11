@@ -25,9 +25,9 @@ use data::delegates::scope::EffectContext;
 use data::game_states::effect_state::EffectState;
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::{LandType, BASIC_LANDS};
-use data::queries::card_modifier::CardModifier;
-use data::queries::duration::Duration;
-use data::queries::query_names::{
+use data::properties::card_modifier::CardModifier;
+use data::properties::duration::Duration;
+use data::properties::query_names::{
     ChangeColorTextQuery, ChangeLandTypeTextQuery, ColorsQuery, LandTypesQuery,
 };
 use data::text_strings::Text;
@@ -84,7 +84,7 @@ fn change_spell_color_text(
     new_color: Color,
 ) {
     if let Some(card) = game.card_mut(spell_id) {
-        card.queries.change_color_text.add(CardModifier {
+        card.properties.change_color_text.add(CardModifier {
             source: context.source(),
             duration: Duration::WhileOnStackOrBattlefield(spell_id),
             delegate_type: DelegateType::Effect,
@@ -122,7 +122,7 @@ fn change_spell_land_type_text(
     old_type: LandType,
 ) {
     if let Some(card) = game.card_mut(spell_id) {
-        card.queries.land_types.add(CardModifier {
+        card.properties.land_types.add(CardModifier {
             source: context.source(),
             duration: Duration::WhileOnStackOrBattlefield(spell_id),
             delegate_type: DelegateType::Effect,
@@ -133,7 +133,7 @@ fn change_spell_land_type_text(
                 new_type,
             ),
         });
-        card.queries.change_land_type_text.add(CardModifier {
+        card.properties.change_land_type_text.add(CardModifier {
             source: context.source(),
             duration: Duration::WhileOnStackOrBattlefield(spell_id),
             delegate_type: DelegateType::Effect,

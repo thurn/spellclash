@@ -13,14 +13,16 @@
 // limitations under the License.
 
 use crate::delegates::query_value::QueryValue;
-use crate::queries::card_queries::CardQueries;
-use crate::queries::card_query::{CardArgumentQuery, CardQuery};
+use crate::properties::card_properties::CardProperties;
+use crate::properties::card_query::{CardArgumentProperty, CardProperty};
 
 pub trait QueryName {
     type Arg;
     type Modifier: QueryValue;
 
-    fn query(queries: &CardQueries) -> &CardArgumentQuery<Self::Arg, Self::Modifier>;
+    fn query(queries: &CardProperties) -> &CardArgumentProperty<Self::Arg, Self::Modifier>;
 
-    fn query_mut(queries: &mut CardQueries) -> &mut CardArgumentQuery<Self::Arg, Self::Modifier>;
+    fn query_mut(
+        queries: &mut CardProperties,
+    ) -> &mut CardArgumentProperty<Self::Arg, Self::Modifier>;
 }

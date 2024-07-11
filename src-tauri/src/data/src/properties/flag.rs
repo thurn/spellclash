@@ -18,7 +18,7 @@ use crate::core::primitives::{HasSource, Source, Timestamp};
 use crate::delegates::layer::{EffectSortingKey, Layer};
 use crate::delegates::query_value::QueryValue;
 use crate::game_states::game_state::GameState;
-use crate::queries::query_condition::QueryCondition;
+use crate::properties::query_condition::QueryCondition;
 
 #[derive(Clone)]
 pub enum Flag<TArg> {

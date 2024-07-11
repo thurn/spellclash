@@ -13,7 +13,7 @@
 // limitations under the License.
 
 pub mod card_modifier;
-pub mod card_queries;
+pub mod card_properties;
 pub mod card_query;
 pub mod duration;
 pub mod flag;

@@ -24,9 +24,9 @@ use data::delegates::query_value::{EnumSets, QueryValue};
 use data::delegates::scope::EffectContext;
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::CreatureType;
-use data::queries::card_modifier::CardModifier;
-use data::queries::duration::Duration;
-use data::queries::flag::Flag;
+use data::properties::card_modifier::CardModifier;
+use data::properties::duration::Duration;
+use data::properties::flag::Flag;
 use enumset::EnumSet;
 use rules::queries::combat_queries;
 
@@ -46,20 +46,20 @@ use crate::core::gain_ability::GainAbility;
 pub fn gain_this_turn(game: &mut GameState, context: EffectContext, id: PermanentId) {
     let turn = game.turn;
     if let Some(card) = game.card_mut(id) {
-        card.queries.tags.add(CardModifier {
+        card.properties.tags.add(CardModifier {
             source: context.source(),
             duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
             delegate_type: DelegateType::Effect,
             effect: EnumSets::add(Layer::AbilityModifyingEffects, context, CardTag::Flying),
         });
-        card.queries.can_be_blocked.add(CardModifier {
+        card.properties.can_be_blocked.add(CardModifier {
             source: context.source(),
             duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
             delegate_type: DelegateType::Effect,
             effect: Flag::and_predicate(|g, s, data: &CanBeBlocked| {
                 Some(
                     g.card(data.blocker_id)?
-                        .queries
+                        .properties
                         .tags
                         .query(g, s, EnumSet::empty())
                         .contains(CardTag::Flying),

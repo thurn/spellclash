@@ -27,7 +27,7 @@ use crate::costs::cost::Cost;
 use crate::delegates::game_delegates::GameDelegates;
 use crate::delegates::scope::{EffectContext, Scope};
 use crate::game_states::game_state::GameState;
-use crate::queries::card_queries::CardQueries;
+use crate::properties::card_properties::CardProperties;
 
 /// An event callback function.
 pub struct Delegate {
@@ -173,7 +173,7 @@ pub trait DelayedTriggerEffect {
 pub struct AbilityBuilder<TEffect, TDelayed: DelayedTriggerEffect> {
     ability_type: AbilityType,
 
-    initialize: Option<Box<dyn Fn(&mut CardQueries) + Send + Sync + 'static>>,
+    initialize: Option<Box<dyn Fn(&mut CardProperties) + Send + Sync + 'static>>,
 
     delegates: Vec<Delegate>,
 
@@ -185,7 +185,7 @@ pub struct AbilityBuilder<TEffect, TDelayed: DelayedTriggerEffect> {
 impl<TEffect, TDelayed: DelayedTriggerEffect> AbilityBuilder<TEffect, TDelayed> {
     pub fn initialize(
         mut self,
-        initialize: impl Fn(&mut CardQueries) + 'static + Copy + Send + Sync,
+        initialize: impl Fn(&mut CardProperties) + 'static + Copy + Send + Sync,
     ) -> Self {
         self.initialize = Some(Box::new(initialize));
         self

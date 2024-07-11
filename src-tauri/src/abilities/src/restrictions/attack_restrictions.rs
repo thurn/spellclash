@@ -20,7 +20,7 @@ use data::core::primitives::{CardId, PermanentId, Zone};
 use data::delegates::game_delegate_data::CanAttackTarget;
 use data::delegates::game_delegates::GameDelegates;
 use data::delegates::scope::Scope;
-use data::queries::flag::Flag;
+use data::properties::flag::Flag;
 use rules::queries::combat_queries;
 
 /// Prevent this creature from attacking unless the defending player controls a

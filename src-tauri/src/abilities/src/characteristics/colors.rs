@@ -20,8 +20,8 @@ use data::delegates::layer::Layer;
 use data::delegates::query_value::{EnumSets, QueryValue};
 use data::delegates::scope::EffectContext;
 use data::game_states::game_state::GameState;
-use data::queries::card_modifier::CardModifier;
-use data::queries::duration::Duration;
+use data::properties::card_modifier::CardModifier;
+use data::properties::duration::Duration;
 use enumset::EnumSet;
 use rules::queries::query_extension::QueryExt;
 
@@ -33,7 +33,7 @@ pub fn set_this_turn(
 ) {
     let turn = game.turn;
     if let Some(card) = game.card_mut(id) {
-        card.queries.colors.add(CardModifier {
+        card.properties.colors.add(CardModifier {
             source: context.source(),
             duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
             delegate_type: DelegateType::Effect,

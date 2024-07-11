@@ -22,8 +22,8 @@ use data::delegates::query_value::{EnumSets, Ints, QueryValue};
 use data::delegates::scope::EffectContext;
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::CreatureType;
-use data::queries::card_modifier::CardModifier;
-use data::queries::duration::Duration;
+use data::properties::card_modifier::CardModifier;
+use data::properties::duration::Duration;
 use enumset::EnumSet;
 use rules::queries::query_extension::QueryExt;
 
@@ -37,13 +37,13 @@ pub fn add_this_turn(
 ) {
     let turn = game.turn;
     if let Some(card) = game.card_mut(id) {
-        card.queries.power.add(CardModifier {
+        card.properties.power.add(CardModifier {
             source: context.source(),
             duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
             delegate_type: DelegateType::Effect,
             effect: Ints::add(power),
         });
-        card.queries.toughness.add(CardModifier {
+        card.properties.toughness.add(CardModifier {
             source: context.source(),
             duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
             delegate_type: DelegateType::Effect,

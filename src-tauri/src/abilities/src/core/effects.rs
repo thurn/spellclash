@@ -19,9 +19,9 @@ use data::delegates::game_delegates::GameDelegates;
 use data::delegates::query_value::QueryValue;
 use data::delegates::scope::{EffectContext, Scope};
 use data::game_states::game_state::GameState;
-use data::queries::card_modifier::CardModifier;
-use data::queries::duration::Duration;
-use data::queries::query_name::QueryName;
+use data::properties::card_modifier::CardModifier;
+use data::properties::duration::Duration;
+use data::properties::query_name::QueryName;
 use utils::outcome;
 use utils::outcome::Outcome;
 
@@ -35,7 +35,7 @@ pub fn modify_permanent<TQuery: QueryName>(
 ) {
     let turn = game.turn;
     if let Some(card) = game.card_mut(permanent_id) {
-        let query = TQuery::query_mut(&mut card.queries);
+        let query = TQuery::query_mut(&mut card.properties);
         query.add(CardModifier {
             source: context.source(),
             duration: Duration::WhileOnBattlefield(permanent_id),
@@ -55,7 +55,7 @@ pub fn modify_permanent_this_turn<TQuery: QueryName>(
 ) {
     let turn = game.turn;
     if let Some(card) = game.card_mut(permanent_id) {
-        let query = TQuery::query_mut(&mut card.queries);
+        let query = TQuery::query_mut(&mut card.properties);
         query.add(CardModifier {
             source: context.source(),
             duration: Duration::WhileOnBattlefieldThisTurn(permanent_id, turn),

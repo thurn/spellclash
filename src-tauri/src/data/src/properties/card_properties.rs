@@ -21,62 +21,62 @@ use crate::delegates::card_query_delegate_list::CardQueryDelegateList;
 use crate::delegates::game_delegate_data::{CanAttackTarget, CanBeBlocked};
 use crate::delegates::query_value::{ChangeText, EnumSets, Ints};
 use crate::printed_cards::card_subtypes::{CreatureType, LandType};
-use crate::queries::card_query::{CardArgumentQuery, CardQuery};
-use crate::queries::flag::Flag;
+use crate::properties::card_query::{CardArgumentProperty, CardProperty};
+use crate::properties::flag::Flag;
 
 #[derive(Default, Clone)]
-pub struct CardQueries {
+pub struct CardProperties {
     /// Queries tags on this card
-    pub tags: CardQuery<EnumSets<CardTag>>,
+    pub tags: CardProperty<EnumSets<CardTag>>,
 
     /// Can this creature attack the indicated target?
-    pub can_attack_target: CardArgumentQuery<CanAttackTarget, Flag<CanAttackTarget>>,
+    pub can_attack_target: CardArgumentProperty<CanAttackTarget, Flag<CanAttackTarget>>,
 
     /// Can this creature be blocked by the indicated blocker?
-    pub can_be_blocked: CardArgumentQuery<CanBeBlocked, Flag<CanBeBlocked>>,
+    pub can_be_blocked: CardArgumentProperty<CanBeBlocked, Flag<CanBeBlocked>>,
 
     /// Does this card have haste?
-    pub has_haste: CardQuery<Flag<()>>,
+    pub has_haste: CardProperty<Flag<()>>,
 
     /// Queries the colors of a card.
     ///
     /// An empty set represents colorless.
-    pub colors: CardQuery<EnumSets<Color>>,
+    pub colors: CardProperty<EnumSets<Color>>,
 
     /// Queries the creature subtypes of a card.
-    pub creature_types: CardQuery<EnumSets<CreatureType>>,
+    pub creature_types: CardProperty<EnumSets<CreatureType>>,
 
     /// Queries the land subtypes of a card.
-    pub land_types: CardQuery<EnumSets<LandType>>,
+    pub land_types: CardProperty<EnumSets<LandType>>,
 
     /// Queries for text-changing effects to change a land subtype in the rules
     /// text of a card
-    pub change_land_type_text: CardQuery<ChangeText<LandType>>,
+    pub change_land_type_text: CardProperty<ChangeText<LandType>>,
 
     /// Queries for text-changing effects to change a color in the rules
     /// text of a card
-    pub change_color_text: CardQuery<ChangeText<Color>>,
+    pub change_color_text: CardProperty<ChangeText<Color>>,
 
     /// Queries the power value for a card.
     ///
     /// This may be invoked for a card in any zone.
-    pub power: CardQuery<Ints<Power>>,
+    pub power: CardProperty<Ints<Power>>,
 
     /// Queries the base power value for a card. This is added to other
     /// modifiers to compute a final power value.
-    pub base_power: CardQuery<Ints<Power>>,
+    pub base_power: CardProperty<Ints<Power>>,
 
     /// Queries the toughness value for a card.
     ///
     /// This may be invoked for a card in any zone.
-    pub toughness: CardQuery<Ints<Toughness>>,
+    pub toughness: CardProperty<Ints<Toughness>>,
 
     /// Queries the base toughness value for a card. This is added to other
     /// modifiers to compute a final power value.
-    pub base_toughness: CardQuery<Ints<Toughness>>,
+    pub base_toughness: CardProperty<Ints<Toughness>>,
 }
 
-impl Debug for CardQueries {
+impl Debug for CardProperties {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("CardQueries").finish()
     }

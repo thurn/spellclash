@@ -34,7 +34,7 @@ use crate::core::primitives::{
 use crate::game_states::game_state::{GameState, TurnData};
 use crate::printed_cards::printed_card::{Face, PrintedCard, PrintedCardFace};
 use crate::printed_cards::printed_card_id::PrintedCardId;
-use crate::queries::card_queries::CardQueries;
+use crate::properties::card_properties::CardProperties;
 
 /// Represents the state of a card or card-like object.
 ///
@@ -95,7 +95,7 @@ pub struct CardState {
     pub owner: PlayerName,
 
     #[serde(skip)]
-    pub queries: CardQueries,
+    pub properties: CardProperties,
 
     /// Effects which are applying to this card to change its controller.
     ///
