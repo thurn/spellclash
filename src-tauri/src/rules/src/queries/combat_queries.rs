@@ -17,12 +17,14 @@ use std::iter;
 use data::card_states::card_state::TappedState;
 use data::card_states::iter_matching::IterMatching;
 use data::card_states::zones::ZoneQueries;
+use data::core::card_tags::CardTag;
 use data::core::primitives::{CardType, HasController, PermanentId, PlayerName, Source};
 use data::delegates::game_delegate_data::{CanAttackTarget, CanBeBlocked};
 use data::game_states::combat_state::{
     AttackTarget, AttackerId, BlockerId, BlockerMap, CombatState,
 };
 use data::game_states::game_state::GameState;
+use enumset::EnumSet;
 
 use crate::predicates::card_predicates;
 use crate::queries::{card_queries, player_queries};
@@ -48,22 +50,27 @@ pub fn can_attack(game: &GameState, source: Source, attacker_id: AttackerId) -> 
     result &= types.contains(CardType::Creature);
     result &= !types.contains(CardType::Battle);
 
-    Some(game.delegates.can_attack_target.query_any(
-        game,
-        source,
-        attack_targets(game, source).map(|target| CanAttackTarget { attacker_id, target }),
-        result,
-    ))
+    Some(
+        attack_targets(game, source).map(|target| CanAttackTarget { attacker_id, target }).any(
+            |target| card.properties.can_attack_target.query_with(game, source, &target, result),
+        ),
+    )
 }
 
 /// Returns true if the indicated permanent has the 'haste' ability.
 pub fn has_haste(game: &GameState, source: Source, permanent_id: PermanentId) -> Option<bool> {
-    Some(game.delegates.has_haste.query(game, source, &permanent_id, false))
+    Some(game.card(permanent_id)?.properties.has_haste.query(game, source, false))
 }
 
 /// Returns true if the indicated permanent has the 'flying' ability.
 pub fn has_flying(game: &GameState, source: Source, permanent_id: PermanentId) -> Option<bool> {
-    Some(game.delegates.has_flying.query(game, source, &permanent_id, false))
+    Some(
+        game.card(permanent_id)?
+            .properties
+            .tags
+            .query(game, source, EnumSet::empty())
+            .contains(CardTag::Flying),
+    )
 }
 
 /// Returns an iterator over all legal attackers for the provided player.
@@ -96,16 +103,12 @@ pub fn can_block(game: &GameState, source: Source, blocker_id: BlockerId) -> Opt
     result &= !types.contains(CardType::Battle);
     let attackers = game.combat.as_ref()?.confirmed_attackers()?;
 
-    Some(game.delegates.can_be_blocked.query_any(
-        game,
-        source,
-        attackers.all_targets().map(|(&attacker_id, &target)| CanBeBlocked {
-            attacker_id,
-            target,
-            blocker_id,
-        }),
-        result,
-    ))
+    Some(
+        attackers
+            .all_targets()
+            .map(|(&attacker_id, &target)| CanBeBlocked { attacker_id, target, blocker_id })
+            .any(|target| card.properties.can_be_blocked.query_with(game, source, &target, result)),
+    )
 }
 
 /// Returns an iterator over all legal blockers for the provided player.

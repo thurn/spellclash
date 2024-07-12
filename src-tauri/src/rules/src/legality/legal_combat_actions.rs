@@ -68,15 +68,15 @@ pub fn append(
                     combat_queries::attack_targets(game, Source::Game)
                         .filter(|target| {
                             // Only include targets that all selected attackers can legally attack.
-                            game.delegates.can_attack_target.query_all(
-                                game,
-                                Source::Game,
-                                selected_attackers.iter().map(|&attacker| CanAttackTarget {
+                            selected_attackers
+                                .iter()
+                                .map(|&attacker| CanAttackTarget {
                                     attacker_id: attacker,
                                     target: *target,
-                                }),
-                                true,
-                            )
+                                })
+                                .all(|can_attack| {
+                                    can_attack_target(game, can_attack).unwrap_or(false)
+                                })
                         })
                         .map(CombatAction::SetSelectedAttackersTarget),
                 );
@@ -129,6 +129,15 @@ pub fn append(
         }
         Some(CombatState::ConfirmedBlockers(blockers)) => {}
     }
+}
+
+fn can_attack_target(game: &GameState, can_attack_target: CanAttackTarget) -> Option<bool> {
+    Some(game.card(can_attack_target.attacker_id)?.properties.can_attack_target.query_with(
+        game,
+        Source::Game,
+        &can_attack_target,
+        true,
+    ))
 }
 
 fn extend_actions(
