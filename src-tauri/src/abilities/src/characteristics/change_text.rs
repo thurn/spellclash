@@ -27,14 +27,11 @@ use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::{LandType, BASIC_LANDS};
 use data::properties::card_modifier::CardModifier;
 use data::properties::duration::Duration;
-use data::properties::query_names::{
-    ChangeColorTextQuery, ChangeLandTypeTextQuery, ColorsQuery, LandTypesQuery,
-};
 use data::text_strings::Text;
 use either::Either;
 use rules::prompt_handling::prompts;
-
-use crate::core::effects;
+use utils::outcome;
+use utils::outcome::Outcome;
 
 pub type LandSubtypesOrColors = Either<(LandType, LandType), (Color, Color)>;
 
@@ -42,20 +39,20 @@ pub fn change_basic_land_types_or_colors_this_turn(
     game: &mut GameState,
     context: EffectContext,
     target: Either<SpellId, PermanentId>,
-) {
+) -> Outcome {
     let choice = choose_basic_land_types_or_colors(game, context.controller());
     match (choice, target) {
         (LandSubtypesOrColors::Left((old_type, new_type)), Either::Left(spell_id)) => {
-            change_spell_land_type_text(game, context, spell_id, new_type, old_type);
+            change_spell_land_type_text(game, context, spell_id, new_type, old_type)
         }
         (LandSubtypesOrColors::Left((old_type, new_type)), Either::Right(permanent_id)) => {
-            change_permanent_land_type_text(game, context, permanent_id, old_type, new_type);
+            change_permanent_land_type_text(game, context, permanent_id, old_type, new_type)
         }
         (LandSubtypesOrColors::Right((old_color, new_color)), Either::Left(spell_id)) => {
-            change_spell_color_text(game, context, spell_id, old_color, new_color);
+            change_spell_color_text(game, context, spell_id, old_color, new_color)
         }
         (LandSubtypesOrColors::Right((old_color, new_color)), Either::Right(permanent_id)) => {
-            change_permanent_color_text(game, context, permanent_id, old_color, new_color);
+            change_permanent_color_text(game, context, permanent_id, old_color, new_color)
         }
     }
 }
@@ -66,13 +63,13 @@ fn change_permanent_color_text(
     permanent_id: PermanentId,
     old_color: Color,
     new_color: Color,
-) {
-    effects::modify_permanent_this_turn::<ChangeColorTextQuery>(
-        game,
+) -> Outcome {
+    let turn = game.turn;
+    game.card_mut(permanent_id)?.properties.change_color_text.add_effect(
         context,
-        permanent_id,
+        Duration::WhileOnBattlefieldThisTurn(permanent_id, turn),
         ChangeText::replace(context.effect_id, old_color, new_color),
-    );
+    )
 }
 
 fn change_spell_color_text(
@@ -81,15 +78,12 @@ fn change_spell_color_text(
     spell_id: SpellId,
     old_color: Color,
     new_color: Color,
-) {
-    if let Some(card) = game.card_mut(spell_id) {
-        card.properties.change_color_text.add(CardModifier {
-            source: context.source(),
-            duration: Duration::WhileOnStackOrBattlefield(spell_id),
-            delegate_type: DelegateType::Effect,
-            effect: ChangeText::replace(context.effect_id, old_color, new_color),
-        });
-    }
+) -> Outcome {
+    game.card_mut(spell_id)?.properties.change_color_text.add_effect(
+        context,
+        Duration::WhileOnStackOrBattlefield(spell_id),
+        ChangeText::replace(context.effect_id, old_color, new_color),
+    )
 }
 
 fn change_permanent_land_type_text(
@@ -98,19 +92,18 @@ fn change_permanent_land_type_text(
     permanent_id: PermanentId,
     old_type: LandType,
     new_type: LandType,
-) {
-    effects::modify_permanent_this_turn::<LandTypesQuery>(
-        game,
+) -> Outcome {
+    let turn = game.turn;
+    game.card_mut(permanent_id)?.properties.land_types.add_effect(
         context,
-        permanent_id,
+        Duration::WhileOnBattlefieldThisTurn(permanent_id, turn),
         EnumSets::replace(Layer::TextChangingEffects, context.effect_id, old_type, new_type),
     );
-    effects::modify_permanent_this_turn::<ChangeLandTypeTextQuery>(
-        game,
+    game.card_mut(permanent_id)?.properties.change_land_type_text.add_effect(
         context,
-        permanent_id,
+        Duration::WhileOnBattlefieldThisTurn(permanent_id, turn),
         ChangeText::replace(context.effect_id, old_type, new_type),
-    );
+    )
 }
 
 fn change_spell_land_type_text(
@@ -119,26 +112,18 @@ fn change_spell_land_type_text(
     spell_id: SpellId,
     new_type: LandType,
     old_type: LandType,
-) {
-    if let Some(card) = game.card_mut(spell_id) {
-        card.properties.land_types.add(CardModifier {
-            source: context.source(),
-            duration: Duration::WhileOnStackOrBattlefield(spell_id),
-            delegate_type: DelegateType::Effect,
-            effect: EnumSets::replace(
-                Layer::TextChangingEffects,
-                context.effect_id,
-                old_type,
-                new_type,
-            ),
-        });
-        card.properties.change_land_type_text.add(CardModifier {
-            source: context.source(),
-            duration: Duration::WhileOnStackOrBattlefield(spell_id),
-            delegate_type: DelegateType::Effect,
-            effect: ChangeText::replace(context.effect_id, old_type, new_type),
-        });
-    }
+) -> Outcome {
+    let turn = game.turn;
+    game.card_mut(spell_id)?.properties.land_types.add_effect(
+        context,
+        Duration::WhileOnStackOrBattlefield(spell_id),
+        EnumSets::replace(Layer::TextChangingEffects, context.effect_id, old_type, new_type),
+    );
+    game.card_mut(spell_id)?.properties.change_land_type_text.add_effect(
+        context,
+        Duration::WhileOnStackOrBattlefield(spell_id),
+        ChangeText::replace(context.effect_id, old_type, new_type),
+    )
 }
 
 fn choose_basic_land_types_or_colors(

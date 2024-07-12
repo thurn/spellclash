@@ -14,9 +14,7 @@
 
 pub mod card_modifier;
 pub mod card_properties;
-pub mod card_query;
+pub mod card_property;
 pub mod duration;
 pub mod flag;
 pub mod query_condition;
-pub mod query_name;
-pub mod query_names;

@@ -20,7 +20,7 @@ use crate::core::primitives::{CardId, Color, PermanentId};
 use crate::delegates::game_delegate_data::{CanAttackTarget, CanBeBlocked};
 use crate::delegates::query_value::{ChangeText, EnumSets, Ints};
 use crate::printed_cards::card_subtypes::{CreatureType, LandType};
-use crate::properties::card_query::{CardArgumentProperty, CardProperty};
+use crate::properties::card_property::{CardArgumentProperty, CardProperty};
 use crate::properties::flag::Flag;
 
 #[derive(Default, Clone)]

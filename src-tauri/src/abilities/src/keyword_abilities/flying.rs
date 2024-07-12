@@ -29,6 +29,7 @@ use data::properties::duration::Duration;
 use data::properties::flag::Flag;
 use enumset::EnumSet;
 use rules::queries::combat_queries;
+use utils::outcome::Outcome;
 
 /// > 702.9a. Flying is an evasion ability.
 ///
@@ -40,28 +41,24 @@ use rules::queries::combat_queries;
 /// > 702.9c. Multiple instances of flying on the same creature are redundant.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R7029>
-pub fn gain_this_turn(game: &mut GameState, context: EffectContext, id: PermanentId) {
+pub fn gain_this_turn(game: &mut GameState, context: EffectContext, id: PermanentId) -> Outcome {
     let turn = game.turn;
-    if let Some(card) = game.card_mut(id) {
-        card.properties.tags.add(CardModifier {
-            source: context.source(),
-            duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
-            delegate_type: DelegateType::Effect,
-            effect: EnumSets::add(Layer::AbilityModifyingEffects, context, CardTag::Flying),
-        });
-        card.properties.can_be_blocked.add(CardModifier {
-            source: context.source(),
-            duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
-            delegate_type: DelegateType::Effect,
-            effect: Flag::and_predicate(|g, s, data: &CanBeBlocked| {
-                Some(
-                    g.card(data.blocker_id)?
-                        .properties
-                        .tags
-                        .query(g, s, EnumSet::empty())
-                        .contains(CardTag::Flying),
-                )
-            }),
-        });
-    }
+    game.card_mut(id)?.properties.tags.add_effect(
+        context,
+        Duration::WhileOnBattlefieldThisTurn(id, turn),
+        EnumSets::add(Layer::AbilityModifyingEffects, context, CardTag::Flying),
+    );
+    game.card_mut(id)?.properties.can_be_blocked.add_effect(
+        context,
+        Duration::WhileOnBattlefieldThisTurn(id, turn),
+        Flag::and_predicate(|g, s, data: &CanBeBlocked| {
+            Some(
+                g.card(data.blocker_id)?
+                    .properties
+                    .tags
+                    .query(g, s, EnumSet::empty())
+                    .contains(CardTag::Flying),
+            )
+        }),
+    )
 }

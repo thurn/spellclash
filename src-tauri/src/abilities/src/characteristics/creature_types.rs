@@ -24,6 +24,7 @@ use data::printed_cards::card_subtypes::CreatureType;
 use data::properties::card_modifier::CardModifier;
 use data::properties::duration::Duration;
 use enumset::EnumSet;
+use utils::outcome::Outcome;
 
 /// Sets a card's creature subtypes for the current turn
 pub fn set_this_turn(
@@ -31,14 +32,11 @@ pub fn set_this_turn(
     context: EffectContext,
     id: PermanentId,
     colors: impl Into<EnumSet<CreatureType>>,
-) {
+) -> Outcome {
     let turn = game.turn;
-    if let Some(card) = game.card_mut(id) {
-        card.properties.creature_types.add(CardModifier {
-            source: context.source(),
-            duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
-            delegate_type: DelegateType::Effect,
-            effect: EnumSets::set(Layer::TypeChangingEffects, context, colors.into()),
-        });
-    }
+    game.card_mut(id)?.properties.creature_types.add_effect(
+        context,
+        Duration::WhileOnBattlefieldThisTurn(id, turn),
+        EnumSets::set(Layer::TypeChangingEffects, context, colors.into()),
+    )
 }

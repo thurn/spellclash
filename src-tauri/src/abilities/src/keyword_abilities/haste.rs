@@ -27,6 +27,7 @@ use data::properties::card_modifier::CardModifier;
 use data::properties::duration::Duration;
 use data::properties::flag::Flag;
 use enumset::EnumSet;
+use utils::outcome::Outcome;
 
 /// > 702.10a. Haste is a static ability.
 ///
@@ -42,24 +43,16 @@ use enumset::EnumSet;
 /// > 702.10d. Multiple instances of haste on the same creature are redundant.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R70210>
-pub fn gain_this_turn(game: &mut GameState, context: EffectContext, id: PermanentId) {
+pub fn gain_this_turn(game: &mut GameState, context: EffectContext, id: PermanentId) -> Outcome {
     let turn = game.turn;
-    if let Some(card) = game.card_mut(id) {
-        card.properties.tags.add(CardModifier {
-            source: context.source(),
-            duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
-            delegate_type: DelegateType::Effect,
-            effect: EnumSets::add(Layer::AbilityModifyingEffects, context, CardTag::Haste),
-        });
-        card.properties.has_haste.add(CardModifier {
-            source: context.source(),
-            duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
-            delegate_type: DelegateType::Effect,
-            effect: Flag::overwrite(
-                Layer::AbilityModifyingEffects,
-                context.effect_id.timestamp(),
-                true,
-            ),
-        });
-    }
+    game.card_mut(id)?.properties.tags.add_effect(
+        context,
+        Duration::WhileOnBattlefieldThisTurn(id, turn),
+        EnumSets::add(Layer::AbilityModifyingEffects, context, CardTag::Haste),
+    );
+    game.card_mut(id)?.properties.has_haste.add_effect(
+        context,
+        Duration::WhileOnBattlefieldThisTurn(id, turn),
+        Flag::overwrite(Layer::AbilityModifyingEffects, context.effect_id.timestamp(), true),
+    )
 }

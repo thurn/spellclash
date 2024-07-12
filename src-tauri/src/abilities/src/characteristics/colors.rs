@@ -23,20 +23,18 @@ use data::game_states::game_state::GameState;
 use data::properties::card_modifier::CardModifier;
 use data::properties::duration::Duration;
 use enumset::EnumSet;
+use utils::outcome::Outcome;
 
 pub fn set_this_turn(
     game: &mut GameState,
     context: EffectContext,
     id: PermanentId,
     colors: impl Into<EnumSet<Color>>,
-) {
+) -> Outcome {
     let turn = game.turn;
-    if let Some(card) = game.card_mut(id) {
-        card.properties.colors.add(CardModifier {
-            source: context.source(),
-            duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
-            delegate_type: DelegateType::Effect,
-            effect: EnumSets::set(Layer::ColorChangingEffects, context, colors.into()),
-        });
-    }
+    game.card_mut(id)?.properties.colors.add_effect(
+        context,
+        Duration::WhileOnBattlefieldThisTurn(id, turn),
+        EnumSets::set(Layer::ColorChangingEffects, context, colors.into()),
+    )
 }

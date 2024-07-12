@@ -16,13 +16,16 @@ use std::marker::PhantomData;
 use std::ops::Add;
 
 use enumset::{EnumSet, EnumSetType};
+use utils::outcome;
+use utils::outcome::Outcome;
 
 use crate::card_states::zones::ToCardId;
-use crate::core::primitives::{AbilityId, CardId, PermanentId, Source, Timestamp};
+use crate::core::primitives::{AbilityId, CardId, HasSource, PermanentId, Source, Timestamp};
 use crate::delegates::delegate_type::DelegateType;
 use crate::delegates::layer::{EffectSortingKey, Layer};
 use crate::delegates::query_value::{ChangeText, EnumSets, Ints, QueryValue};
-use crate::game_states::game_state::GameState;
+use crate::delegates::scope::EffectContext;
+use crate::game_states::game_state::{GameState, TurnData};
 use crate::properties::card_modifier::CardModifier;
 use crate::properties::duration::Duration;
 use crate::properties::flag::Flag;
@@ -45,8 +48,12 @@ pub struct CardArgumentProperty<TArg, TModifier: QueryValue> {
 }
 
 impl<TArg, TModifier: QueryValue> CardArgumentProperty<TArg, TModifier> {
+    pub fn add(&mut self, modifier: CardModifier<TModifier>) {
+        self.modifiers.push(modifier);
+    }
+
     pub fn add_static(&mut self, effect: TModifier) {
-        self.modifiers.push(CardModifier {
+        self.add(CardModifier {
             source: Source::Game,
             duration: Duration::Continuous,
             delegate_type: DelegateType::Ability,
@@ -54,8 +61,20 @@ impl<TArg, TModifier: QueryValue> CardArgumentProperty<TArg, TModifier> {
         });
     }
 
-    pub fn add(&mut self, modifier: CardModifier<TModifier>) {
-        self.modifiers.push(modifier);
+    /// Applies an effect modifier to this card for a given [Duration].
+    pub fn add_effect(
+        &mut self,
+        context: EffectContext,
+        duration: Duration,
+        modifier: TModifier,
+    ) -> Outcome {
+        self.add(CardModifier {
+            source: context.source(),
+            duration,
+            delegate_type: DelegateType::Effect,
+            effect: modifier,
+        });
+        outcome::OK
     }
 
     pub fn set_lost_all_abilities(&mut self, lost_all_abilities: LostAllAbilities) {

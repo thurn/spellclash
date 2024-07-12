@@ -24,7 +24,7 @@ use data::player_states::player_state::{PlayerQueries, PlayerState};
 use crate::predicates::card_predicates;
 
 pub fn capture(game: &GameState) -> Vec<String> {
-    vec![
+    let result = vec![
         game_string(game),
         player_string("TWO", game.player(PlayerName::Two)),
         library("LIB2", game, PlayerName::Two),
@@ -38,7 +38,8 @@ pub fn capture(game: &GameState) -> Vec<String> {
         in_zone("G1", game, PlayerName::One, Zone::Graveyard, card_predicates::always_true),
         library("LIB1", game, PlayerName::One),
         player_string("ONE", game.player(PlayerName::One)),
-    ]
+    ];
+    result
 }
 
 pub fn capture_with(

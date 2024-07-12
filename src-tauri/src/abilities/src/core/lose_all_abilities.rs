@@ -15,7 +15,7 @@
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{PermanentId, Timestamp};
 use data::game_states::game_state::GameState;
-use data::properties::card_query::LostAllAbilities;
+use data::properties::card_property::LostAllAbilities;
 
 /// Causes the [PermanentId] permanent to lose all abilities for the duration of
 /// the current turn.

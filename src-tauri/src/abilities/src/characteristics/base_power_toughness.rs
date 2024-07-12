@@ -25,6 +25,7 @@ use data::printed_cards::card_subtypes::CreatureType;
 use data::properties::card_modifier::CardModifier;
 use data::properties::duration::Duration;
 use enumset::EnumSet;
+use utils::outcome::Outcome;
 
 /// Sets a card's base power and toughness for the current turn
 pub fn set_this_turn(
@@ -33,20 +34,16 @@ pub fn set_this_turn(
     id: PermanentId,
     power: Power,
     toughness: Toughness,
-) {
+) -> Outcome {
     let turn = game.turn;
-    if let Some(card) = game.card_mut(id) {
-        card.properties.base_power.add(CardModifier {
-            source: context.source(),
-            duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
-            delegate_type: DelegateType::Effect,
-            effect: Ints::set(Layer::PowerToughnessSettingEffects, context, power),
-        });
-        card.properties.base_toughness.add(CardModifier {
-            source: context.source(),
-            duration: Duration::WhileOnBattlefieldThisTurn(id, turn),
-            delegate_type: DelegateType::Effect,
-            effect: Ints::set(Layer::PowerToughnessSettingEffects, context, toughness),
-        });
-    }
+    game.card_mut(id)?.properties.base_power.add_effect(
+        context,
+        Duration::WhileOnBattlefieldThisTurn(id, turn),
+        Ints::set(Layer::PowerToughnessSettingEffects, context, power),
+    );
+    game.card_mut(id)?.properties.base_toughness.add_effect(
+        context,
+        Duration::WhileOnBattlefieldThisTurn(id, turn),
+        Ints::set(Layer::PowerToughnessSettingEffects, context, toughness),
+    )
 }
