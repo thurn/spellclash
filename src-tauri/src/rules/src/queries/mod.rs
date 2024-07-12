@@ -15,5 +15,4 @@
 pub mod card_queries;
 pub mod combat_queries;
 pub mod player_queries;
-pub mod query_extension;
 pub mod text_change_queries;

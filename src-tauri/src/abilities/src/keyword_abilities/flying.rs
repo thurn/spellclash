@@ -30,9 +30,6 @@ use data::properties::flag::Flag;
 use enumset::EnumSet;
 use rules::queries::combat_queries;
 
-use crate::core::gain_ability;
-use crate::core::gain_ability::GainAbility;
-
 /// > 702.9a. Flying is an evasion ability.
 ///
 /// > 702.9b. A creature with flying can't be blocked except by creatures with

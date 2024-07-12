@@ -33,7 +33,6 @@ use data::properties::query_names::{
 use data::text_strings::Text;
 use either::Either;
 use rules::prompt_handling::prompts;
-use rules::queries::query_extension::QueryExt;
 
 use crate::core::effects;
 

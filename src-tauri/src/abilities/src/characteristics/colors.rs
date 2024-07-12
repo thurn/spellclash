@@ -23,7 +23,6 @@ use data::game_states::game_state::GameState;
 use data::properties::card_modifier::CardModifier;
 use data::properties::duration::Duration;
 use enumset::EnumSet;
-use rules::queries::query_extension::QueryExt;
 
 pub fn set_this_turn(
     game: &mut GameState,

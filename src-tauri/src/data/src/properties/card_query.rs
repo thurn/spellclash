@@ -19,7 +19,6 @@ use enumset::{EnumSet, EnumSetType};
 
 use crate::card_states::zones::ToCardId;
 use crate::core::primitives::{AbilityId, CardId, PermanentId, Source, Timestamp};
-use crate::delegates::card_query_delegate_list::CardQueryDelegateList;
 use crate::delegates::delegate_type::DelegateType;
 use crate::delegates::layer::{EffectSortingKey, Layer};
 use crate::delegates::query_value::{ChangeText, EnumSets, Ints, QueryValue};

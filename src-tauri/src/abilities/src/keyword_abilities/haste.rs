@@ -28,9 +28,6 @@ use data::properties::duration::Duration;
 use data::properties::flag::Flag;
 use enumset::EnumSet;
 
-use crate::core::gain_ability;
-use crate::core::gain_ability::GainAbility;
-
 /// > 702.10a. Haste is a static ability.
 ///
 /// > 702.10b. If a creature has haste, it can attack even if it hasn't been

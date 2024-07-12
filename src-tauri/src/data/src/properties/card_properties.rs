@@ -17,7 +17,6 @@ use std::fmt::{Debug, Formatter};
 use crate::core::card_tags::CardTag;
 use crate::core::numerics::{Power, Toughness};
 use crate::core::primitives::{CardId, Color, PermanentId};
-use crate::delegates::card_query_delegate_list::CardQueryDelegateList;
 use crate::delegates::game_delegate_data::{CanAttackTarget, CanBeBlocked};
 use crate::delegates::query_value::{ChangeText, EnumSets, Ints};
 use crate::printed_cards::card_subtypes::{CreatureType, LandType};

@@ -24,7 +24,6 @@ use data::printed_cards::card_subtypes::CreatureType;
 use data::properties::card_modifier::CardModifier;
 use data::properties::duration::Duration;
 use enumset::EnumSet;
-use rules::queries::query_extension::QueryExt;
 
 /// Sets a card's creature subtypes for the current turn
 pub fn set_this_turn(
