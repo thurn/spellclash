@@ -27,8 +27,15 @@ use data::printed_cards::printed_card::{Face, PrintedCardFace};
 use data::printed_cards::printed_primitives::{PrintedPower, PrintedToughness};
 use either::Either;
 use enumset::EnumSet;
+use enumset::__internal::serde::de::Unexpected::Char;
 
-/// Returns the list of [PrintedCardFace]s for a card which currently define its
+pub enum CharacteristicFaces<'a> {
+    FaceDown,
+    Face(&'a PrintedCardFace),
+    MultipleFaces(Vec<&'a PrintedCardFace>),
+}
+
+/// Returns the [PrintedCardFace]s for a card which currently define its
 /// characteristics. Returns None if this card no longer exists.
 ///
 /// - If this card is on the battlefield, this is the face-up face of the card.
@@ -92,14 +99,30 @@ pub fn characteristic_faces(
     game: &GameState,
     _: Source,
     id: impl ToCardId,
-) -> Option<Vec<&PrintedCardFace>> {
+) -> Option<CharacteristicFaces> {
     let card = game.card(id)?;
     Some(match card.zone {
-        Zone::Battlefield => card.face_up_printed_face().map_or_else(Vec::new, |face| vec![face]),
-        Zone::Stack => card.cast_as.iter().map(|face| card.printed().face(face)).collect(),
+        Zone::Battlefield => {
+            if let Some(face) = card.face_up_printed_face() {
+                CharacteristicFaces::Face(face)
+            } else {
+                CharacteristicFaces::FaceDown
+            }
+        }
+        Zone::Stack => {
+            if card.cast_as.len() == 1 {
+                CharacteristicFaces::Face(&card.printed().face(card.cast_as.iter().next().unwrap()))
+            } else {
+                CharacteristicFaces::MultipleFaces(
+                    card.cast_as.iter().map(|face| card.printed().face(face)).collect(),
+                )
+            }
+        }
         _ => match card.printed().layout {
-            CardLayout::Split | CardLayout::Aftermath => card.printed().all_faces().collect(),
-            _ => vec![&card.printed().face],
+            CardLayout::Split | CardLayout::Aftermath => {
+                CharacteristicFaces::MultipleFaces(card.printed().all_faces().collect())
+            }
+            _ => CharacteristicFaces::Face(&card.printed().face),
         },
     })
 }
@@ -113,12 +136,13 @@ pub fn card_types(
     source: Source,
     id: impl ToCardId,
 ) -> Option<EnumSet<CardType>> {
-    Some(
-        characteristic_faces(game, source, id)?
-            .iter()
-            .flat_map(|face| face.card_types.iter())
-            .collect(),
-    )
+    Some(match characteristic_faces(game, source, id)? {
+        CharacteristicFaces::FaceDown => EnumSet::new(),
+        CharacteristicFaces::Face(face) => face.card_types,
+        CharacteristicFaces::MultipleFaces(faces) => {
+            faces.iter().flat_map(|face| face.card_types.iter()).collect()
+        }
+    })
 }
 
 /// Returns the set of current land subtypes on a card's characteristic faces.
@@ -130,12 +154,15 @@ pub fn land_subtypes(
     source: Source,
     id: impl ToCardId,
 ) -> Option<EnumSet<LandType>> {
-    let card_id = id.to_card_id(game)?;
-    let types = characteristic_faces(game, source, id)?
-        .iter()
-        .flat_map(|face| face.subtypes.land.iter())
-        .collect();
-    Some(game.delegates.land_subtypes.query(game, source, &card_id, types))
+    let card = game.card(id)?;
+    let types = match characteristic_faces(game, source, id)? {
+        CharacteristicFaces::FaceDown => EnumSet::new(),
+        CharacteristicFaces::Face(face) => face.subtypes.land,
+        CharacteristicFaces::MultipleFaces(faces) => {
+            faces.iter().flat_map(|face| face.subtypes.land.iter()).collect()
+        }
+    };
+    Some(card.properties.land_types.query(game, source, types))
 }
 
 /// Returns the set of current creature subtypes on a card's characteristic
@@ -157,13 +184,15 @@ pub fn creature_subtypes(
     source: Source,
     id: impl ToCardId,
 ) -> Option<EnumSet<CreatureType>> {
-    let card_id = id.to_card_id(game)?;
-    let types = characteristic_faces(game, source, card_id)?
-        .iter()
-        .flat_map(|face| face.subtypes.creature.iter())
-        .collect();
-
-    Some(game.delegates.creature_subtypes.query(game, source, &card_id, types))
+    let card = game.card(id)?;
+    let types = match characteristic_faces(game, source, id)? {
+        CharacteristicFaces::FaceDown => EnumSet::new(),
+        CharacteristicFaces::Face(face) => face.subtypes.creature,
+        CharacteristicFaces::MultipleFaces(faces) => {
+            faces.iter().flat_map(|face| face.subtypes.creature.iter()).collect()
+        }
+    };
+    Some(card.properties.creature_types.query(game, source, types))
 }
 
 /// Returns the current [ManaCost] that needs to be paid to cast the [CardId]
@@ -184,25 +213,24 @@ pub fn mana_cost_for_casting_card(
 ///
 /// See [characteristic_faces] for more information.
 pub fn power(game: &GameState, source: Source, id: impl ToCardId) -> Option<Power> {
-    let card_id = id.to_card_id(game)?;
-    let characteristic = characteristic_faces(game, source, card_id)?;
-    let result = match characteristic[..] {
-        [] => {
+    let card = game.card(id)?;
+    let result = match characteristic_faces(game, source, card.id)? {
+        CharacteristicFaces::FaceDown => {
             // > 708.2a. If a face-up permanent is turned face down by a spell or ability that
             // > doesn't list any characteristics for that object, it becomes a 2/2 face-down
             // > creature with no text, no name, no subtypes, and no mana cost.
             // <https://yawgatog.com/resources/magic-rules/#R7082a>
             2
         }
-        [face] => match face.power {
+        CharacteristicFaces::Face(face) => match face.power {
             Some(PrintedPower::Number(p)) => p,
             _ => 0,
         },
         _ => panic!("Cannot compute power for card with multiple active faces"),
     };
 
-    let base = game.delegates.base_power.query(game, source, &card_id, result);
-    Some(game.delegates.power.query(game, source, &card_id, base))
+    let base = card.properties.base_power.query(game, source, result);
+    Some(card.properties.power.query(game, source, base))
 }
 
 /// Computes the current toughness on card's characteristic faces. Returns None
@@ -210,25 +238,24 @@ pub fn power(game: &GameState, source: Source, id: impl ToCardId) -> Option<Powe
 ///
 /// See [characteristic_faces] for more information.
 pub fn toughness(game: &GameState, source: Source, id: impl ToCardId) -> Option<Toughness> {
-    let card_id = id.to_card_id(game)?;
-    let characteristic = characteristic_faces(game, source, card_id)?;
-    let result = match characteristic[..] {
-        [] => {
+    let card = game.card(id)?;
+    let result = match characteristic_faces(game, source, card.id)? {
+        CharacteristicFaces::FaceDown => {
             // > 708.2a. If a face-up permanent is turned face down by a spell or ability that
             // > doesn't list any characteristics for that object, it becomes a 2/2 face-down
             // > creature with no text, no name, no subtypes, and no mana cost.
             // <https://yawgatog.com/resources/magic-rules/#R7082a>
             2
         }
-        [face] => match face.toughness {
-            Some(PrintedToughness::Number(t)) => t,
+        CharacteristicFaces::Face(face) => match face.toughness {
+            Some(PrintedToughness::Number(p)) => p,
             _ => 0,
         },
         _ => panic!("Cannot compute toughness for card with multiple active faces"),
     };
 
-    let base = game.delegates.base_toughness.query(game, source, &card_id, result);
-    Some(game.delegates.toughness.query(game, source, &card_id, base))
+    let base = card.properties.base_toughness.query(game, source, result);
+    Some(card.properties.toughness.query(game, source, base))
 }
 
 /// Returns the set of colors on a card's characteristic faces. Returns None if
@@ -236,9 +263,13 @@ pub fn toughness(game: &GameState, source: Source, id: impl ToCardId) -> Option<
 ///
 /// See [characteristic_faces] for more information.
 pub fn colors(game: &GameState, source: Source, id: impl ToCardId) -> Option<EnumSet<Color>> {
-    let result = characteristic_faces(game, source, id)?
-        .iter()
-        .flat_map(|face| face.colors.iter())
-        .collect();
-    Some(game.delegates.colors.query(game, source, &id.to_card_id(game)?, result))
+    let card = game.card(id)?;
+    let types = match characteristic_faces(game, source, id)? {
+        CharacteristicFaces::FaceDown => EnumSet::new(),
+        CharacteristicFaces::Face(face) => face.colors,
+        CharacteristicFaces::MultipleFaces(faces) => {
+            faces.iter().flat_map(|face| face.colors.iter()).collect()
+        }
+    };
+    Some(card.properties.colors.query(game, source, types))
 }
