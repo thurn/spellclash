@@ -14,6 +14,7 @@
 
 use color_eyre::owo_colors::Effect;
 use dyn_clone::DynClone;
+use serde::{Deserialize, Serialize};
 
 use crate::core::primitives::Source;
 use crate::delegates::delegate_type::DelegateType;
@@ -25,7 +26,7 @@ use crate::properties::card_property::LostAllAbilities;
 use crate::properties::duration::Duration;
 use crate::properties::query_condition::QueryCondition;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct CardModifier<TModifier: QueryValue> {
     pub source: Source,
     pub duration: Duration,

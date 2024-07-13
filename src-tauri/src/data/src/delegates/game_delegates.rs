@@ -23,7 +23,7 @@ use crate::delegates::event_delegate_list::EventDelegateList;
 use crate::delegates::game_delegate_data::{
     CanAttackTarget, CanBeBlocked, PermanentControllerChangedEvent, WillEnterBattlefieldEvent,
 };
-use crate::delegates::query_value::{ChangeText, EnumSets, Flag, Ints};
+use crate::delegates::query_value::{ChangeText, EnumSets, Ints};
 use crate::delegates::stores_delegates::StoresDelegates;
 use crate::printed_cards::card_subtypes::{CreatureType, LandType};
 

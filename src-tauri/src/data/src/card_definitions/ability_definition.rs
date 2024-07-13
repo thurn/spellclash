@@ -173,7 +173,7 @@ pub trait DelayedTriggerEffect {
 pub struct AbilityBuilder<TEffect, TDelayed: DelayedTriggerEffect> {
     ability_type: AbilityType,
 
-    initialize: Option<Box<dyn Fn(&mut CardProperties) + Send + Sync + 'static>>,
+    initialize: Option<Box<dyn FnOnce(&mut CardProperties) + Send + Sync + 'static>>,
 
     delegates: Vec<Delegate>,
 
@@ -185,7 +185,7 @@ pub struct AbilityBuilder<TEffect, TDelayed: DelayedTriggerEffect> {
 impl<TEffect, TDelayed: DelayedTriggerEffect> AbilityBuilder<TEffect, TDelayed> {
     pub fn initialize(
         mut self,
-        initialize: impl Fn(&mut CardProperties) + 'static + Copy + Send + Sync,
+        initialize: impl FnOnce(&mut CardProperties) + 'static + Clone + Send + Sync,
     ) -> Self {
         self.initialize = Some(Box::new(initialize));
         self

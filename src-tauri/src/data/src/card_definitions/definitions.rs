@@ -26,8 +26,13 @@ pub type CardFn = fn(&mut Registry) -> CardDefinition;
 
 pub static DEFINITIONS: Lazy<DashSet<(u64, CardFn)>> = Lazy::new(DashSet::new);
 
+struct CardMap {
+    cards: BTreeMap<CardName, CardDefinition>,
+    registry: Registry,
+}
+
 /// Contains [CardDefinition]s for all known cards, keyed by [CardName]
-static CARDS: Lazy<BTreeMap<CardName, CardDefinition>> = Lazy::new(|| {
+static CARDS: Lazy<CardMap> = Lazy::new(|| {
     let mut map = BTreeMap::new();
     let mut functions = DEFINITIONS.clone().into_iter().collect::<Vec<_>>();
     functions.sort_by_key(|(id, _)| *id);
@@ -37,13 +42,13 @@ static CARDS: Lazy<BTreeMap<CardName, CardDefinition>> = Lazy::new(|| {
         assert!(!map.contains_key(&card.card_name()), "Duplicate card name found");
         map.insert(card.card_name(), card);
     }
-    map
+    CardMap { cards: map, registry }
 });
 
 /// Returns an iterator over all known card definitions in an undefined order
 pub fn all_cards() -> impl Iterator<Item = &'static CardDefinition> {
-    assert!(CARDS.len() > 0, "Cards not found. Call card_list::initialize() first.");
-    CARDS.values()
+    assert!(CARDS.cards.len() > 0, "Cards not found. Call card_list::initialize() first.");
+    CARDS.cards.values()
 }
 
 /// Looks up the definition for a [CardName].
@@ -52,6 +57,11 @@ pub fn all_cards() -> impl Iterator<Item = &'static CardDefinition> {
 /// calling initialize::run();
 pub fn get(name: CardName) -> &'static CardDefinition {
     CARDS
+        .cards
         .get(&name)
         .unwrap_or_else(|| panic!("Card {name:?} not found. Call card_list::initialize() first."))
+}
+
+pub fn registry() -> &'static Registry {
+    &CARDS.registry
 }

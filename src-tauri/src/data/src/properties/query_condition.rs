@@ -13,18 +13,25 @@
 // limitations under the License.
 
 use dyn_clone::DynClone;
+use serde::{Deserialize, Serialize, Serializer};
 
-use crate::card_definitions::registry::BoxedQueryFn;
+use crate::card_definitions::registry::{BoxedQueryFn, Registered, Registry};
 use crate::core::primitives::Source;
 use crate::delegates::query_value::QueryValue;
 use crate::game_states::game_state::GameState;
 
 #[derive(Clone)]
-pub enum QueryCondition<TArg> {
-    Predicate(BoxedQueryFn<TArg, Option<bool>>),
+pub enum QueryCondition<TArg: 'static> {
+    Predicate(Registered<BoxedQueryFn<TArg, Option<bool>>>),
 }
 
 impl<TArg> QueryCondition<TArg> {
+    pub fn initialize(&mut self, registry: &Registry) {
+        match self {
+            QueryCondition::Predicate(function) => function.initialize(registry),
+        }
+    }
+
     /// Returns true if this condition is currently satisfied and the query
     /// modifier should take effect.
     pub fn passes(&self, game: &GameState, source: Source, arg: &TArg) -> bool {
@@ -33,7 +40,7 @@ impl<TArg> QueryCondition<TArg> {
 
     fn passes_helper(&self, game: &GameState, source: Source, arg: &TArg) -> Option<bool> {
         match self {
-            QueryCondition::Predicate(function) => function.invoke(game, source, arg),
+            QueryCondition::Predicate(function) => function.get().invoke(game, source, arg),
         }
     }
 }

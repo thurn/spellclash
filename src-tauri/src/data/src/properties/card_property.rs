@@ -16,9 +16,11 @@ use std::marker::PhantomData;
 use std::ops::Add;
 
 use enumset::{EnumSet, EnumSetType};
+use serde::{Deserialize, Serialize};
 use utils::outcome;
 use utils::outcome::Outcome;
 
+use crate::card_definitions::registry::Registry;
 use crate::card_states::zones::ToCardId;
 use crate::core::primitives::{AbilityId, CardId, HasSource, PermanentId, Source, Timestamp};
 use crate::delegates::delegate_type::DelegateType;
@@ -34,13 +36,13 @@ pub type CardProperty<TModifier> = CardArgumentProperty<(), TModifier>;
 
 /// Represents a permanent card losing all its current abilities as of a given
 /// [Timestamp].
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct LostAllAbilities {
     pub timestamp: Timestamp,
     pub permanent_id: PermanentId,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct CardArgumentProperty<TArg, TModifier: QueryValue> {
     modifiers: Vec<CardModifier<TModifier>>,
     lost_all_abilities: Option<LostAllAbilities>,
@@ -48,6 +50,12 @@ pub struct CardArgumentProperty<TArg, TModifier: QueryValue> {
 }
 
 impl<TArg, TModifier: QueryValue> CardArgumentProperty<TArg, TModifier> {
+    pub fn initialize(&mut self, registry: &Registry) {
+        for i in 0..self.modifiers.len() {
+            self.modifiers[i].effect.initialize(registry);
+        }
+    }
+
     pub fn add(&mut self, modifier: CardModifier<TModifier>) {
         self.modifiers.push(modifier);
     }

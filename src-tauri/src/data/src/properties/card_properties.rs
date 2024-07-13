@@ -14,6 +14,9 @@
 
 use std::fmt::{Debug, Formatter};
 
+use serde::{Deserialize, Serialize};
+
+use crate::card_definitions::registry::Registry;
 use crate::core::card_tags::CardTag;
 use crate::core::numerics::{Power, Toughness};
 use crate::core::primitives::{CardId, Color, PermanentId};
@@ -73,6 +76,24 @@ pub struct CardProperties {
     /// Queries the base toughness value for a card. This is added to other
     /// modifiers to compute a final power value.
     pub base_toughness: CardProperty<Ints<Toughness>>,
+}
+
+impl CardProperties {
+    pub fn initialize(&mut self, registry: &Registry) {
+        self.tags.initialize(registry);
+        self.can_attack_target.initialize(registry);
+        self.can_be_blocked.initialize(registry);
+        self.has_haste.initialize(registry);
+        self.colors.initialize(registry);
+        self.creature_types.initialize(registry);
+        self.land_types.initialize(registry);
+        self.change_land_type_text.initialize(registry);
+        self.change_color_text.initialize(registry);
+        self.power.initialize(registry);
+        self.base_power.initialize(registry);
+        self.toughness.initialize(registry);
+        self.base_toughness.initialize(registry);
+    }
 }
 
 impl Debug for CardProperties {

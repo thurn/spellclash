@@ -15,7 +15,9 @@
 use std::ops::Add;
 
 use enumset::{EnumSet, EnumSetType};
+use serde::{Deserialize, Serialize};
 
+use crate::card_definitions::registry::Registry;
 use crate::card_states::zones::ToCardId;
 use crate::core::function_types::CardPredicate;
 use crate::core::primitives::{HasSource, Timestamp};
@@ -24,50 +26,12 @@ use crate::game_states::game_state::GameState;
 
 /// Marker trait for the return value of queries
 pub trait QueryValue {
+    fn initialize(&mut self, registry: &Registry) {}
+
     fn effect_sorting_key(&self) -> Option<EffectSortingKey>;
 }
 
-#[derive(Clone, Copy, Debug)]
-pub enum Flag {
-    Set(EffectSortingKey, bool),
-    And(bool),
-    Or(bool),
-}
-
-impl Flag {
-    pub fn overwrite(layer: Layer, timestamp: impl Into<Timestamp>, value: bool) -> Option<Flag> {
-        Some(Self::Set(EffectSortingKey::new(layer, timestamp.into()), value))
-    }
-
-    pub fn and(value: bool) -> Option<Flag> {
-        Some(Self::And(value))
-    }
-
-    pub fn or(value: bool) -> Option<Flag> {
-        Some(Self::Or(value))
-    }
-
-    pub fn and_predicate<TId: ToCardId>(
-        game: &GameState,
-        source: impl HasSource,
-        id: TId,
-        predicate: impl CardPredicate<TId>,
-    ) -> Option<Flag> {
-        Some(Self::And(predicate(game, source.source(), id) == Some(true)))
-    }
-}
-
-impl QueryValue for Flag {
-    fn effect_sorting_key(&self) -> Option<EffectSortingKey> {
-        match self {
-            Self::Set(key, _) => Some(*key),
-            Self::And(_) => None,
-            Self::Or(_) => None,
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum Ints<T: Default + Add<Output = T>> {
     Set(EffectSortingKey, T),
     Add(T),
@@ -92,7 +56,7 @@ impl<T: Default + Add<Output = T>> QueryValue for Ints<T> {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum EnumSets<T: EnumSetType> {
     Set(EffectSortingKey, EnumSet<T>),
     Add(EffectSortingKey, EnumSet<T>),
@@ -131,7 +95,7 @@ impl<T: EnumSetType> QueryValue for EnumSets<T> {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum ChangeText<T: EnumSetType> {
     Replace(Timestamp, T, T),
 }
