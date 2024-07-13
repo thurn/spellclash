@@ -50,10 +50,7 @@ pub struct Registry {
 }
 
 impl Registry {
-    pub fn register<F: Copy + Clone + Send + Sync + 'static>(
-        &mut self,
-        function: F,
-    ) -> Registered<F> {
+    pub fn add<F: Copy + Clone + Send + Sync + 'static>(&mut self, function: F) -> Registered<F> {
         self.counter += 1;
         self.registered.insert(self.counter, Box::new(function));
         Registered { id: self.counter, function: Some(function) }

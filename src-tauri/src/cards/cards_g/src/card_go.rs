@@ -14,11 +14,12 @@
 
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
+use data::card_definitions::registry::Registry;
 
-pub fn golden_bear() -> CardDefinition {
+pub fn golden_bear(_: &mut Registry) -> CardDefinition {
     CardDefinition::new(card_name::GOLDEN_BEAR)
 }
 
-pub fn gorilla_warrior() -> CardDefinition {
+pub fn gorilla_warrior(_: &mut Registry) -> CardDefinition {
     CardDefinition::new(card_name::GORILLA_WARRIOR)
 }

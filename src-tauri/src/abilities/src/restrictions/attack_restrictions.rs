@@ -28,11 +28,11 @@ use rules::queries::combat_queries;
 /// Prevent this creature from attacking unless the defending player controls a
 /// permanent matching the given predicate.
 pub fn cannot_attack_unless_defender_controls(
+    registry: &mut Registry,
     predicate: impl CardPredicate<PermanentId>,
 ) -> impl Ability {
-    let mut registry = Registry::default();
     let can_attack_target =
-        registry.register(move |g: &GameState, s: Source, data: &CanAttackTarget| {
+        registry.add(move |g: &GameState, s: Source, data: &CanAttackTarget| {
             Some(g.battlefield(data.target.defending_player()).any_matching(g, s, predicate))
         });
 

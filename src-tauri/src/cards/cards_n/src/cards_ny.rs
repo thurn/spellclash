@@ -14,7 +14,8 @@
 
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
+use data::card_definitions::registry::Registry;
 
-pub fn nyxborn_colossus() -> CardDefinition {
+pub fn nyxborn_colossus(_: &mut Registry) -> CardDefinition {
     CardDefinition::new(card_name::NYXBORN_COLOSSUS)
 }

@@ -17,8 +17,9 @@ use abilities::targeting::targets;
 use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
+use data::card_definitions::registry::Registry;
 
-pub fn giant_growth() -> CardDefinition {
+pub fn giant_growth(_: &mut Registry) -> CardDefinition {
     CardDefinition::new(card_name::GIANT_GROWTH).ability(
         SpellAbility::new().targets(targets::creature()).effect(|g, s, target| {
             power_toughness::add_this_turn(g, s, target, 3, 3);
@@ -26,6 +27,6 @@ pub fn giant_growth() -> CardDefinition {
     )
 }
 
-pub fn gigantosaurus() -> CardDefinition {
+pub fn gigantosaurus(_: &mut Registry) -> CardDefinition {
     CardDefinition::new(card_name::GIGANTOSAURUS)
 }

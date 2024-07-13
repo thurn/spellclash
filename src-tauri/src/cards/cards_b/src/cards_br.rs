@@ -15,13 +15,14 @@
 use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
+use data::card_definitions::registry::Registry;
 use data::card_states::zones::ZoneQueries;
 use data::prompts::select_order_prompt::CardOrderLocation;
 use data::text_strings::Text;
 use rules::mutations::library;
 use rules::prompt_handling::prompts;
 
-pub fn brainstorm() -> CardDefinition {
+pub fn brainstorm(_: &mut Registry) -> CardDefinition {
     CardDefinition::new(card_name::BRAINSTORM).ability(SpellAbility::new().effect(|g, c| {
         library::draw_cards(g, c, c.controller(), 3);
         let cards = prompts::select_ordered_from(
@@ -36,6 +37,6 @@ pub fn brainstorm() -> CardDefinition {
     }))
 }
 
-pub fn broodhunter_wurm() -> CardDefinition {
+pub fn broodhunter_wurm(_: &mut Registry) -> CardDefinition {
     CardDefinition::new(card_name::BROODHUNTER_WURM)
 }

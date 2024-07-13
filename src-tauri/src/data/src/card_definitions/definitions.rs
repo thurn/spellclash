@@ -20,8 +20,9 @@ use once_cell::sync::Lazy;
 
 use crate::card_definitions::card_definition::CardDefinition;
 use crate::card_definitions::card_name::CardName;
+use crate::card_definitions::registry::Registry;
 
-pub type CardFn = fn() -> CardDefinition;
+pub type CardFn = fn(&mut Registry) -> CardDefinition;
 
 pub static DEFINITIONS: Lazy<DashSet<(u64, CardFn)>> = Lazy::new(DashSet::new);
 
@@ -30,8 +31,9 @@ static CARDS: Lazy<BTreeMap<CardName, CardDefinition>> = Lazy::new(|| {
     let mut map = BTreeMap::new();
     let mut functions = DEFINITIONS.clone().into_iter().collect::<Vec<_>>();
     functions.sort_by_key(|(id, _)| *id);
+    let mut registry = Registry::default();
     for (_, card_fn) in functions {
-        let card = card_fn();
+        let card = card_fn(&mut registry);
         assert!(!map.contains_key(&card.card_name()), "Duplicate card name found");
         map.insert(card.card_name(), card);
     }

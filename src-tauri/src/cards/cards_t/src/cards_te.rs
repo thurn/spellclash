@@ -14,7 +14,8 @@
 
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
+use data::card_definitions::registry::Registry;
 
-pub fn terrain_elemental() -> CardDefinition {
+pub fn terrain_elemental(_: &mut Registry) -> CardDefinition {
     CardDefinition::new(card_name::TERRAIN_ELEMENTAL)
 }

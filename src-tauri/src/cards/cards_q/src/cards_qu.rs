@@ -14,7 +14,8 @@
 
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
+use data::card_definitions::registry::Registry;
 
-pub fn quilled_slagwurm() -> CardDefinition {
+pub fn quilled_slagwurm(_: &mut Registry) -> CardDefinition {
     CardDefinition::new(card_name::QUILLED_SLAGWURM)
 }

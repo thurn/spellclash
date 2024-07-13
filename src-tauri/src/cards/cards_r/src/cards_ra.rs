@@ -17,12 +17,13 @@ use abilities::targeting::targets;
 use data::card_definitions::ability_definition::{DelayedTrigger, SpellAbility};
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
+use data::card_definitions::registry::Registry;
 use data::core::primitives::HasSource;
 use data::game_states::effect_state::EffectState;
 use rules::mutations::trigger_extension::TriggerExt;
 use rules::mutations::{change_controller, delayed_trigger, permanents};
 
-pub fn ray_of_command() -> CardDefinition {
+pub fn ray_of_command(_: &mut Registry) -> CardDefinition {
     let state = EffectState::new();
     CardDefinition::new(card_name::RAY_OF_COMMAND).ability(
         SpellAbility::new()

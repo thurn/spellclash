@@ -14,7 +14,8 @@
 
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
+use data::card_definitions::registry::Registry;
 
-pub fn kalonian_tusker() -> CardDefinition {
+pub fn kalonian_tusker(_: &mut Registry) -> CardDefinition {
     CardDefinition::new(card_name::KALONIAN_TUSKER)
 }

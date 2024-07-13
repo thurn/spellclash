@@ -17,14 +17,15 @@ use abilities::targeting::targets;
 use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
+use data::card_definitions::registry::Registry;
 use data::core::primitives::HasSource;
 use rules::mutations::library;
 
-pub fn craw_wurm() -> CardDefinition {
+pub fn craw_wurm(_: &mut Registry) -> CardDefinition {
     CardDefinition::new(card_name::CRAW_WURM)
 }
 
-pub fn crystal_spray() -> CardDefinition {
+pub fn crystal_spray(_: &mut Registry) -> CardDefinition {
     CardDefinition::new(card_name::CRYSTAL_SPRAY).ability(
         SpellAbility::new().targets(targets::spell_or_permanent()).effect(|g, c, target| {
             change_text::change_basic_land_types_or_colors_this_turn(g, c, target);

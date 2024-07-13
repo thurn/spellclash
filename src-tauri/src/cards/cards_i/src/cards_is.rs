@@ -14,8 +14,9 @@
 
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
+use data::card_definitions::registry::Registry;
 
-pub fn island() -> CardDefinition {
+pub fn island(_: &mut Registry) -> CardDefinition {
     // Basic land abilities are implicitly granted by the land subtype.
     CardDefinition::new(card_name::ISLAND)
 }
