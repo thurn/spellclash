@@ -13,13 +13,15 @@
 // limitations under the License.
 
 use data::card_definitions::ability_definition::{Ability, StaticAbility};
+use data::card_definitions::registry::Registry;
 use data::card_states::iter_matching::IterMatching;
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::function_types::CardPredicate;
-use data::core::primitives::{CardId, PermanentId, Zone};
+use data::core::primitives::{CardId, PermanentId, Source, Zone};
 use data::delegates::game_delegate_data::CanAttackTarget;
 use data::delegates::game_delegates::GameDelegates;
 use data::delegates::scope::Scope;
+use data::game_states::game_state::GameState;
 use data::properties::flag::Flag;
 use rules::queries::combat_queries;
 
@@ -28,9 +30,12 @@ use rules::queries::combat_queries;
 pub fn cannot_attack_unless_defender_controls(
     predicate: impl CardPredicate<PermanentId>,
 ) -> impl Ability {
-    StaticAbility::new().initialize(move |q| {
-        q.can_attack_target.add_static(Flag::and_predicate(move |g, s, data: &CanAttackTarget| {
+    let mut registry = Registry::default();
+    let can_attack_target =
+        registry.register(move |g: &GameState, s: Source, data: &CanAttackTarget| {
             Some(g.battlefield(data.target.defending_player()).any_matching(g, s, predicate))
-        }))
-    })
+        });
+
+    StaticAbility::new()
+        .initialize(move |q| q.can_attack_target.add_static(Flag::and_predicate(can_attack_target)))
 }

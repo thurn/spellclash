@@ -47,18 +47,18 @@ pub fn gain_this_turn(game: &mut GameState, context: EffectContext, id: Permanen
         context,
         Duration::WhileOnBattlefieldThisTurn(id, turn),
         EnumSets::add(Layer::AbilityModifyingEffects, context, CardTag::Flying),
-    );
-    game.card_mut(id)?.properties.can_be_blocked.add_effect(
-        context,
-        Duration::WhileOnBattlefieldThisTurn(id, turn),
-        Flag::and_predicate(|g, s, data: &CanBeBlocked| {
-            Some(
-                g.card(data.blocker_id)?
-                    .properties
-                    .tags
-                    .query(g, s, EnumSet::empty())
-                    .contains(CardTag::Flying),
-            )
-        }),
     )
+    // game.card_mut(id)?.properties.can_be_blocked.add_effect(
+    //     context,
+    //     Duration::WhileOnBattlefieldThisTurn(id, turn),
+    //     Flag::and_predicate(|g, s, data: &CanBeBlocked| {
+    //         Some(
+    //             g.card(data.blocker_id)?
+    //                 .properties
+    //                 .tags
+    //                 .query(g, s, EnumSet::empty())
+    //                 .contains(CardTag::Flying),
+    //         )
+    //     }),
+    // )
 }

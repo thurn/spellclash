@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use std::collections::BTreeMap;
+use std::num::NonZeroU64;
 
 use dashmap::DashSet;
 use once_cell::sync::Lazy;
@@ -22,12 +23,14 @@ use crate::card_definitions::card_name::CardName;
 
 pub type CardFn = fn() -> CardDefinition;
 
-pub static DEFINITIONS: Lazy<DashSet<CardFn>> = Lazy::new(DashSet::new);
+pub static DEFINITIONS: Lazy<DashSet<(u64, CardFn)>> = Lazy::new(DashSet::new);
 
 /// Contains [CardDefinition]s for all known cards, keyed by [CardName]
 static CARDS: Lazy<BTreeMap<CardName, CardDefinition>> = Lazy::new(|| {
     let mut map = BTreeMap::new();
-    for card_fn in DEFINITIONS.iter() {
+    let mut functions = DEFINITIONS.clone().into_iter().collect::<Vec<_>>();
+    functions.sort_by_key(|(id, _)| *id);
+    for (_, card_fn) in functions {
         let card = card_fn();
         assert!(!map.contains_key(&card.card_name()), "Duplicate card name found");
         map.insert(card.card_name(), card);

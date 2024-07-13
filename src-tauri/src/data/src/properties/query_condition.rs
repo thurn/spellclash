@@ -14,31 +14,14 @@
 
 use dyn_clone::DynClone;
 
+use crate::card_definitions::registry::BoxedQueryFn;
 use crate::core::primitives::Source;
 use crate::delegates::query_value::QueryValue;
 use crate::game_states::game_state::GameState;
 
-/// Wrapper around condition functions to enable closures to be cloned.
-pub trait ConditionFnWrapper<TArg>: DynClone + Send {
-    fn invoke(&self, data: &GameState, source: Source, arg: &TArg) -> Option<bool>;
-}
-
-dyn_clone::clone_trait_object!(<TArg> ConditionFnWrapper<TArg>);
-
-impl<TArg, F> ConditionFnWrapper<TArg> for F
-where
-    F: Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Send,
-{
-    fn invoke(&self, data: &GameState, source: Source, arg: &TArg) -> Option<bool> {
-        self(data, source, arg)
-    }
-}
-
-pub type BoxedConditionFn<TArg> = Box<dyn ConditionFnWrapper<TArg>>;
-
 #[derive(Clone)]
 pub enum QueryCondition<TArg> {
-    Predicate(BoxedConditionFn<TArg>),
+    Predicate(BoxedQueryFn<TArg, Option<bool>>),
 }
 
 impl<TArg> QueryCondition<TArg> {

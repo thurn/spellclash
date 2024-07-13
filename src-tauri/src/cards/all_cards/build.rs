@@ -53,10 +53,12 @@ fn main() {
     modules.sort();
 
     output.push_str(&"\npub fn initialize() {\n");
+    let mut i = 0;
     for module in &modules {
         if let Some(list) = functions.get(module) {
             for function in list {
-                output.push_str(&format!("    DEFINITIONS.insert({module}::{function});\n"));
+                output.push_str(&format!("    DEFINITIONS.insert(({i}, {module}::{function}));\n"));
+                i += 1;
             }
         }
     }

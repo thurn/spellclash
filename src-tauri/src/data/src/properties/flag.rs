@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::card_definitions::registry::Registered;
 use crate::card_states::zones::ToCardId;
 use crate::core::function_types::CardPredicate;
 use crate::core::primitives::{HasSource, Source, Timestamp};
@@ -36,9 +37,10 @@ impl<TArg> Flag<TArg> {
         Self::And(condition)
     }
 
-    pub fn and_predicate(
-        predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + 'static + Copy + Send + Sync,
-    ) -> Flag<TArg> {
+    pub fn and_predicate<F>(predicate: Registered<F>) -> Flag<TArg>
+    where
+        F: Fn(&GameState, Source, &TArg) -> Option<bool> + 'static + Copy + Send + Sync,
+    {
         Self::And(QueryCondition::Predicate(Box::new(predicate)))
     }
 
@@ -46,10 +48,11 @@ impl<TArg> Flag<TArg> {
         Self::Or(condition)
     }
 
-    pub fn or_predicate(
-        predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + 'static + Copy + Send + Sync,
-    ) -> Flag<TArg> {
-        Self::Or(QueryCondition::Predicate(Box::new(predicate)))
+    pub fn or_predicate<F>(predicate: Registered<F>) -> Flag<TArg>
+    where
+        F: Fn(&GameState, Source, &TArg) -> Option<bool> + 'static + Copy + Send + Sync,
+    {
+        Self::And(QueryCondition::Predicate(Box::new(predicate)))
     }
 }
 
