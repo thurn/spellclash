@@ -14,7 +14,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::card_definitions::registry::{BoxedQueryFn, Registered, Registry};
+use crate::card_definitions::registry::{QueryFn, Registered, Registry};
 use crate::card_states::zones::ToCardId;
 use crate::core::function_types::CardPredicate;
 use crate::core::primitives::{HasSource, Source, Timestamp};
@@ -39,7 +39,7 @@ impl<TArg: 'static> Flag<TArg> {
         Self::And(condition)
     }
 
-    pub fn and_predicate(predicate: Registered<BoxedQueryFn<TArg, Option<bool>>>) -> Flag<TArg> {
+    pub fn and_predicate(predicate: QueryFn<TArg, Option<bool>>) -> Flag<TArg> {
         Self::And(QueryCondition::Predicate(predicate))
     }
 
@@ -47,7 +47,7 @@ impl<TArg: 'static> Flag<TArg> {
         Self::Or(condition)
     }
 
-    pub fn or_predicate(predicate: Registered<BoxedQueryFn<TArg, Option<bool>>>) -> Flag<TArg> {
+    pub fn or_predicate(predicate: QueryFn<TArg, Option<bool>>) -> Flag<TArg> {
         Self::Or(QueryCondition::Predicate(predicate))
     }
 }

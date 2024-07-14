@@ -15,14 +15,15 @@
 use dyn_clone::DynClone;
 use serde::{Deserialize, Serialize, Serializer};
 
-use crate::card_definitions::registry::{BoxedQueryFn, Registered, Registry};
+use crate::card_definitions::registry;
+use crate::card_definitions::registry::{QueryFn, Registered, Registry};
 use crate::core::primitives::Source;
 use crate::delegates::query_value::QueryValue;
 use crate::game_states::game_state::GameState;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub enum QueryCondition<TArg: 'static> {
-    Predicate(Registered<BoxedQueryFn<TArg, Option<bool>>>),
+    Predicate(QueryFn<TArg, Option<bool>>),
 }
 
 impl<TArg> QueryCondition<TArg> {
@@ -40,7 +41,9 @@ impl<TArg> QueryCondition<TArg> {
 
     fn passes_helper(&self, game: &GameState, source: Source, arg: &TArg) -> Option<bool> {
         match self {
-            QueryCondition::Predicate(function) => function.get().invoke(game, source, arg),
+            QueryCondition::Predicate(function) => {
+                registry::invoke_query(function, game, source, arg)
+            }
         }
     }
 }
