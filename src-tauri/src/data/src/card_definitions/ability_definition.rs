@@ -199,7 +199,7 @@ impl<TEffect, TDelayed: DelayedTriggerEffect> AbilityBuilder<TEffect, TDelayed> 
     /// delegates will function in all zones.
     pub fn delegates(
         mut self,
-        delegate: impl Fn(&mut GameDelegates) + 'static + Copy + Send + Sync,
+        delegate: impl Fn(&mut GameDelegates) + 'static + Clone + Send + Sync,
     ) -> Self {
         let zones = match self.ability_type {
             AbilityType::Spell => ALL_ZONES,
@@ -216,7 +216,7 @@ impl<TEffect, TDelayed: DelayedTriggerEffect> AbilityBuilder<TEffect, TDelayed> 
     pub fn delegates_for(
         mut self,
         zones: impl Into<EnumSet<Zone>>,
-        delegate: impl Fn(&mut GameDelegates) + 'static + Copy + Send + Sync,
+        delegate: impl Fn(&mut GameDelegates) + 'static + Clone + Send + Sync,
     ) -> Self {
         self.delegates.push(Delegate { zones: zones.into(), run: Box::new(delegate) });
         self
@@ -244,7 +244,7 @@ where
 {
     pub fn effect<TFn>(self, effect: TFn) -> AbilityBuilder<UntargetedEffect<TFn>, TDelayed>
     where
-        TFn: Fn(&mut GameState, EffectContext) + 'static + Copy + Send + Sync,
+        TFn: Fn(&mut GameState, EffectContext) + 'static + Clone + Send + Sync,
     {
         AbilityBuilder {
             ability_type: self.ability_type,
@@ -282,7 +282,7 @@ where
         effect: TFn,
     ) -> AbilityBuilder<TargetedEffect<TSelector, TFn>, TDelayed>
     where
-        TFn: Fn(&mut GameState, EffectContext, TTarget) + 'static + Copy + Send + Sync,
+        TFn: Fn(&mut GameState, EffectContext, TTarget) + 'static + Send + Sync,
     {
         AbilityBuilder {
             ability_type: self.ability_type,
@@ -312,7 +312,7 @@ where
 
 impl<TFn, TDelayed> Ability for AbilityBuilder<UntargetedEffect<TFn>, TDelayed>
 where
-    TFn: Fn(&mut GameState, EffectContext) + 'static + Copy + Send + Sync,
+    TFn: Fn(&mut GameState, EffectContext) + 'static + Clone + Send + Sync,
     TDelayed: DelayedTriggerEffect + 'static + Send + Sync,
 {
     #[doc(hidden)]
@@ -339,7 +339,7 @@ where
 impl<TSelector, TFn, TDelayed> Ability for AbilityBuilder<TargetedEffect<TSelector, TFn>, TDelayed>
 where
     TSelector: TargetSelector,
-    TFn: Fn(&mut GameState, EffectContext, TSelector::Target) + 'static + Copy + Send + Sync,
+    TFn: Fn(&mut GameState, EffectContext, TSelector::Target) + 'static + Clone + Send + Sync,
     TDelayed: DelayedTriggerEffect + 'static + Send + Sync,
 {
     #[doc(hidden)]
@@ -408,7 +408,7 @@ impl DelayedTrigger<NoEffect> {
 
     pub fn effect<TFn>(self, effect: TFn) -> DelayedTrigger<UntargetedEffect<TFn>>
     where
-        TFn: Fn(&mut GameState, EffectContext) + 'static + Copy + Send + Sync,
+        TFn: Fn(&mut GameState, EffectContext) + 'static + Clone + Send + Sync,
     {
         DelayedTrigger { delayed_trigger_effect: UntargetedEffect { function: effect } }
     }
@@ -427,7 +427,7 @@ where
 {
     pub fn effect<TTarget, TFn>(self, effect: TFn) -> DelayedTrigger<TargetedEffect<TSelector, TFn>>
     where
-        TFn: Fn(&mut GameState, EffectContext, TTarget) + 'static + Copy + Send + Sync,
+        TFn: Fn(&mut GameState, EffectContext, TTarget) + 'static + Clone + Send + Sync,
     {
         DelayedTrigger {
             delayed_trigger_effect: TargetedEffect {
@@ -444,7 +444,7 @@ impl DelayedTriggerEffect for DelayedTrigger<NoEffect> {
 
 impl<TFn> DelayedTriggerEffect for DelayedTrigger<UntargetedEffect<TFn>>
 where
-    TFn: Fn(&mut GameState, EffectContext) + 'static + Copy + Send + Sync,
+    TFn: Fn(&mut GameState, EffectContext) + 'static + Clone + Send + Sync,
 {
     #[doc(hidden)]
     fn invoke(&self, game: &mut GameState, context: EffectContext) {
@@ -455,7 +455,7 @@ where
 impl<TSelector, TFn> DelayedTriggerEffect for DelayedTrigger<TargetedEffect<TSelector, TFn>>
 where
     TSelector: TargetSelector,
-    TFn: Fn(&mut GameState, EffectContext, TSelector::Target) + 'static + Copy + Send + Sync,
+    TFn: Fn(&mut GameState, EffectContext, TSelector::Target) + 'static + Clone + Send + Sync,
 {
     #[doc(hidden)]
     fn invoke(&self, game: &mut GameState, context: EffectContext) {

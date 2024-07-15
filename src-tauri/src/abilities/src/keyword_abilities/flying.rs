@@ -13,9 +13,10 @@
 // limitations under the License.
 
 use data::card_definitions::ability_definition::{Ability, StaticAbility};
+use data::card_definitions::registry::{QueryFn, Registry};
 use data::card_states::zones::ZoneQueries;
 use data::core::card_tags::CardTag;
-use data::core::primitives::{HasSource, PermanentId};
+use data::core::primitives::{HasSource, PermanentId, Source};
 use data::delegates::delegate_type::DelegateType;
 use data::delegates::game_delegate_data::CanBeBlocked;
 use data::delegates::game_delegates::GameDelegates;
@@ -31,6 +32,18 @@ use enumset::EnumSet;
 use rules::queries::combat_queries;
 use utils::outcome::Outcome;
 
+pub fn query_fn(registry: &mut Registry) -> QueryFn<CanBeBlocked, Option<bool>> {
+    registry.add_query(move |g: &GameState, s: Source, data: &CanBeBlocked| {
+        Some(
+            g.card(data.blocker_id)?
+                .properties
+                .tags
+                .query(g, s, EnumSet::empty())
+                .contains(CardTag::Flying),
+        )
+    })
+}
+
 /// > 702.9a. Flying is an evasion ability.
 ///
 /// > 702.9b. A creature with flying can't be blocked except by creatures with
@@ -41,24 +54,21 @@ use utils::outcome::Outcome;
 /// > 702.9c. Multiple instances of flying on the same creature are redundant.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R7029>
-pub fn gain_this_turn(game: &mut GameState, context: EffectContext, id: PermanentId) -> Outcome {
+pub fn gain_this_turn(
+    query: &QueryFn<CanBeBlocked, Option<bool>>,
+    game: &mut GameState,
+    context: EffectContext,
+    id: PermanentId,
+) -> Outcome {
     let turn = game.turn;
     game.card_mut(id)?.properties.tags.add_effect(
         context,
         Duration::WhileOnBattlefieldThisTurn(id, turn),
         EnumSets::add(Layer::AbilityModifyingEffects, context, CardTag::Flying),
+    );
+    game.card_mut(id)?.properties.can_be_blocked.add_effect(
+        context,
+        Duration::WhileOnBattlefieldThisTurn(id, turn),
+        Flag::and_predicate(query.clone()),
     )
-    // game.card_mut(id)?.properties.can_be_blocked.add_effect(
-    //     context,
-    //     Duration::WhileOnBattlefieldThisTurn(id, turn),
-    //     Flag::and_predicate(|g, s, data: &CanBeBlocked| {
-    //         Some(
-    //             g.card(data.blocker_id)?
-    //                 .properties
-    //                 .tags
-    //                 .query(g, s, EnumSet::empty())
-    //                 .contains(CardTag::Flying),
-    //         )
-    //     }),
-    // )
 }

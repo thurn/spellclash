@@ -56,6 +56,8 @@ pub fn execute(
         );
     }
 
+    let snapshot = debug_snapshot::capture(game);
+
     if !options.skip_undo_tracking
         && game.undo_tracker.enabled
         && action != GameAction::DebugAction(DebugGameAction::Undo)
