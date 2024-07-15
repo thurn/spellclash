@@ -26,7 +26,7 @@ use crate::printed_cards::card_subtypes::{CreatureType, LandType};
 use crate::properties::card_property::{CardArgumentProperty, CardProperty};
 use crate::properties::flag::Flag;
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Serialize, Deserialize)]
 pub struct CardProperties {
     /// Queries tags on this card
     pub tags: CardProperty<EnumSets<CardTag>>,

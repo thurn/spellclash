@@ -39,7 +39,7 @@ pub struct CardSubtypes {
 /// Possible subtypes of artifacts
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R2053g>
-#[derive(Debug, EnumSetType, EnumString)]
+#[derive(Debug, EnumSetType, EnumString, Serialize, Deserialize)]
 pub enum ArtifactSubtype {
     Attraction,
     Blood,
@@ -61,7 +61,7 @@ pub enum ArtifactSubtype {
 /// Possible subtypes of enchantments
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R2053h>
-#[derive(Debug, EnumSetType, EnumString)]
+#[derive(Debug, EnumSetType, EnumString, Serialize, Deserialize)]
 pub enum EnchantmentSubtype {
     Aura,
     Background,
@@ -111,7 +111,7 @@ impl From<LandType> for Text {
 /// Possible subtypes of planeswalkers
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R2053j>
-#[derive(Debug, EnumSetType, EnumString)]
+#[derive(Debug, EnumSetType, EnumString, Serialize, Deserialize)]
 pub enum PlaneswalkerSubtype {
     Ajani,
     Aminatou,
@@ -196,7 +196,7 @@ pub enum PlaneswalkerSubtype {
 /// Possible subtypes of instants or sorceries
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R2053k>
-#[derive(Debug, EnumSetType, EnumString)]
+#[derive(Debug, EnumSetType, EnumString, Serialize, Deserialize)]
 pub enum InstantOrSorcerySubtype {
     Adventure,
     Arcane,
@@ -207,7 +207,7 @@ pub enum InstantOrSorcerySubtype {
 /// Possible subtypes of creatures or tribal cards
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R2053m>
-#[derive(Debug, EnumSetType, EnumString)]
+#[derive(Debug, EnumSetType, EnumString, Serialize, Deserialize)]
 pub enum CreatureType {
     Advisor,
     Aetherborn,
@@ -513,7 +513,7 @@ pub enum CreatureType {
 /// Possible subtypes of planes
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R2053n>
-#[derive(Debug, EnumSetType, EnumString)]
+#[derive(Debug, EnumSetType, EnumString, Serialize, Deserialize)]
 pub enum PlaneSubtype {
     TheAbyss,
     Alara,
@@ -602,7 +602,7 @@ pub enum PlaneSubtype {
 /// Possible subtypes of dungeons
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R2053p>
-#[derive(Debug, EnumSetType, EnumString)]
+#[derive(Debug, EnumSetType, EnumString, Serialize, Deserialize)]
 pub enum DungeonSubtype {
     Undercity,
 }
@@ -610,7 +610,7 @@ pub enum DungeonSubtype {
 /// Possible subtypes of battles
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R2053q>
-#[derive(Debug, EnumSetType, EnumString)]
+#[derive(Debug, EnumSetType, EnumString, Serialize, Deserialize)]
 pub enum BattleSubtype {
     Siege,
 }

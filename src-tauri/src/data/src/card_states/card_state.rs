@@ -94,7 +94,7 @@ pub struct CardState {
     /// See <https://yawgatog.com/resources/magic-rules/#R1083>
     pub owner: PlayerName,
 
-    #[serde(skip)]
+    /// Attributes of this card which may change over time due to game effects.
     pub properties: CardProperties,
 
     /// Effects which are applying to this card to change its controller.

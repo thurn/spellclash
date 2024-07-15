@@ -23,7 +23,7 @@ use crate::delegates::query_value::QueryValue;
 use crate::game_states::game_state::GameState;
 use crate::properties::query_condition::QueryCondition;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub enum Flag<TArg: 'static> {
     Overwrite(EffectSortingKey, bool),
     And(QueryCondition<TArg>),

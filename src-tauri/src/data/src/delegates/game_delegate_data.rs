@@ -30,7 +30,7 @@ impl ToCardId for CanAttackTarget {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct CanBeBlocked {
     pub attacker_id: AttackerId,
     pub target: AttackTarget,
