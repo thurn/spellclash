@@ -57,23 +57,11 @@ pub fn execute(
         );
     }
 
-    let mut track_for_undo = false;
-    if !options.skip_undo_tracking
-        && game.undo_tracker.enabled
-        && action != GameAction::DebugAction(DebugGameAction::Undo)
-    {
-        track_for_undo = true;
-        let mut clone = game.clone();
-        clone.undo_tracker.enabled = false;
-        clone.undo_tracker.undo = vec![];
-        game.undo_tracker.undo.push(Box::new(clone));
-    }
-
     if !matches!(game.operation_mode, GameOperationMode::AgentSearch(_)) {
         game.history
             .player_actions
             .get_mut(player)
-            .push(TakenGameAction { action, track_for_undo });
+            .push(TakenGameAction { action, track_for_undo: !options.skip_undo_tracking });
     }
 
     match action {

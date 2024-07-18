@@ -34,9 +34,6 @@ use oracle::card_database;
 use utils::outcome;
 
 pub fn run(database: SqliteDatabase, game: &mut GameState, update_channel: Option<UpdateChannel>) {
-    for previous in game.undo_tracker.undo.iter_mut() {
-        run(database.clone(), previous.as_mut(), None);
-    }
     card_database::populate(database, game);
 
     for player in enum_iterator::all::<PlayerName>() {

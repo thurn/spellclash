@@ -21,7 +21,6 @@ use crate::core::primitives::PlayerName;
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Ord, PartialOrd, Serialize, Deserialize)]
 pub enum DebugGameAction {
-    Undo,
     SetLifeTotal(PlayerName),
     RevealHand(PlayerName),
     DestroyAllLands(PlayerName),

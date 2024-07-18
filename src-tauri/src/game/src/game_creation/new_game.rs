@@ -27,7 +27,6 @@ use data::game_states::game_state::{
 use data::game_states::history_data::GameHistory;
 use data::game_states::oracle::Oracle;
 use data::game_states::this_turn_state::ThisTurnState;
-use data::game_states::undo_tracker::UndoTracker;
 use data::player_states::player_state::{PlayerState, PlayerType, Players};
 use data::printed_cards::printed_card_id;
 use database::sqlite_database::SqliteDatabase;
@@ -123,7 +122,6 @@ fn create_game(
         history: GameHistory::default(),
         rng_seed: 3141592653589793,
         rng: Xoshiro256StarStar::seed_from_u64(3141592653589793),
-        undo_tracker: UndoTracker { enabled: true, undo: vec![] },
         delegates: GameDelegates::default(),
         state_based_events: Some(vec![]),
         ability_state: AbilityState::default(),

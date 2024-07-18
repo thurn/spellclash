@@ -44,7 +44,6 @@ use crate::game_states::history_data::{GameHistory, HistoryCounters, HistoryEven
 use crate::game_states::oracle::Oracle;
 use crate::game_states::state_based_event::StateBasedEvent;
 use crate::game_states::this_turn_state::ThisTurnState;
-use crate::game_states::undo_tracker::UndoTracker;
 use crate::player_states::player_map::PlayerMap;
 use crate::player_states::player_state::{PlayerQueries, PlayerState, Players};
 use crate::prompts::game_update::UpdateChannel;
@@ -138,9 +137,6 @@ pub struct GameState {
     /// Random number generator to use for this game
     pub rng: Xoshiro256StarStar,
 
-    /// Handles state tracking for the 'undo' action.
-    pub undo_tracker: UndoTracker,
-
     /// Active Delegates for the game. See [GameDelegates].
     ///
     /// Do not mutate the set of delegates directly from an effect function or
@@ -183,12 +179,7 @@ impl GameState {
     /// or simulation logic, but which omits undo tracking information, agent
     /// state, and the ability to process incremental visual updates.
     pub fn shallow_clone(&self) -> Self {
-        Self {
-            updates: None,
-            undo_tracker: UndoTracker { enabled: false, undo: vec![] },
-            agent_state: None,
-            ..self.clone()
-        }
+        Self { updates: None, agent_state: None, ..self.clone() }
     }
 
     /// Shuffles the order of cards in a player's library
