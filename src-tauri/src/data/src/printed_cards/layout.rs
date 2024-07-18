@@ -21,7 +21,7 @@ use strum::EnumString;
 /// other.
 ///
 /// See <https://scryfall.com/docs/api/layouts>
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Type, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CardLayout {
     Adventure,
@@ -38,7 +38,7 @@ pub enum CardLayout {
 /// Describes how a single face of a card is laid out.
 ///
 /// See <https://scryfall.com/docs/api/layouts>
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumString, Serialize, Deserialize, Type)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumString, Type, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 pub enum FaceLayout {

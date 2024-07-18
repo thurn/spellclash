@@ -16,7 +16,6 @@ use std::marker::PhantomData;
 use std::ops::Add;
 
 use enumset::{EnumSet, EnumSetType};
-use serde::{Deserialize, Serialize};
 use utils::outcome;
 use utils::outcome::Outcome;
 
@@ -36,13 +35,13 @@ pub type CardProperty<TModifier> = CardArgumentProperty<(), TModifier>;
 
 /// Represents a permanent card losing all its current abilities as of a given
 /// [Timestamp].
-#[derive(Clone, Copy, Serialize, Deserialize)]
+#[derive(Clone, Copy)]
 pub struct LostAllAbilities {
     pub timestamp: Timestamp,
     pub permanent_id: PermanentId,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone)]
 pub struct CardArgumentProperty<TArg, TModifier: QueryValue> {
     modifiers: Vec<CardModifier<TModifier>>,
     lost_all_abilities: Option<LostAllAbilities>,

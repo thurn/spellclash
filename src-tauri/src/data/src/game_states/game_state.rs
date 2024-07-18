@@ -50,7 +50,7 @@ use crate::prompts::game_update::UpdateChannel;
 use crate::prompts::prompt::PromptResponse;
 
 /// The high-level activity which this [GameState] is being used for.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub enum GameOperationMode {
     /// Normal gameplay
     Playing,
@@ -65,7 +65,7 @@ pub enum GameOperationMode {
 
 /// This is the state of a single ongoing game of Magic (i.e. one duel, not a
 /// larger session of the spellclash game client).
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct GameState {
     /// Unique ID for this game
     pub id: GameId,
@@ -120,7 +120,6 @@ pub struct GameState {
     ///
     /// If no channel is provided here, game mutations will be applied silently
     /// without returning incremental updates.
-    #[serde(skip)]
     pub updates: Option<UpdateChannel>,
 
     /// State of creatures participating in the currently active combat phase,
@@ -142,7 +141,6 @@ pub struct GameState {
     /// Do not mutate the set of delegates directly from an effect function or
     /// callback. Prefer to add top-level delegates as part of your ability
     /// definition.
-    #[serde(skip)]
     pub delegates: GameDelegates,
 
     /// Tracks events which have occurred since the last time state-based
@@ -155,18 +153,15 @@ pub struct GameState {
     /// This value is populated immediately after deserialization and should
     /// almost always be safe to unwrap. Instead of accessing this field, use
     /// the [Self::oracle] method.
-    #[serde(skip)]
     pub oracle_reference: Option<Box<dyn Oracle>>,
 
     /// State for an active AI agent, if any
-    #[serde(skip)]
     pub agent_state: Option<AgentState<PlayerName, AgentAction>>,
 
     /// Current high-level activity which this [GameState] is being used for.
     pub operation_mode: GameOperationMode,
 
     /// True if the game is currently checking for state-triggered abilities.
-    #[serde(skip)]
     pub checking_state_triggered_abilities: bool,
 }
 
@@ -312,7 +307,7 @@ impl PlayerQueries for GameState {
 }
 
 /// Status of the game: whether it is starting, is ongoing, or has ended.
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum GameStatus {
     /// Initial step of game setup. Players reveal commanders, companions,
     /// sticker sheets, etc.
@@ -340,7 +335,7 @@ pub enum GameStatus {
 }
 
 /// Identifies a turn within the game.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub struct TurnData {
     /// Player whose turn it is or was.
     pub active_player: PlayerName,
@@ -352,7 +347,7 @@ pub struct TurnData {
 }
 
 /// Options controlling overall gameplay
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy)]
 pub struct GameConfiguration {
     /// If true, all random choices within this game will be made
     /// deterministically using a seeded random number generator. Useful for

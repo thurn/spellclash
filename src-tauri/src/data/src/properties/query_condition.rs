@@ -13,7 +13,6 @@
 // limitations under the License.
 
 use dyn_clone::DynClone;
-use serde::{Deserialize, Serialize, Serializer};
 
 use crate::card_definitions::registry;
 use crate::card_definitions::registry::{QueryFn, Registered, Registry};
@@ -21,7 +20,7 @@ use crate::core::primitives::Source;
 use crate::delegates::query_value::QueryValue;
 use crate::game_states::game_state::GameState;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone)]
 pub enum QueryCondition<TArg: 'static> {
     Predicate(QueryFn<TArg, Option<bool>>),
 }

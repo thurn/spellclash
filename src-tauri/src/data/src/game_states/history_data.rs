@@ -26,7 +26,7 @@ use crate::player_states::player_map::PlayerMap;
 use crate::prompts::prompt::PromptResponse;
 
 /// Records a single event which happened during this game.
-#[derive(Debug, Clone, Serialize, Deserialize, EnumKind)]
+#[derive(Debug, Clone, EnumKind)]
 #[enum_kind(HistoryEventKind)]
 pub enum HistoryEvent {
     AttackWithCreature,
@@ -40,7 +40,7 @@ impl HistoryEvent {
 }
 
 /// Tuple of [TurnData] and [HistoryEvent].
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 struct HistoryEntry {
     turn: TurnData,
     event: HistoryEvent,
@@ -55,7 +55,7 @@ static DEFAULT_COUNTERS: HistoryCounters = HistoryCounters { cards_drawn: 0, lan
 /// be updated as the final step in any game mutation, for example the "draw
 /// cards" event should draw the cards and fire related game events *before*
 /// updating the counter.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default)]
 pub struct HistoryCounters {
     /// Cards drawn so far this turn by this player. This records the actual
     /// number of cards drawn, e.g. if a player attempts to draw from an empty
@@ -83,15 +83,12 @@ pub struct TakenGameAction {
 /// the final step of any game action. This helps avoid confusion where events
 /// added during the *current* action appear in history, which is typically not
 /// desired.
-#[serde_as]
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+
+#[derive(Debug, Clone, Default)]
 pub struct GameHistory {
     current: Vec<HistoryEntry>,
-    #[serde_as(as = "Vec<(_, _)>")]
     entries: BTreeMap<TurnData, Vec<HistoryEvent>>,
-    #[serde_as(as = "Vec<(_, _)>")]
     p1_counters: BTreeMap<TurnData, HistoryCounters>,
-    #[serde_as(as = "Vec<(_, _)>")]
     p2_counters: BTreeMap<TurnData, HistoryCounters>,
 
     /// Stores actions taken thus far in the game.

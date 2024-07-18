@@ -13,13 +13,12 @@
 // limitations under the License.
 
 use enumset::EnumSetType;
-use serde::{Deserialize, Serialize};
 
 use crate::core::numerics::{Loyalty, Power, Toughness};
 
 /// Attraction lights printed on a card, used on certain Un-Set cards for the
 /// 'attraction' mechanic.
-#[derive(Debug, Serialize, Deserialize, EnumSetType)]
+#[derive(Debug, EnumSetType)]
 pub enum AttractionLight {
     One,
     Two,
@@ -30,7 +29,7 @@ pub enum AttractionLight {
 }
 
 /// Printed loyalty value on a planeswalker card
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone)]
 pub enum PrintedLoyalty {
     /// Number of starting loyalty counters
     Number(Loyalty),
@@ -39,7 +38,7 @@ pub enum PrintedLoyalty {
 }
 
 /// Printed power value on a card
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone)]
 pub enum PrintedPower {
     /// Numeric power
     Number(Power),

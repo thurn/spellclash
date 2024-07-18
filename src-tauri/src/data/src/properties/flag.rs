@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
-
 use crate::card_definitions::registry::{QueryFn, Registered, Registry};
 use crate::card_states::zones::ToCardId;
 use crate::core::function_types::CardPredicate;
@@ -23,7 +21,7 @@ use crate::delegates::query_value::QueryValue;
 use crate::game_states::game_state::GameState;
 use crate::properties::query_condition::QueryCondition;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone)]
 pub enum Flag<TArg: 'static> {
     Overwrite(EffectSortingKey, bool),
     And(QueryCondition<TArg>),

@@ -13,12 +13,11 @@
 // limitations under the License.
 
 use either::Either;
-use serde::{Deserialize, Serialize};
 
 use crate::core::primitives::{CardId, Color, EntityId, PermanentId, PlayerName};
 use crate::printed_cards::card_subtypes::LandType;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub enum StateValue {
     PlayerName(PlayerName),
     CardId(CardId),

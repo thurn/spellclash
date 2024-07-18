@@ -12,11 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
-
 use crate::core::primitives::EntityId;
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum CustomCardState {
     /// Affect some game object while it exists. The effect is assumed to end
     /// once this ObjectId expires (e.g. by the target moving to a different
@@ -30,7 +28,7 @@ pub enum CustomCardState {
 /// abilities, such as targets which have been selected for this card. It is
 /// designed as an "append-only" data structure, meaning that state entries are
 /// never removed.
-#[derive(Clone, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
 pub struct CustomCardStateList {
     list: Vec<CustomCardState>,
 }

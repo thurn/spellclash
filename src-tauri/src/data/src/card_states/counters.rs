@@ -14,12 +14,10 @@
 
 use std::collections::BTreeMap;
 
-use serde::{Deserialize, Serialize};
-
 use crate::core::numerics::Loyalty;
 
 /// Represents counters currently on a card or player
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct Counters {
     /// The quantity of +1/+1 counters on this object
     pub p1p1: u32,
@@ -31,7 +29,7 @@ pub struct Counters {
     pub other_counters: BTreeMap<CounterType, u32>,
 }
 
-#[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, Ord, PartialOrd)]
 pub enum CounterType {
     Acorn,
     Aegis,

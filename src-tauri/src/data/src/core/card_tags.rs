@@ -13,9 +13,8 @@
 // limitations under the License.
 
 use enumset::EnumSetType;
-use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Hash, Ord, PartialOrd, Serialize, Deserialize, EnumSetType)]
+#[derive(Debug, Hash, Ord, PartialOrd, EnumSetType)]
 pub enum CardTag {
     Flying,
     Haste,

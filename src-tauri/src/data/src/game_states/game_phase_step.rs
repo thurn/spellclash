@@ -14,9 +14,8 @@
 
 use enum_iterator::Sequence;
 use enumset::EnumSetType;
-use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Ord, PartialOrd, Hash, EnumSetType, Sequence, Serialize, Deserialize)]
+#[derive(Debug, Ord, PartialOrd, Hash, EnumSetType, Sequence)]
 pub enum GamePhaseStep {
     Untap,
     Upkeep,

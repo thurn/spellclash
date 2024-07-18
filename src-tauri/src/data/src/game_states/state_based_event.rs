@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
-
 use crate::core::primitives::{CardId, EntityId, PermanentId, PlayerName};
 
 /// Represents an event which *may* result in changes to the game state when
@@ -21,7 +19,7 @@ use crate::core::primitives::{CardId, EntityId, PermanentId, PlayerName};
 ///
 /// In order to make state-based action checks efficient, all game mutations
 /// that may trigger one are required to register an associated event here.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy)]
 pub enum StateBasedEvent {
     LifeTotalDecrease(PlayerName),
     DrawFromEmptyLibrary(PlayerName),

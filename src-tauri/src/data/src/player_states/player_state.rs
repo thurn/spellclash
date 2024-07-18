@@ -32,7 +32,7 @@ pub trait PlayerQueries {
 }
 
 /// Represents the state of players within a game
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct Players {
     player_1: PlayerState,
     player_2: PlayerState,
@@ -96,7 +96,7 @@ impl PlayerType {
 }
 
 /// Represents the state of a single player within a game
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct PlayerState {
     /// Name of this player
     pub name: PlayerName,

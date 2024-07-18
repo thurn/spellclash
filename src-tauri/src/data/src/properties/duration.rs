@@ -12,14 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
-
 use crate::card_states::zones::{ToCardId, ZoneQueries};
 use crate::core::primitives::{HasObjectId, PermanentId, SpellId, Zone};
 use crate::game_states::game_state::{GameState, TurnData};
 
 /// Controls how long an effect should apply to the game.
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone)]
 pub enum Duration {
     /// Effect applies until the end of the game
     Continuous,

@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
-
 use crate::card_states::zones::{HasZones, ToCardId};
 use crate::core::primitives::{CardId, EntityId, PermanentId, PlayerName};
 use crate::game_states::combat_state::{AttackTarget, AttackerId, BlockerId};
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy)]
 pub struct CanAttackTarget {
     pub attacker_id: AttackerId,
     pub target: AttackTarget,
@@ -30,7 +28,7 @@ impl ToCardId for CanAttackTarget {
     }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy)]
 pub struct CanBeBlocked {
     pub attacker_id: AttackerId,
     pub target: AttackTarget,

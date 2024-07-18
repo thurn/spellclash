@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 use crate::core::primitives::ManaColor;
 
 /// Represents the printed mana cost of a card or ability
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct ManaCost {
     /// List of symbols making up this mana cost
     pub items: Vec<ManaCostItem>,
@@ -29,7 +29,7 @@ pub struct ManaCost {
 /// state.
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R1074> for a list of possible symbols.
-#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq)]
 pub enum ManaCostItem {
     Snow(ManaColor),
     Colored(ManaColor),

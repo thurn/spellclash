@@ -13,7 +13,6 @@
 // limitations under the License.
 
 use enumset::{EnumSet, EnumSetType};
-use serde::{Deserialize, Serialize};
 
 use crate::core::numerics::ManaValue;
 use crate::core::primitives::{CardId, EntityId, PermanentId};
@@ -22,7 +21,7 @@ use crate::printed_cards::printed_card::Face;
 
 /// Describes a proposed series of a choices for a user to play a card as part
 /// of the "play card" game action.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct PlayCardPlan {
     /// The face or faces of this card which the player is casting and the
     /// timing restriction used for playing this card.
@@ -93,7 +92,7 @@ impl PlayCardPlan {
 }
 
 /// Describes a user's proposed plan for paying mana costs for a spell.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default)]
 pub struct ManaPaymentPlan {
     /// Identifies cards the player has chosen to active via their basic land
     /// abilities in order to pay costs for this spell. Lands with basic
@@ -111,7 +110,7 @@ pub struct ManaPaymentPlan {
 }
 
 /// Describes how a face of card can be played.
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum PlayCardTiming {
     Sorcery,
     Instant,
@@ -119,7 +118,7 @@ pub enum PlayCardTiming {
 }
 
 /// Describes how a face of card can be played.
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub struct PlayAs {
     /// Set of faces being played
     pub faces: EnumSet<Face>,
@@ -142,7 +141,7 @@ impl PlayAs {
 /// > bulleted list preceded by instructions for a player to choose a number of
 /// > those options, such as "Choose one --." Each of those options is a mode.
 /// <https://yawgatog.com/resources/magic-rules/#R7002>
-#[derive(Debug, EnumSetType, Serialize, Deserialize)]
+#[derive(Debug, EnumSetType)]
 pub enum ModalChoice {
     One,
     Two,
@@ -153,7 +152,7 @@ pub enum ModalChoice {
 }
 
 /// Extra choices a player can make while casting a spell
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub enum CastSpellPlanAdditionalChoice {
     /// Ability with an additional cost the player has *chosen* to pay for this
     /// spell, such as Kicker. Does not include additional costs the player is

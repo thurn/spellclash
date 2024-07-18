@@ -12,10 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
-
 /// Possible high-level types of game delegate
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum DelegateType {
     /// Ability delegate. Will not be invoked if a permanent loses abilities.
     Ability,

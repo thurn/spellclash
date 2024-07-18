@@ -14,9 +14,6 @@
 
 use std::collections::BTreeMap;
 
-use serde::{Deserialize, Serialize};
-use serde_with::serde_as;
-
 use crate::core::primitives::{AbilityId, CardId, EffectId, EntityId};
 use crate::game_states::effect_state::EffectState;
 use crate::game_states::state_value::StateValue;
@@ -24,8 +21,7 @@ use crate::game_states::this_turn_state::ThisTurnState;
 
 /// Stores state information associated with abilities in an ongoing
 /// game.
-#[serde_as]
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone)]
 pub struct AbilityState {
     /// State which persists for the duration of the current turn.
     pub this_turn: ThisTurnState,
@@ -36,13 +32,11 @@ pub struct AbilityState {
     ///
     /// This is mutated via the `delayed_trigger` module, do not access this
     /// field directly.
-    #[serde_as(as = "Vec<(_, _)>")]
     pub delayed_triggers: BTreeMap<AbilityId, Vec<EffectId>>,
 
     /// Stores arbitrary state values associated with a given [EffectId].
     ///
     /// This is always manipulated via [EffectState], do not access this field
     /// directly.
-    #[serde_as(as = "Vec<(_, _)>")]
     pub effect_state: BTreeMap<EffectId, StateValue>,
 }

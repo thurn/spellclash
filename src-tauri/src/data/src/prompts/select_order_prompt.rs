@@ -34,7 +34,7 @@ pub enum CardOrderLocation {
 }
 
 /// Selection restrictions.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub enum Quantity {
     /// No restrictions on number of cards selected.
     AnyNumber,

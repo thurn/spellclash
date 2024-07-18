@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
-
 #[allow(unused)] // Used in docs
 use crate::card_states::zones::Zones;
 use crate::card_states::zones::{HasZones, ToCardId};
@@ -26,7 +24,7 @@ use crate::game_states::game_state::GameState;
 
 /// Represents the state of a triggered or activated ability which has triggered
 /// or is on the stack
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct StackAbilityState {
     /// ID of this ability on the stack.
     pub id: StackAbilityId,

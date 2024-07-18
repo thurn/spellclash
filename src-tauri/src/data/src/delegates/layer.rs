@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
-
 use crate::core::primitives::Timestamp;
 
 /// Represents a layer or sublayer for resolving continuous effects.
@@ -26,7 +24,7 @@ use crate::core::primitives::Timestamp;
 /// > series of layers in the following order:
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R6131>
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Layer {
     GameRules,
     CopyEffects,
@@ -47,7 +45,7 @@ pub enum Layer {
     PowerToughnessSwitchingEffects,
 }
 
-#[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
 pub struct EffectSortingKey {
     pub layer: Option<Layer>,
     pub timestamp: Option<Timestamp>,

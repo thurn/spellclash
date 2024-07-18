@@ -15,7 +15,6 @@
 use std::ops::Add;
 
 use enumset::{EnumSet, EnumSetType};
-use serde::{Deserialize, Serialize};
 
 use crate::card_definitions::registry::Registry;
 use crate::card_states::zones::ToCardId;
@@ -31,7 +30,7 @@ pub trait QueryValue {
     fn effect_sorting_key(&self) -> Option<EffectSortingKey>;
 }
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug)]
 pub enum Ints<T: Default + Add<Output = T>> {
     Set(EffectSortingKey, T),
     Add(T),
@@ -56,7 +55,7 @@ impl<T: Default + Add<Output = T>> QueryValue for Ints<T> {
     }
 }
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug)]
 pub enum EnumSets<T: EnumSetType> {
     Set(EffectSortingKey, EnumSet<T>),
     Add(EffectSortingKey, EnumSet<T>),
@@ -95,7 +94,7 @@ impl<T: EnumSetType> QueryValue for EnumSets<T> {
     }
 }
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug)]
 pub enum ChangeText<T: EnumSetType> {
     Replace(Timestamp, T, T),
 }

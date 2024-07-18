@@ -29,7 +29,7 @@ use crate::printed_cards::printed_primitives::{
     AttractionLight, PrintedLoyalty, PrintedPower, PrintedToughness,
 };
 
-#[derive(Debug, EnumSetType, Serialize, Deserialize, Type)]
+#[derive(Debug, EnumSetType, Type, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Face {
     Primary,

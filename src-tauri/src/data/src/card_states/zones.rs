@@ -21,7 +21,6 @@ use enumset::EnumSet;
 use log::debug;
 use rand::prelude::SliceRandom;
 use rand_xoshiro::Xoshiro256StarStar;
-use serde::{Deserialize, Serialize};
 use slotmap::SlotMap;
 use utils::outcome;
 use utils::outcome::{Outcome, Success};
@@ -132,7 +131,7 @@ pub trait HasZones {
 }
 
 /// Stores the state & position of all cards and card-like objects
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct Zones {
     /// All cards and card-like objects in the current game
     all_cards: SlotMap<CardId, CardState>,
@@ -537,7 +536,7 @@ impl Zones {
     }
 }
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone)]
 struct UnorderedZone<T: ToCardId + Hash + Eq + PartialEq + Debug + Ord> {
     player1: BTreeSet<T>,
     player2: BTreeSet<T>,
@@ -575,7 +574,7 @@ impl<T: ToCardId + Hash + Eq + PartialEq + Debug + Ord> UnorderedZone<T> {
     }
 }
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone)]
 struct OrderedZone {
     player1: VecDeque<CardId>,
     player2: VecDeque<CardId>,

@@ -15,7 +15,8 @@
 use std::sync::Arc;
 
 use enumset::EnumSet;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use slotmap::__impl::Serialize;
 use specta::Type;
 
 use crate::card_definitions::card_name::CardName;
@@ -44,7 +45,7 @@ use crate::properties::card_properties::CardProperties;
 /// - A copy of a card on the stack
 /// - A token
 /// - An emblem
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct CardState {
     /// Unique identifier for this card in the [Zones] struct.
     ///
@@ -191,7 +192,6 @@ pub struct CardState {
     /// All cards must have a [PrintedCard] and this is populated immediately
     /// after deserialization. It should basically always be fine to .unwrap()
     /// this value by calling the [Self::printed] method.
-    #[serde(skip)]
     pub printed_card_reference: Option<Arc<PrintedCard>>,
 }
 
@@ -255,7 +255,7 @@ impl CardState {
 ///
 /// I assume within 10 years WoTC will introduce a third tapped state somehow,
 /// so might as well make this an enum.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Type, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum TappedState {
     Untapped,
@@ -269,7 +269,7 @@ impl TappedState {
 }
 
 /// Facing for this card, corresponding to the [PrintedCard] faces.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Type, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum CardFacing {
     FaceDown,
@@ -279,14 +279,14 @@ pub enum CardFacing {
 }
 
 /// Represents an effect which changes the controller of a card.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy)]
 pub struct ControlChangingEffect {
     pub effect_id: EffectId,
     pub controller: PlayerName,
 }
 
 /// Whether a card is phased out
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Type)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Type)]
 #[serde(rename_all = "camelCase")]
 pub enum PhasingState {
     PhasedIn,

@@ -45,7 +45,7 @@ impl AttackTarget {
 }
 
 /// Tracks the state of creatures participating in a combat phase
-#[derive(Debug, Clone, Serialize, Deserialize, EnumKind)]
+#[derive(Debug, Clone, EnumKind)]
 #[enum_kind(CombatStateKind)]
 pub enum CombatState {
     /// The active player is selecting attackers and has currently picked this
@@ -90,7 +90,7 @@ impl CombatState {
 }
 
 /// Attacks the active player is considering
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct ProposedAttackers {
     /// Creatures which have been selected to attack
     pub proposed_attacks: AttackerMap,
@@ -100,11 +100,9 @@ pub struct ProposedAttackers {
 }
 
 /// Represents declared attacks within a combat phase
-#[serde_as]
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default)]
 pub struct AttackerMap {
     /// Creatures which have been selected to attack
-    #[serde_as(as = "Vec<(_, _)>")]
     attacks: BTreeMap<AttackerId, AttackTarget>,
 }
 
@@ -155,8 +153,7 @@ impl AttackerMap {
 }
 
 /// Blocks the defending player is considering
-#[serde_as]
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct ProposedBlockers {
     /// The player who is proposing blockers
     pub defender: PlayerName,
@@ -168,12 +165,10 @@ pub struct ProposedBlockers {
     pub selected_blockers: BTreeSet<BlockerId>,
 
     /// Current proposed blocks, keyed by Blocker ID
-    #[serde_as(as = "Vec<(_, _)>")]
     pub proposed_blocks: BTreeMap<BlockerId, Vec<AttackerId>>,
 }
 
-#[serde_as]
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct BlockerMap {
     /// All declared attackers along with their attack targets
     pub attackers: AttackerMap,
@@ -183,10 +178,8 @@ pub struct BlockerMap {
     ///
     /// A [BlockerId] will be retained in this map even if the blocking creature
     /// is subsequently removed.
-    #[serde_as(as = "Vec<(_, _)>")]
     pub blocked_attackers: BTreeMap<AttackerId, Vec<BlockerId>>,
 
     /// Map from Blocker ID to the attackers that creature is blocking
-    #[serde_as(as = "Vec<(_, _)>")]
     pub reverse_lookup: BTreeMap<BlockerId, Vec<AttackerId>>,
 }

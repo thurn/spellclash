@@ -16,13 +16,11 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::iter;
 
 use either::Either;
-use serde::{Deserialize, Serialize};
-use serde_with::serde_as;
 
 use crate::core::primitives::{AbilityId, CardId, EffectId, EntityId, PermanentId, Timestamp};
 use crate::delegates::scope::{EffectContext, Scope};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 struct AbilityEffectId {
     pub ability_id: AbilityId,
     pub effect_id: EffectId,
@@ -32,12 +30,10 @@ struct AbilityEffectId {
 /// turn.
 ///
 /// All state stored here is dropped during the cleanup step of each turn.
-#[serde_as]
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default)]
 pub struct ThisTurnState {
     /// Map from entities to lists of effects active this turn affecting that
     /// entity.
-    #[serde_as(as = "Vec<(_, _)>")]
     effects: BTreeMap<EntityId, Vec<AbilityEffectId>>,
 
     /// List of control-changing effects to automatically clean up at end of
@@ -46,7 +42,6 @@ pub struct ThisTurnState {
 
     /// Permanents that have lost all abilities this turn as of a given
     /// [Timestamp].
-    #[serde_as(as = "Vec<(_, _)>")]
     lost_all_abilities: BTreeMap<PermanentId, Timestamp>,
 }
 

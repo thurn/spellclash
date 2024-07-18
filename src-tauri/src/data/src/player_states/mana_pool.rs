@@ -13,7 +13,6 @@
 // limitations under the License.
 
 use enum_map::EnumMap;
-use serde::{Deserialize, Serialize};
 
 use crate::core::numerics::ManaValue;
 use crate::core::primitives::ManaColor;
@@ -23,7 +22,7 @@ use crate::core::primitives::ManaColor;
 /// Normally this empties at the end of each step.
 ///
 /// See <https://yawgatog.com/resources/magic-rules/#R1064>
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default)]
 pub struct ManaPool {
     /// Mana which has no usage restriction associated with it
     pub unrestricted: EnumMap<ManaColor, ManaValue>,

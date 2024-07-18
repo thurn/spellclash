@@ -14,8 +14,6 @@
 
 use std::fmt::{Debug, Formatter};
 
-use serde::{Deserialize, Serialize};
-
 use crate::card_definitions::registry::Registry;
 use crate::core::card_tags::CardTag;
 use crate::core::numerics::{Power, Toughness};
@@ -26,7 +24,7 @@ use crate::printed_cards::card_subtypes::{CreatureType, LandType};
 use crate::properties::card_property::{CardArgumentProperty, CardProperty};
 use crate::properties::flag::Flag;
 
-#[derive(Default, Clone, Serialize, Deserialize)]
+#[derive(Default, Clone)]
 pub struct CardProperties {
     /// Queries tags on this card
     pub tags: CardProperty<EnumSets<CardTag>>,
