@@ -67,8 +67,6 @@ pub fn create(deck_name: DeckName) -> GameState {
         DebugConfiguration::default(),
     );
     game.status = GameStatus::Playing;
-    game.undo_tracker.enabled = false;
-    game.undo_tracker.undo.clear();
     game.updates = None;
     game
 }

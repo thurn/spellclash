@@ -111,7 +111,7 @@ pub fn characteristic_faces(
         }
         Zone::Stack => {
             if card.cast_as.len() == 1 {
-                CharacteristicFaces::Face(&card.printed().face(card.cast_as.iter().next().unwrap()))
+                CharacteristicFaces::Face(card.printed().face(card.cast_as.iter().next().unwrap()))
             } else {
                 CharacteristicFaces::MultipleFaces(
                     card.cast_as.iter().map(|face| card.printed().face(face)).collect(),

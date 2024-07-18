@@ -172,7 +172,7 @@ pub fn handle_undo(database: SqliteDatabase, client: &mut Client) {
             // marked for undo tracking and the next action to be taken is marked for undo
             // tracking.
             can_undo::undoable_action_count(actions) == 1
-                && actions.get(player).get(0).map(|a| a.track_for_undo).unwrap_or_default()
+                && actions.get(player).first().map(|a| a.track_for_undo).unwrap_or_default()
         });
     database.write_game(&game_serialization::serialize(&game));
 

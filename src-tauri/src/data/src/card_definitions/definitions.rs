@@ -47,7 +47,7 @@ static CARDS: Lazy<CardMap> = Lazy::new(|| {
 
 /// Returns an iterator over all known card definitions in an undefined order
 pub fn all_cards() -> impl Iterator<Item = &'static CardDefinition> {
-    assert!(CARDS.cards.len() > 0, "Cards not found. Call card_list::initialize() first.");
+    assert!(!CARDS.cards.is_empty(), "Cards not found. Call card_list::initialize() first.");
     CARDS.cards.values()
 }
 

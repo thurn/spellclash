@@ -38,7 +38,7 @@ pub fn serialize(game: &GameState) -> SerializedGameState {
         }),
         player_actions: game.history.player_actions.clone(),
         prompt_responses: game.history.prompt_responses.clone(),
-        debug_configuration: game.configuration.debug.clone(),
+        debug_configuration: game.configuration.debug,
     }
 }
 

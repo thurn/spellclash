@@ -170,10 +170,12 @@ pub trait DelayedTriggerEffect {
     fn invoke(&self, game: &mut GameState, context: EffectContext);
 }
 
+pub type InitializeFn = Box<dyn FnOnce(&mut CardProperties) + Send + Sync + 'static>;
+
 pub struct AbilityBuilder<TEffect, TDelayed: DelayedTriggerEffect> {
     ability_type: AbilityType,
 
-    initialize: Option<Box<dyn FnOnce(&mut CardProperties) + Send + Sync + 'static>>,
+    initialize: Option<InitializeFn>,
 
     delegates: Vec<Delegate>,
 
