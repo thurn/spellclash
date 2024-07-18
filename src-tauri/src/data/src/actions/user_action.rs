@@ -25,6 +25,7 @@ pub enum UserAction {
     NewGameAction(NewGameAction),
     GameAction(GameAction),
     PromptAction(PromptAction),
+    Undo,
     LeaveGameAction,
     QuitGameAction,
     OpenPanel(PanelAddress),

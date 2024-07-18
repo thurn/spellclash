@@ -78,6 +78,7 @@ pub fn create(database: SqliteDatabase, client: &mut Client, action: NewGameActi
             client,
             action,
             &mut game,
+            true,
         );
     }
 

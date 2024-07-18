@@ -27,7 +27,7 @@ use data::player_states::player_state::PlayerQueries;
 use data::prompts::prompt::{Prompt, PromptType};
 use data::prompts::select_order_prompt::CardOrderLocation;
 use log::info;
-use rules::legality::{legal_actions, legal_prompt_actions};
+use rules::legality::{can_undo, legal_actions, legal_prompt_actions};
 
 use crate::commands::field_state::FieldKey;
 use crate::core::display_state::DisplayState;
@@ -124,8 +124,8 @@ fn top_game_controls(
             UserAction::OpenPanel(GamePanelAddress::GameDebugPanel.into()),
         ),
     ];
-    if game.undo_tracker.enabled && !game.undo_tracker.undo.is_empty() {
-        result.push(GameButtonView::new_default("Undo", DebugGameAction::Undo));
+    if can_undo::can_undo(game) {
+        result.push(GameButtonView::new_default("Undo", UserAction::Undo));
     }
     result.into_iter().map(GameControlView::Button).collect()
 }

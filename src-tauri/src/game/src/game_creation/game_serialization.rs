@@ -14,6 +14,7 @@
 
 use data::core::primitives::PlayerName;
 use data::game_states::game_state::{GameOperationMode, GameState};
+use data::game_states::history_data::TakenGameAction;
 use data::game_states::serialized_game_state::{SerializedGameState, SerializedGameVersion};
 use data::player_states::player_map::PlayerMap;
 use data::player_states::player_state::PlayerQueries;
@@ -43,7 +44,17 @@ pub fn serialize(game: &GameState) -> SerializedGameState {
 
 /// Builds a new [GameState] from a [SerializedGameState] by replaying all game
 /// actions.
-pub fn rebuild(database: SqliteDatabase, mut serialized: SerializedGameState) -> GameState {
+pub fn rebuild(database: SqliteDatabase, serialized: SerializedGameState) -> GameState {
+    rebuild_until(database, serialized, |actions, _| actions.values().all(|(_, a)| a.is_empty()))
+}
+
+/// Builds a new [GameState] from a [SerializedGameState] by replaying all game
+/// actions, stopping when `should_stop` returns true.
+pub fn rebuild_until(
+    database: SqliteDatabase,
+    mut serialized: SerializedGameState,
+    should_stop: impl Fn(&PlayerMap<Vec<TakenGameAction>>, PlayerName) -> bool,
+) -> GameState {
     let mut game = new_game::create_and_start(
         database,
         serialized.id,
@@ -55,13 +66,16 @@ pub fn rebuild(database: SqliteDatabase, mut serialized: SerializedGameState) ->
     );
     game.operation_mode = GameOperationMode::SerializationReplay(serialized.prompt_responses);
 
-    while serialized.player_actions.values().any(|(player, actions)| !actions.is_empty()) {
+    loop {
         let player = legal_actions::next_to_act(&game, None)
             .expect("Game is over but actions are non-empty");
+        if should_stop(&serialized.player_actions, player) {
+            break;
+        }
         let is_agent = game.player(player).player_type.is_agent();
         let taken = serialized.player_actions.get_mut(player).remove(0);
         actions::execute(&mut game, player, taken.action, ExecuteAction {
-            skip_undo_tracking: true,
+            skip_undo_tracking: !taken.track_for_undo,
             validate: false,
         });
     }

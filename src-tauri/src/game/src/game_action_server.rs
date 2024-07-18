@@ -37,8 +37,8 @@ use once_cell::sync::Lazy;
 use rules::action_handlers::actions::ExecuteAction;
 use rules::action_handlers::prompt_actions::PromptExecutionResult;
 use rules::action_handlers::{actions, prompt_actions};
-use rules::legality::legal_actions;
 use rules::legality::legal_actions::LegalActions;
+use rules::legality::{can_undo, legal_actions};
 use rules::queries::combat_queries;
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::UnboundedSender;
@@ -90,7 +90,7 @@ pub async fn handle_game_action(database: SqliteDatabase, client: &mut Client, a
     task::spawn_blocking(move || {
         let mut game =
             requests::fetch_game(database.clone(), action_client.data.game_id(), Some(sender));
-        handle_game_action_internal(database, &mut action_client, action, &mut game);
+        handle_game_action_internal(database, &mut action_client, action, &mut game, false);
     });
 
     while let Some(update) = receiver.recv().await {
@@ -158,11 +158,38 @@ pub fn handle_drag_card(
     send_updates(game, client, &display_state, AllowActions::Yes);
 }
 
+#[instrument(level = "debug", skip(database, client))]
+pub fn handle_undo(database: SqliteDatabase, client: &mut Client) {
+    // TODO: Handle undoing with an active prompt
+    assert!(get_display_state().prompt.is_none(), "Cannot handle undo with an active prompt");
+
+    let game_id = client.data.game_id();
+    let serialized =
+        database.fetch_game(game_id).unwrap_or_else(|| panic!("Game not found: {game_id:?}"));
+    let game =
+        game_serialization::rebuild_until(database.clone(), serialized, |actions, player| {
+            // Iterate until exactly one action remains in the serialized map which is
+            // marked for undo tracking and the next action to be taken is marked for undo
+            // tracking.
+            can_undo::undoable_action_count(actions) == 1
+                && actions.get(player).get(0).map(|a| a.track_for_undo).unwrap_or_default()
+        });
+    database.write_game(&game_serialization::serialize(&game));
+
+    let mut display_state = get_display_state();
+    display_state.prompt = None;
+    display_state.prompt_channel = None;
+    display_state.fields.clear();
+    display_state.game_snapshot = None;
+    send_updates(&game, client, &display_state, AllowActions::Yes);
+}
+
 pub fn handle_game_action_internal(
     database: SqliteDatabase,
     client: &mut Client,
     action: GameAction,
     game: &mut GameState,
+    automatic: bool,
 ) {
     let mut current_player = game.find_player_name(client.data.user_id);
 
@@ -178,7 +205,7 @@ pub fn handle_game_action_internal(
     send_updates(game, client, &get_display_state(), AllowActions::No);
 
     let mut current_action = action;
-    let mut skip_undo_tracking = false;
+    let mut skip_undo_tracking = automatic;
 
     loop {
         actions::execute(game, current_player, current_action, ExecuteAction {

@@ -65,6 +65,7 @@ pub async fn handle_action(database: SqliteDatabase, client: &mut Client, action
         UserAction::PromptAction(action) => {
             game_action_server::handle_prompt_action(client, action)
         }
+        UserAction::Undo => game_action_server::handle_undo(database, client),
         UserAction::LeaveGameAction => leave_game_server::leave(database, client),
         UserAction::QuitGameAction => {
             std::process::exit(0);
