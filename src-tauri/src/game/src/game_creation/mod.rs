@@ -12,5 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+pub mod game_serialization;
 pub mod initialize_game;
 pub mod new_game;

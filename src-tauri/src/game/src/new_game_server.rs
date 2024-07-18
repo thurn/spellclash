@@ -48,7 +48,7 @@ use rules::steps::step;
 use tracing::info;
 use uuid::Uuid;
 
-use crate::game_creation::new_game;
+use crate::game_creation::{game_serialization, new_game};
 use crate::server_data::{Client, ClientData, GameResponse};
 use crate::{game_action_server, requests};
 
@@ -86,7 +86,7 @@ pub fn create(database: SqliteDatabase, client: &mut Client, action: NewGameActi
     let state = DisplayState::default();
     let commands = render::connect(&game, game.find_player_name(user.id), &state);
 
-    database.write_game(&game);
+    database.write_game(&game_serialization::serialize(&game));
     database.write_user(&user);
     client.send_all(commands);
 }

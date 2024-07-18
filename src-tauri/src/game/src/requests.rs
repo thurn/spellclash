@@ -21,7 +21,7 @@ use data::users::user_state::UserState;
 use database::sqlite_database::SqliteDatabase;
 use oracle::card_database;
 
-use crate::game_creation::initialize_game;
+use crate::game_creation::{game_serialization, initialize_game};
 
 /// Looks up a user by ID in the database.
 pub fn fetch_user(database: SqliteDatabase, user_id: UserId) -> UserState {
@@ -42,8 +42,9 @@ pub fn fetch_game(
     game_id: GameId,
     update_channel: Option<UpdateChannel>,
 ) -> GameState {
-    let mut game =
+    let serialized =
         database.fetch_game(game_id).unwrap_or_else(|| panic!("Game not found: {game_id:?}"));
+    let mut game = game_serialization::rebuild(database.clone(), serialized);
     initialize_game::run(database, &mut game, update_channel);
     game
 }

@@ -22,13 +22,13 @@ use data::delegates::game_delegates::GameDelegates;
 use data::game_states::ability_state::AbilityState;
 use data::game_states::game_phase_step::GamePhaseStep;
 use data::game_states::game_state::{
-    DebugConfiguration, GameConfiguration, GameState, GameStatus, TurnData,
+    DebugConfiguration, GameConfiguration, GameOperationMode, GameState, GameStatus, TurnData,
 };
 use data::game_states::history_data::GameHistory;
 use data::game_states::oracle::Oracle;
 use data::game_states::this_turn_state::ThisTurnState;
 use data::game_states::undo_tracker::UndoTracker;
-use data::player_states::player_state::{PlayerType, Players};
+use data::player_states::player_state::{PlayerState, PlayerType, Players};
 use data::printed_cards::printed_card_id;
 use database::sqlite_database::SqliteDatabase;
 use enumset::EnumSet;
@@ -80,10 +80,8 @@ pub fn create(
     debug: DebugConfiguration,
 ) -> GameState {
     let oracle = Box::new(OracleImpl::new(database.clone()));
-    let p1_deck = find_deck(p1_deck_name);
-    let p2_deck = find_deck(p2_deck_name);
 
-    let mut game = create_game(oracle, game_id, p1, p1_deck, p2, p2_deck, debug);
+    let mut game = create_game(oracle, game_id, p1, p1_deck_name, p2, p2_deck_name, debug);
     initialize_game::run(database.clone(), &mut game, None);
 
     game.shuffle_library(PlayerName::One);
@@ -95,11 +93,13 @@ fn create_game(
     oracle: Box<dyn Oracle>,
     game_id: GameId,
     p1: PlayerType,
-    p1_deck: Deck,
+    p1_deck_name: DeckName,
     p2: PlayerType,
-    p2_deck: Deck,
+    p2_deck_name: DeckName,
     debug: DebugConfiguration,
 ) -> GameState {
+    let p1_deck = find_deck(p1_deck_name);
+    let p2_deck = find_deck(p2_deck_name);
     let mut zones = Zones::default();
     let turn = TurnData { active_player: PlayerName::One, turn_number: 0 };
     create_cards_in_deck(oracle.as_ref(), &mut zones, p1_deck, PlayerName::One, turn);
@@ -113,11 +113,15 @@ fn create_game(
         priority: PlayerName::One,
         passed: EnumSet::empty(),
         configuration: GameConfiguration::new(PlayerName::One | PlayerName::Two, debug),
-        players: Players::new(p1, p2, 20),
+        players: Players::new(
+            PlayerState::new(PlayerName::One, p1, p1_deck_name, 20),
+            PlayerState::new(PlayerName::Two, p2, p2_deck_name, 20),
+        ),
         zones,
         updates: None,
         combat: None,
         history: GameHistory::default(),
+        rng_seed: 3141592653589793,
         rng: Xoshiro256StarStar::seed_from_u64(3141592653589793),
         undo_tracker: UndoTracker { enabled: true, undo: vec![] },
         delegates: GameDelegates::default(),
@@ -125,7 +129,7 @@ fn create_game(
         ability_state: AbilityState::default(),
         oracle_reference: Some(oracle),
         agent_state: None,
-        current_search_agent: None,
+        operation_mode: GameOperationMode::Playing,
         checking_state_triggered_abilities: false,
     }
 }

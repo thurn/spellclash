@@ -18,7 +18,7 @@ use std::fmt::Debug;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, EntityId, PlayerName};
 use data::delegates::scope::Scope;
-use data::game_states::game_state::GameState;
+use data::game_states::game_state::{GameOperationMode, GameState};
 use data::player_states::player_state::{PlayerQueries, PlayerType};
 use data::printed_cards::card_subtypes::LandType;
 use data::prompts::entity_choice_prompt::{Choice, EntityChoicePrompt};
@@ -41,12 +41,15 @@ use crate::legality::legal_prompt_actions;
 
 /// Sends a new [Prompt] to the player and blocks until they respond with a
 /// [PromptResponse].
-pub fn send(game: &mut GameState, mut prompt: Prompt) -> PromptResponse {
-    let agent_player = game.current_search_agent.unwrap_or(prompt.player);
+fn send_internal(game: &mut GameState, mut prompt: Prompt) -> PromptResponse {
+    let agent_player = match game.operation_mode {
+        GameOperationMode::AgentSearch(agent) => agent,
+        _ => prompt.player,
+    };
     if let (Some(agent), Some(prompt_agent)) =
         (game.player(agent_player).agent(), game.player(agent_player).prompt_agent())
     {
-        let ongoing = game.current_search_agent.is_some();
+        let ongoing = matches!(game.operation_mode, GameOperationMode::AgentSearch(_));
         loop {
             let action = if ongoing {
                 agent.incremental_prompt_action(game, &prompt, prompt.player)
@@ -95,6 +98,23 @@ pub fn send(game: &mut GameState, mut prompt: Prompt) -> PromptResponse {
     }
 }
 
+fn send(game: &mut GameState, prompt: Prompt) -> PromptResponse {
+    match &mut game.operation_mode {
+        GameOperationMode::SerializationReplay(prompts) => {
+            let response = prompts.get_mut(prompt.player).remove(0);
+            game.history.prompt_responses.get_mut(prompt.player).push(response.clone());
+            response
+        }
+        GameOperationMode::Playing => {
+            let player = prompt.player;
+            let response = send_internal(game, prompt);
+            game.history.prompt_responses.get_mut(player).push(response.clone());
+            response
+        }
+        GameOperationMode::AgentSearch(_) => send_internal(game, prompt),
+    }
+}
+
 pub fn choose_entity(
     game: &mut GameState,
     player: PlayerName,
@@ -127,7 +147,7 @@ pub fn select_order(
         panic!("Unexpected prompt response type!");
     };
 
-    ids
+    ids.order
 }
 
 /// Show a [PickNumberPrompt].

@@ -14,6 +14,7 @@
 
 pub mod game_agent;
 pub mod mana_pool;
+pub mod player_map;
 pub mod player_options;
 pub mod player_state;
 pub mod prompt_stack;

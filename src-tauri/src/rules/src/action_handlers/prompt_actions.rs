@@ -16,7 +16,7 @@ use data::actions::game_action::{CombatAction, GameAction};
 use data::actions::prompt_action::PromptAction;
 use data::core::primitives::{CardId, PlayerName};
 use data::game_states::game_state::GameState;
-use data::prompts::prompt::{Prompt, PromptResponse, PromptType};
+use data::prompts::prompt::{Prompt, PromptResponse, PromptType, SelectedOrder};
 use data::prompts::select_order_prompt::CardOrderLocation;
 use tracing::instrument;
 
@@ -51,7 +51,9 @@ pub fn execute(prompt: Prompt, action: PromptAction) -> PromptExecutionResult {
             let PromptType::SelectOrder(prompt_data) = prompt.prompt_type else {
                 panic!("Expected SelectOrder prompt type");
             };
-            PromptExecutionResult::PromptResponse(PromptResponse::SelectOrder(prompt_data.cards))
+            PromptExecutionResult::PromptResponse(PromptResponse::SelectOrder(SelectedOrder::new(
+                prompt_data.cards,
+            )))
         }
         PromptAction::SelectChoice(index) => {
             PromptExecutionResult::PromptResponse(PromptResponse::MultipleChoice(index))

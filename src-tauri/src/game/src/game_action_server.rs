@@ -47,6 +47,7 @@ use tracing::{debug, error, info, instrument};
 use utils::outcome::HaltCondition;
 use uuid::Uuid;
 
+use crate::game_creation::game_serialization;
 use crate::requests;
 use crate::server_data::{Client, ClientData, GameResponse};
 
@@ -199,7 +200,7 @@ pub fn handle_game_action_internal(
         } else {
             match &game.player(next_player).player_type {
                 PlayerType::Human(_) | PlayerType::None => {
-                    database.write_game(game);
+                    database.write_game(&game_serialization::serialize(game));
                     send_updates(game, client, &get_display_state(), AllowActions::Yes);
                     break;
                 }

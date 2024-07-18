@@ -18,8 +18,12 @@ use enum_kinds::EnumKind;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 
+use crate::actions::game_action::GameAction;
+use crate::actions::prompt_action::PromptAction;
 use crate::core::primitives::PlayerName;
 use crate::game_states::game_state::TurnData;
+use crate::player_states::player_map::PlayerMap;
+use crate::prompts::prompt::PromptResponse;
 
 /// Records a single event which happened during this game.
 #[derive(Debug, Clone, Serialize, Deserialize, EnumKind)]
@@ -61,6 +65,16 @@ pub struct HistoryCounters {
     pub lands_played: usize,
 }
 
+/// A game action taken by a player.
+#[derive(Clone, Copy, Eq, PartialEq, Hash, Debug, Ord, PartialOrd, Serialize, Deserialize)]
+pub struct TakenGameAction {
+    /// The game action taken
+    pub action: GameAction,
+
+    /// Whether this action should create a new 'undo' state.
+    pub track_for_undo: bool,
+}
+
 /// History of events which have happened during this game.
 ///
 /// This operates via a two-phase system where history entries are collected
@@ -79,6 +93,12 @@ pub struct GameHistory {
     p1_counters: BTreeMap<TurnData, HistoryCounters>,
     #[serde_as(as = "Vec<(_, _)>")]
     p2_counters: BTreeMap<TurnData, HistoryCounters>,
+
+    /// Stores actions taken thus far in the game.
+    pub player_actions: PlayerMap<Vec<TakenGameAction>>,
+
+    /// Stores prompt responses thus far in the game.
+    pub prompt_responses: PlayerMap<Vec<PromptResponse>>,
 }
 
 impl GameHistory {

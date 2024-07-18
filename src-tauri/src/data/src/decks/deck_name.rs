@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 use uuid::{uuid, Uuid};
 
 /// Unique identifier for a deck.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Copy, Default, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct DeckName(pub Uuid);
 
 pub const GREEN_VANILLA: DeckName = DeckName(uuid!("9eefebd4-25c0-4f46-91ab-6b3efff302e4"));

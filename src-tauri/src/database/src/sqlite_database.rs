@@ -16,7 +16,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex, MutexGuard};
 
 use data::core::primitives::{GameId, UserId};
-use data::game_states::game_state::GameState;
+use data::game_states::serialized_game_state::SerializedGameState;
 use data::printed_cards::database_card::DatabaseCardFace;
 use data::printed_cards::printed_card_id::PrintedCardId;
 use data::users::user_state::UserState;
@@ -75,7 +75,7 @@ impl SqliteDatabase {
         Self { connection: Arc::new(Mutex::new(connection)) }
     }
 
-    pub fn fetch_game(&self, id: GameId) -> Option<GameState> {
+    pub fn fetch_game(&self, id: GameId) -> Option<SerializedGameState> {
         let data = self
             .db()
             .query_row("SELECT data FROM games WHERE id = ?1", [&id.0], |row| {
@@ -86,12 +86,12 @@ impl SqliteDatabase {
             .unwrap_or_else(|e| panic!("Error fetching game {id:?} {e:?}"));
 
         data.map(|data| {
-            de::from_slice::<GameState>(&data)
+            de::from_slice::<SerializedGameState>(&data)
                 .unwrap_or_else(|e| panic!("Error deserializing game {id:?} {e:?}"))
         })
     }
 
-    pub fn write_game(&self, game: &GameState) {
+    pub fn write_game(&self, game: &SerializedGameState) {
         let data = ser::to_vec(game)
             .unwrap_or_else(|e| panic!("Error serializing game {:?} {e:?}", game.id));
         self.db()

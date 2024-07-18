@@ -17,6 +17,7 @@ use serde::{Deserialize, Serialize};
 use crate::card_states::counters::Counters;
 use crate::core::numerics::LifeValue;
 use crate::core::primitives::{CardId, EntityId, HasController, HasPlayerName, PlayerName, UserId};
+use crate::decks::deck_name::DeckName;
 use crate::player_states::game_agent::{GameAgent, GameAgentImpl, PromptAgentImpl};
 use crate::player_states::mana_pool::ManaPool;
 use crate::player_states::player_options::PlayerOptions;
@@ -40,12 +41,12 @@ pub struct Players {
 }
 
 impl Players {
-    pub fn new(p1: PlayerType, p2: PlayerType, starting_life: LifeValue) -> Self {
+    pub fn new(player_1: PlayerState, player_2: PlayerState) -> Self {
         Self {
-            player_1: PlayerState::new(PlayerName::One, p1, starting_life),
-            player_2: PlayerState::new(PlayerName::Two, p2, starting_life),
-            player_3: PlayerState::new(PlayerName::Three, PlayerType::None, starting_life),
-            player_4: PlayerState::new(PlayerName::Three, PlayerType::None, starting_life),
+            player_1,
+            player_2,
+            player_3: PlayerState::new(PlayerName::Three, PlayerType::None, DeckName::default(), 0),
+            player_4: PlayerState::new(PlayerName::Four, PlayerType::None, DeckName::default(), 0),
         }
     }
 }
@@ -106,6 +107,9 @@ pub struct PlayerState {
     /// Entity ID for this player
     pub entity_id: EntityId,
 
+    /// Identifies this player's deck
+    pub deck_name: DeckName,
+
     /// Configuration for this player
     pub options: PlayerOptions,
 
@@ -134,11 +138,17 @@ pub struct PlayerState {
 }
 
 impl PlayerState {
-    pub fn new(name: PlayerName, player_type: PlayerType, life: LifeValue) -> Self {
+    pub fn new(
+        name: PlayerName,
+        player_type: PlayerType,
+        deck_name: DeckName,
+        life: LifeValue,
+    ) -> Self {
         Self {
             name,
             player_type,
             entity_id: name.entity_id(),
+            deck_name,
             options: PlayerOptions::default(),
             life,
             controller: name,

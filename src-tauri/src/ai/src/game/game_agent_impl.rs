@@ -20,7 +20,7 @@ use data::actions::agent_action::AgentAction;
 use data::actions::game_action::GameAction;
 use data::actions::prompt_action::PromptAction;
 use data::core::primitives;
-use data::game_states::game_state::GameState;
+use data::game_states::game_state::{GameOperationMode, GameState};
 use data::player_states::game_agent::{GameAgentImpl, PromptAgentImpl};
 use data::prompts::prompt::Prompt;
 use rules::legality::legal_actions::LegalActions;
@@ -42,7 +42,7 @@ where
 {
     fn select_action(&self, game: &GameState, player: primitives::PlayerName) -> GameAction {
         let mut copy = game.shallow_clone();
-        copy.current_search_agent = Some(player);
+        copy.operation_mode = GameOperationMode::AgentSearch(player);
         select_action_impl(self, copy, player).as_game_action()
     }
 
@@ -74,7 +74,7 @@ where
         player: primitives::PlayerName,
     ) -> PromptAction {
         let mut copy = game.shallow_clone();
-        copy.current_search_agent = Some(player);
+        copy.operation_mode = GameOperationMode::AgentSearch(player);
         let state = PromptStateNode { game: copy, prompt: Some(prompt.clone()) };
         select_action_impl(self, state, player).as_prompt_action()
     }

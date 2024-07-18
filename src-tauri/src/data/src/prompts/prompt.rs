@@ -15,6 +15,7 @@
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
+use serde_with::serde_as;
 use strum::EnumDiscriminants;
 
 use crate::core::primitives::{CardId, EntityId, PlayerName};
@@ -56,11 +57,24 @@ impl PromptType {
     }
 }
 
-#[derive(Clone, Debug, EnumDiscriminants)]
+#[serde_as]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct SelectedOrder {
+    #[serde_as(as = "Vec<(_, _)>")]
+    pub order: BTreeMap<CardOrderLocation, Vec<CardId>>,
+}
+
+impl SelectedOrder {
+    pub fn new(order: BTreeMap<CardOrderLocation, Vec<CardId>>) -> Self {
+        Self { order }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, EnumDiscriminants)]
 #[strum_discriminants(name(PromptResponseKind))]
 pub enum PromptResponse {
     EntityChoice(EntityId),
-    SelectOrder(BTreeMap<CardOrderLocation, Vec<CardId>>),
+    SelectOrder(SelectedOrder),
     PlayCards(Vec<CardId>),
     PickNumber(u32),
     MultipleChoice(usize),

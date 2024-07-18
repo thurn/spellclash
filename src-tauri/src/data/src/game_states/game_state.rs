@@ -45,8 +45,24 @@ use crate::game_states::oracle::Oracle;
 use crate::game_states::state_based_event::StateBasedEvent;
 use crate::game_states::this_turn_state::ThisTurnState;
 use crate::game_states::undo_tracker::UndoTracker;
+use crate::player_states::player_map::PlayerMap;
 use crate::player_states::player_state::{PlayerQueries, PlayerState, Players};
 use crate::prompts::game_update::UpdateChannel;
+use crate::prompts::prompt::PromptResponse;
+
+/// The high-level activity which this [GameState] is being used for.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum GameOperationMode {
+    /// Normal gameplay
+    Playing,
+
+    /// The [PlayerName] AI player is searching for an action to take.
+    AgentSearch(PlayerName),
+
+    /// We are replaying game actions in order to reconstruct a game state from
+    /// its serialized representation.
+    SerializationReplay(PlayerMap<Vec<PromptResponse>>),
+}
 
 /// This is the state of a single ongoing game of Magic (i.e. one duel, not a
 /// larger session of the spellclash game client).
@@ -116,6 +132,9 @@ pub struct GameState {
     /// [GameHistory].
     pub history: GameHistory,
 
+    /// Seed used to initialize the random number generator for this game
+    pub rng_seed: u64,
+
     /// Random number generator to use for this game
     pub rng: Xoshiro256StarStar,
 
@@ -147,9 +166,8 @@ pub struct GameState {
     #[serde(skip)]
     pub agent_state: Option<AgentState<PlayerName, AgentAction>>,
 
-    /// AI agent currently performing a search for an action to take.
-    #[serde(skip)]
-    pub current_search_agent: Option<PlayerName>,
+    /// Current high-level activity which this [GameState] is being used for.
+    pub operation_mode: GameOperationMode,
 
     /// True if the game is currently checking for state-triggered abilities.
     #[serde(skip)]

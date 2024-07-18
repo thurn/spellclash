@@ -27,6 +27,7 @@ use crate::core::primitives::CardId;
 pub enum CardOrderLocation {
     /// Cards which have not yet been ordered
     Unordered,
+
     TopOfLibrary,
     BottomOfLibrary,
     Graveyard,
