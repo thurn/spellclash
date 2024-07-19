@@ -49,12 +49,6 @@ pub struct CardArgumentProperty<TArg, TModifier: QueryValue> {
 }
 
 impl<TArg, TModifier: QueryValue> CardArgumentProperty<TArg, TModifier> {
-    pub fn initialize(&mut self, registry: &Registry) {
-        for i in 0..self.modifiers.len() {
-            self.modifiers[i].effect.initialize(registry);
-        }
-    }
-
     pub fn add(&mut self, modifier: CardModifier<TModifier>) {
         self.modifiers.push(modifier);
     }
@@ -169,11 +163,11 @@ impl<TArg> CardArgumentProperty<TArg, Flag<TArg>> {
                     largest_key = *key;
                 }
                 Flag::And(condition) => {
-                    let value = condition.passes(game, modifier.source, arg);
+                    let value = condition.invoke(game, modifier.source, arg);
                     and &= value;
                 }
                 Flag::Or(condition) => {
-                    let value = condition.passes(game, modifier.source, arg);
+                    let value = condition.invoke(game, modifier.source, arg);
                     or |= value;
                 }
                 _ => {}

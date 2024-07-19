@@ -27,8 +27,7 @@ use data::printed_cards::card_subtypes::CreatureType;
 use rules::mutations::permanents;
 use rules::predicates::card_predicates;
 
-pub fn dance_of_the_skywise(registry: &mut Registry) -> CardDefinition {
-    let query = flying::query_fn(registry);
+pub fn dance_of_the_skywise(_: &mut Registry) -> CardDefinition {
     CardDefinition::new(card_name::DANCE_OF_THE_SKYWISE).ability(
         SpellAbility::new().targets(targets::creature_you_control()).effect(move |g, c, target| {
             colors::set_this_turn(g, c, target, Color::Blue);
@@ -40,15 +39,14 @@ pub fn dance_of_the_skywise(registry: &mut Registry) -> CardDefinition {
             );
             base_power_toughness::set_this_turn(g, c, target, 4, 4);
             lose_all_abilities::this_turn(g, target, c.effect_id);
-            flying::gain_this_turn(&query, g, c, target);
+            flying::gain_this_turn(g, c, target);
         }),
     )
 }
 
-pub fn dandan(registry: &mut Registry) -> CardDefinition {
+pub fn dandan(_: &mut Registry) -> CardDefinition {
     CardDefinition::new(card_name::DANDAN)
         .ability(attack_restrictions::cannot_attack_unless_defender_controls(
-            registry,
             card_predicates::island,
         ))
         .ability(state_triggers::when_controls_no(card_predicates::island, permanents::sacrifice))

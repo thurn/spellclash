@@ -25,8 +25,6 @@ use crate::game_states::game_state::GameState;
 
 /// Marker trait for the return value of queries
 pub trait QueryValue {
-    fn initialize(&mut self, registry: &Registry) {}
-
     fn effect_sorting_key(&self) -> Option<EffectSortingKey>;
 }
 

@@ -32,18 +32,6 @@ use enumset::EnumSet;
 use rules::queries::combat_queries;
 use utils::outcome::Outcome;
 
-pub fn query_fn(registry: &mut Registry) -> QueryFn<CanBeBlocked, Option<bool>> {
-    registry.add_query(move |g: &GameState, s: Source, data: &CanBeBlocked| {
-        Some(
-            g.card(data.blocker_id)?
-                .properties
-                .tags
-                .query(g, s, EnumSet::empty())
-                .contains(CardTag::Flying),
-        )
-    })
-}
-
 /// > 702.9a. Flying is an evasion ability.
 ///
 /// > 702.9b. A creature with flying can't be blocked except by creatures with
@@ -54,12 +42,7 @@ pub fn query_fn(registry: &mut Registry) -> QueryFn<CanBeBlocked, Option<bool>> 
 /// > 702.9c. Multiple instances of flying on the same creature are redundant.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R7029>
-pub fn gain_this_turn(
-    query: &QueryFn<CanBeBlocked, Option<bool>>,
-    game: &mut GameState,
-    context: EffectContext,
-    id: PermanentId,
-) -> Outcome {
+pub fn gain_this_turn(game: &mut GameState, context: EffectContext, id: PermanentId) -> Outcome {
     let turn = game.turn;
     game.card_mut(id)?.properties.tags.add_effect(
         context,
@@ -69,6 +52,14 @@ pub fn gain_this_turn(
     game.card_mut(id)?.properties.can_be_blocked.add_effect(
         context,
         Duration::WhileOnBattlefieldThisTurn(id, turn),
-        Flag::and_predicate(query.clone()),
+        Flag::and(move |g, s, data: &CanBeBlocked| {
+            Some(
+                g.card(data.blocker_id)?
+                    .properties
+                    .tags
+                    .query(g, s, EnumSet::empty())
+                    .contains(CardTag::Flying),
+            )
+        }),
     )
 }

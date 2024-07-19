@@ -76,24 +76,6 @@ pub struct CardProperties {
     pub base_toughness: CardProperty<Ints<Toughness>>,
 }
 
-impl CardProperties {
-    pub fn initialize(&mut self, registry: &Registry) {
-        self.tags.initialize(registry);
-        self.can_attack_target.initialize(registry);
-        self.can_be_blocked.initialize(registry);
-        self.has_haste.initialize(registry);
-        self.colors.initialize(registry);
-        self.creature_types.initialize(registry);
-        self.land_types.initialize(registry);
-        self.change_land_type_text.initialize(registry);
-        self.change_color_text.initialize(registry);
-        self.power.initialize(registry);
-        self.base_power.initialize(registry);
-        self.toughness.initialize(registry);
-        self.base_toughness.initialize(registry);
-    }
-}
-
 impl Debug for CardProperties {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("CardQueries").finish()

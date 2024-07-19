@@ -12,12 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use dyn_clone::DynClone;
 use utils::outcome::Outcome;
 
+use crate::card_definitions::registry::Registered;
 use crate::card_states::zones::ToCardId;
 use crate::core::primitives::{CardId, EntityId, PermanentId, PlayerName, Source, StackAbilityId};
 use crate::delegates::scope::Scope;
 use crate::game_states::game_state::GameState;
+
+/// Marker trait for predicate functions which return a boolean value.
+///
+/// Functions can implement this trait by returning Option<bool> in which case
+/// both None and Some(false) are converted to false.
+pub trait Predicate<TArg>: DynClone + Send + Sync + 'static {
+    fn invoke(&self, data: &GameState, source: Source, arg: &TArg) -> bool;
+}
+
+dyn_clone::clone_trait_object!(<TArg> Predicate<TArg>);
+
+impl<TArg, F> Predicate<TArg> for F
+where
+    F: Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Clone + Send + Sync + 'static,
+{
+    fn invoke(&self, data: &GameState, source: Source, arg: &TArg) -> bool {
+        self(data, source, arg) == Some(true)
+    }
+}
 
 /// Function which performs a boolean query on the state of a card.
 pub trait CardPredicate<TId: ToCardId>:
