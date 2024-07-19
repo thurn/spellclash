@@ -305,7 +305,9 @@ where
     TDelayed: Sync + Send + DelayedTriggerEffect,
 {
     fn initialize(&self, card: &mut CardState) {
-        self.initialize.as_ref().map(|f| f(&mut card.properties));
+        if let Some(f) = self.initialize.as_ref() {
+            f(&mut card.properties)
+        }
     }
 
     #[doc(hidden)]

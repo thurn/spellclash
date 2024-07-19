@@ -113,7 +113,7 @@ fn confirm_attackers(game: &mut GameState, source: Source) {
     let Some(CombatState::ProposingAttackers(attackers)) = game.combat.take() else {
         panic!("Not in the 'ProposingAttackers' state");
     };
-    for attacker in attackers.proposed_attacks.all() {
+    for attacker in attackers.proposed_attacks.all_attackers() {
         permanents::tap(game, Source::Game, attacker);
     }
     game.combat = Some(CombatState::ConfirmedAttackers(attackers.proposed_attacks));

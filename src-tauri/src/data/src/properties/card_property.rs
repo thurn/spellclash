@@ -140,14 +140,20 @@ impl<TArg, TResult: EnumSetType> CardArgumentProperty<TArg, EnumSets<TResult>> {
 
 impl CardArgumentProperty<(), Flag<()>> {
     #[must_use]
-    pub fn query(&self, game: &GameState, source: Source, current: bool) -> bool {
+    pub fn query(&self, game: &GameState, source: Source, current: bool) -> Option<bool> {
         self.query_with(game, source, &(), current)
     }
 }
 
 impl<TArg> CardArgumentProperty<TArg, Flag<TArg>> {
     #[must_use]
-    pub fn query_with(&self, game: &GameState, _: Source, arg: &TArg, current: bool) -> bool {
+    pub fn query_with(
+        &self,
+        game: &GameState,
+        _: Source,
+        arg: &TArg,
+        current: bool,
+    ) -> Option<bool> {
         let mut largest_key = EffectSortingKey::default();
         let mut result = current;
         let mut and = true;
@@ -174,7 +180,7 @@ impl<TArg> CardArgumentProperty<TArg, Flag<TArg>> {
             };
         }
 
-        (result || or) && and
+        Some((result || or) && and)
     }
 }
 

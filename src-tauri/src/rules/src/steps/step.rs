@@ -175,7 +175,7 @@ fn combat_damage(game: &mut GameState) {
     // > blocking creature assigns its combat damage.
 
     let mut damage_assignments = vec![];
-    for (attacker_id, target) in blockers.attackers.all_targets() {
+    for (attacker_id, target) in blockers.attackers.all() {
         outcome::execute(|| {
             // > 510.1a. Each attacking creature and each blocking creature assigns
             // > combat damage equal to its power. Creatures that would assign 0 or less

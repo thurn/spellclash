@@ -15,7 +15,7 @@
 use std::iter;
 
 use data::card_states::card_state::TappedState;
-use data::card_states::iter_matching::IterMatching;
+use data::card_states::iter_matching::{IterMatching, IterOptional};
 use data::card_states::zones::ZoneQueries;
 use data::core::card_tags::CardTag;
 use data::core::primitives::{CardType, HasController, PermanentId, PlayerName, Source};
@@ -51,16 +51,14 @@ pub fn can_attack(game: &GameState, source: Source, attacker_id: AttackerId) -> 
     result &= types.contains(CardType::Creature);
     result &= !types.contains(CardType::Battle);
 
-    Some(
-        attack_targets(game, source).map(|target| CanAttackTarget { attacker_id, target }).any(
-            |target| card.properties.can_attack_target.query_with(game, source, &target, result),
-        ),
+    attack_targets(game, source).map(|target| CanAttackTarget { attacker_id, target }).any_matching(
+        |target| card.properties.can_attack_target.query_with(game, source, &target, result),
     )
 }
 
 /// Returns true if the indicated permanent has the 'haste' ability.
 pub fn has_haste(game: &GameState, source: Source, permanent_id: PermanentId) -> Option<bool> {
-    Some(game.card(permanent_id)?.properties.has_haste.query(game, source, false))
+    game.card(permanent_id)?.properties.has_haste.query(game, source, false)
 }
 
 /// Returns true if the indicated permanent has the 'flying' ability.
@@ -94,22 +92,26 @@ pub fn legal_attackers(
 /// <https://yawgatog.com/resources/magic-rules/#R5091a>
 #[must_use]
 pub fn can_block(game: &GameState, source: Source, blocker_id: BlockerId) -> Option<bool> {
-    let card = game.card(blocker_id)?;
-    let types = card_queries::card_types(game, source, card.id)?;
+    let blocker = game.card(blocker_id)?;
+    let types = card_queries::card_types(game, source, blocker.id)?;
+    let snapshot = debug_snapshot::capture(game);
 
     let mut result = true;
-    result &= card.controller() != game.turn.active_player;
-    result &= card.tapped_state != TappedState::Tapped;
+    result &= blocker.controller() != game.turn.active_player;
+    result &= blocker.tapped_state != TappedState::Tapped;
     result &= types.contains(CardType::Creature);
     result &= !types.contains(CardType::Battle);
     let attackers = game.combat.as_ref()?.confirmed_attackers()?;
 
-    Some(
-        attackers
-            .all_targets()
-            .map(|(&attacker_id, &target)| CanBeBlocked { attacker_id, target, blocker_id })
-            .any(|target| card.properties.can_be_blocked.query_with(game, source, &target, result)),
-    )
+    attackers
+        .all()
+        .map(|(&attacker_id, &target)| CanBeBlocked { attacker_id, target, blocker_id })
+        .any_matching(|target| {
+            game.card(target.attacker_id)?
+                .properties
+                .can_be_blocked
+                .query_with(game, source, &target, result)
+        })
 }
 
 /// Returns an iterator over all legal blockers for the provided player.

@@ -87,7 +87,7 @@ pub fn append(
                     selected_attackers
                         .iter()
                         .copied()
-                        .chain(proposed_attacks.all())
+                        .chain(proposed_attacks.all_attackers())
                         .map(CombatAction::RemoveAttacker),
                 );
             }
@@ -107,7 +107,7 @@ pub fn append(
             if !blockers.selected_blockers.is_empty() {
                 extend_actions(
                     actions,
-                    blockers.attackers.all().map(CombatAction::SetSelectedBlockersTarget),
+                    blockers.attackers.all_attackers().map(CombatAction::SetSelectedBlockersTarget),
                 );
             }
             if options.for_human_player {
@@ -132,12 +132,12 @@ pub fn append(
 }
 
 fn can_attack_target(game: &GameState, can_attack_target: CanAttackTarget) -> Option<bool> {
-    Some(game.card(can_attack_target.attacker_id)?.properties.can_attack_target.query_with(
+    game.card(can_attack_target.attacker_id)?.properties.can_attack_target.query_with(
         game,
         Source::Game,
         &can_attack_target,
         true,
-    ))
+    )
 }
 
 fn extend_actions(

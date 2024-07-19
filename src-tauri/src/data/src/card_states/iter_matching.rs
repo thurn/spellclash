@@ -20,6 +20,23 @@ use crate::core::primitives::{HasSource, Source};
 use crate::delegates::scope::Scope;
 use crate::game_states::game_state::GameState;
 
+pub trait IterOptional: Iterator {
+    fn any_matching<F>(&mut self, f: F) -> Option<bool>
+    where
+        Self: Sized,
+        F: FnMut(Self::Item) -> Option<bool>;
+}
+
+impl<T: Iterator> IterOptional for T {
+    fn any_matching<F>(&mut self, mut f: F) -> Option<bool>
+    where
+        Self: Sized,
+        F: FnMut(Self::Item) -> Option<bool>,
+    {
+        Some(self.any(|item| f(item) == Some(true)))
+    }
+}
+
 pub trait IterMatching<TId: ToCardId, TFn: CardPredicate<TId>> {
     fn iter_matching<'a>(
         &'a self,

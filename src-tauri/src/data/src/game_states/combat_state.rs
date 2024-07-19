@@ -120,11 +120,11 @@ impl AttackerMap {
     }
 
     /// Iterator over all declared attackers
-    pub fn all(&self) -> impl Iterator<Item = AttackerId> + '_ {
+    pub fn all_attackers(&self) -> impl Iterator<Item = AttackerId> + '_ {
         self.attacks.keys().copied()
     }
 
-    pub fn all_targets(&self) -> impl Iterator<Item = (&AttackerId, &AttackTarget)> + '_ {
+    pub fn all(&self) -> impl Iterator<Item = (&AttackerId, &AttackTarget)> + '_ {
         self.attacks.iter()
     }
 
