@@ -30,8 +30,8 @@ use rules::queries::combat_queries;
 pub fn cannot_attack_unless_defender_controls(
     predicate: impl CardPredicate<PermanentId>,
 ) -> impl Ability {
-    StaticAbility::new().initialize(move |q| {
-        q.can_attack_target.add_static(Flag::and(move |g, s, data: &CanAttackTarget| {
+    StaticAbility::new().initialize(move |p| {
+        p.can_attack_target.add_static(Flag::and(move |g, s, data: &CanAttackTarget| {
             Some(g.battlefield(data.target.defending_player()).any_matching(g, s, predicate))
         }))
     })

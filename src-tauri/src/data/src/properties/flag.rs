@@ -33,23 +33,13 @@ impl<TArg: 'static> Flag<TArg> {
     }
 
     pub fn and(
-        condition: impl Fn(&GameState, Source, &TArg) -> Option<bool>
-            + Copy
-            + Clone
-            + Send
-            + Sync
-            + 'static,
+        condition: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Send + Sync + 'static,
     ) -> Flag<TArg> {
         Self::And(Box::new(condition))
     }
 
     pub fn or(
-        condition: impl Fn(&GameState, Source, &TArg) -> Option<bool>
-            + Copy
-            + Clone
-            + Send
-            + Sync
-            + 'static,
+        condition: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Send + Sync + 'static,
     ) -> Flag<TArg> {
         Self::Or(Box::new(condition))
     }

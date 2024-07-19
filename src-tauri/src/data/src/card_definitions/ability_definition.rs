@@ -51,6 +51,9 @@ pub enum AbilityType {
 pub type EffectFn = Box<dyn Fn(&mut GameState, EffectContext) + 'static + Send + Sync>;
 
 pub trait AbilityData: Sync + Send {
+    /// Creates the initial state of this ability on a card.
+    fn initialize(&self, card: &mut CardState);
+
     /// Returns the type of this ability.
     fn get_ability_type(&self) -> AbilityType;
 
@@ -170,7 +173,7 @@ pub trait DelayedTriggerEffect {
     fn invoke(&self, game: &mut GameState, context: EffectContext);
 }
 
-pub type InitializeFn = Box<dyn FnOnce(&mut CardProperties) + Send + Sync + 'static>;
+pub type InitializeFn = Box<dyn Fn(&mut CardProperties) + Send + Sync + 'static>;
 
 pub struct AbilityBuilder<TEffect, TDelayed: DelayedTriggerEffect> {
     ability_type: AbilityType,
@@ -187,7 +190,7 @@ pub struct AbilityBuilder<TEffect, TDelayed: DelayedTriggerEffect> {
 impl<TEffect, TDelayed: DelayedTriggerEffect> AbilityBuilder<TEffect, TDelayed> {
     pub fn initialize(
         mut self,
-        initialize: impl FnOnce(&mut CardProperties) + 'static + Clone + Send + Sync,
+        initialize: impl Fn(&mut CardProperties) + 'static + Copy + Send + Sync,
     ) -> Self {
         self.initialize = Some(Box::new(initialize));
         self
@@ -301,6 +304,10 @@ where
     TEffect: Sync + Send,
     TDelayed: Sync + Send + DelayedTriggerEffect,
 {
+    fn initialize(&self, card: &mut CardState) {
+        self.initialize.as_ref().map(|f| f(&mut card.properties));
+    }
+
     #[doc(hidden)]
     fn get_ability_type(&self) -> AbilityType {
         self.ability_type
