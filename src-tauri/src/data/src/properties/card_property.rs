@@ -35,10 +35,10 @@ pub type CardProperty<TModifier> = CardArgumentProperty<(), TModifier>;
 
 /// Represents a permanent card losing all its current abilities as of a given
 /// [Timestamp].
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct LostAllAbilities {
     pub timestamp: Timestamp,
-    pub permanent_id: PermanentId,
+    pub duration: Duration,
 }
 
 #[derive(Clone)]
@@ -46,6 +46,12 @@ pub struct CardArgumentProperty<TArg, TModifier: QueryValue> {
     modifiers: Vec<CardModifier<TModifier>>,
     lost_all_abilities: Option<LostAllAbilities>,
     phantom_data: PhantomData<TArg>,
+}
+
+impl<TArg, TModifier: QueryValue> Default for CardArgumentProperty<TArg, TModifier> {
+    fn default() -> Self {
+        Self { modifiers: vec![], lost_all_abilities: None, phantom_data: PhantomData }
+    }
 }
 
 impl<TArg, TModifier: QueryValue> CardArgumentProperty<TArg, TModifier> {
@@ -80,12 +86,6 @@ impl<TArg, TModifier: QueryValue> CardArgumentProperty<TArg, TModifier> {
 
     pub fn set_lost_all_abilities(&mut self, lost_all_abilities: LostAllAbilities) {
         self.lost_all_abilities = Some(lost_all_abilities);
-    }
-}
-
-impl<TArg, TModifier: QueryValue> Default for CardArgumentProperty<TArg, TModifier> {
-    fn default() -> Self {
-        Self { modifiers: vec![], lost_all_abilities: None, phantom_data: PhantomData }
     }
 }
 

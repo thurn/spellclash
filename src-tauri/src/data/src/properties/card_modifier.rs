@@ -43,6 +43,7 @@ impl<TModifier: QueryValue> CardModifier<TModifier> {
             if let Some(k) = self.effect.effect_sorting_key() {
                 if self.delegate_type == DelegateType::Ability
                     && k < EffectSortingKey::new(Layer::AbilityModifyingEffects, lost_all.timestamp)
+                    && lost_all.duration.is_active(game)
                 {
                     return false;
                 }

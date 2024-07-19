@@ -28,6 +28,7 @@ pub fn run(
     stack_ability_id: Option<StackAbilityId>,
     ability: &dyn Ability,
 ) -> Outcome {
+    let turn = game.turn;
     let effect_id = new_effect_id(game);
     match stack_ability_id {
         Some(stack_ability_id) => {
@@ -40,6 +41,7 @@ pub fn run(
                         timestamp: delayed_trigger_effect_id.timestamp(),
                     },
                     effect_id: delayed_trigger_effect_id,
+                    turn,
                 };
                 ability.invoke_delayed_trigger_effect(game, context);
             } else {
@@ -50,6 +52,7 @@ pub fn run(
                         timestamp: effect_id.timestamp(),
                     },
                     effect_id,
+                    turn,
                 };
                 ability.invoke_effect(game, context);
             }
@@ -63,6 +66,7 @@ pub fn run(
                     timestamp: effect_id.timestamp(),
                 },
                 effect_id,
+                turn,
             };
             ability.invoke_effect(game, context);
         }

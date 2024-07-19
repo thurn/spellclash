@@ -94,7 +94,6 @@ pub fn legal_attackers(
 pub fn can_block(game: &GameState, source: Source, blocker_id: BlockerId) -> Option<bool> {
     let blocker = game.card(blocker_id)?;
     let types = card_queries::card_types(game, source, blocker.id)?;
-    let snapshot = debug_snapshot::capture(game);
 
     let mut result = true;
     result &= blocker.controller() != game.turn.active_player;

@@ -16,26 +16,31 @@ use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{PermanentId, Timestamp};
 use data::game_states::game_state::GameState;
 use data::properties::card_property::LostAllAbilities;
+use data::properties::duration::Duration;
 
 /// Causes the [PermanentId] permanent to lose all abilities for the duration of
 /// the current turn.
 pub fn this_turn(game: &mut GameState, permanent_id: PermanentId, timestamp: impl Into<Timestamp>) {
+    let turn = game.turn;
     let timestamp = timestamp.into();
     game.ability_state.this_turn.set_lost_all_abilities(permanent_id, timestamp);
     if let Some(card) = game.card_mut(permanent_id) {
-        let lost = LostAllAbilities { timestamp, permanent_id };
-        card.properties.tags.set_lost_all_abilities(lost);
-        card.properties.can_attack_target.set_lost_all_abilities(lost);
-        card.properties.can_be_blocked.set_lost_all_abilities(lost);
-        card.properties.has_haste.set_lost_all_abilities(lost);
-        card.properties.colors.set_lost_all_abilities(lost);
-        card.properties.creature_types.set_lost_all_abilities(lost);
-        card.properties.land_types.set_lost_all_abilities(lost);
-        card.properties.change_land_type_text.set_lost_all_abilities(lost);
-        card.properties.change_color_text.set_lost_all_abilities(lost);
-        card.properties.power.set_lost_all_abilities(lost);
-        card.properties.base_power.set_lost_all_abilities(lost);
-        card.properties.toughness.set_lost_all_abilities(lost);
-        card.properties.base_toughness.set_lost_all_abilities(lost);
+        let lost = LostAllAbilities {
+            timestamp,
+            duration: Duration::WhileOnBattlefieldThisTurn(permanent_id, turn),
+        };
+        card.properties.tags.set_lost_all_abilities(lost.clone());
+        card.properties.can_attack_target.set_lost_all_abilities(lost.clone());
+        card.properties.can_be_blocked.set_lost_all_abilities(lost.clone());
+        card.properties.has_haste.set_lost_all_abilities(lost.clone());
+        card.properties.colors.set_lost_all_abilities(lost.clone());
+        card.properties.creature_types.set_lost_all_abilities(lost.clone());
+        card.properties.land_types.set_lost_all_abilities(lost.clone());
+        card.properties.change_land_type_text.set_lost_all_abilities(lost.clone());
+        card.properties.change_color_text.set_lost_all_abilities(lost.clone());
+        card.properties.power.set_lost_all_abilities(lost.clone());
+        card.properties.base_power.set_lost_all_abilities(lost.clone());
+        card.properties.toughness.set_lost_all_abilities(lost.clone());
+        card.properties.base_toughness.set_lost_all_abilities(lost.clone());
     }
 }

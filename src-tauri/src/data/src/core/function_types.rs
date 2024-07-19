@@ -23,7 +23,7 @@ use crate::game_states::game_state::GameState;
 
 /// Marker trait for predicate functions which return a boolean value.
 ///
-/// Functions can implement this trait by returning Option<bool> in which case
+/// Functions can implement this trait by returning `Option<bool>` in which case
 /// both None and Some(false) are converted to false.
 pub trait Predicate<TArg>: DynClone + Send + Sync + 'static {
     fn invoke(&self, data: &GameState, source: Source, arg: &TArg) -> bool;

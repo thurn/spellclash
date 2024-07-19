@@ -18,10 +18,11 @@ use crate::card_states::zones::{HasZones, ToCardId, Zones};
 use crate::core::primitives::{
     AbilityId, AbilityNumber, CardId, EffectId, HasSource, PlayerName, Source, Timestamp,
 };
+use crate::game_states::game_state::TurnData;
 
 /// Identifies the context in which an effect function or event delegate is
 /// currently executing
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Scope {
     /// The controller for this ability or the card that created this ability.
     ///
@@ -46,13 +47,16 @@ pub struct Scope {
 }
 
 /// Execution context for an effect function
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct EffectContext {
     /// Context in which this effect function is executing
     pub scope: Scope,
 
     /// Unique identifier for this instance of the effect function resolving.
     pub effect_id: EffectId,
+
+    /// Current game turn
+    pub turn: TurnData,
 }
 
 impl From<Scope> for Timestamp {
