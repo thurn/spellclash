@@ -25,6 +25,7 @@ use data::card_definitions::definitions;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{AbilityId, PlayerName};
 use data::delegates::apply_writes;
+use data::delegates::scope::AbilityScope;
 use data::game_states::game_state::GameState;
 use data::player_states::game_agent::{AgentType, GameAgent};
 use data::player_states::player_state::{PlayerQueries, PlayerState, PlayerType};
@@ -50,14 +51,13 @@ pub fn run(database: SqliteDatabase, game: &mut GameState, update_channel: Optio
         outcome::execute(|| {
             let name = game.card(card_id)?.card_name;
             for (number, ability) in definitions::get(name).iterate_abilities() {
-                ability.initialize(game.card_mut(card_id)?);
+                let ability_id = AbilityId { card_id, number };
+                let ability_scope = AbilityScope { ability_id };
+                ability.add_properties(ability_scope, game.card_mut(card_id)?);
+                ability.add_events(ability_scope, &mut game.events);
                 for delegate in ability.get_delegates() {
                     (delegate.run)(&mut game.delegates);
-                    apply_writes::run(
-                        &mut game.delegates,
-                        AbilityId { card_id, number },
-                        delegate.zones,
-                    );
+                    apply_writes::run(&mut game.delegates, ability_id, delegate.zones);
                 }
             }
             outcome::OK

@@ -50,8 +50,17 @@ pub trait IterMatching<TId: ToCardId, TFn: CardPredicate<TId>> {
         game: &'a GameState,
         source: impl HasSource,
         predicate: TFn,
-    ) -> bool {
-        self.iter_matching(game, source, predicate).next().is_some()
+    ) -> Option<bool> {
+        Some(self.iter_matching(game, source, predicate).next().is_some())
+    }
+
+    fn none_matching<'a>(
+        &'a self,
+        game: &'a GameState,
+        source: impl HasSource,
+        predicate: TFn,
+    ) -> Option<bool> {
+        Some(self.any_matching(game, source, predicate) != Some(true))
     }
 }
 

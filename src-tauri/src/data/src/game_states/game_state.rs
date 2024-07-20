@@ -37,6 +37,7 @@ use crate::core::primitives::{
 };
 use crate::delegates::game_delegates::GameDelegates;
 use crate::delegates::scope::Scope;
+use crate::events::game_events::GameEvents;
 use crate::game_states::ability_state::AbilityState;
 use crate::game_states::combat_state::CombatState;
 use crate::game_states::game_phase_step::GamePhaseStep;
@@ -142,6 +143,9 @@ pub struct GameState {
     /// callback. Prefer to add top-level delegates as part of your ability
     /// definition.
     pub delegates: GameDelegates,
+
+    /// Stores callbacks to invoke in response to game events.
+    pub events: GameEvents,
 
     /// Tracks events which have occurred since the last time state-based
     /// actions were checked which may trigger game mutations during the next

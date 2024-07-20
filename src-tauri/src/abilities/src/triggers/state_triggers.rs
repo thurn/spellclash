@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_definitions::ability_definition::{Ability, TriggeredAbility};
+use data::card_definitions::ability_definition::{Ability, AbilityData, TriggeredAbility};
 use data::card_states::iter_matching::IterMatching;
 use data::card_states::zones::ZoneQueries;
 use data::core::function_types::{CardMutation, CardPredicate};
-use data::core::primitives::{CardId, HasSource, PermanentId, Zone};
+use data::core::primitives::{AbilityId, CardId, HasSource, PermanentId, Zone};
 use data::delegates::game_delegates::GameDelegates;
 use data::delegates::scope::Scope;
+use data::events::game_event::GameEventCallback;
 use data::game_states::game_state::GameState;
+use enumset::EnumSet;
 use rules::mutations::trigger_extension::TriggerExt;
 use utils::outcome;
 use utils::outcome::Outcome;
@@ -31,10 +33,10 @@ pub fn when_controls_no(
     mutation: impl CardMutation<CardId>,
 ) -> impl Ability {
     TriggeredAbility::new()
-        .delegates(move |d| {
-            d.state_triggered_ability.trigger_if_not_on_stack(move |g, s, _| {
-                !g.battlefield(s.controller).any_matching(g, s, predicate)
-            })
+        .events(move |s, e| {
+            e.state_triggered_ability.trigger_if_not_on_stack(s, move |g, c, _| {
+                g.battlefield(c.controller).none_matching(g, c.this_source(), predicate)
+            });
         })
         .effect(move |g, c| {
             mutation(g, c.source(), c.ability_id().card_id);

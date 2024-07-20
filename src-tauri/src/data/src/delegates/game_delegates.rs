@@ -29,9 +29,6 @@ use crate::printed_cards::card_subtypes::{CreatureType, LandType};
 
 #[derive(Default, Clone)]
 pub struct GameDelegates {
-    /// Invoked every time game state-triggered abilities are checked.
-    pub state_triggered_ability: EventDelegateList<()>,
-
     /// A permanent is about to enter the battlefield.
     pub will_enter_battlefield: EventDelegateList<WillEnterBattlefieldEvent>,
 

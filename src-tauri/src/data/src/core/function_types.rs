@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::fmt::{Debug, Formatter};
+
 use dyn_clone::DynClone;
 use utils::outcome::Outcome;
 
@@ -19,6 +21,7 @@ use crate::card_definitions::registry::Registered;
 use crate::card_states::zones::ToCardId;
 use crate::core::primitives::{CardId, EntityId, PermanentId, PlayerName, Source, StackAbilityId};
 use crate::delegates::scope::Scope;
+use crate::events::event_context::EventContext;
 use crate::game_states::game_state::GameState;
 
 /// Marker trait for predicate functions which return a boolean value.
@@ -53,6 +56,21 @@ impl<TId: ToCardId, F> CardPredicate<TId> for F where
 
 pub type CardPredicateFn<TId> =
     Box<dyn Fn(&GameState, Source, TId) -> Option<bool> + 'static + Send + Sync>;
+
+pub trait Mutation<TArg>: DynClone + Send + Sync + 'static {
+    fn invoke(&self, data: &mut GameState, context: EventContext, arg: &TArg);
+}
+
+dyn_clone::clone_trait_object!(<TArg> Mutation<TArg>);
+
+impl<TArg, F> Mutation<TArg> for F
+where
+    F: Fn(&mut GameState, EventContext, &TArg) + Copy + Send + Sync + 'static,
+{
+    fn invoke(&self, data: &mut GameState, context: EventContext, arg: &TArg) {
+        self(data, context, arg)
+    }
+}
 
 /// Function which performs a mutation on the state of a card.
 pub trait CardMutation<TId: ToCardId>:

@@ -14,12 +14,10 @@
 
 use data::card_states::stack_ability_state::StackAbilityState;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{AbilityId, EffectId, HasSource, PlayerName, Source, StackItemId};
+use data::core::primitives::{AbilityId, EffectId, PlayerName, StackItemId};
 use data::delegates::delegate_type::DelegateType;
 use data::delegates::event_delegate_list::EventDelegateList;
-use data::delegates::scope::{AbilityScope, Scope};
-use data::events::event_context::EventContext;
-use data::events::game_event::GameEvent;
+use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use utils::outcome;
 use utils::outcome::Outcome;
@@ -39,12 +37,20 @@ pub trait TriggerExt<TArg> {
     /// trigger will not fire if the owning card loses all abilities.
     fn trigger_if(
         &mut self,
-        scope: AbilityScope,
-        predicate: impl Fn(&GameState, EventContext, &TArg) -> Option<bool>
-            + Copy
-            + Send
-            + Sync
-            + 'static,
+        predicate: impl Fn(&GameState, Scope, &TArg) -> bool + Copy + Send + Sync + 'static,
+    );
+
+    /// Trigger the [Scope] delayed trigger ability if a predicate is true *and*
+    /// this delayed trigger has previously been enabled by a call to
+    /// [delayed_trigger::enable].
+    ///
+    /// The delayed trigger is automatically disabled after being triggered.
+    ///
+    /// This creates a delegate using [DelegateType::Effect], meaning the
+    /// trigger will still fire if the owning card loses all abilities.
+    fn delayed_trigger_if(
+        &mut self,
+        predicate: impl Fn(&GameState, Scope, EffectId, &TArg) -> bool + Copy + Send + Sync + 'static,
     );
 
     /// Trigger the [Scope] ability as long as it is not currently on the stack.
@@ -55,44 +61,52 @@ pub trait TriggerExt<TArg> {
     /// trigger will not fire if the owning card loses all abilities.
     fn trigger_if_not_on_stack(
         &mut self,
-        scope: AbilityScope,
-        predicate: impl Fn(&GameState, EventContext, &TArg) -> Option<bool>
-            + Copy
-            + Send
-            + Sync
-            + 'static,
+        predicate: impl Fn(&GameState, Scope, &TArg) -> bool + Copy + Send + Sync + 'static,
     );
 }
 
-impl<TArg: Clone> TriggerExt<TArg> for GameEvent<TArg> {
+impl<TArg: Clone> TriggerExt<TArg> for EventDelegateList<TArg> {
     fn trigger_if(
         &mut self,
-        scope: AbilityScope,
-        predicate: impl Fn(&GameState, EventContext, &TArg) -> Option<bool>
-            + Copy
-            + Send
-            + Sync
-            + 'static,
+        predicate: impl Fn(&GameState, Scope, &TArg) -> bool + Copy + Send + Sync + 'static,
     ) {
-        self.add_ability_callback(scope, move |g, c, arg| {
-            if predicate(g, c, arg) == Some(true) {
-                trigger_ability(g, c.this, c.controller);
+        self.whenever(DelegateType::Ability, move |g, s, arg| {
+            if predicate(g, s, arg) {
+                trigger_ability(g, s.ability_id, s.controller);
+            }
+        });
+    }
+
+    fn delayed_trigger_if(
+        &mut self,
+        predicate: impl Fn(&GameState, Scope, EffectId, &TArg) -> bool + Copy + Send + Sync + 'static,
+    ) {
+        self.whenever(DelegateType::Effect, move |g, s, arg| {
+            let Some(effect_ids) = g.ability_state.delayed_triggers.get(&s.ability_id) else {
+                return;
+            };
+
+            let to_trigger = effect_ids
+                .iter()
+                .filter(|&&effect_id| predicate(g, s, effect_id, arg))
+                .copied()
+                .collect::<Vec<_>>();
+
+            for effect_id in to_trigger {
+                let ability = trigger_ability(g, s.ability_id, s.controller);
+                ability.delayed_trigger_effect_id = Some(effect_id);
+                delayed_trigger::disable(g, s.ability_id, effect_id);
             }
         });
     }
 
     fn trigger_if_not_on_stack(
         &mut self,
-        scope: AbilityScope,
-        predicate: impl Fn(&GameState, EventContext, &TArg) -> Option<bool>
-            + Copy
-            + Send
-            + Sync
-            + 'static,
+        predicate: impl Fn(&GameState, Scope, &TArg) -> bool + Copy + Send + Sync + 'static,
     ) {
-        self.add_ability_callback(scope, move |g, c, arg| {
-            if predicate(g, c, arg) == Some(true) && !is_ability_on_stack(g, c.this) {
-                trigger_ability(g, c.this, c.controller);
+        self.whenever(DelegateType::Ability, move |g, s, arg| {
+            if predicate(g, s, arg) && !is_ability_on_stack(g, s.ability_id) {
+                trigger_ability(g, s.ability_id, s.controller);
             }
         });
     }

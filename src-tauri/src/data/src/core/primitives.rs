@@ -428,6 +428,30 @@ impl From<EffectId> for Timestamp {
     }
 }
 
+/// A unique identifier for an event.
+///
+/// Each instance of an callback function being invoked gets its own event ID.
+///
+/// [Timestamp]s and EventIds use a shared ID space, meaning that all valid
+/// EventIds can be converted into valid [Timestamp]s.
+#[derive(
+    Debug, Clone, Copy, Default, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize,
+)]
+pub struct EventId(pub u64);
+
+impl EventId {
+    /// Converts this EffectId into a Timestamp
+    pub fn timestamp(&self) -> Timestamp {
+        Timestamp(self.0)
+    }
+}
+
+impl From<EventId> for Timestamp {
+    fn from(value: EventId) -> Self {
+        value.timestamp()
+    }
+}
+
 /// Identifies an ability within the set of abilities of a card.
 ///
 /// Abilities are written in oracle text separated by a newline character, or

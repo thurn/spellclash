@@ -19,6 +19,7 @@ use data::decks::deck::Deck;
 use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
 use data::delegates::game_delegates::GameDelegates;
+use data::events::game_events::GameEvents;
 use data::game_states::ability_state::AbilityState;
 use data::game_states::game_phase_step::GamePhaseStep;
 use data::game_states::game_state::{
@@ -123,6 +124,7 @@ fn create_game(
         rng_seed: 3141592653589793,
         rng: Xoshiro256StarStar::seed_from_u64(3141592653589793),
         delegates: GameDelegates::default(),
+        events: GameEvents::default(),
         state_based_events: Some(vec![]),
         ability_state: AbilityState::default(),
         oracle_reference: Some(oracle),

@@ -17,6 +17,7 @@ use std::cell::Cell;
 use data::card_states::zones::ZoneQueries;
 use data::core::numerics::{LifeValue, Toughness};
 use data::core::primitives::{Source, StackItemId, Zone};
+use data::events::game_events;
 use data::game_states::game_state::{GameState, GameStatus};
 use data::game_states::state_based_event::StateBasedEvent;
 use data::player_states::player_state::PlayerQueries;
@@ -170,12 +171,12 @@ fn add_triggers_to_stack(game: &mut GameState) -> bool {
 ///
 /// Returns true if an ability fired.
 pub fn check_state_triggered_abilities(game: &mut GameState) -> bool {
-    if !game.delegates.state_triggered_ability.is_empty()
+    if !game.events.state_triggered_ability.callbacks.is_empty()
         && !game.checking_state_triggered_abilities
     {
         // Only run the check if it's not already running to prevent infinite loops.
         game.checking_state_triggered_abilities = true;
-        game.delegates.state_triggered_ability.invoke_with(game, &()).run(game);
+        game_events::dispatch(game, |e| &e.state_triggered_ability, Source::Game, ());
         game.checking_state_triggered_abilities = false;
         true
     } else {

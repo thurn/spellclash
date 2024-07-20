@@ -46,6 +46,13 @@ pub struct Scope {
     pub timestamp: Timestamp,
 }
 
+/// Context for an ability while it is being created, used to register
+/// callbacks, etc
+#[derive(Copy, Clone, Debug)]
+pub struct AbilityScope {
+    pub ability_id: AbilityId,
+}
+
 /// Execution context for an effect function
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct EffectContext {

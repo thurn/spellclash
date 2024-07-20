@@ -25,7 +25,8 @@ use crate::core::primitives::{CardId, EntityId, PlayerName, Zone, ALL_ZONES};
 use crate::costs::cost::Cost;
 #[allow(unused)] // Used in docs
 use crate::delegates::game_delegates::GameDelegates;
-use crate::delegates::scope::{EffectContext, Scope};
+use crate::delegates::scope::{AbilityScope, EffectContext, Scope};
+use crate::events::game_events::GameEvents;
 use crate::game_states::game_state::GameState;
 use crate::properties::card_properties::CardProperties;
 
@@ -51,8 +52,11 @@ pub enum AbilityType {
 pub type EffectFn = Box<dyn Fn(&mut GameState, EffectContext) + 'static + Send + Sync>;
 
 pub trait AbilityData: Sync + Send {
-    /// Creates the initial state of this ability on a card.
-    fn initialize(&self, card: &mut CardState);
+    /// Creates the initial property state of this ability on a card.
+    fn add_properties(&self, scope: AbilityScope, card: &mut CardState);
+
+    /// Creates the initial event callbacks for this ability.
+    fn add_events(&self, scope: AbilityScope, card: &mut GameEvents);
 
     /// Returns the type of this ability.
     fn get_ability_type(&self) -> AbilityType;
@@ -108,7 +112,8 @@ impl SpellAbility {
     pub fn new() -> AbilityBuilder<NoEffect, DelayedTrigger<NoEffect>> {
         AbilityBuilder {
             ability_type: AbilityType::Spell,
-            initialize: None,
+            properties: None,
+            events: None,
             delegates: vec![],
             effect: NoEffect,
             delayed_trigger_effect: DelayedTrigger { delayed_trigger_effect: NoEffect },
@@ -123,7 +128,8 @@ impl TriggeredAbility {
     pub fn new() -> AbilityBuilder<NoEffect, DelayedTrigger<NoEffect>> {
         AbilityBuilder {
             ability_type: AbilityType::Triggered,
-            initialize: None,
+            properties: None,
+            events: None,
             delegates: vec![],
             effect: NoEffect,
             delayed_trigger_effect: DelayedTrigger { delayed_trigger_effect: NoEffect },
@@ -138,7 +144,8 @@ impl StaticAbility {
     pub fn new() -> AbilityBuilder<StaticEffect, DelayedTrigger<StaticEffect>> {
         AbilityBuilder {
             ability_type: AbilityType::Static,
-            initialize: None,
+            properties: None,
+            events: None,
             delegates: vec![],
             effect: StaticEffect,
             delayed_trigger_effect: DelayedTrigger { delayed_trigger_effect: StaticEffect },
@@ -173,12 +180,16 @@ pub trait DelayedTriggerEffect {
     fn invoke(&self, game: &mut GameState, context: EffectContext);
 }
 
-pub type InitializeFn = Box<dyn Fn(&mut CardProperties) + Send + Sync + 'static>;
+pub type PropertiesFn = Box<dyn Fn(AbilityScope, &mut CardProperties) + Send + Sync + 'static>;
+
+pub type EventsFn = Box<dyn Fn(AbilityScope, &mut GameEvents) + Send + Sync + 'static>;
 
 pub struct AbilityBuilder<TEffect, TDelayed: DelayedTriggerEffect> {
     ability_type: AbilityType,
 
-    initialize: Option<InitializeFn>,
+    properties: Option<PropertiesFn>,
+
+    events: Option<EventsFn>,
 
     delegates: Vec<Delegate>,
 
@@ -188,11 +199,19 @@ pub struct AbilityBuilder<TEffect, TDelayed: DelayedTriggerEffect> {
 }
 
 impl<TEffect, TDelayed: DelayedTriggerEffect> AbilityBuilder<TEffect, TDelayed> {
-    pub fn initialize(
+    pub fn properties(
         mut self,
-        initialize: impl Fn(&mut CardProperties) + 'static + Copy + Send + Sync,
+        initialize: impl Fn(AbilityScope, &mut CardProperties) + 'static + Copy + Send + Sync,
     ) -> Self {
-        self.initialize = Some(Box::new(initialize));
+        self.properties = Some(Box::new(initialize));
+        self
+    }
+
+    pub fn events(
+        mut self,
+        initialize: impl Fn(AbilityScope, &mut GameEvents) + 'static + Copy + Send + Sync,
+    ) -> Self {
+        self.events = Some(Box::new(initialize));
         self
     }
 
@@ -235,7 +254,8 @@ impl<TEffect, TDelayed: DelayedTriggerEffect> AbilityBuilder<TEffect, TDelayed> 
     ) -> AbilityBuilder<TEffect, TNew> {
         AbilityBuilder {
             ability_type: self.ability_type,
-            initialize: self.initialize,
+            properties: self.properties,
+            events: self.events,
             delegates: self.delegates,
             effect: self.effect,
             delayed_trigger_effect: trigger,
@@ -254,7 +274,8 @@ where
         AbilityBuilder {
             ability_type: self.ability_type,
             effect: UntargetedEffect { function: effect },
-            initialize: self.initialize,
+            properties: self.properties,
+            events: self.events,
             delegates: self.delegates,
             delayed_trigger_effect: self.delayed_trigger_effect,
         }
@@ -270,7 +291,8 @@ where
         AbilityBuilder {
             ability_type: self.ability_type,
             effect: WithSelector { selector },
-            initialize: self.initialize,
+            properties: self.properties,
+            events: self.events,
             delegates: self.delegates,
             delayed_trigger_effect: self.delayed_trigger_effect,
         }
@@ -292,7 +314,8 @@ where
         AbilityBuilder {
             ability_type: self.ability_type,
             effect: TargetedEffect { selector: self.effect.selector, function: effect },
-            initialize: self.initialize,
+            properties: self.properties,
+            events: self.events,
             delegates: self.delegates,
             delayed_trigger_effect: self.delayed_trigger_effect,
         }
@@ -304,9 +327,15 @@ where
     TEffect: Sync + Send,
     TDelayed: Sync + Send + DelayedTriggerEffect,
 {
-    fn initialize(&self, card: &mut CardState) {
-        if let Some(f) = self.initialize.as_ref() {
-            f(&mut card.properties)
+    fn add_properties(&self, scope: AbilityScope, card: &mut CardState) {
+        if let Some(f) = self.properties.as_ref() {
+            f(scope, &mut card.properties)
+        }
+    }
+
+    fn add_events(&self, scope: AbilityScope, card: &mut GameEvents) {
+        if let Some(f) = self.events.as_ref() {
+            f(scope, card)
         }
     }
 
