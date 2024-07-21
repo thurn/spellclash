@@ -38,6 +38,7 @@ use crate::core::primitives::{
     PlayerName, StackAbilityId, StackItemId, Timestamp, Zone, ALL_POSSIBLE_PLAYERS,
 };
 use crate::delegates::scope::Scope;
+use crate::events::card_events::CardEvents;
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::GameState;
 use crate::game_states::game_state::TurnData;
@@ -289,6 +290,7 @@ impl Zones {
             kind,
             owner,
             properties: CardProperties::default(),
+            events: CardEvents::default(),
             control_changing_effects: vec![],
             zone: Zone::Library,
             facing: CardFacing::FaceDown,

@@ -143,7 +143,11 @@ pub fn uct1(c: &mut Criterion) {
 pub fn random_playout_evaluator(c: &mut Criterion) {
     command_line::FLAGS.set(CommandLine::default()).ok();
     let mut group = c.benchmark_group("random_playout_evaluator");
-    group.significance_level(0.01).sample_size(500).noise_threshold(0.03);
+    group
+        .significance_level(0.01)
+        .sample_size(500)
+        .noise_threshold(0.03)
+        .measurement_time(Duration::from_secs(10));
     let game = test_games::vanilla_game_scenario();
     let evaluator =
         RandomPlayoutEvaluator { evaluator: WinLossEvaluator, phantom_data: PhantomData };

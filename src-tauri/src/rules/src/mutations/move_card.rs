@@ -20,6 +20,7 @@ use data::core::primitives::{
     CardId, EntityId, HasController, HasSource, PermanentId, Zone, ALL_POSSIBLE_PLAYERS,
 };
 use data::delegates::game_delegate_data::WillEnterBattlefieldEvent;
+use data::events::card_events;
 use data::game_states::game_state::{GameState, TurnData};
 use data::game_states::state_based_event::StateBasedEvent;
 use tracing::debug;
@@ -32,36 +33,42 @@ use utils::outcome::Outcome;
 /// The card is added as the top card of the target zone if it is ordered.
 ///
 /// Panics if this card was not found in its previous zone.
-pub fn run(
-    game: &mut GameState,
-    _source: impl HasSource,
-    id: impl ToCardId,
-    zone: Zone,
-) -> Outcome {
+pub fn run(game: &mut GameState, source: impl HasSource, id: impl ToCardId, new: Zone) -> Outcome {
     let card_id = id.to_card_id(game)?;
     let new_object_id = game.zones.new_object_id();
-    debug!(?card_id, ?zone, "Moving card to zone");
+    let card = game.card(card_id)?;
+    let old = card.zone;
+    debug!(?card_id, ?old, ?new, "Moving card to zone");
 
-    if zone == Zone::Battlefield {
-        game.delegates
-            .will_enter_battlefield
-            .invoke_with(game, &WillEnterBattlefieldEvent {
-                card_id,
-                future_permanent_id: PermanentId::new(new_object_id, card_id),
-            })
-            .run(game);
+    if old == Zone::Battlefield {
+        card_events::dispatch(
+            game,
+            id,
+            |e| &e.will_leave_battlefield,
+            source.source(),
+            card.permanent_id().expect("Card on battlefield should have PermanentId"),
+        );
     }
 
-    let old = game.card(card_id)?.zone;
+    if new == Zone::Battlefield {
+        card_events::dispatch(
+            game,
+            id,
+            |e| &e.will_enter_battlefield,
+            source.source(),
+            PermanentId::new(new_object_id, card_id),
+        );
+    }
+
     on_leave_zone(game, card_id, old)?;
 
-    if !(old == Zone::Stack && zone == Zone::Battlefield) {
+    if !(old == Zone::Stack && new == Zone::Battlefield) {
         // Control-changing effects persist from the stack to the battlefield.
         game.card_mut(card_id)?.control_changing_effects.clear();
     }
 
-    game.zones.move_card(card_id, zone, new_object_id);
-    on_enter_zone(game, card_id, zone)?;
+    game.zones.move_card(card_id, new, new_object_id);
+    on_enter_zone(game, card_id, new)?;
     outcome::OK
 }
 

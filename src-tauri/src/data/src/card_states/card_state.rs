@@ -31,6 +31,7 @@ use crate::core::primitives::{
     AbilityId, CardId, EffectId, EntityId, HasController, HasPlayerName, ObjectId, PermanentId,
     PlayerName, Timestamp, Zone,
 };
+use crate::events::card_events::CardEvents;
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::{GameState, TurnData};
 use crate::printed_cards::printed_card::{Face, PrintedCard, PrintedCardFace};
@@ -97,6 +98,9 @@ pub struct CardState {
 
     /// Attributes of this card which may change over time due to game effects.
     pub properties: CardProperties,
+
+    /// Callbacks for events that happen to this card.
+    pub events: CardEvents,
 
     /// Effects which are applying to this card to change its controller.
     ///

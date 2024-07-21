@@ -26,7 +26,7 @@ use crate::costs::cost::Cost;
 #[allow(unused)] // Used in docs
 use crate::delegates::game_delegates::GameDelegates;
 use crate::delegates::scope::{AbilityScope, EffectContext, Scope};
-use crate::events::game_events::GameEvents;
+use crate::events::game_events::GlobalEvents;
 use crate::game_states::game_state::GameState;
 use crate::properties::card_properties::CardProperties;
 
@@ -56,7 +56,7 @@ pub trait AbilityData: Sync + Send {
     fn add_properties(&self, scope: AbilityScope, card: &mut CardState);
 
     /// Creates the initial event callbacks for this ability.
-    fn add_events(&self, scope: AbilityScope, card: &mut GameEvents);
+    fn add_events(&self, scope: AbilityScope, card: &mut GlobalEvents);
 
     /// Returns the type of this ability.
     fn get_ability_type(&self) -> AbilityType;
@@ -182,7 +182,7 @@ pub trait DelayedTriggerEffect {
 
 pub type PropertiesFn = Box<dyn Fn(AbilityScope, &mut CardProperties) + Send + Sync + 'static>;
 
-pub type EventsFn = Box<dyn Fn(AbilityScope, &mut GameEvents) + Send + Sync + 'static>;
+pub type EventsFn = Box<dyn Fn(AbilityScope, &mut GlobalEvents) + Send + Sync + 'static>;
 
 pub struct AbilityBuilder<TEffect, TDelayed: DelayedTriggerEffect> {
     ability_type: AbilityType,
@@ -209,7 +209,7 @@ impl<TEffect, TDelayed: DelayedTriggerEffect> AbilityBuilder<TEffect, TDelayed> 
 
     pub fn events(
         mut self,
-        initialize: impl Fn(AbilityScope, &mut GameEvents) + 'static + Copy + Send + Sync,
+        initialize: impl Fn(AbilityScope, &mut GlobalEvents) + 'static + Copy + Send + Sync,
     ) -> Self {
         self.events = Some(Box::new(initialize));
         self
@@ -333,7 +333,7 @@ where
         }
     }
 
-    fn add_events(&self, scope: AbilityScope, card: &mut GameEvents) {
+    fn add_events(&self, scope: AbilityScope, card: &mut GlobalEvents) {
         if let Some(f) = self.events.as_ref() {
             f(scope, card)
         }
