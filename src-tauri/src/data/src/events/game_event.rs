@@ -61,16 +61,30 @@ pub struct GameEvent<TArg> {
 }
 
 impl<TArg> GameEvent<TArg> {
-    pub fn add_ability_callback(
+    pub fn add_battlefield_ability(
         &mut self,
         scope: AbilityScope,
         function: impl Fn(&mut GameState, EventContext, &TArg) + Copy + Send + Sync + 'static,
     ) {
+        self.add_ability(scope, Zone::Battlefield, function);
+    }
+
+    pub fn add_ability(
+        &mut self,
+        scope: AbilityScope,
+        zones: impl Into<EnumSet<Zone>>,
+        function: impl Fn(&mut GameState, EventContext, &TArg) + Copy + Send + Sync + 'static,
+    ) {
         self.callbacks.push(GameEventCallback {
             ability_id: scope.ability_id,
-            zones: EnumSet::only(Zone::Battlefield),
+            zones: zones.into(),
             delegate_type: DelegateType::Ability,
             function: Box::new(function),
         });
+    }
+
+    /// Removes all callbacks added by the given [AbilityId].
+    pub fn remove_callbacks(&mut self, ability_id: AbilityId) {
+        self.callbacks.retain(|callback| callback.ability_id != ability_id);
     }
 }

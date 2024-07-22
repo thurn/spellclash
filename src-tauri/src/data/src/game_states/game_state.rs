@@ -167,6 +167,9 @@ pub struct GameState {
 
     /// True if the game is currently checking for state-triggered abilities.
     pub checking_state_triggered_abilities: bool,
+
+    /// True if game initialization has been run on this game.
+    pub initialized: bool,
 }
 
 impl GameState {

@@ -34,8 +34,13 @@ pub fn when_controls_no(
 ) -> impl Ability {
     TriggeredAbility::new()
         .events(move |s, e| {
-            e.state_triggered_ability.trigger_if_not_on_stack(s, move |g, c, _| {
-                g.battlefield(c.controller).none_matching(g, c.this_source(), predicate)
+            e.will_enter_battlefield.add_ability(s, EnumSet::all(), move |g, c, _| {
+                g.events.state_triggered_ability.trigger_if_not_on_stack(s, move |g, c, _| {
+                    g.battlefield(c.controller).none_matching(g, c.this_source(), predicate)
+                });
+            });
+            e.will_leave_battlefield.add_ability(s, EnumSet::all(), move |g, c, _| {
+                g.events.state_triggered_ability.remove_callbacks(s.ability_id);
             });
         })
         .effect(move |g, c| {

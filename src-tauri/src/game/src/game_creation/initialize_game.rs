@@ -35,6 +35,8 @@ use oracle::card_database;
 use utils::outcome;
 
 pub fn run(database: SqliteDatabase, game: &mut GameState, update_channel: Option<UpdateChannel>) {
+    assert!(!game.initialized, "Game already initialized");
+    game.initialized = true;
     card_database::populate(database, game);
 
     for player in enum_iterator::all::<PlayerName>() {
@@ -53,8 +55,10 @@ pub fn run(database: SqliteDatabase, game: &mut GameState, update_channel: Optio
             for (number, ability) in definitions::get(name).iterate_abilities() {
                 let ability_id = AbilityId { card_id, number };
                 let ability_scope = AbilityScope { ability_id };
-                ability.add_properties(ability_scope, game.card_mut(card_id)?);
-                ability.add_events(ability_scope, &mut game.events);
+                let card = game.card_mut(card_id)?;
+                ability.add_properties(ability_scope, card);
+                ability.add_card_events(ability_scope, &mut card.events);
+                ability.add_global_events(ability_scope, &mut game.events);
                 for delegate in ability.get_delegates() {
                     (delegate.run)(&mut game.delegates);
                     apply_writes::run(&mut game.delegates, ability_id, delegate.zones);

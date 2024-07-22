@@ -74,7 +74,7 @@ impl<TArg: Clone> TriggerExt<TArg> for GameEvent<TArg> {
             + Sync
             + 'static,
     ) {
-        self.add_ability_callback(scope, move |g, c, arg| {
+        self.add_battlefield_ability(scope, move |g, c, arg| {
             if predicate(g, c, arg) == Some(true) {
                 trigger_ability(g, c.this, c.controller);
             }
@@ -90,7 +90,7 @@ impl<TArg: Clone> TriggerExt<TArg> for GameEvent<TArg> {
             + Sync
             + 'static,
     ) {
-        self.add_ability_callback(scope, move |g, c, arg| {
+        self.add_battlefield_ability(scope, move |g, c, arg| {
             if predicate(g, c, arg) == Some(true) && !is_ability_on_stack(g, c.this) {
                 trigger_ability(g, c.this, c.controller);
             }

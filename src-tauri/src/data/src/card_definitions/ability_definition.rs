@@ -26,6 +26,7 @@ use crate::costs::cost::Cost;
 #[allow(unused)] // Used in docs
 use crate::delegates::game_delegates::GameDelegates;
 use crate::delegates::scope::{AbilityScope, EffectContext, Scope};
+use crate::events::card_events::CardEvents;
 use crate::events::game_events::GlobalEvents;
 use crate::game_states::game_state::GameState;
 use crate::properties::card_properties::CardProperties;
@@ -56,7 +57,10 @@ pub trait AbilityData: Sync + Send {
     fn add_properties(&self, scope: AbilityScope, card: &mut CardState);
 
     /// Creates the initial event callbacks for this ability.
-    fn add_events(&self, scope: AbilityScope, card: &mut GlobalEvents);
+    fn add_global_events(&self, scope: AbilityScope, events: &mut GlobalEvents);
+
+    /// Creates the initial event callbacks for this ability.
+    fn add_card_events(&self, scope: AbilityScope, events: &mut CardEvents);
 
     /// Returns the type of this ability.
     fn get_ability_type(&self) -> AbilityType;
@@ -113,7 +117,8 @@ impl SpellAbility {
         AbilityBuilder {
             ability_type: AbilityType::Spell,
             properties: None,
-            events: None,
+            global_events: None,
+            card_events: None,
             delegates: vec![],
             effect: NoEffect,
             delayed_trigger_effect: DelayedTrigger { delayed_trigger_effect: NoEffect },
@@ -129,7 +134,8 @@ impl TriggeredAbility {
         AbilityBuilder {
             ability_type: AbilityType::Triggered,
             properties: None,
-            events: None,
+            global_events: None,
+            card_events: None,
             delegates: vec![],
             effect: NoEffect,
             delayed_trigger_effect: DelayedTrigger { delayed_trigger_effect: NoEffect },
@@ -145,7 +151,8 @@ impl StaticAbility {
         AbilityBuilder {
             ability_type: AbilityType::Static,
             properties: None,
-            events: None,
+            global_events: None,
+            card_events: None,
             delegates: vec![],
             effect: StaticEffect,
             delayed_trigger_effect: DelayedTrigger { delayed_trigger_effect: StaticEffect },
@@ -182,14 +189,18 @@ pub trait DelayedTriggerEffect {
 
 pub type PropertiesFn = Box<dyn Fn(AbilityScope, &mut CardProperties) + Send + Sync + 'static>;
 
-pub type EventsFn = Box<dyn Fn(AbilityScope, &mut GlobalEvents) + Send + Sync + 'static>;
+pub type GlobalEventsFn = Box<dyn Fn(AbilityScope, &mut GlobalEvents) + Send + Sync + 'static>;
+
+pub type CardEventsFn = Box<dyn Fn(AbilityScope, &mut CardEvents) + Send + Sync + 'static>;
 
 pub struct AbilityBuilder<TEffect, TDelayed: DelayedTriggerEffect> {
     ability_type: AbilityType,
 
     properties: Option<PropertiesFn>,
 
-    events: Option<EventsFn>,
+    global_events: Option<GlobalEventsFn>,
+
+    card_events: Option<CardEventsFn>,
 
     delegates: Vec<Delegate>,
 
@@ -209,9 +220,17 @@ impl<TEffect, TDelayed: DelayedTriggerEffect> AbilityBuilder<TEffect, TDelayed> 
 
     pub fn events(
         mut self,
+        initialize: impl Fn(AbilityScope, &mut CardEvents) + 'static + Copy + Send + Sync,
+    ) -> Self {
+        self.card_events = Some(Box::new(initialize));
+        self
+    }
+
+    pub fn global_events(
+        mut self,
         initialize: impl Fn(AbilityScope, &mut GlobalEvents) + 'static + Copy + Send + Sync,
     ) -> Self {
-        self.events = Some(Box::new(initialize));
+        self.global_events = Some(Box::new(initialize));
         self
     }
 
@@ -255,7 +274,8 @@ impl<TEffect, TDelayed: DelayedTriggerEffect> AbilityBuilder<TEffect, TDelayed> 
         AbilityBuilder {
             ability_type: self.ability_type,
             properties: self.properties,
-            events: self.events,
+            global_events: self.global_events,
+            card_events: self.card_events,
             delegates: self.delegates,
             effect: self.effect,
             delayed_trigger_effect: trigger,
@@ -275,7 +295,8 @@ where
             ability_type: self.ability_type,
             effect: UntargetedEffect { function: effect },
             properties: self.properties,
-            events: self.events,
+            global_events: self.global_events,
+            card_events: self.card_events,
             delegates: self.delegates,
             delayed_trigger_effect: self.delayed_trigger_effect,
         }
@@ -292,7 +313,8 @@ where
             ability_type: self.ability_type,
             effect: WithSelector { selector },
             properties: self.properties,
-            events: self.events,
+            global_events: self.global_events,
+            card_events: self.card_events,
             delegates: self.delegates,
             delayed_trigger_effect: self.delayed_trigger_effect,
         }
@@ -315,7 +337,8 @@ where
             ability_type: self.ability_type,
             effect: TargetedEffect { selector: self.effect.selector, function: effect },
             properties: self.properties,
-            events: self.events,
+            global_events: self.global_events,
+            card_events: self.card_events,
             delegates: self.delegates,
             delayed_trigger_effect: self.delayed_trigger_effect,
         }
@@ -333,8 +356,14 @@ where
         }
     }
 
-    fn add_events(&self, scope: AbilityScope, card: &mut GlobalEvents) {
-        if let Some(f) = self.events.as_ref() {
+    fn add_global_events(&self, scope: AbilityScope, card: &mut GlobalEvents) {
+        if let Some(f) = self.global_events.as_ref() {
+            f(scope, card)
+        }
+    }
+
+    fn add_card_events(&self, scope: AbilityScope, card: &mut CardEvents) {
+        if let Some(f) = self.card_events.as_ref() {
             f(scope, card)
         }
     }

@@ -131,6 +131,7 @@ fn create_game(
         agent_state: None,
         operation_mode: GameOperationMode::Playing,
         checking_state_triggered_abilities: false,
+        initialized: false,
     }
 }
 
