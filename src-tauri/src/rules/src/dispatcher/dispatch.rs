@@ -12,10 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_states::zones::ZoneQueries;
+use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::primitives::{AbilityId, EventId, HasController, Source};
+use data::events::card_events::CardEvents;
 use data::events::event_context::EventContext;
 use data::game_states::game_state::GameState;
+use utils::outcome;
+use utils::outcome::Outcome;
 
 /// Creates a new [EventContext] for the given ability.
 ///
@@ -31,4 +34,13 @@ pub fn build_event_context(game: &mut GameState, ability_id: AbilityId) -> Optio
         current_turn,
         original_source: Source::Ability(ability_id),
     })
+}
+
+pub fn add_card_event(
+    game: &mut GameState,
+    id: impl ToCardId,
+    function: impl Fn(&mut CardEvents),
+) -> Outcome {
+    function(&mut game.card_mut(id)?.events);
+    outcome::OK
 }

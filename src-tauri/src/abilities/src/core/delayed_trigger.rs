@@ -12,21 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub trait FilterSome: Iterator {
-    /// Creates an iterator which yields only items for which a given predicate
-    /// returns Some(true).
-    fn filter_some<P>(self, predicate: P) -> impl Iterator<Item = Self::Item>
-    where
-        Self: Sized,
-        P: FnMut(&Self::Item) -> Option<bool>;
-}
-
-impl<TIterator: Iterator> FilterSome for TIterator {
-    fn filter_some<P>(self, mut predicate: P) -> impl Iterator<Item = Self::Item>
-    where
-        Self: Sized,
-        P: FnMut(&Self::Item) -> Option<bool>,
-    {
-        self.filter(move |item| predicate(item) == Some(true))
-    }
-}
+use data::events::event_context::EventContext;
+use data::game_states::game_state::GameState;

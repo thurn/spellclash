@@ -39,6 +39,10 @@ pub struct CardEvents {
     /// The card with the given [PermanentId] is about to leave the battlefield.
     pub will_leave_battlefield: GameEvent<PermanentId>,
 
+    /// Invoked whenever a permanent's controller explicitly changes
+    ///
+    /// This is *not* invoked when e.g. the permanent changes zones and reverts
+    /// to its owner's control.
     pub controller_changed: GameEvent<PermanentControllerChangedEvent>,
 }
 
@@ -54,7 +58,7 @@ pub fn dispatch<TArg: 'static>(
             event(&game.card(id)?.events).callbacks[i].build_context(game, source)
         {
             let function = event(&game.card(id)?.events).callbacks[i].function.clone();
-            function.invoke(game, context, &arg);
+            function.invoke(game, context, arg);
         }
     }
 

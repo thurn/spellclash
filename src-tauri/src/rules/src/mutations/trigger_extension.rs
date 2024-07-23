@@ -15,7 +15,9 @@
 use data::card_states::stack_ability_state::StackAbilityState;
 use data::card_states::zones::ZoneQueries;
 use data::core::function_types::{Effect, Predicate};
-use data::core::primitives::{AbilityId, EventId, HasSource, PlayerName, Source, StackItemId};
+use data::core::primitives::{
+    AbilityId, EventId, HasSource, PermanentId, PlayerName, Source, StackItemId,
+};
 use data::delegates::delegate_type::DelegateType;
 use data::delegates::scope::AbilityScope;
 use data::events::event_context::EventContext;
@@ -30,12 +32,14 @@ use utils::outcome::Outcome;
 /// dependencies, since we don't want our core 'data' crate to have a bunch of
 /// rules logic in it.
 pub trait TriggerExt<TArg> {
-    /// Trigger the [Scope] ability if a predicate is true. The ability will be
+    /// Trigger this ability if a predicate is true.
+    ///
+    /// Fires only while this card is on the battlefield. The ability will be
     /// placed on the stack the next time a player would receive priority.
     ///
     /// This creates a delegate using [DelegateType::Ability], meaning the
     /// trigger will not fire if the owning card loses all abilities.
-    fn trigger_if(
+    fn add_trigger(
         &mut self,
         scope: AbilityScope,
         predicate: impl Fn(&GameState, EventContext, &TArg) -> Option<bool>
@@ -45,20 +49,26 @@ pub trait TriggerExt<TArg> {
             + 'static,
     );
 
-    fn delayed_trigger_if(
+    /// Trigger an effect the next time a predicate is true, associated with a
+    /// given permanent.
+    ///
+    /// The effect is only applied once and then removed, and will only trigger
+    /// if the [PermanentId] permanent is still on the battlefield.
+    ///
+    ///
+    /// This creates a delegate using [DelegateType::Effect], meaning the
+    /// trigger *will* still fire if the owning card loses all abilities.
+    fn add_one_time_trigger(
         &mut self,
         scope: AbilityScope,
-        predicate: impl Predicate<TArg>,
-        effect: impl Effect,
+        permanent_id: PermanentId,
+        predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Clone + Send + Sync + 'static,
+        effect: impl Fn(&mut GameState, EventContext) + Clone + Send + Sync + 'static,
     );
 
-    /// Trigger the [Scope] ability as long as it is not currently on the stack.
-    ///
-    /// Used for state-based triggers.
-    ///
-    /// This creates a delegate using [DelegateType::Ability], meaning the
-    /// trigger will not fire if the owning card loses all abilities.
-    fn trigger_if_not_on_stack(
+    /// Equivalent to [Self::add_trigger], but only triggers if the ability is
+    /// not currently on the stack. Used to implement state-based triggers.
+    fn add_trigger_if_not_on_stack(
         &mut self,
         scope: AbilityScope,
         predicate: impl Fn(&GameState, EventContext, &TArg) -> Option<bool>
@@ -70,7 +80,7 @@ pub trait TriggerExt<TArg> {
 }
 
 impl<TArg: Clone> TriggerExt<TArg> for GameEvent<TArg> {
-    fn trigger_if(
+    fn add_trigger(
         &mut self,
         scope: AbilityScope,
         predicate: impl Fn(&GameState, EventContext, &TArg) -> Option<bool>
@@ -86,16 +96,16 @@ impl<TArg: Clone> TriggerExt<TArg> for GameEvent<TArg> {
         });
     }
 
-    fn delayed_trigger_if(
+    fn add_one_time_trigger(
         &mut self,
         scope: AbilityScope,
-        predicate: impl Predicate<TArg>,
-        effect: impl Effect,
+        permanent_id: PermanentId,
+        predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Clone + Send + Sync + 'static,
+        effect: impl Fn(&mut GameState, EventContext) + Clone + Send + Sync + 'static,
     ) {
-        todo!("")
     }
 
-    fn trigger_if_not_on_stack(
+    fn add_trigger_if_not_on_stack(
         &mut self,
         scope: AbilityScope,
         predicate: impl Fn(&GameState, EventContext, &TArg) -> Option<bool>

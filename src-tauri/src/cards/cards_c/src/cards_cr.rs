@@ -18,7 +18,6 @@ use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 use data::card_definitions::registry::Registry;
-use data::core::primitives::HasSource;
 use rules::mutations::library;
 
 pub fn craw_wurm(_: &mut Registry) -> CardDefinition {

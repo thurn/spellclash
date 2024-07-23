@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use crate::core::primitives::{AbilityId, EventId, HasSource, PlayerName, Source, Timestamp};
+use crate::delegates::scope::AbilityScope;
 use crate::game_states::game_state::TurnData;
 
 /// Data passed as a parameter to an event callback function.
@@ -34,6 +35,12 @@ pub struct EventContext {
 
     /// The [Source] of the effect which caused this event to be fired.
     pub original_source: Source,
+}
+
+impl EventContext {
+    pub fn scope(&self) -> AbilityScope {
+        AbilityScope { ability_id: self.this }
+    }
 }
 
 impl From<EventContext> for Timestamp {

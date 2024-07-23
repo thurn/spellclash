@@ -45,8 +45,7 @@ pub struct ThisTurnState {
 }
 
 impl ThisTurnState {
-    /// Marks a new effect which persists until end of turn for a given
-    /// [EventContext].
+    /// Marks a new effect which persists until end of turn.
     pub fn add_effect(&mut self, source: AbilityId, event_id: EventId, target: EntityId) {
         self.effects
             .entry(target)

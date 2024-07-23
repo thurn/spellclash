@@ -64,7 +64,7 @@ dyn_clone::clone_trait_object!(Effect);
 
 impl<F> Effect for F
 where
-    F: Fn(&mut GameState, EventContext) + Copy + Send + Sync + 'static,
+    F: Fn(&mut GameState, EventContext) + Clone + Send + Sync + 'static,
 {
     fn invoke(&self, data: &mut GameState, context: EventContext) {
         self(data, context)

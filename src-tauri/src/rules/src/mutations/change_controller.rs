@@ -24,8 +24,7 @@ use data::game_states::game_state::GameState;
 use utils::outcome;
 use utils::outcome::Outcome;
 
-/// Causes the controller of [EventContext] to gain control of the [CardId]
-/// card.
+/// Causes `new_controller` to gain control of the [CardId] card.
 ///
 /// The caller of this function is responsible for removing this status via
 /// [remove_control] if it ends. The effect will also automatically end if this

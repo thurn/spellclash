@@ -19,27 +19,41 @@ use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 use data::card_definitions::registry::Registry;
 use data::core::primitives::HasSource;
+use rules::dispatcher::dispatch;
+use rules::mutations::trigger_extension::TriggerExt;
 use rules::mutations::{change_controller, permanents};
 
 pub fn ray_of_command(_: &mut Registry) -> CardDefinition {
-    // let state = EffectState::new();
     CardDefinition::new(card_name::RAY_OF_COMMAND).ability(
         SpellAbility::new().targets(targets::creature_opponent_controls()).effect(
             |g, c, target| {
                 permanents::untap(g, c.source(), target);
                 change_controller::gain_control_this_turn(g, c, c.controller, c.event_id, target);
                 haste::gain_this_turn(g, c, target);
-                // delayed_trigger::enable(g, c, state, target);
+                dispatch::add_card_event(g, target, move |events| {
+                    events.controller_changed.add_one_time_trigger(
+                        c.scope(),
+                        target,
+                        move |_, _, data| Some(data.old_controller == c.controller),
+                        move |g, _| {
+                            permanents::tap(g, c.source(), target);
+                        },
+                    )
+                });
             },
-        ), /* .delegates(|d| {
-            *     d.permanent_controller_changed.delayed_trigger_if(|g, s, event_id, data| {
-            *         data.old_controller == s.controller
-            *             && state.matches(g, event_id, data.permanent_id)
-            *     });
-            * })
-            * .delayed_trigger(DelayedTrigger::new().effect(|g, c| {
-            *     let event_id = state.pop(g, c.event_id);
-            *     permanents::tap(g, c.source(), event_id);
-            * })), */
+        ),
     )
 }
+
+// let state = EffectState::new();
+//  delayed_trigger::enable(g, c, state, target);
+//   .delegates(|d| {
+//     d.permanent_controller_changed.delayed_trigger_if(|g, s, event_id, data|
+// {         data.old_controller == s.controller
+//             && state.matches(g, event_id, data.permanent_id)
+//     });
+// })
+// .delayed_trigger(DelayedTrigger::new().effect(|g, c| {
+//     let event_id = state.pop(g, c.event_id);
+//     permanents::tap(g, c.source(), event_id);
+// })),
