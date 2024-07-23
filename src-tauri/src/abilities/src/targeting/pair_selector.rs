@@ -13,8 +13,7 @@
 // limitations under the License.
 
 use data::card_definitions::ability_definition::TargetSelector;
-use data::core::primitives::EntityId;
-use data::delegates::scope::Scope;
+use data::core::primitives::{EntityId, PlayerName, Source};
 use data::game_states::game_state::GameState;
 use either::Either;
 
@@ -30,10 +29,13 @@ impl<T: TargetSelector, U: TargetSelector> TargetSelector for PairSelector<T, U>
     fn valid_targets<'a>(
         &'a self,
         game: &'a GameState,
-        scope: Scope,
+        controller: PlayerName,
+        source: Source,
     ) -> Box<dyn Iterator<Item = EntityId> + 'a> {
         Box::new(
-            self.first.valid_targets(game, scope).chain(self.second.valid_targets(game, scope)),
+            self.first
+                .valid_targets(game, controller, source)
+                .chain(self.second.valid_targets(game, controller, source)),
         )
     }
 

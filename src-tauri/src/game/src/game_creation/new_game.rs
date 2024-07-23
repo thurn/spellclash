@@ -14,11 +14,10 @@
 
 use data::card_states::card_kind::CardKind;
 use data::card_states::zones::Zones;
-use data::core::primitives::{EffectId, GameId, PlayerName, Source, UserId};
+use data::core::primitives::{EventId, GameId, PlayerName, Source, UserId};
 use data::decks::deck::Deck;
 use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
-use data::delegates::game_delegates::GameDelegates;
 use data::events::game_events::GlobalEvents;
 use data::game_states::ability_state::AbilityState;
 use data::game_states::game_phase_step::GamePhaseStep;
@@ -123,7 +122,6 @@ fn create_game(
         history: GameHistory::default(),
         rng_seed: 3141592653589793,
         rng: Xoshiro256StarStar::seed_from_u64(3141592653589793),
-        delegates: GameDelegates::default(),
         events: GlobalEvents::default(),
         state_based_events: Some(vec![]),
         ability_state: AbilityState::default(),

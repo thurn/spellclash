@@ -24,12 +24,12 @@ use rules::prompt_handling::prompts;
 
 pub fn brainstorm(_: &mut Registry) -> CardDefinition {
     CardDefinition::new(card_name::BRAINSTORM).ability(SpellAbility::new().effect(|g, c| {
-        library::draw_cards(g, c, c.controller(), 3);
+        library::draw_cards(g, c, c.controller, 3);
         let cards = prompts::select_ordered_from(
             g,
-            c.controller(),
+            c.controller,
             Text::HandToTopOfLibraryPrompt,
-            &g.hand(c.controller()).clone(),
+            &g.hand(c.controller).clone(),
             2,
             CardOrderLocation::TopOfLibrary,
         );

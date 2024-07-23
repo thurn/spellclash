@@ -15,8 +15,7 @@
 use data::card_definitions::ability_definition::TargetSelector;
 use data::card_states::zones::ZoneQueries;
 use data::core::function_types::CardPredicate;
-use data::core::primitives::{EntityId, HasSource, SpellId, StackItemId};
-use data::delegates::scope::Scope;
+use data::core::primitives::{EntityId, HasSource, PlayerName, Source, SpellId, StackItemId};
 use data::game_states::game_state::GameState;
 
 use crate::targeting::player_set;
@@ -48,23 +47,26 @@ where
     fn valid_targets<'a>(
         &'a self,
         game: &'a GameState,
-        scope: Scope,
+        controller: PlayerName,
+        source: Source,
     ) -> Box<dyn Iterator<Item = EntityId> + 'a> {
-        Box::new(player_set::players_in_set(game, scope, self.players).iter().flat_map(
-            move |player| {
-                game.stack().iter().filter_map(move |&stack_item_id| {
-                    let StackItemId::Card(card_id) = stack_item_id else {
-                        return None;
-                    };
-                    let spell_id = SpellId::new(game.card(card_id)?.object_id, card_id);
-                    if (self.predicate)(game, scope.source(), spell_id) == Some(true) {
-                        Some(spell_id.into())
-                    } else {
-                        None
-                    }
-                })
-            },
-        ))
+        Box::new(
+            player_set::players_in_set(game, controller, source, self.players).iter().flat_map(
+                move |player| {
+                    game.stack().iter().filter_map(move |&stack_item_id| {
+                        let StackItemId::Card(card_id) = stack_item_id else {
+                            return None;
+                        };
+                        let spell_id = SpellId::new(game.card(card_id)?.object_id, card_id);
+                        if (self.predicate)(game, source, spell_id) == Some(true) {
+                            Some(spell_id.into())
+                        } else {
+                            None
+                        }
+                    })
+                },
+            ),
+        )
     }
 
     fn build_target_data(&self, game: &GameState, targets: &[EntityId]) -> Option<Self::Target> {

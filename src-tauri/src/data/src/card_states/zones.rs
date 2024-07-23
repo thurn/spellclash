@@ -37,7 +37,6 @@ use crate::core::primitives::{
     AbilityId, CardId, EntityId, HasController, HasPlayerName, HasSource, ObjectId, PermanentId,
     PlayerName, StackAbilityId, StackItemId, Timestamp, Zone, ALL_POSSIBLE_PLAYERS,
 };
-use crate::delegates::scope::Scope;
 use crate::events::card_events::CardEvents;
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::GameState;
@@ -132,7 +131,7 @@ pub trait HasZones {
 }
 
 /// Stores the state & position of all cards and card-like objects
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Zones {
     /// All cards and card-like objects in the current game
     all_cards: SlotMap<CardId, CardState>,
@@ -341,7 +340,7 @@ impl Zones {
             owner,
             controller: owner,
             targets,
-            delayed_trigger_effect_id: None,
+            custom_effect: None,
         });
 
         let ability = &mut self.stack_abilities[id];

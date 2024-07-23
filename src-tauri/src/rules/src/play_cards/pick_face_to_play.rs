@@ -29,7 +29,12 @@ use crate::queries::player_queries;
 ///
 /// The returned faces are selected for validity based solely on their timing
 /// restrictions and the intrinsic properties of the card layout.
-pub fn play_as(game: &GameState, source: Source, card_id: CardId) -> Vec<PlayCardPlan> {
+pub fn play_as(
+    game: &GameState,
+    player: PlayerName,
+    source: Source,
+    card_id: CardId,
+) -> Vec<PlayCardPlan> {
     let mut valid_faces = vec![];
     let Some(card) = game.card(card_id) else {
         return vec![];
@@ -48,7 +53,7 @@ pub fn play_as(game: &GameState, source: Source, card_id: CardId) -> Vec<PlayCar
         }
     };
 
-    valid_faces.into_iter().map(PlayCardPlan::new).collect()
+    valid_faces.into_iter().map(|play_as| PlayCardPlan::new(player, play_as)).collect()
 }
 
 /// Returns a [CanPlayAs] indicating whether a [PlayerName] can play a given

@@ -25,7 +25,7 @@ use crate::core::primitives::{AbilityId, CardId, HasSource, PermanentId, Source,
 use crate::delegates::delegate_type::DelegateType;
 use crate::delegates::layer::{EffectSortingKey, Layer};
 use crate::delegates::query_value::{ChangeText, EnumSets, Ints, QueryValue};
-use crate::delegates::scope::EffectContext;
+use crate::events::event_context::EventContext;
 use crate::game_states::game_state::{GameState, TurnData};
 use crate::properties::card_modifier::CardModifier;
 use crate::properties::duration::Duration;
@@ -71,7 +71,7 @@ impl<TArg, TModifier: QueryValue> CardArgumentProperty<TArg, TModifier> {
     /// Applies an effect modifier to this card for a given [Duration].
     pub fn add_effect(
         &mut self,
-        context: EffectContext,
+        context: EventContext,
         duration: Duration,
         modifier: TModifier,
     ) -> Outcome {

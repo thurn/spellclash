@@ -23,7 +23,6 @@ use data::core::primitives::{GameId, PlayerName, Source, UserId};
 use data::decks::deck::Deck;
 use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
-use data::delegates::game_delegates::GameDelegates;
 use data::game_states::game_phase_step::GamePhaseStep;
 use data::game_states::game_state::{
     DebugConfiguration, GameConfiguration, GameState, GameStatus, TurnData,

@@ -16,7 +16,7 @@ use crate::core::game_state_node::{GameStateNode, GameStatus};
 use crate::core::state_evaluator::StateEvaluator;
 
 /// Evaluator which returns the scores for a completed game and 0 otherwise
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct WinLossEvaluator;
 
 impl<TNode: GameStateNode> StateEvaluator<TNode> for WinLossEvaluator {

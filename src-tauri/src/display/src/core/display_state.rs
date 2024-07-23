@@ -28,7 +28,7 @@ use crate::commands::field_state::{FieldKey, FieldValue};
 ///
 /// Don't store anything here which can't be easily reconstructed if the client
 /// exits.
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct DisplayState {
     /// States of displayed input fields.
     pub fields: BTreeMap<FieldKey, FieldValue>,

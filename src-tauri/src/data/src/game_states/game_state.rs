@@ -28,15 +28,13 @@ use crate::card_states::stack_ability_state::StackAbilityState;
 use crate::card_states::zones::{HasZones, ToCardId, ZoneQueries, Zones};
 use crate::core::numerics::TurnNumber;
 use crate::core::primitives::{
-    AbilityId, EffectId, HasController, ObjectId, PermanentId, Timestamp,
+    AbilityId, EventId, HasController, ObjectId, PermanentId, Timestamp,
 };
 #[allow(unused_imports)] // Used in docs
 use crate::core::primitives::{
     CardId, EntityId, GameId, HasPlayerName, HasSource, PlayerName, StackAbilityId, StackItemId,
     UserId, Zone,
 };
-use crate::delegates::game_delegates::GameDelegates;
-use crate::delegates::scope::Scope;
 use crate::events::game_events::GlobalEvents;
 use crate::game_states::ability_state::AbilityState;
 use crate::game_states::combat_state::CombatState;
@@ -66,7 +64,7 @@ pub enum GameOperationMode {
 
 /// This is the state of a single ongoing game of Magic (i.e. one duel, not a
 /// larger session of the spellclash game client).
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct GameState {
     /// Unique ID for this game
     pub id: GameId,
@@ -136,13 +134,6 @@ pub struct GameState {
 
     /// Random number generator to use for this game
     pub rng: Xoshiro256StarStar,
-
-    /// Active Delegates for the game. See [GameDelegates].
-    ///
-    /// Do not mutate the set of delegates directly from an effect function or
-    /// callback. Prefer to add top-level delegates as part of your ability
-    /// definition.
-    pub delegates: GameDelegates,
 
     /// Stores callbacks to invoke in response to game events.
     pub events: GlobalEvents,
@@ -229,11 +220,6 @@ impl GameState {
         } else {
             self.state_based_events = Some(vec![event]);
         }
-    }
-
-    pub fn create_scope(&self, ability_id: AbilityId) -> Option<Scope> {
-        let card = self.card(ability_id)?;
-        Some(Scope { controller: card.controller(), ability_id, timestamp: card.timestamp })
     }
 
     /// Checks if a permanent has lost all abilities this turn, and returns the

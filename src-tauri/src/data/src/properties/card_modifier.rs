@@ -19,7 +19,6 @@ use crate::core::primitives::Source;
 use crate::delegates::delegate_type::DelegateType;
 use crate::delegates::layer::{EffectSortingKey, Layer};
 use crate::delegates::query_value::QueryValue;
-use crate::delegates::scope::Scope;
 use crate::game_states::game_state::GameState;
 use crate::properties::card_property::LostAllAbilities;
 use crate::properties::duration::Duration;

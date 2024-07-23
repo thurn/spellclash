@@ -15,16 +15,26 @@
 #[allow(unused)] // Used in docs
 use crate::card_states::zones::Zones;
 use crate::card_states::zones::{HasZones, ToCardId};
+use crate::core::function_types::Effect;
 use crate::core::primitives::{
-    AbilityId, CardId, EffectId, EntityId, HasController, HasPlayerName, ObjectId, PlayerName,
+    AbilityId, CardId, EntityId, EventId, HasController, HasPlayerName, ObjectId, PlayerName,
     StackAbilityId,
 };
-use crate::delegates::scope::Scope;
 use crate::game_states::game_state::GameState;
+
+/// Custom effect to invoke when an ability on the stack resolves.
+#[derive(Clone)]
+pub struct StackAbilityCustomEffect {
+    /// Effect function to apply
+    pub effect: Box<dyn Effect>,
+
+    /// Original [EventId] which caused this effect to be created
+    pub event_id: EventId,
+}
 
 /// Represents the state of a triggered or activated ability which has triggered
 /// or is on the stack
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct StackAbilityState {
     /// ID of this ability on the stack.
     pub id: StackAbilityId,
@@ -51,9 +61,13 @@ pub struct StackAbilityState {
     /// Targets for this ability, selected when it is placed on the stack.
     pub targets: Vec<EntityId>,
 
-    /// Marks this as a delayed trigger on the stack created by the effect with
-    /// the indicated [EffectId].
-    pub delayed_trigger_effect_id: Option<EffectId>,
+    /// A custom effect function to invoke when this stack ability resolves.
+    ///
+    /// By default, the effect function on the underlying ability is invoked
+    /// when an item on the stack resolves. Custom effects are used for things
+    /// like delayed triggers, where an effect is created separately from its
+    /// primary ability.
+    pub custom_effect: Option<StackAbilityCustomEffect>,
 }
 
 impl HasPlayerName for StackAbilityState {

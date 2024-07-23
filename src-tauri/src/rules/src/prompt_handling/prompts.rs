@@ -17,7 +17,6 @@ use std::fmt::Debug;
 
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{CardId, EntityId, PlayerName};
-use data::delegates::scope::Scope;
 use data::game_states::game_state::{GameOperationMode, GameState};
 use data::player_states::player_state::{PlayerQueries, PlayerType};
 use data::printed_cards::card_subtypes::LandType;

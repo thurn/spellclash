@@ -14,35 +14,32 @@
 
 use abilities::keyword_abilities::haste;
 use abilities::targeting::targets;
-use data::card_definitions::ability_definition::{DelayedTrigger, SpellAbility};
+use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 use data::card_definitions::registry::Registry;
 use data::core::primitives::HasSource;
-use data::game_states::effect_state::EffectState;
-use rules::mutations::trigger_extension2::TriggerExt;
-use rules::mutations::{change_controller, delayed_trigger, permanents};
+use rules::mutations::{change_controller, permanents};
 
 pub fn ray_of_command(_: &mut Registry) -> CardDefinition {
-    let state = EffectState::new();
+    // let state = EffectState::new();
     CardDefinition::new(card_name::RAY_OF_COMMAND).ability(
-        SpellAbility::new()
-            .targets(targets::creature_opponent_controls())
-            .effect(|g, c, target| {
+        SpellAbility::new().targets(targets::creature_opponent_controls()).effect(
+            |g, c, target| {
                 permanents::untap(g, c.source(), target);
-                change_controller::gain_control_this_turn(g, c.controller(), c.effect_id, target);
+                change_controller::gain_control_this_turn(g, c, c.controller, c.event_id, target);
                 haste::gain_this_turn(g, c, target);
-                delayed_trigger::enable(g, c, state, target);
-            })
-            .delegates(|d| {
-                d.permanent_controller_changed.delayed_trigger_if(|g, s, effect_id, data| {
-                    data.old_controller == s.controller
-                        && state.matches(g, effect_id, data.permanent_id)
-                });
-            })
-            .delayed_trigger(DelayedTrigger::new().effect(|g, c| {
-                let effect_id = state.pop(g, c.effect_id);
-                permanents::tap(g, c.source(), effect_id);
-            })),
+                // delayed_trigger::enable(g, c, state, target);
+            },
+        ), /* .delegates(|d| {
+            *     d.permanent_controller_changed.delayed_trigger_if(|g, s, event_id, data| {
+            *         data.old_controller == s.controller
+            *             && state.matches(g, event_id, data.permanent_id)
+            *     });
+            * })
+            * .delayed_trigger(DelayedTrigger::new().effect(|g, c| {
+            *     let event_id = state.pop(g, c.event_id);
+            *     permanents::tap(g, c.source(), event_id);
+            * })), */
     )
 }

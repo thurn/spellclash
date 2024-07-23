@@ -17,13 +17,12 @@ use std::iter;
 
 use either::Either;
 
-use crate::core::primitives::{AbilityId, CardId, EffectId, EntityId, PermanentId, Timestamp};
-use crate::delegates::scope::{EffectContext, Scope};
+use crate::core::primitives::{AbilityId, CardId, EntityId, EventId, PermanentId, Timestamp};
 
 #[derive(Debug, Clone)]
-struct AbilityEffectId {
+struct AbilityEventId {
     pub ability_id: AbilityId,
-    pub effect_id: EffectId,
+    pub event_id: EventId,
 }
 
 /// Stores a state mapping for effects that persist until the end of the current
@@ -34,11 +33,11 @@ struct AbilityEffectId {
 pub struct ThisTurnState {
     /// Map from entities to lists of effects active this turn affecting that
     /// entity.
-    effects: BTreeMap<EntityId, Vec<AbilityEffectId>>,
+    effects: BTreeMap<EntityId, Vec<AbilityEventId>>,
 
     /// List of control-changing effects to automatically clean up at end of
     /// turn.
-    control_changing_effects: Option<Vec<(EffectId, CardId)>>,
+    control_changing_effects: Option<Vec<(EventId, CardId)>>,
 
     /// Permanents that have lost all abilities this turn as of a given
     /// [Timestamp].
@@ -47,12 +46,12 @@ pub struct ThisTurnState {
 
 impl ThisTurnState {
     /// Marks a new effect which persists until end of turn for a given
-    /// [EffectContext].
-    pub fn add_effect(&mut self, source: AbilityId, effect_id: EffectId, target: EntityId) {
+    /// [EventContext].
+    pub fn add_effect(&mut self, source: AbilityId, event_id: EventId, target: EntityId) {
         self.effects
             .entry(target)
             .or_default()
-            .push(AbilityEffectId { ability_id: source, effect_id });
+            .push(AbilityEventId { ability_id: source, event_id });
     }
 
     /// Returns an iterator over effects for which the [AbilityId] ability has
@@ -61,14 +60,12 @@ impl ThisTurnState {
         &self,
         ability_id: AbilityId,
         target: EntityId,
-    ) -> impl Iterator<Item = EffectId> + '_ {
+    ) -> impl Iterator<Item = EventId> + '_ {
         let Some(effects) = self.effects.get(&target) else {
             return Either::Right(iter::empty());
         };
 
-        Either::Left(
-            effects.iter().filter(move |e| e.ability_id == ability_id).map(|e| e.effect_id),
-        )
+        Either::Left(effects.iter().filter(move |e| e.ability_id == ability_id).map(|e| e.event_id))
     }
 
     /// Changes all effects for the [AbilityId] ability to apply to a new target
@@ -87,20 +84,20 @@ impl ThisTurnState {
         if let Some(effects) = self.effects.get_mut(&old) {
             effects.retain(|e| e.ability_id != ability_id);
         }
-        active.into_iter().for_each(|effect_id| {
-            self.add_effect(ability_id, effect_id, new);
+        active.into_iter().for_each(|event_id| {
+            self.add_effect(ability_id, event_id, new);
         });
     }
 
     /// Returns & removes the list of control-changing effects to automatically
     /// clean up at end of turn
-    pub fn remove_control_changing_effects(&mut self) -> Vec<(EffectId, CardId)> {
+    pub fn remove_control_changing_effects(&mut self) -> Vec<(EventId, CardId)> {
         self.control_changing_effects.take().unwrap_or_default()
     }
 
     /// Adds a control-changing effect to automatically clean up at end of turn.
-    pub fn add_control_changing_effect(&mut self, effect_id: EffectId, card_id: CardId) {
-        self.control_changing_effects.get_or_insert_with(Vec::new).push((effect_id, card_id));
+    pub fn add_control_changing_effect(&mut self, event_id: EventId, card_id: CardId) {
+        self.control_changing_effects.get_or_insert_with(Vec::new).push((event_id, card_id));
     }
 
     /// Marks a permanent as having lost all abilities this turn.

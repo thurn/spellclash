@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::PlayerName;
-use data::delegates::scope::Scope;
+use data::core::primitives::{PlayerName, Source};
 use data::game_states::game_state::GameState;
 use enumset::EnumSet;
 use rules::queries::player_queries;
@@ -30,10 +29,15 @@ pub enum PlayerSet {
     Opponents,
 }
 
-pub fn players_in_set(game: &GameState, scope: Scope, set: PlayerSet) -> EnumSet<PlayerName> {
+pub fn players_in_set(
+    game: &GameState,
+    controller: PlayerName,
+    source: Source,
+    set: PlayerSet,
+) -> EnumSet<PlayerName> {
     match set {
         PlayerSet::AllPlayers => player_queries::all_players(game),
-        PlayerSet::You => EnumSet::only(scope.controller),
-        PlayerSet::Opponents => player_queries::all_opponents(game, scope.controller),
+        PlayerSet::You => EnumSet::only(controller),
+        PlayerSet::Opponents => player_queries::all_opponents(game, controller),
     }
 }

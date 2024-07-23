@@ -14,7 +14,7 @@
 
 use std::collections::BTreeMap;
 
-use crate::core::primitives::{AbilityId, CardId, EffectId, EntityId};
+use crate::core::primitives::{AbilityId, CardId, EntityId, EventId};
 use crate::game_states::effect_state::EffectState;
 use crate::game_states::state_value::StateValue;
 use crate::game_states::this_turn_state::ThisTurnState;
@@ -26,17 +26,9 @@ pub struct AbilityState {
     /// State which persists for the duration of the current turn.
     pub this_turn: ThisTurnState,
 
-    /// Stores a list of delayed trigger activation IDs for each ability. An
-    /// ability with an entry in this map will have its delayed trigger placed
-    /// on the stack when the trigger condition occurs.
-    ///
-    /// This is mutated via the `delayed_trigger` module, do not access this
-    /// field directly.
-    pub delayed_triggers: BTreeMap<AbilityId, Vec<EffectId>>,
-
-    /// Stores arbitrary state values associated with a given [EffectId].
+    /// Stores arbitrary state values associated with a given [EventId].
     ///
     /// This is always manipulated via [EffectState], do not access this field
     /// directly.
-    pub effect_state: BTreeMap<EffectId, StateValue>,
+    pub effect_state: BTreeMap<EventId, StateValue>,
 }

@@ -29,7 +29,7 @@ pub fn crystal_spray(_: &mut Registry) -> CardDefinition {
     CardDefinition::new(card_name::CRYSTAL_SPRAY).ability(
         SpellAbility::new().targets(targets::spell_or_permanent()).effect(|g, c, target| {
             change_text::change_basic_land_types_or_colors_this_turn(g, c, target);
-            library::draw(g, c.source(), c.controller());
+            library::draw(g, c, c.controller);
         }),
     )
 }

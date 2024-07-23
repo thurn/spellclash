@@ -26,7 +26,7 @@ use rules::legality::{legal_actions, legal_prompt_actions};
 
 use crate::core::game_state_node::{GameStateNode, GameStatus};
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct PromptStateNode {
     pub game: GameState,
     pub prompt: Option<Prompt>,

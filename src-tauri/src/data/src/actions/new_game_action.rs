@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::fmt::{Debug, Formatter};
+
 use serde::{Deserialize, Serialize};
 
 use crate::actions::user_action::UserAction;
@@ -31,7 +33,7 @@ pub struct NewGameDebugOptions {
 }
 
 /// Action to create a new game
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct NewGameAction {
     /// Deck to use for this game
     pub deck: DeckName,
@@ -44,6 +46,16 @@ pub struct NewGameAction {
 
     /// Debug options
     pub debug_options: NewGameDebugOptions,
+}
+
+impl Debug for NewGameAction {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("NewGameAction")
+            .field("deck", &self.deck)
+            .field("opponent_deck", &self.opponent_deck)
+            .field("debug_options", &self.debug_options)
+            .finish()
+    }
 }
 
 impl From<NewGameAction> for UserAction {

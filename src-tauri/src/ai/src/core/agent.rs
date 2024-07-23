@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::fmt::Debug;
 use std::time::Instant;
 
 use crate::core::game_state_node::{GameStateNode, GameStatus};
@@ -47,12 +46,12 @@ where
 /// score different sates, and a [StateCombiner] to incorporate state
 /// predictions together. Refer to the documentation on each individual type for
 /// more information about their role in the system.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct AgentData<TSelector, TEvaluator, TNode>
 where
-    TSelector: SelectionAlgorithm<TNode, TEvaluator> + Debug + Clone,
-    TEvaluator: StateEvaluator<TNode> + Debug + Clone,
-    TNode: GameStateNode + 'static + Debug + Clone,
+    TSelector: SelectionAlgorithm<TNode, TEvaluator> + Clone,
+    TEvaluator: StateEvaluator<TNode> + Clone,
+    TNode: GameStateNode + 'static + Clone,
 {
     /// Name of this agent, used for debugging.
     pub name: &'static str,
@@ -70,9 +69,9 @@ where
 
 impl<TSelector, TEvaluator, TNode> AgentData<TSelector, TEvaluator, TNode>
 where
-    TSelector: SelectionAlgorithm<TNode, TEvaluator> + Debug + Clone,
-    TEvaluator: StateEvaluator<TNode> + Debug + Clone,
-    TNode: GameStateNode + 'static + Debug + Clone,
+    TSelector: SelectionAlgorithm<TNode, TEvaluator> + Clone,
+    TEvaluator: StateEvaluator<TNode> + Clone,
+    TNode: GameStateNode + 'static + Clone,
 {
     /// Creates an Agent using the [state_predictor::omniscient] state
     /// predictor, giving it perfect knowledge of all hidden game state. Uses
@@ -94,9 +93,9 @@ where
 
 impl<TSelector, TEvaluator, TNode> Agent<TNode> for AgentData<TSelector, TEvaluator, TNode>
 where
-    TSelector: SelectionAlgorithm<TNode, TEvaluator> + Debug + Clone,
-    TEvaluator: StateEvaluator<TNode> + Debug + Clone,
-    TNode: GameStateNode + 'static + Debug + Clone,
+    TSelector: SelectionAlgorithm<TNode, TEvaluator> + Clone,
+    TEvaluator: StateEvaluator<TNode> + Clone,
+    TNode: GameStateNode + 'static + Clone,
 {
     fn name(&self) -> &'static str {
         self.name

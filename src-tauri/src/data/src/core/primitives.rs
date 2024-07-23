@@ -300,8 +300,8 @@ pub trait HasObjectId {
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R6137>
 ///
-/// Note that Timestamps and [EffectId]s use a shared counter, meaning that all
-/// valid [EffectId]s are valid Timestamps.
+/// Note that Timestamps and [EventId]s use a shared counter, meaning that all
+/// valid [EventId]s are valid Timestamps.
 #[derive(
     Debug, Clone, Copy, Default, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize,
 )]
@@ -403,31 +403,6 @@ impl ToCardId for SpellId {
     }
 }
 
-/// A unique identifier for an effect.
-///
-/// Each instance of an effect function resolving as a spell ability, activated
-/// ability, or triggered ability gets its own ID.
-///
-/// [Timestamp]s and EffectIds use a shared ID space, meaning that all valid
-/// EffectIds can be converted into valid [Timestamp]s.
-#[derive(
-    Debug, Clone, Copy, Default, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize,
-)]
-pub struct EffectId(pub u64);
-
-impl EffectId {
-    /// Converts this EffectId into a Timestamp
-    pub fn timestamp(&self) -> Timestamp {
-        Timestamp(self.0)
-    }
-}
-
-impl From<EffectId> for Timestamp {
-    fn from(value: EffectId) -> Self {
-        value.timestamp()
-    }
-}
-
 /// A unique identifier for an event.
 ///
 /// Each instance of an callback function being invoked gets its own event ID.
@@ -440,7 +415,7 @@ impl From<EffectId> for Timestamp {
 pub struct EventId(pub u64);
 
 impl EventId {
-    /// Converts this EffectId into a Timestamp
+    /// Converts this EventId into a Timestamp
     pub fn timestamp(&self) -> Timestamp {
         Timestamp(self.0)
     }
@@ -565,7 +540,7 @@ pub enum Source {
     Game,
 
     /// Mutation or query caused by an ability of a card
-    Ability { controller: PlayerName, ability_id: AbilityId },
+    Ability(AbilityId),
 }
 
 impl Source {
@@ -574,7 +549,7 @@ impl Source {
     }
 
     pub fn is_ability_source(&self) -> bool {
-        matches!(self, Source::Ability { .. })
+        matches!(self, Source::Ability(_))
     }
 }
 

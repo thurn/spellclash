@@ -15,8 +15,7 @@
 use data::card_definitions::ability_definition::TargetSelector;
 use data::card_states::zones::ZoneQueries;
 use data::core::function_types::CardPredicate;
-use data::core::primitives::{EntityId, HasSource, PermanentId};
-use data::delegates::scope::Scope;
+use data::core::primitives::{EntityId, HasSource, PermanentId, PlayerName, Source};
 use data::game_states::game_state::GameState;
 
 use crate::targeting::player_set::PlayerSet;
@@ -48,19 +47,22 @@ where
     fn valid_targets<'a>(
         &'a self,
         game: &'a GameState,
-        scope: Scope,
+        controller: PlayerName,
+        source: Source,
     ) -> Box<dyn Iterator<Item = EntityId> + 'a> {
-        Box::new(player_set::players_in_set(game, scope, self.players).iter().flat_map(
-            move |player| {
-                game.battlefield(player).iter().filter_map(move |&permanent_id| {
-                    if (self.predicate)(game, scope.source(), permanent_id) == Some(true) {
-                        Some(permanent_id.into())
-                    } else {
-                        None
-                    }
-                })
-            },
-        ))
+        Box::new(
+            player_set::players_in_set(game, controller, source, self.players).iter().flat_map(
+                move |player| {
+                    game.battlefield(player).iter().filter_map(move |&permanent_id| {
+                        if (self.predicate)(game, source.source(), permanent_id) == Some(true) {
+                            Some(permanent_id.into())
+                        } else {
+                            None
+                        }
+                    })
+                },
+            ),
+        )
     }
 
     fn build_target_data(&self, game: &GameState, targets: &[EntityId]) -> Option<Self::Target> {

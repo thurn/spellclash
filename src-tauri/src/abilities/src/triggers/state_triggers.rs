@@ -17,8 +17,6 @@ use data::card_states::iter_matching::IterMatching;
 use data::card_states::zones::ZoneQueries;
 use data::core::function_types::{CardMutation, CardPredicate};
 use data::core::primitives::{AbilityId, CardId, HasSource, PermanentId, Zone};
-use data::delegates::game_delegates::GameDelegates;
-use data::delegates::scope::Scope;
 use data::events::game_event::GameEventCallback;
 use data::game_states::game_state::GameState;
 use enumset::EnumSet;
@@ -36,7 +34,7 @@ pub fn when_controls_no(
         .events(move |s, e| {
             e.will_enter_battlefield.add_ability(s, EnumSet::all(), move |g, c, _| {
                 g.events.state_triggered_ability.trigger_if_not_on_stack(s, move |g, c, _| {
-                    g.battlefield(c.controller).none_matching(g, c.this_source(), predicate)
+                    g.battlefield(c.controller).none_matching(g, c.source(), predicate)
                 });
             });
             e.will_leave_battlefield.add_ability(s, EnumSet::all(), move |g, c, _| {
@@ -44,6 +42,6 @@ pub fn when_controls_no(
             });
         })
         .effect(move |g, c| {
-            mutation(g, c.source(), c.ability_id().card_id);
+            mutation(g, c.source(), c.this.card_id);
         })
 }

@@ -15,14 +15,16 @@
 use enumset::{EnumSet, EnumSetType};
 
 use crate::core::numerics::ManaValue;
-use crate::core::primitives::{CardId, EntityId, PermanentId};
-use crate::delegates::scope::Scope;
+use crate::core::primitives::{AbilityId, CardId, EntityId, PermanentId, PlayerName};
 use crate::printed_cards::printed_card::Face;
 
 /// Describes a proposed series of a choices for a user to play a card as part
 /// of the "play card" game action.
 #[derive(Debug, Clone)]
 pub struct PlayCardPlan {
+    /// The player who is playing this card
+    pub controller: PlayerName,
+
     /// The face or faces of this card which the player is casting and the
     /// timing restriction used for playing this card.
     ///
@@ -39,7 +41,7 @@ pub struct PlayCardPlan {
 
     /// Identifies an ability which provides an alternative cost which will be
     /// used to cast this spell
-    pub alternative_cost: Option<Scope>,
+    pub alternative_cost: Option<AbilityId>,
 
     /// Identifies abilities adding additional choices the caster has chosen for
     /// this spell, such as optional costs like Kicker.
@@ -78,8 +80,9 @@ pub struct PlayCardPlan {
 }
 
 impl PlayCardPlan {
-    pub fn new(play_as: PlayAs) -> Self {
+    pub fn new(controller: PlayerName, play_as: PlayAs) -> Self {
         Self {
+            controller,
             play_as,
             modes: EnumSet::new(),
             alternative_cost: None,
@@ -106,7 +109,7 @@ pub struct ManaPaymentPlan {
     pub basic_land_abilities_to_activate: Vec<PermanentId>,
     /// Identifies mana abilities the player has chosen to activate in order to
     /// pay costs to cast this spell.
-    pub mana_abilities: Vec<Scope>,
+    pub mana_abilities: Vec<AbilityId>,
 }
 
 /// Describes how a face of card can be played.
@@ -157,7 +160,7 @@ pub enum CastSpellPlanAdditionalChoice {
     /// Ability with an additional cost the player has *chosen* to pay for this
     /// spell, such as Kicker. Does not include additional costs the player is
     /// *forced* to pay.
-    AdditionalCostChoice(Scope),
+    AdditionalCostChoice(AbilityId),
     /// Splice this spell with the indicated card
     ///
     /// > 601.2b. If the player wishes to splice any cards onto the spell (see

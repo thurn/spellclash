@@ -39,7 +39,7 @@ impl<TArg> Debug for GameEventCallback<TArg> {
 }
 
 impl<TArg: 'static> GameEventCallback<TArg> {
-    pub fn build_context(&self, game: &GameState, event_source: Source) -> Option<EventContext> {
+    pub fn build_context(&self, game: &GameState, original_source: Source) -> Option<EventContext> {
         let card = game.card(self.ability_id)?;
         if !self.zones.contains(card.zone) {
             return None;
@@ -50,14 +50,20 @@ impl<TArg: 'static> GameEventCallback<TArg> {
             this: self.ability_id,
             controller: card.controller(),
             current_turn: game.turn,
-            event_source,
+            original_source,
         })
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct GameEvent<TArg> {
     pub callbacks: Vec<GameEventCallback<TArg>>,
+}
+
+impl<TArg> Default for GameEvent<TArg> {
+    fn default() -> Self {
+        Self { callbacks: Vec::new() }
+    }
 }
 
 impl<TArg> GameEvent<TArg> {

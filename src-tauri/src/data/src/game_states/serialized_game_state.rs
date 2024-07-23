@@ -35,7 +35,7 @@ pub enum SerializedGameVersion {
 /// taken.
 ///
 /// State is reconstructed by applying game actions in order.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct SerializedGameState {
     pub version: SerializedGameVersion,
     pub id: GameId,

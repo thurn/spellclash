@@ -18,8 +18,8 @@ use std::hash::Hash;
 use ai_core::core::agent_state::AgentState;
 use enumset::{EnumSet, EnumSetType};
 
-#[derive(Debug, PartialEq, Eq)]
-pub enum GameStatus<TPlayer: EnumSetType + Debug> {
+#[derive(PartialEq, Eq)]
+pub enum GameStatus<TPlayer: EnumSetType> {
     /// Game is still ongoing, it is TPlayer's turn to act.
     InProgress { current_turn: TPlayer },
     /// Game has ended, the indicated players have won
@@ -34,10 +34,10 @@ pub enum GameStatus<TPlayer: EnumSetType + Debug> {
 /// doing broadly correct things.
 pub trait GameStateNode {
     /// A game action to transition the game to a new state.
-    type Action: Eq + Hash + Debug + Copy + Send + Ord;
+    type Action: Eq + Hash + Copy + Send + Debug + Ord;
 
     /// A player in the game.
-    type PlayerName: EnumSetType + Debug + Send;
+    type PlayerName: EnumSetType + Send + Debug;
 
     /// Create a copy of this search node to be mutated by selection algorithms.
     /// A basic implementation of this would be to simply call `.clone()`, but

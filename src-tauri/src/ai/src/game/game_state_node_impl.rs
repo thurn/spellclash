@@ -20,7 +20,6 @@ use data::game_states::game_state;
 use data::game_states::game_state::GameState;
 use rules::action_handlers::actions;
 use rules::action_handlers::actions::ExecuteAction;
-use rules::core::debug_snapshot;
 use rules::legality::legal_actions;
 use rules::legality::legal_actions::LegalActions;
 

@@ -46,7 +46,7 @@ pub fn run(game: &mut GameState, source: impl HasSource, id: impl ToCardId, new:
             id,
             |e| &e.will_leave_battlefield,
             source.source(),
-            card.permanent_id().expect("Card on battlefield should have PermanentId"),
+            &card.permanent_id().expect("Card on battlefield should have PermanentId"),
         );
     }
 
@@ -56,7 +56,7 @@ pub fn run(game: &mut GameState, source: impl HasSource, id: impl ToCardId, new:
             id,
             |e| &e.will_enter_battlefield,
             source.source(),
-            PermanentId::new(new_object_id, card_id),
+            &PermanentId::new(new_object_id, card_id),
         );
     }
 

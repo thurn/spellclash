@@ -42,13 +42,6 @@ impl ToCardId for CanBeBlocked {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct PermanentControllerChangedEvent {
-    pub permanent_id: PermanentId,
-    pub old_controller: PlayerName,
-    pub new_controller: PlayerName,
-}
-
-#[derive(Debug, Clone, Copy)]
 pub struct WillEnterBattlefieldEvent {
     pub card_id: CardId,
 

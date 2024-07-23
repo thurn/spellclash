@@ -166,7 +166,6 @@ impl GameStateNode for NimState {
     }
 
     fn execute_action(&mut self, player: NimPlayer, action: NimAction) {
-        assert_eq!(self.status(), GameStatus::InProgress { current_turn: player });
         assert!(action.amount <= self.piles[&action.pile]);
         self.piles.entry(action.pile).and_modify(|amount| *amount -= action.amount);
         self.turn = match player {

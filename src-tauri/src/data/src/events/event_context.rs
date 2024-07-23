@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::core::primitives::{AbilityId, EventId, PlayerName, Source};
+use crate::core::primitives::{AbilityId, EventId, HasSource, PlayerName, Source, Timestamp};
 use crate::game_states::game_state::TurnData;
 
 /// Data passed as a parameter to an event callback function.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct EventContext {
-    /// A unique identifier for this instance of a callback function being
+    /// A unique identifier for an instance of a callback function being
     /// invoked
     pub event_id: EventId,
 
@@ -33,15 +33,22 @@ pub struct EventContext {
     pub current_turn: TurnData,
 
     /// The [Source] of the effect which caused this event to be fired.
-    pub event_source: Source,
+    pub original_source: Source,
 }
 
-impl EventContext {
+impl From<EventContext> for Timestamp {
+    fn from(value: EventContext) -> Self {
+        value.event_id.into()
+    }
+}
+
+impl HasSource for EventContext {
     /// Returns a [Source] representing the ability which added this callback
     /// function.
     ///
-    /// Note that this is different from the source which *triggered* the event.
-    pub fn this_source(&self) -> Source {
-        Source::Ability { ability_id: self.this, controller: self.controller }
+    /// Note that this is different from the source which *triggered* the event,
+    /// which can be found in [EventContext::original_source].
+    fn source(&self) -> Source {
+        Source::Ability(self.this)
     }
 }

@@ -19,8 +19,6 @@ use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::function_types::CardPredicate;
 use data::core::primitives::{CardId, PermanentId, Source, Zone};
 use data::delegates::game_delegate_data::CanAttackTarget;
-use data::delegates::game_delegates::GameDelegates;
-use data::delegates::scope::Scope;
 use data::game_states::game_state::GameState;
 use data::properties::flag::Flag;
 use rules::queries::combat_queries;

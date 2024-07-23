@@ -23,11 +23,9 @@ use data::printed_cards::card_subtypes::LandType;
 pub fn land_subtype(game: &GameState, source: Source, subtype: LandType) -> LandType {
     match source {
         Source::Game => subtype,
-        Source::Ability { ability_id, .. } => {
-            game.card(ability_id.card_id).map_or(subtype, |card| {
-                card.properties.change_land_type_text.query(game, source, subtype)
-            })
-        }
+        Source::Ability(ability_id) => game.card(ability_id.card_id).map_or(subtype, |card| {
+            card.properties.change_land_type_text.query(game, source, subtype)
+        }),
     }
 }
 
@@ -37,7 +35,7 @@ pub fn land_subtype(game: &GameState, source: Source, subtype: LandType) -> Land
 pub fn color(game: &GameState, source: Source, color: Color) -> Color {
     match source {
         Source::Game => color,
-        Source::Ability { ability_id, .. } => game
+        Source::Ability(ability_id) => game
             .card(ability_id.card_id)
             .map_or(color, |card| card.properties.change_color_text.query(game, source, color)),
     }

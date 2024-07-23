@@ -25,7 +25,7 @@ use crate::game_states::game_state::GameState;
 use crate::game_states::oracle::Oracle;
 use crate::prompts::prompt::Prompt;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct GameAgent {
     pub search_duration: Duration,
 
@@ -102,7 +102,7 @@ pub enum ChildScoreAlgorithm {
 /// This is very similar to the normal 'Agent' trait, but we separate it out to
 /// avoid crate circular dependency problems and add a little bit of
 /// game-specific context.
-pub trait GameAgentImpl: Debug + DynClone + Send {
+pub trait GameAgentImpl: DynClone + Send {
     fn select_action(&self, game: &GameState, player: PlayerName) -> GameAction;
 
     fn incremental_prompt_action(
@@ -113,7 +113,7 @@ pub trait GameAgentImpl: Debug + DynClone + Send {
     ) -> PromptAction;
 }
 
-pub trait PromptAgentImpl: Debug + DynClone + Send {
+pub trait PromptAgentImpl: DynClone + Send {
     fn top_level_prompt_action(
         &self,
         game: &GameState,

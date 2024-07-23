@@ -38,7 +38,7 @@ pub fn dance_of_the_skywise(_: &mut Registry) -> CardDefinition {
                 CreatureType::Dragon | CreatureType::Illusion,
             );
             base_power_toughness::set_this_turn(g, c, target, 4, 4);
-            lose_all_abilities::this_turn(g, target, c.effect_id);
+            lose_all_abilities::this_turn(g, target, c.event_id);
             flying::gain_this_turn(g, c, target);
         }),
     )

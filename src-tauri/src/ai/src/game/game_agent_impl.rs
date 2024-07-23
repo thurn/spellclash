@@ -13,7 +13,6 @@
 // limitations under the License.
 
 use std::collections::BTreeSet;
-use std::fmt::Debug;
 use std::time::{Duration, Instant};
 
 use data::actions::agent_action::AgentAction;
@@ -37,8 +36,8 @@ use crate::game::prompt_state_node_impl::PromptStateNode;
 
 impl<TSelector, TEvaluator> GameAgentImpl for AgentData<TSelector, TEvaluator, GameState>
 where
-    TSelector: SelectionAlgorithm<GameState, TEvaluator> + Debug + Clone,
-    TEvaluator: StateEvaluator<GameState> + Debug + Clone,
+    TSelector: SelectionAlgorithm<GameState, TEvaluator> + Clone,
+    TEvaluator: StateEvaluator<GameState> + Clone,
 {
     fn select_action(&self, game: &GameState, player: primitives::PlayerName) -> GameAction {
         let mut copy = game.shallow_clone();
@@ -64,8 +63,8 @@ where
 
 impl<TSelector, TEvaluator> PromptAgentImpl for AgentData<TSelector, TEvaluator, PromptStateNode>
 where
-    TSelector: SelectionAlgorithm<PromptStateNode, TEvaluator> + Debug + Clone,
-    TEvaluator: StateEvaluator<PromptStateNode> + Debug + Clone,
+    TSelector: SelectionAlgorithm<PromptStateNode, TEvaluator> + Clone,
+    TEvaluator: StateEvaluator<PromptStateNode> + Clone,
 {
     fn top_level_prompt_action(
         &self,
@@ -86,11 +85,10 @@ fn select_action_impl<TState, TSelector, TEvaluator>(
     player: TState::PlayerName,
 ) -> TState::Action
 where
-    TState: GameStateNode + Clone + Debug,
-    TSelector: SelectionAlgorithm<TState, TEvaluator> + Debug + Clone,
-    TEvaluator: StateEvaluator<TState> + Debug + Clone,
+    TState: GameStateNode + Clone,
+    TSelector: SelectionAlgorithm<TState, TEvaluator> + Clone,
+    TEvaluator: StateEvaluator<TState> + Clone,
 {
-    assert_eq!(state.current_turn(), player, "Not {:?}'s turn", player);
     let legal = state.legal_actions(player).collect::<Vec<_>>();
     assert!(!legal.is_empty(), "No legal actions available");
     if legal.len() == 1 {

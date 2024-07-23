@@ -12,10 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use enumset::EnumSet;
-
-use crate::core::primitives::{AbilityId, Zone};
-
-pub trait StoresDelegates {
-    fn apply_writes(&mut self, id: AbilityId, zones: EnumSet<Zone>);
-}
+pub mod dispatch;

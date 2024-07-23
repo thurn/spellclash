@@ -18,10 +18,9 @@ use data::core::card_tags::CardTag;
 use data::core::primitives::{HasSource, PermanentId};
 use data::delegates::delegate_type::DelegateType;
 use data::delegates::game_delegate_data::CanBeBlocked;
-use data::delegates::game_delegates::GameDelegates;
 use data::delegates::layer::Layer;
 use data::delegates::query_value::{EnumSets, QueryValue};
-use data::delegates::scope::EffectContext;
+use data::events::event_context::EventContext;
 use data::game_states::game_state::GameState;
 use data::properties::card_modifier::CardModifier;
 use data::properties::duration::Duration;
@@ -43,7 +42,7 @@ use utils::outcome::Outcome;
 /// > 702.10d. Multiple instances of haste on the same creature are redundant.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R70210>
-pub fn gain_this_turn(game: &mut GameState, context: EffectContext, id: PermanentId) -> Outcome {
+pub fn gain_this_turn(game: &mut GameState, context: EventContext, id: PermanentId) -> Outcome {
     let turn = game.turn;
     game.card_mut(id)?.properties.tags.add_effect(
         context,
@@ -53,6 +52,6 @@ pub fn gain_this_turn(game: &mut GameState, context: EffectContext, id: Permanen
     game.card_mut(id)?.properties.has_haste.add_effect(
         context,
         Duration::WhileOnBattlefieldThisTurn(id, turn),
-        Flag::overwrite(Layer::AbilityModifyingEffects, context.effect_id.timestamp(), true),
+        Flag::overwrite(Layer::AbilityModifyingEffects, context.event_id.timestamp(), true),
     )
 }

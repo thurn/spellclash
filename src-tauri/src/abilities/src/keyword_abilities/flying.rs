@@ -19,10 +19,9 @@ use data::core::card_tags::CardTag;
 use data::core::primitives::{HasSource, PermanentId, Source};
 use data::delegates::delegate_type::DelegateType;
 use data::delegates::game_delegate_data::CanBeBlocked;
-use data::delegates::game_delegates::GameDelegates;
 use data::delegates::layer::Layer;
 use data::delegates::query_value::{EnumSets, QueryValue};
-use data::delegates::scope::EffectContext;
+use data::events::event_context::EventContext;
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::CreatureType;
 use data::properties::card_modifier::CardModifier;
@@ -42,7 +41,7 @@ use utils::outcome::Outcome;
 /// > 702.9c. Multiple instances of flying on the same creature are redundant.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R7029>
-pub fn gain_this_turn(game: &mut GameState, context: EffectContext, id: PermanentId) -> Outcome {
+pub fn gain_this_turn(game: &mut GameState, context: EventContext, id: PermanentId) -> Outcome {
     let turn = game.turn;
     game.card_mut(id)?.properties.tags.add_effect(
         context,

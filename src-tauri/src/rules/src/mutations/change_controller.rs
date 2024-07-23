@@ -14,14 +14,17 @@
 
 use data::card_states::card_state::ControlChangingEffect;
 use data::card_states::zones::{ToCardId, ZoneQueries};
-use data::core::primitives::{AbilityId, CardId, EffectId, HasController, HasSource, PlayerName};
-use data::delegates::game_delegate_data::PermanentControllerChangedEvent;
-use data::delegates::scope::{EffectContext, Scope};
+use data::core::primitives::{
+    AbilityId, CardId, EventId, HasController, HasSource, PlayerName, Source,
+};
+use data::events::card_events::PermanentControllerChangedEvent;
+use data::events::game_events::dispatch;
+use data::events::{card_events, game_events};
 use data::game_states::game_state::GameState;
 use utils::outcome;
 use utils::outcome::Outcome;
 
-/// Causes the controller of [EffectContext] to gain control of the [CardId]
+/// Causes the controller of [EventContext] to gain control of the [CardId]
 /// card.
 ///
 /// The caller of this function is responsible for removing this status via
@@ -30,8 +33,9 @@ use utils::outcome::Outcome;
 /// battlefield.
 pub fn gain_control(
     game: &mut GameState,
+    source: Source,
     new_controller: PlayerName,
-    effect_id: EffectId,
+    event_id: EventId,
     card_id: impl ToCardId,
 ) -> Outcome {
     let card_id = card_id.to_card_id(game)?;
@@ -44,17 +48,20 @@ pub fn gain_control(
         let permanent_id = card.permanent_id();
         card.last_changed_control = turn;
         card.control_changing_effects
-            .push(ControlChangingEffect { effect_id, controller: new_controller });
+            .push(ControlChangingEffect { event_id, controller: new_controller });
 
         if let Some(id) = permanent_id {
-            game.delegates
-                .permanent_controller_changed
-                .invoke_with(game, &PermanentControllerChangedEvent {
+            card_events::dispatch(
+                game,
+                card_id,
+                |c| &c.controller_changed,
+                source,
+                &PermanentControllerChangedEvent {
                     permanent_id: id,
                     old_controller: current,
                     new_controller,
-                })
-                .run(game);
+                },
+            );
         }
     }
     outcome::OK
@@ -65,21 +72,22 @@ pub fn gain_control(
 /// cleanup step.
 pub fn gain_control_this_turn(
     game: &mut GameState,
+    source: impl HasSource,
     new_controller: PlayerName,
-    effect_id: EffectId,
+    event_id: EventId,
     id: impl ToCardId,
 ) -> Outcome {
     let card_id = id.to_card_id(game)?;
-    game.ability_state.this_turn.add_control_changing_effect(effect_id, card_id);
-    gain_control(game, new_controller, effect_id, card_id)
+    game.ability_state.this_turn.add_control_changing_effect(event_id, card_id);
+    gain_control(game, source.source(), new_controller, event_id, card_id)
 }
 
 /// Removes all control-changing effects from the [CardId] card that were added
-/// by the given [EffectId].
-pub fn remove_control(game: &mut GameState, effect_id: EffectId, card_id: CardId) -> Outcome {
+/// by the given [EventId].
+pub fn remove_control(game: &mut GameState, event_id: EventId, card_id: CardId) -> Outcome {
     let card = game.card_mut(card_id)?;
     let current = card.controller();
-    card.control_changing_effects.retain(|effect| effect.effect_id != effect_id);
+    card.control_changing_effects.retain(|effect| effect.event_id != event_id);
     let new = card.controller();
     if current != new {
         game.zones.on_controller_changed(card_id, current, new, game.turn);
@@ -88,14 +96,17 @@ pub fn remove_control(game: &mut GameState, effect_id: EffectId, card_id: CardId
         card.last_changed_control = turn;
         let permanent_id = card.permanent_id();
         if let Some(id) = permanent_id {
-            game.delegates
-                .permanent_controller_changed
-                .invoke_with(game, &PermanentControllerChangedEvent {
+            card_events::dispatch(
+                game,
+                card_id,
+                |c| &c.controller_changed,
+                Source::Game,
+                &PermanentControllerChangedEvent {
                     permanent_id: id,
                     old_controller: current,
                     new_controller: new,
-                })
-                .run(game);
+                },
+            );
         }
     }
     outcome::OK

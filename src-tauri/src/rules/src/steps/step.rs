@@ -294,8 +294,8 @@ fn cleanup(game: &mut GameState) {
         card.damage = 0;
     }
 
-    for (effect_id, target_id) in game.ability_state.this_turn.remove_control_changing_effects() {
-        change_controller::remove_control(game, effect_id, target_id);
+    for (event_id, target_id) in game.ability_state.this_turn.remove_control_changing_effects() {
+        change_controller::remove_control(game, event_id, target_id);
     }
     game.ability_state.this_turn = ThisTurnState::default();
 

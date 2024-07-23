@@ -20,7 +20,6 @@ use utils::outcome::Outcome;
 use crate::card_definitions::registry::Registered;
 use crate::card_states::zones::ToCardId;
 use crate::core::primitives::{CardId, EntityId, PermanentId, PlayerName, Source, StackAbilityId};
-use crate::delegates::scope::Scope;
 use crate::events::event_context::EventContext;
 use crate::game_states::game_state::GameState;
 
@@ -56,6 +55,21 @@ impl<TId: ToCardId, F> CardPredicate<TId> for F where
 
 pub type CardPredicateFn<TId> =
     Box<dyn Fn(&GameState, Source, TId) -> Option<bool> + 'static + Send + Sync>;
+
+pub trait Effect: DynClone + Send + Sync + 'static {
+    fn invoke(&self, data: &mut GameState, context: EventContext);
+}
+
+dyn_clone::clone_trait_object!(Effect);
+
+impl<F> Effect for F
+where
+    F: Fn(&mut GameState, EventContext) + Copy + Send + Sync + 'static,
+{
+    fn invoke(&self, data: &mut GameState, context: EventContext) {
+        self(data, context)
+    }
+}
 
 pub trait Mutation<TArg>: DynClone + Send + Sync + 'static {
     fn invoke(&self, data: &mut GameState, context: EventContext, arg: &TArg);

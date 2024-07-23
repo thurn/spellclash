@@ -18,10 +18,9 @@ use data::card_states::card_state::ControlChangingEffect;
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{Color, HasSource, PermanentId, PlayerName, SpellId, COLORS};
 use data::delegates::delegate_type::DelegateType;
-use data::delegates::game_delegates::GameDelegates;
 use data::delegates::layer::Layer;
 use data::delegates::query_value::{ChangeText, EnumSets};
-use data::delegates::scope::EffectContext;
+use data::events::event_context::EventContext;
 use data::game_states::effect_state::EffectState;
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::{LandType, BASIC_LANDS};
@@ -37,10 +36,10 @@ pub type LandSubtypesOrColors = Either<(LandType, LandType), (Color, Color)>;
 
 pub fn change_basic_land_types_or_colors_this_turn(
     game: &mut GameState,
-    context: EffectContext,
+    context: EventContext,
     target: Either<SpellId, PermanentId>,
 ) -> Outcome {
-    let choice = choose_basic_land_types_or_colors(game, context.controller());
+    let choice = choose_basic_land_types_or_colors(game, context.controller);
     match (choice, target) {
         (LandSubtypesOrColors::Left((old_type, new_type)), Either::Left(spell_id)) => {
             change_spell_land_type_text(game, context, spell_id, new_type, old_type)
@@ -59,7 +58,7 @@ pub fn change_basic_land_types_or_colors_this_turn(
 
 fn change_permanent_color_text(
     game: &mut GameState,
-    context: EffectContext,
+    context: EventContext,
     permanent_id: PermanentId,
     old_color: Color,
     new_color: Color,
@@ -68,13 +67,13 @@ fn change_permanent_color_text(
     game.card_mut(permanent_id)?.properties.change_color_text.add_effect(
         context,
         Duration::WhileOnBattlefieldThisTurn(permanent_id, turn),
-        ChangeText::replace(context.effect_id, old_color, new_color),
+        ChangeText::replace(context.event_id, old_color, new_color),
     )
 }
 
 fn change_spell_color_text(
     game: &mut GameState,
-    context: EffectContext,
+    context: EventContext,
     spell_id: SpellId,
     old_color: Color,
     new_color: Color,
@@ -82,13 +81,13 @@ fn change_spell_color_text(
     game.card_mut(spell_id)?.properties.change_color_text.add_effect(
         context,
         Duration::WhileOnStackOrBattlefield(spell_id),
-        ChangeText::replace(context.effect_id, old_color, new_color),
+        ChangeText::replace(context.event_id, old_color, new_color),
     )
 }
 
 fn change_permanent_land_type_text(
     game: &mut GameState,
-    context: EffectContext,
+    context: EventContext,
     permanent_id: PermanentId,
     old_type: LandType,
     new_type: LandType,
@@ -97,18 +96,18 @@ fn change_permanent_land_type_text(
     game.card_mut(permanent_id)?.properties.land_types.add_effect(
         context,
         Duration::WhileOnBattlefieldThisTurn(permanent_id, turn),
-        EnumSets::replace(Layer::TextChangingEffects, context.effect_id, old_type, new_type),
+        EnumSets::replace(Layer::TextChangingEffects, context.event_id, old_type, new_type),
     );
     game.card_mut(permanent_id)?.properties.change_land_type_text.add_effect(
         context,
         Duration::WhileOnBattlefieldThisTurn(permanent_id, turn),
-        ChangeText::replace(context.effect_id, old_type, new_type),
+        ChangeText::replace(context.event_id, old_type, new_type),
     )
 }
 
 fn change_spell_land_type_text(
     game: &mut GameState,
-    context: EffectContext,
+    context: EventContext,
     spell_id: SpellId,
     new_type: LandType,
     old_type: LandType,
@@ -117,12 +116,12 @@ fn change_spell_land_type_text(
     game.card_mut(spell_id)?.properties.land_types.add_effect(
         context,
         Duration::WhileOnStackOrBattlefield(spell_id),
-        EnumSets::replace(Layer::TextChangingEffects, context.effect_id, old_type, new_type),
+        EnumSets::replace(Layer::TextChangingEffects, context.event_id, old_type, new_type),
     );
     game.card_mut(spell_id)?.properties.change_land_type_text.add_effect(
         context,
         Duration::WhileOnStackOrBattlefield(spell_id),
-        ChangeText::replace(context.effect_id, old_type, new_type),
+        ChangeText::replace(context.event_id, old_type, new_type),
     )
 }
 

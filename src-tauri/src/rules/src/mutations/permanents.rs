@@ -15,7 +15,7 @@
 use data::card_states::card_state::{CardFacing, TappedState};
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::numerics::Damage;
-use data::core::primitives::{CardId, PermanentId, Source, Zone, ALL_POSSIBLE_PLAYERS};
+use data::core::primitives::{CardId, HasSource, PermanentId, Source, Zone, ALL_POSSIBLE_PLAYERS};
 use data::game_states::game_state::GameState;
 use data::game_states::state_based_event::StateBasedEvent;
 use data::printed_cards::printed_card::Face;
@@ -30,7 +30,7 @@ use crate::mutations::move_card;
 /// Returns None if this card does not exist.
 pub fn turn_face_up(
     game: &mut GameState,
-    _source: Source,
+    _source: impl HasSource,
     id: impl ToCardId,
     face: Face,
 ) -> Outcome {
@@ -43,7 +43,7 @@ pub fn turn_face_up(
 /// Taps a permanent.
 ///
 /// Returns None if this card does not exist.
-pub fn tap(game: &mut GameState, _source: Source, id: impl ToCardId) -> Outcome {
+pub fn tap(game: &mut GameState, _source: impl HasSource, id: impl ToCardId) -> Outcome {
     let card = game.card_mut(id)?;
     card.tapped_state = TappedState::Tapped;
     outcome::OK
@@ -52,7 +52,7 @@ pub fn tap(game: &mut GameState, _source: Source, id: impl ToCardId) -> Outcome 
 /// Untaps a permanent
 ///
 /// Returns None if this card does not exist.
-pub fn untap(game: &mut GameState, _source: Source, id: impl ToCardId) -> Outcome {
+pub fn untap(game: &mut GameState, _source: impl HasSource, id: impl ToCardId) -> Outcome {
     let card = game.card_mut(id)?;
     card.tapped_state = TappedState::Untapped;
     outcome::OK
@@ -63,7 +63,7 @@ pub fn untap(game: &mut GameState, _source: Source, id: impl ToCardId) -> Outcom
 /// Returns None if this card does not exist.
 pub fn deal_damage(
     game: &mut GameState,
-    source: Source,
+    _source: impl HasSource,
     id: impl ToCardId,
     damage: Damage,
 ) -> Outcome {
@@ -78,6 +78,6 @@ pub fn deal_damage(
 /// Sacrifices a permanent.
 ///
 /// Returns None if this card does not exist.
-pub fn sacrifice(game: &mut GameState, source: Source, id: impl ToCardId) -> Outcome {
-    move_card::run(game, source, id, Zone::Graveyard)
+pub fn sacrifice(game: &mut GameState, source: impl HasSource, id: impl ToCardId) -> Outcome {
+    move_card::run(game, source.source(), id, Zone::Graveyard)
 }

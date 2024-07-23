@@ -16,10 +16,17 @@ use utils::outcome;
 use utils::outcome::Outcome;
 
 use crate::card_states::zones::{ToCardId, ZoneQueries};
-use crate::core::primitives::{PermanentId, Source};
+use crate::core::primitives::{PermanentId, PlayerName, Source};
 use crate::events::event_context::EventContext;
 use crate::events::game_event::GameEvent;
 use crate::game_states::game_state::GameState;
+
+#[derive(Debug, Clone, Copy)]
+pub struct PermanentControllerChangedEvent {
+    pub permanent_id: PermanentId,
+    pub old_controller: PlayerName,
+    pub new_controller: PlayerName,
+}
 
 #[derive(Default, Clone, Debug)]
 pub struct CardEvents {
@@ -31,6 +38,8 @@ pub struct CardEvents {
 
     /// The card with the given [PermanentId] is about to leave the battlefield.
     pub will_leave_battlefield: GameEvent<PermanentId>,
+
+    pub controller_changed: GameEvent<PermanentControllerChangedEvent>,
 }
 
 pub fn dispatch<TArg: 'static>(
@@ -38,7 +47,7 @@ pub fn dispatch<TArg: 'static>(
     id: impl ToCardId,
     event: fn(&CardEvents) -> &GameEvent<TArg>,
     source: Source,
-    arg: TArg,
+    arg: &TArg,
 ) -> Outcome {
     for i in 0..event(&game.card(id)?.events).callbacks.len() {
         if let Some(context) =

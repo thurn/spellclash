@@ -28,7 +28,7 @@ use crate::card_states::zones::Zones;
 use crate::card_states::zones::{HasZones, ToCardId};
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
-    AbilityId, CardId, EffectId, EntityId, HasController, HasPlayerName, ObjectId, PermanentId,
+    AbilityId, CardId, EntityId, EventId, HasController, HasPlayerName, ObjectId, PermanentId,
     PlayerName, Timestamp, Zone,
 };
 use crate::events::card_events::CardEvents;
@@ -285,7 +285,7 @@ pub enum CardFacing {
 /// Represents an effect which changes the controller of a card.
 #[derive(Debug, Clone, Copy)]
 pub struct ControlChangingEffect {
-    pub effect_id: EffectId,
+    pub event_id: EventId,
     pub controller: PlayerName,
 }
 

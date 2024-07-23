@@ -16,10 +16,9 @@ use data::card_states::zones::ZoneQueries;
 use data::core::numerics::{Power, Toughness};
 use data::core::primitives::{HasSource, PermanentId};
 use data::delegates::delegate_type::DelegateType;
-use data::delegates::game_delegates::GameDelegates;
 use data::delegates::layer::Layer;
 use data::delegates::query_value::{EnumSets, Ints, QueryValue};
-use data::delegates::scope::EffectContext;
+use data::events::event_context::EventContext;
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::CreatureType;
 use data::properties::card_modifier::CardModifier;
@@ -30,7 +29,7 @@ use utils::outcome::Outcome;
 /// Adds to a card's power and toughness for the current turn
 pub fn add_this_turn(
     game: &mut GameState,
-    context: EffectContext,
+    context: EventContext,
     id: PermanentId,
     power: Power,
     toughness: Toughness,

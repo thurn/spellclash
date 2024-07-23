@@ -17,7 +17,6 @@ use std::collections::BTreeSet;
 use crate::card_states::zones::ToCardId;
 use crate::core::function_types::CardPredicate;
 use crate::core::primitives::{HasSource, Source};
-use crate::delegates::scope::Scope;
 use crate::game_states::game_state::GameState;
 
 pub trait IterOptional: Iterator {

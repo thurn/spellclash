@@ -19,7 +19,6 @@
 //! Computational Intelligence and AI in Games, Vol. 4, No. 1, March 2012.
 
 use std::collections::{BTreeMap, BTreeSet};
-use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::time::Instant;
 
@@ -122,7 +121,7 @@ impl<TState: GameStateNode + Send, TEvaluator: StateEvaluator<TState>> StateEval
 #[derive(Debug, Clone)]
 pub struct MonteCarloAlgorithm<TState, TScoreAlgorithm: ChildScoreAlgorithm>
 where
-    TState: GameStateNode + Debug + Clone + Send,
+    TState: GameStateNode + Clone + Send,
 {
     pub child_score_algorithm: TScoreAlgorithm,
     pub max_iterations: Option<u32>,
@@ -132,7 +131,7 @@ where
 impl<TState, TEvaluator, TScoreAlgorithm: ChildScoreAlgorithm>
     SelectionAlgorithm<TState, TEvaluator> for MonteCarloAlgorithm<TState, TScoreAlgorithm>
 where
-    TState: GameStateNode + Debug + Clone + Send,
+    TState: GameStateNode + Clone + Send,
     TEvaluator: StateEvaluator<TState>,
 {
     #[instrument(level = "debug", skip_all)]
@@ -212,7 +211,7 @@ where
 
 impl<TState, TScoreAlgorithm: ChildScoreAlgorithm> MonteCarloAlgorithm<TState, TScoreAlgorithm>
 where
-    TState: GameStateNode + Debug + Clone + Send,
+    TState: GameStateNode + Clone + Send,
 {
     #[instrument(level = "debug", skip_all)]
     pub fn run_search<TEvaluator: StateEvaluator<TState>>(

@@ -66,7 +66,7 @@ pub fn vanilla(c: &mut Criterion) {
                 &game,
                 Source::Game,
                 creature_id,
-                &PlayCardPlan::new(PlayAs {
+                &PlayCardPlan::new(PlayerName::One, PlayAs {
                     faces: EnumSet::only(Face::Primary),
                     timing: PlayCardTiming::Sorcery,
                 }),

@@ -17,6 +17,7 @@
 
 pub mod action_handlers;
 pub mod core;
+pub mod dispatcher;
 pub mod legality;
 pub mod mutations;
 pub mod planner;

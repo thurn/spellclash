@@ -14,17 +14,15 @@
 
 use data::card_states::stack_ability_state::StackAbilityState;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{AbilityId, EffectId, HasSource, PlayerName, Source, StackItemId};
+use data::core::function_types::{Effect, Predicate};
+use data::core::primitives::{AbilityId, EventId, HasSource, PlayerName, Source, StackItemId};
 use data::delegates::delegate_type::DelegateType;
-use data::delegates::event_delegate_list::EventDelegateList;
-use data::delegates::scope::{AbilityScope, Scope};
+use data::delegates::scope::AbilityScope;
 use data::events::event_context::EventContext;
 use data::events::game_event::GameEvent;
 use data::game_states::game_state::GameState;
 use utils::outcome;
 use utils::outcome::Outcome;
-
-use crate::mutations::delayed_trigger;
 
 /// Extensions to event delegates for triggering abilities.
 ///
@@ -45,6 +43,13 @@ pub trait TriggerExt<TArg> {
             + Send
             + Sync
             + 'static,
+    );
+
+    fn delayed_trigger_if(
+        &mut self,
+        scope: AbilityScope,
+        predicate: impl Predicate<TArg>,
+        effect: impl Effect,
     );
 
     /// Trigger the [Scope] ability as long as it is not currently on the stack.
@@ -79,6 +84,15 @@ impl<TArg: Clone> TriggerExt<TArg> for GameEvent<TArg> {
                 trigger_ability(g, c.this, c.controller);
             }
         });
+    }
+
+    fn delayed_trigger_if(
+        &mut self,
+        scope: AbilityScope,
+        predicate: impl Predicate<TArg>,
+        effect: impl Effect,
+    ) {
+        todo!("")
     }
 
     fn trigger_if_not_on_stack(

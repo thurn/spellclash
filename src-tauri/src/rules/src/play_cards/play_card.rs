@@ -22,7 +22,7 @@ use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{
     AbilityId, CardId, EntityId, HasController, PlayerName, Source, Zone,
 };
-use data::delegates::scope::Scope;
+use data::events::event_context::EventContext;
 use data::game_states::game_state::GameState;
 use data::prompts::entity_choice_prompt::Choice;
 use data::text_strings::Text;
@@ -48,14 +48,14 @@ pub fn execute(
     source: Source,
     card_id: CardId,
 ) -> Outcome {
-    let mut plans = pick_face_to_play::play_as(game, source, card_id);
+    let mut plans = pick_face_to_play::play_as(game, player, source, card_id);
     assert_eq!(plans.len(), 1, "TODO: handle multiple faces");
     let mut plan = plans.remove(0);
 
     let prompt_lists = targeted_abilities(game, card_id)
-        .map(|(scope, ability)| {
+        .map(|(s, ability)| {
             ability
-                .valid_targets(game, scope)
+                .valid_targets(game, player, s)
                 .map(|entity_id| Choice { entity_id })
                 .collect::<Vec<_>>()
         })
@@ -93,7 +93,7 @@ pub fn can_play_card(
         return false;
     }
 
-    pick_face_to_play::play_as(game, source, card_id)
+    pick_face_to_play::play_as(game, player, source, card_id)
         .into_iter()
         .any(|mut plan| can_play_card_as(game, source, card_id, &mut plan))
 }
@@ -121,7 +121,7 @@ pub fn can_pick_targets(
     plan: &mut PlayCardPlan,
 ) -> bool {
     if targeted_abilities(game, card_id).next().is_some() {
-        for list in valid_target_lists(game, card_id) {
+        for list in valid_target_lists(game, plan.controller, card_id) {
             plan.targets = list;
             if can_pay_mana_costs(game, source, card_id, plan) {
                 return true;
@@ -137,7 +137,7 @@ pub fn can_pick_targets(
 fn targeted_abilities(
     game: &GameState,
     card_id: CardId,
-) -> impl Iterator<Item = (Scope, &dyn Ability)> {
+) -> impl Iterator<Item = (Source, &dyn Ability)> {
     let Some(card_name) = game.card(card_id).map(|c| c.card_name) else {
         return Either::Left(iter::empty());
     };
@@ -145,7 +145,7 @@ fn targeted_abilities(
     Either::Right(definitions::get(card_name).iterate_abilities().filter_map(
         move |(number, ability)| {
             if ability.get_ability_type() == AbilityType::Spell && ability.requires_targets() {
-                Some((game.create_scope(AbilityId { card_id, number })?, ability))
+                Some((Source::Ability(AbilityId { card_id, number }), ability))
             } else {
                 None
             }
@@ -155,14 +155,15 @@ fn targeted_abilities(
 
 fn valid_target_lists(
     game: &GameState,
+    controller: PlayerName,
     card_id: CardId,
 ) -> impl Iterator<Item = Vec<EntityId>> + '_ {
     let Some(card) = game.card(card_id) else {
         return Either::Left(iter::empty());
     };
 
-    Either::Right(targeted_abilities(game, card_id).flat_map(|(scope, ability)| {
-        ability.valid_targets(game, scope).map(|entity_id| vec![entity_id])
+    Either::Right(targeted_abilities(game, card_id).flat_map(move |(scope, ability)| {
+        ability.valid_targets(game, controller, scope).map(|entity_id| vec![entity_id])
     }))
 }
 

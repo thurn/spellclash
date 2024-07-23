@@ -15,10 +15,9 @@
 use data::card_states::zones::ZoneQueries;
 use data::core::primitives::{Color, HasSource, PermanentId};
 use data::delegates::delegate_type::DelegateType;
-use data::delegates::game_delegates::GameDelegates;
 use data::delegates::layer::Layer;
 use data::delegates::query_value::{EnumSets, QueryValue};
-use data::delegates::scope::EffectContext;
+use data::events::event_context::EventContext;
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::CreatureType;
 use data::properties::card_modifier::CardModifier;
@@ -29,7 +28,7 @@ use utils::outcome::Outcome;
 /// Sets a card's creature subtypes for the current turn
 pub fn set_this_turn(
     game: &mut GameState,
-    context: EffectContext,
+    context: EventContext,
     id: PermanentId,
     colors: impl Into<EnumSet<CreatureType>>,
 ) -> Outcome {
