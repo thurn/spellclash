@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use crate::core::primitives::{AbilityId, CardId, EntityId, EventId};
 use crate::game_states::effect_state::EffectState;
@@ -31,4 +31,8 @@ pub struct AbilityState {
     /// This is always manipulated via [EffectState], do not access this field
     /// directly.
     pub effect_state: BTreeMap<EventId, StateValue>,
+
+    /// [EventId]s of one-time effects which have already fired and thus should
+    /// not trigger again.
+    pub fired_one_time_effects: BTreeSet<EventId>,
 }

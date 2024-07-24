@@ -38,7 +38,8 @@ pub fn run(
                 // Use the original event ID for custom effects so they can be
                 // tied back to their origin.
                 context.event_id = custom_effect.event_id;
-                // custom_effect.effect.invoke(game, context);
+                let effect = custom_effect.effect.clone();
+                effect.invoke(game, context);
             } else {
                 ability.invoke_effect(game, context);
             }

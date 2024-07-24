@@ -33,7 +33,7 @@ use database::sqlite_database::SqliteDatabase;
 use oracle::card_database;
 use utils::outcome;
 
-pub fn run(database: SqliteDatabase, game: &mut GameState, update_channel: Option<UpdateChannel>) {
+pub fn run(database: SqliteDatabase, game: &mut GameState) {
     assert!(!game.initialized, "Game already initialized");
     game.initialized = true;
     card_database::populate(database, game);
@@ -43,8 +43,6 @@ pub fn run(database: SqliteDatabase, game: &mut GameState, update_channel: Optio
             initialize_agent(agent);
         }
     }
-
-    game.updates = update_channel;
 
     let registry = definitions::registry();
     let all_card_ids = game.zones.all_cards().map(|card| card.id).collect::<Vec<_>>();

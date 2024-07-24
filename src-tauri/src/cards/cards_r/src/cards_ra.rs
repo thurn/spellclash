@@ -32,7 +32,7 @@ pub fn ray_of_command(_: &mut Registry) -> CardDefinition {
                 haste::gain_this_turn(g, c, target);
                 dispatch::add_card_event(g, target, move |events| {
                     events.controller_changed.add_one_time_trigger(
-                        c.scope(),
+                        c,
                         target,
                         move |_, _, data| Some(data.old_controller == c.controller),
                         move |g, _| {
@@ -44,16 +44,3 @@ pub fn ray_of_command(_: &mut Registry) -> CardDefinition {
         ),
     )
 }
-
-// let state = EffectState::new();
-//  delayed_trigger::enable(g, c, state, target);
-//   .delegates(|d| {
-//     d.permanent_controller_changed.delayed_trigger_if(|g, s, event_id, data|
-// {         data.old_controller == s.controller
-//             && state.matches(g, event_id, data.permanent_id)
-//     });
-// })
-// .delayed_trigger(DelayedTrigger::new().effect(|g, c| {
-//     let event_id = state.pop(g, c.event_id);
-//     permanents::tap(g, c.source(), event_id);
-// })),

@@ -34,8 +34,8 @@ use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::card_states::stack_ability_state::StackAbilityState;
 use crate::core::numerics::Damage;
 use crate::core::primitives::{
-    AbilityId, CardId, EntityId, HasController, HasPlayerName, HasSource, ObjectId, PermanentId,
-    PlayerName, StackAbilityId, StackItemId, Timestamp, Zone, ALL_POSSIBLE_PLAYERS,
+    AbilityId, CardId, EntityId, HasController, HasObjectId, HasPlayerName, HasSource, ObjectId,
+    PermanentId, PlayerName, StackAbilityId, StackItemId, Timestamp, Zone, ALL_POSSIBLE_PLAYERS,
 };
 use crate::events::card_events::CardEvents;
 #[allow(unused)] // Used in docs
@@ -54,6 +54,11 @@ pub trait ZoneQueries {
 
     /// Mutable equivalent of [Self::card]
     fn card_mut(&mut self, id: impl ToCardId) -> Option<&mut CardState>;
+
+    /// Returns true if a card with the given ID currently exists.
+    fn has_card(&self, id: impl ToCardId) -> bool {
+        self.card(id).is_some()
+    }
 
     /// Looks up the state for an ability on the stack.
     ///

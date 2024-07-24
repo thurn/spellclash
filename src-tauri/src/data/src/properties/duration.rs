@@ -47,20 +47,16 @@ impl Duration {
     fn is_active_helper(&self, game: &GameState) -> Option<bool> {
         Some(match self {
             Duration::Continuous => true,
-            Duration::WhileOnBattlefield(permanent_id) => self.is_valid(game, *permanent_id)?,
-            Duration::WhileOnStack(spell_id) => self.is_valid(game, *spell_id)?,
+            Duration::WhileOnBattlefield(permanent_id) => game.has_card(*permanent_id),
+            Duration::WhileOnStack(spell_id) => game.has_card(*spell_id),
             Duration::WhileOnStackOrBattlefield(spell_id) => {
-                self.is_valid(game, *spell_id)?
+                game.has_card(*spell_id)
                     || (game.card(*spell_id)?.zone == Zone::Battlefield
                         && game.card(*spell_id)?.previous_object_id == Some(spell_id.object_id()))
             }
             Duration::WhileOnBattlefieldThisTurn(permanent_id, turn) => {
-                game.turn == *turn && self.is_valid(game, *permanent_id)?
+                game.turn == *turn && game.has_card(*permanent_id)
             }
         })
-    }
-
-    fn is_valid(&self, game: &GameState, id: impl HasObjectId + ToCardId) -> Option<bool> {
-        Some(game.card(id)?.object_id == id.object_id())
     }
 }

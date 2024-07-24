@@ -19,10 +19,12 @@ use crate::core::primitives::{
     AbilityId, AbilityNumber, CardId, HasSource, PlayerName, Source, Timestamp,
 };
 use crate::game_states::game_state::TurnData;
+use crate::properties::duration::Duration;
 
 /// Context for an ability while it is being created, used to register
 /// callbacks, etc
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone)]
 pub struct AbilityScope {
+    /// ID of this ability
     pub ability_id: AbilityId,
 }

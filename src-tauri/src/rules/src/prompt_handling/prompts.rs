@@ -85,7 +85,7 @@ fn send_internal(game: &mut GameState, mut prompt: Prompt) -> PromptResponse {
         let (sender, receiver) = oneshot::channel();
         game.updates
             .as_ref()
-            .expect("PromptChannel")
+            .expect("Game has no UpdateChannel attached")
             .send(GameUpdate::new(game).prompt(prompt).response_channel(sender))
             .expect("Unable to send prompt, receiver has dropped");
         let result = receiver

@@ -53,6 +53,8 @@ impl<TArg: 'static> GameEventCallback<TArg> {
             original_source,
         })
     }
+
+    pub fn mark_fired(&mut self) {}
 }
 
 #[derive(Debug, Clone)]
@@ -85,6 +87,20 @@ impl<TArg> GameEvent<TArg> {
             ability_id: scope.ability_id,
             zones: zones.into(),
             delegate_type: DelegateType::Ability,
+            function: Box::new(function),
+        });
+    }
+
+    pub fn add_effect(
+        &mut self,
+        scope: AbilityScope,
+        zones: impl Into<EnumSet<Zone>>,
+        function: impl Fn(&mut GameState, EventContext, &TArg) + Copy + Send + Sync + 'static,
+    ) {
+        self.callbacks.push(GameEventCallback {
+            ability_id: scope.ability_id,
+            zones: zones.into(),
+            delegate_type: DelegateType::Effect,
             function: Box::new(function),
         });
     }

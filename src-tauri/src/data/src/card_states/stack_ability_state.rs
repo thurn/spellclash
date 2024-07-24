@@ -20,16 +20,26 @@ use crate::core::primitives::{
     AbilityId, CardId, EntityId, EventId, HasController, HasPlayerName, ObjectId, PlayerName,
     StackAbilityId,
 };
+use crate::events::event_context::EventContext;
 use crate::game_states::game_state::GameState;
 
 /// Custom effect to invoke when an ability on the stack resolves.
 #[derive(Clone)]
 pub struct StackAbilityCustomEffect {
-    /// Effect function to apply
-    pub effect: Box<dyn Effect>,
-
     /// Original [EventId] which caused this effect to be created
     pub event_id: EventId,
+
+    /// Effect function to apply
+    pub effect: Box<dyn Effect>,
+}
+
+impl StackAbilityCustomEffect {
+    pub fn new(
+        event_id: EventId,
+        effect: impl Fn(&mut GameState, EventContext) + Copy + Send + Sync + 'static,
+    ) -> Self {
+        Self { event_id, effect: Box::new(effect) }
+    }
 }
 
 /// Represents the state of a triggered or activated ability which has triggered

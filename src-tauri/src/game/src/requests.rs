@@ -44,5 +44,7 @@ pub fn fetch_game(
 ) -> GameState {
     let serialized =
         database.fetch_game(game_id).unwrap_or_else(|| panic!("Game not found: {game_id:?}"));
-    game_serialization::rebuild(database.clone(), serialized)
+    let mut game = game_serialization::rebuild(database.clone(), serialized);
+    game.updates = update_channel;
+    game
 }

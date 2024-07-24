@@ -81,7 +81,7 @@ pub fn create(
     let oracle = Box::new(OracleImpl::new(database.clone()));
 
     let mut game = create_game(oracle, game_id, p1, p1_deck_name, p2, p2_deck_name, debug);
-    initialize_game::run(database.clone(), &mut game, None);
+    initialize_game::run(database.clone(), &mut game);
 
     game.shuffle_library(PlayerName::One);
     game.shuffle_library(PlayerName::Two);

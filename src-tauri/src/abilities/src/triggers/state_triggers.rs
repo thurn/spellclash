@@ -33,11 +33,11 @@ pub fn when_controls_no(
     TriggeredAbility::new()
         .events(move |s, e| {
             e.will_enter_battlefield.add_ability(s, EnumSet::all(), move |g, c, _| {
-                g.events.state_triggered_ability.add_trigger_if_not_on_stack(s, move |g, c, _| {
+                g.events.state_triggered_ability.add_trigger_if_not_on_stack(s, move |g, _, _| {
                     g.battlefield(c.controller).none_matching(g, c.source(), predicate)
                 });
             });
-            e.will_leave_battlefield.add_ability(s, EnumSet::all(), move |g, c, _| {
+            e.will_leave_battlefield.add_ability(s, EnumSet::all(), move |g, _, _| {
                 g.events.state_triggered_ability.remove_callbacks(s.ability_id);
             });
         })

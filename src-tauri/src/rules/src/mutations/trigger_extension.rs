@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_states::stack_ability_state::StackAbilityState;
+use data::card_states::stack_ability_state::{StackAbilityCustomEffect, StackAbilityState};
 use data::card_states::zones::ZoneQueries;
 use data::core::function_types::{Effect, Predicate};
 use data::core::primitives::{
@@ -21,8 +21,9 @@ use data::core::primitives::{
 use data::delegates::delegate_type::DelegateType;
 use data::delegates::scope::AbilityScope;
 use data::events::event_context::EventContext;
-use data::events::game_event::GameEvent;
+use data::events::game_event::{GameEvent, GameEventCallback};
 use data::game_states::game_state::GameState;
+use enumset::EnumSet;
 use utils::outcome;
 use utils::outcome::Outcome;
 
@@ -42,28 +43,24 @@ pub trait TriggerExt<TArg> {
     fn add_trigger(
         &mut self,
         scope: AbilityScope,
-        predicate: impl Fn(&GameState, EventContext, &TArg) -> Option<bool>
-            + Copy
-            + Send
-            + Sync
-            + 'static,
+        predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Send + Sync + 'static,
     );
 
     /// Trigger an effect the next time a predicate is true, associated with a
-    /// given permanent.
+    /// given permanent.    
     ///
-    /// The effect is only applied once and then removed, and will only trigger
-    /// if the [PermanentId] permanent is still on the battlefield.
-    ///
-    ///
+    /// The effect is associated with the [EventId] in the provided
+    /// [EventContext] in order to only be applied once. The effect will only
+    /// trigger if the [PermanentId] permanent is still on the battlefield.
+
     /// This creates a delegate using [DelegateType::Effect], meaning the
     /// trigger *will* still fire if the owning card loses all abilities.
     fn add_one_time_trigger(
         &mut self,
-        scope: AbilityScope,
+        context: EventContext,
         permanent_id: PermanentId,
-        predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Clone + Send + Sync + 'static,
-        effect: impl Fn(&mut GameState, EventContext) + Clone + Send + Sync + 'static,
+        predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Send + Sync + 'static,
+        effect: impl Fn(&mut GameState, EventContext) + Copy + Send + Sync + 'static,
     );
 
     /// Equivalent to [Self::add_trigger], but only triggers if the ability is
@@ -71,11 +68,7 @@ pub trait TriggerExt<TArg> {
     fn add_trigger_if_not_on_stack(
         &mut self,
         scope: AbilityScope,
-        predicate: impl Fn(&GameState, EventContext, &TArg) -> Option<bool>
-            + Copy
-            + Send
-            + Sync
-            + 'static,
+        predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Send + Sync + 'static,
     );
 }
 
@@ -83,14 +76,10 @@ impl<TArg: Clone> TriggerExt<TArg> for GameEvent<TArg> {
     fn add_trigger(
         &mut self,
         scope: AbilityScope,
-        predicate: impl Fn(&GameState, EventContext, &TArg) -> Option<bool>
-            + Copy
-            + Send
-            + Sync
-            + 'static,
+        predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Send + Sync + 'static,
     ) {
         self.add_battlefield_ability(scope, move |g, c, arg| {
-            if predicate(g, c, arg) == Some(true) {
+            if predicate(g, c.source(), arg) == Some(true) {
                 trigger_ability(g, c.this, c.controller);
             }
         });
@@ -98,24 +87,30 @@ impl<TArg: Clone> TriggerExt<TArg> for GameEvent<TArg> {
 
     fn add_one_time_trigger(
         &mut self,
-        scope: AbilityScope,
+        context: EventContext,
         permanent_id: PermanentId,
-        predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Clone + Send + Sync + 'static,
-        effect: impl Fn(&mut GameState, EventContext) + Clone + Send + Sync + 'static,
+        predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Send + Sync + 'static,
+        effect: impl Fn(&mut GameState, EventContext) + Copy + Send + Sync + 'static,
     ) {
+        self.add_effect(context.scope(), EnumSet::all(), move |g, c, arg| {
+            if g.has_card(permanent_id)
+                && !g.ability_state.fired_one_time_effects.contains(&context.event_id)
+                && predicate(g, c.original_source, arg) == Some(true)
+            {
+                let ability = g.zones.create_triggered_ability(c.this, c.controller, vec![]);
+                ability.custom_effect = Some(StackAbilityCustomEffect::new(c.event_id, effect));
+                g.ability_state.fired_one_time_effects.insert(context.event_id);
+            }
+        });
     }
 
     fn add_trigger_if_not_on_stack(
         &mut self,
         scope: AbilityScope,
-        predicate: impl Fn(&GameState, EventContext, &TArg) -> Option<bool>
-            + Copy
-            + Send
-            + Sync
-            + 'static,
+        predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Send + Sync + 'static,
     ) {
         self.add_battlefield_ability(scope, move |g, c, arg| {
-            if predicate(g, c, arg) == Some(true) && !is_ability_on_stack(g, c.this) {
+            if predicate(g, c.source(), arg) == Some(true) && !is_ability_on_stack(g, c.this) {
                 trigger_ability(g, c.this, c.controller);
             }
         });
@@ -126,7 +121,7 @@ impl<TArg: Clone> TriggerExt<TArg> for GameEvent<TArg> {
 ///
 /// The ability is not placed on the stack immediately, it waits until the next
 /// time a player would receive priority.
-pub fn trigger_ability(
+fn trigger_ability(
     game: &mut GameState,
     ability_id: AbilityId,
     owner: PlayerName,
@@ -136,7 +131,7 @@ pub fn trigger_ability(
 
 /// Returns true if an ability with the given [AbilityId] is currently on the
 /// stack
-pub fn is_ability_on_stack(game: &GameState, ability_id: AbilityId) -> bool {
+fn is_ability_on_stack(game: &GameState, ability_id: AbilityId) -> bool {
     game.stack().iter().any(|&stack_item_id| match stack_item_id {
         StackItemId::StackAbility(id) => game.stack_ability(id).ability_id == ability_id,
         _ => false,
