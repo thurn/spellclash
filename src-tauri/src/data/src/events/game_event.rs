@@ -15,6 +15,7 @@
 use std::fmt::{Debug, Formatter};
 
 use enumset::EnumSet;
+use invokable::{CardIdent, InvokableType};
 
 use crate::card_states::zones::ZoneQueries;
 use crate::core::function_types::Mutation;
@@ -66,6 +67,10 @@ impl<TArg> Default for GameEvent<TArg> {
     fn default() -> Self {
         Self { callbacks: Vec::new() }
     }
+}
+
+impl<TArg> InvokableType for GameEvent<TArg> {
+    fn initialize(&self, id: CardIdent) {}
 }
 
 impl<TArg> GameEvent<TArg> {

@@ -34,15 +34,14 @@ pub fn add_this_turn(
     power: Power,
     toughness: Toughness,
 ) -> Outcome {
-    let turn = game.turn;
     game.card_mut(id)?.properties.power.add_effect(
         context,
-        Duration::WhileOnBattlefieldThisTurn(id, turn),
+        Duration::WhileOnBattlefieldThisTurn(id, context.current_turn),
         Ints::add(power),
     );
     game.card_mut(id)?.properties.toughness.add_effect(
         context,
-        Duration::WhileOnBattlefieldThisTurn(id, turn),
+        Duration::WhileOnBattlefieldThisTurn(id, context.current_turn),
         Ints::add(toughness),
     )
 }

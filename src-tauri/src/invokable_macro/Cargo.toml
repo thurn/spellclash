@@ -1,0 +1,17 @@
+[package]
+name = "invokable_macro"
+version = "0.0.0"
+edition = "2021"
+
+[lib]
+test = false
+doctest = false
+bench = false
+proc-macro = true
+
+[dependencies]
+invokable = { path = "../invokable", version = "0.0.0" }
+utils = { path = "../utils", version = "0.0.0" }
+
+quote = "1.0.36"
+syn = { version = "2.0.72", features = ["extra-traits"] }

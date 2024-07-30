@@ -32,10 +32,9 @@ pub fn set_this_turn(
     id: PermanentId,
     colors: impl Into<EnumSet<CreatureType>>,
 ) -> Outcome {
-    let turn = game.turn;
     game.card_mut(id)?.properties.creature_types.add_effect(
         context,
-        Duration::WhileOnBattlefieldThisTurn(id, turn),
+        Duration::WhileOnBattlefieldThisTurn(id, context.current_turn),
         EnumSets::set(Layer::TypeChangingEffects, context, colors.into()),
     )
 }

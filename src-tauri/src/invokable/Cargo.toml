@@ -1,0 +1,12 @@
+[package]
+name = "invokable"
+version = "0.0.0"
+edition = "2021"
+
+[lib]
+test = false
+doctest = false
+bench = false
+
+[dependencies]
+utils = { path = "../utils", version = "0.0.0" }

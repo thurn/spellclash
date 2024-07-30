@@ -10,6 +10,8 @@ bench = false
 
 [dependencies]
 ai_core = { path = "../ai_core", version = "0.0.0" }
+invokable = { path = "../invokable", version = "0.0.0" }
+invokable_macro = { path = "../invokable_macro", version = "0.0.0" }
 utils = { path = "../utils", version = "0.0.0" }
 
 color-eyre = "0.6.2"

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use invokable_macro::Invokable;
 use utils::outcome;
 use utils::outcome::Outcome;
 
@@ -28,7 +29,7 @@ pub struct PermanentControllerChangedEvent {
     pub new_controller: PlayerName,
 }
 
-#[derive(Default, Clone, Debug)]
+#[derive(Default, Clone, Debug, Invokable)]
 pub struct CardEvents {
     /// A card is about to enter the battlefield and be assigned a
     /// [PermanentId].

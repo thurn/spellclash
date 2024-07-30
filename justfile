@@ -124,3 +124,6 @@ samply-benchmark *args='':
     BENCHMARK=`echo ./src-tauri/target/release/deps/benchmarks-*([1])`
     echo "Running" $BENCHMARK
     samply record $BENCHMARK --bench --profile-time 5 "$@"
+
+expand-card-events:
+     cargo expand --manifest-path src-tauri/Cargo.toml --theme "Dracula" -p data events::card_events 
