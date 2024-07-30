@@ -21,7 +21,7 @@ use dyn_clone::DynClone;
 use serde::{Deserialize, Serialize};
 use utils::outcome::Outcome;
 
-use crate::core::primitives::Source;
+use primitives::game_primitives::Source;
 use crate::delegates::query_value::QueryValue;
 use crate::game_states::game_state::GameState;
 

@@ -14,13 +14,12 @@
 
 use data::card_states::card_state::ControlChangingEffect;
 use data::card_states::zones::{ToCardId, ZoneQueries};
-use data::core::primitives::{
+use data::events::card_events;
+use data::events::card_events::PermanentControllerChangedEvent;
+use data::game_states::game_state::GameState;
+use primitives::game_primitives::{
     AbilityId, CardId, EventId, HasController, HasSource, PlayerName, Source,
 };
-use data::events::card_events::PermanentControllerChangedEvent;
-use data::events::game_events::dispatch;
-use data::events::{card_events, game_events};
-use data::game_states::game_state::GameState;
 use utils::outcome;
 use utils::outcome::Outcome;
 

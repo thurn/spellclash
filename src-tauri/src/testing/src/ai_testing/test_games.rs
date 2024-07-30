@@ -14,7 +14,7 @@
 
 use all_cards::card_list;
 use data::card_definitions::card_name;
-use data::core::primitives::GameId;
+use primitives::game_primitives::GameId;
 use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
 use data::game_states::game_phase_step::GamePhaseStep;

@@ -15,10 +15,12 @@
 use data::card_states::card_state::{CardFacing, TappedState};
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::numerics::Damage;
-use data::core::primitives::{CardId, HasSource, PermanentId, Source, Zone, ALL_POSSIBLE_PLAYERS};
 use data::game_states::game_state::GameState;
 use data::game_states::state_based_event::StateBasedEvent;
 use data::printed_cards::printed_card::Face;
+use primitives::game_primitives::{
+    CardId, HasSource, PermanentId, Source, Zone, ALL_POSSIBLE_PLAYERS,
+};
 use tracing::debug;
 use utils::outcome;
 use utils::outcome::Outcome;

@@ -15,11 +15,10 @@
 use data::card_definitions::ability_definition::TargetSelector;
 use data::card_states::zones::ZoneQueries;
 use data::core::function_types::CardPredicate;
-use data::core::primitives::{EntityId, HasSource, PermanentId, PlayerName, Source};
 use data::game_states::game_state::GameState;
-
+use primitives::game_primitives::{EntityId, HasSource, PermanentId, PlayerName, Source};
 use crate::targeting::player_set::PlayerSet;
-use crate::targeting::{player_set, targets};
+use crate::targeting::player_set;
 
 pub struct SinglePermanentSelector<TFn>
 where

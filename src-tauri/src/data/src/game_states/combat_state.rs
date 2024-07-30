@@ -16,10 +16,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use enum_kinds::EnumKind;
 use serde::{Deserialize, Serialize};
-use serde_with::serde_as;
-
-use crate::core::primitives::{CardId, EntityId, PermanentId, PlayerName};
-
+use primitives::game_primitives::{PermanentId, PlayerName};
 /// Entity which has been declared as an attacker
 pub type AttackerId = PermanentId;
 

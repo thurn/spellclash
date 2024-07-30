@@ -12,15 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use primitives::game_primitives::CardId;
-use serde::{Deserialize, Serialize};
-
-/// A prompt for a player to select an integer numeric value in a given range.
-#[derive(Clone, Debug)]
-pub struct PickNumberPrompt {
-    /// Smallest allowed value
-    pub minimum: u32,
-
-    /// Largest allowed value
-    pub maximum: u32,
-}
+pub mod game_primitives;

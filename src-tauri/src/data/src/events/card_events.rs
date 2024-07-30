@@ -13,12 +13,11 @@
 // limitations under the License.
 
 use invokable_macro::Invokable;
+use primitives::game_primitives::{PermanentId, PlayerName, Source};
 use utils::outcome;
 use utils::outcome::Outcome;
 
 use crate::card_states::zones::{ToCardId, ZoneQueries};
-use crate::core::primitives::{PermanentId, PlayerName, Source};
-use crate::events::event_context::EventContext;
 use crate::events::game_event::GameEvent;
 use crate::game_states::game_state::GameState;
 

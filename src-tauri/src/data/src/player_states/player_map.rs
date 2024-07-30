@@ -14,7 +14,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::core::primitives::PlayerName;
+use primitives::game_primitives::PlayerName;
 
 /// Data structure which holds information about each player in a game
 #[derive(Debug, Clone, Serialize, Deserialize)]

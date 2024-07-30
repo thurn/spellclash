@@ -15,7 +15,7 @@
 use data::actions::debug_action::DebugGameAction;
 use data::actions::game_action::GameAction;
 use data::actions::user_action::{PanelTransition, UserAction};
-use data::core::primitives::PlayerName;
+use primitives::game_primitives::PlayerName;
 use data::game_states::game_state::GameState;
 
 use crate::core::game_view::GameButtonView;

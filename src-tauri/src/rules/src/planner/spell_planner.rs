@@ -16,10 +16,10 @@ use std::collections::BTreeMap;
 
 use data::card_states::play_card_plan::{ManaPaymentPlan, PlayCardPlan};
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, HasController, ManaColor, PermanentId, Source};
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandType;
 use data::printed_cards::mana_cost::ManaCostItem;
+use primitives::game_primitives::{CardId, HasController, ManaColor, PermanentId, Source};
 use tracing::instrument;
 use utils::outcome;
 use utils::outcome::Outcome;

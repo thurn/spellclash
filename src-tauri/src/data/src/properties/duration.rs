@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::card_states::zones::{ToCardId, ZoneQueries};
-use crate::core::primitives::{HasObjectId, PermanentId, SpellId, Zone};
+use primitives::game_primitives::{HasObjectId, PermanentId, SpellId, Zone};
+use crate::card_states::zones::ZoneQueries;
 use crate::game_states::game_state::{GameState, TurnData};
 
 /// Controls how long an effect should apply to the game.

@@ -20,7 +20,7 @@ use serde_with::serde_as;
 
 use crate::actions::game_action::GameAction;
 use crate::actions::prompt_action::PromptAction;
-use crate::core::primitives::PlayerName;
+use primitives::game_primitives::PlayerName;
 use crate::game_states::game_state::TurnData;
 use crate::player_states::player_map::PlayerMap;
 use crate::prompts::prompt::PromptResponse;

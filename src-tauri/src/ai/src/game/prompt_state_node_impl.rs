@@ -14,13 +14,12 @@
 
 use ai_core::core::agent_state::AgentState;
 use data::actions::agent_action::AgentAction;
-use data::core::primitives;
 use data::game_states::game_state;
 use data::game_states::game_state::GameState;
 use data::prompts::prompt::Prompt;
-use rules::action_handlers::actions::ExecuteAction;
+use primitives::game_primitives;
+use rules::action_handlers::prompt_actions;
 use rules::action_handlers::prompt_actions::PromptExecutionResult;
-use rules::action_handlers::{actions, prompt_actions};
 use rules::legality::legal_actions::LegalActions;
 use rules::legality::{legal_actions, legal_prompt_actions};
 
@@ -34,13 +33,13 @@ pub struct PromptStateNode {
 
 impl GameStateNode for PromptStateNode {
     type Action = AgentAction;
-    type PlayerName = primitives::PlayerName;
+    type PlayerName = game_primitives::PlayerName;
 
     fn make_copy(&self) -> Self {
         Self { game: self.game.shallow_clone(), prompt: self.prompt.clone() }
     }
 
-    fn status(&self) -> GameStatus<primitives::PlayerName> {
+    fn status(&self) -> GameStatus<game_primitives::PlayerName> {
         match self.game.status {
             game_state::GameStatus::GameOver { winners } => GameStatus::Completed { winners },
             _ => GameStatus::InProgress {
@@ -51,7 +50,7 @@ impl GameStateNode for PromptStateNode {
 
     fn legal_actions<'a>(
         &'a self,
-        player: primitives::PlayerName,
+        player: game_primitives::PlayerName,
     ) -> Box<dyn Iterator<Item = AgentAction> + 'a> {
         if let Some(prompt) = &self.prompt {
             Box::new(
@@ -66,7 +65,7 @@ impl GameStateNode for PromptStateNode {
         }
     }
 
-    fn execute_action(&mut self, player: primitives::PlayerName, action: AgentAction) {
+    fn execute_action(&mut self, player: game_primitives::PlayerName, action: AgentAction) {
         if let Some(prompt) = self.prompt.take() {
             match prompt_actions::execute(prompt, action.as_prompt_action()) {
                 PromptExecutionResult::Prompt(p) => self.prompt = Some(p),

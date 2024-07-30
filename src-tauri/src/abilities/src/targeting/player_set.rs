@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::{PlayerName, Source};
 use data::game_states::game_state::GameState;
 use enumset::EnumSet;
+use primitives::game_primitives::{PlayerName, Source};
 use rules::queries::player_queries;
 
 #[derive(Clone, Copy, Eq, PartialEq, Debug)]

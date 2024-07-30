@@ -17,7 +17,7 @@ use std::marker::PhantomData;
 use ai::core::state_evaluator::StateEvaluator;
 use ai::core::win_loss_evaluator::WinLossEvaluator;
 use ai::monte_carlo::monte_carlo_search::RandomPlayoutEvaluator;
-use data::core::primitives::PlayerName;
+use primitives::game_primitives::PlayerName;
 use data::decks::deck_name;
 use testing::ai_testing::test_games;
 

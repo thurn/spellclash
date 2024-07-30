@@ -12,12 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use primitives::game_primitives::{CardId, EntityId};
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
-use crate::actions::game_action::GameAction;
 use crate::actions::user_action::UserAction;
-use crate::core::primitives::{CardId, EntityId};
 use crate::prompts::select_order_prompt::CardOrderLocation;
 
 /// Action to respond to a prompt within an ongoing game

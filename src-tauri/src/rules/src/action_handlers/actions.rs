@@ -15,10 +15,10 @@
 use data::actions::debug_action::DebugGameAction;
 use data::actions::game_action::GameAction;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, PlayerName, Source, Zone};
 use data::game_states::game_state::{GameOperationMode, GameState, GameStatus};
 use data::game_states::history_data::TakenGameAction;
 use data::printed_cards::printed_card::Face;
+use primitives::game_primitives::{CardId, PlayerName, Source, Zone};
 use tracing::{debug, info, instrument};
 use utils::outcome;
 use utils::outcome::Outcome;

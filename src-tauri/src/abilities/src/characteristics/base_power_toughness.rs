@@ -14,16 +14,12 @@
 
 use data::card_states::zones::ZoneQueries;
 use data::core::numerics::{Power, Toughness};
-use data::core::primitives::{HasSource, PermanentId};
-use data::delegates::delegate_type::DelegateType;
 use data::delegates::layer::Layer;
-use data::delegates::query_value::{EnumSets, Ints, QueryValue};
+use data::delegates::query_value::Ints;
 use data::events::event_context::EventContext;
 use data::game_states::game_state::GameState;
-use data::printed_cards::card_subtypes::CreatureType;
-use data::properties::card_modifier::CardModifier;
 use data::properties::duration::Duration;
-use enumset::EnumSet;
+use primitives::game_primitives::{HasSource, PermanentId};
 use utils::outcome::Outcome;
 
 /// Sets a card's base power and toughness for the current turn

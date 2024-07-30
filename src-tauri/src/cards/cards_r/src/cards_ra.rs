@@ -18,7 +18,7 @@ use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 use data::card_definitions::registry::Registry;
-use data::core::primitives::HasSource;
+use primitives::game_primitives::HasSource;
 use rules::dispatcher::dispatch;
 use rules::mutations::trigger_extension::TriggerExt;
 use rules::mutations::{change_controller, permanents};

@@ -14,9 +14,7 @@
 
 use serde::Deserialize;
 use slotmap::__impl::Serialize;
-
-use crate::core::primitives::{GameId, UserId};
-
+use primitives::game_primitives::{GameId, UserId};
 /// Holds state for a user.
 ///
 /// A 'user' is an operator of this software outside of the context of any game.

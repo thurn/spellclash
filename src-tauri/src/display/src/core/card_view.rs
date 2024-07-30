@@ -15,9 +15,9 @@
 use data::actions::user_action::UserAction;
 use data::card_states::card_state::{CardFacing, TappedState};
 use data::core::numerics::Damage;
-use data::core::primitives::{CardId, StackAbilityId};
 use data::printed_cards::layout::{CardLayout, FaceLayout};
 use data::prompts::select_order_prompt::CardOrderLocation;
+use primitives::game_primitives::{CardId, StackAbilityId};
 use serde::{Deserialize, Serialize};
 use specta::Type;
 

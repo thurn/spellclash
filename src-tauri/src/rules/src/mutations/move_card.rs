@@ -16,13 +16,13 @@ use data::card_states::card_kind::CardKind;
 use data::card_states::card_state::{CardFacing, TappedState};
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::numerics::Damage;
-use data::core::primitives::{
-    CardId, EntityId, HasController, HasSource, PermanentId, Zone, ALL_POSSIBLE_PLAYERS,
-};
 use data::delegates::game_delegate_data::WillEnterBattlefieldEvent;
 use data::events::card_events;
 use data::game_states::game_state::{GameState, TurnData};
 use data::game_states::state_based_event::StateBasedEvent;
+use primitives::game_primitives::{
+    CardId, EntityId, HasController, HasSource, PermanentId, Zone, ALL_POSSIBLE_PLAYERS,
+};
 use tracing::debug;
 use utils::outcome;
 use utils::outcome::Outcome;

@@ -15,6 +15,10 @@
 use std::sync::Arc;
 
 use enumset::EnumSet;
+use primitives::game_primitives::{
+    AbilityId, CardId, EntityId, EventId, HasController, HasPlayerName, ObjectId, PermanentId,
+    PlayerName, Timestamp, Zone,
+};
 use serde::Deserialize;
 use slotmap::__impl::Serialize;
 use specta::Type;
@@ -27,10 +31,6 @@ use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::card_states::zones::Zones;
 use crate::card_states::zones::{HasZones, ToCardId};
 use crate::core::numerics::Damage;
-use crate::core::primitives::{
-    AbilityId, CardId, EntityId, EventId, HasController, HasPlayerName, ObjectId, PermanentId,
-    PlayerName, Timestamp, Zone,
-};
 use crate::events::card_events::CardEvents;
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::{GameState, TurnData};

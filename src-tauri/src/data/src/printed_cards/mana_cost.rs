@@ -14,7 +14,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::core::primitives::ManaColor;
+use primitives::game_primitives::ManaColor;
 
 /// Represents the printed mana cost of a card or ability
 #[derive(Debug, Clone, Default)]

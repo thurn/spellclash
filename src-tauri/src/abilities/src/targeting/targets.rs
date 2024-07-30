@@ -13,8 +13,8 @@
 // limitations under the License.
 
 use data::card_definitions::ability_definition::TargetSelector;
-use data::core::primitives::{PermanentId, SpellId};
 use either::Either;
+use primitives::game_primitives::{PermanentId, SpellId};
 use rules::predicates::card_predicates;
 
 use crate::targeting::pair_selector::PairSelector;

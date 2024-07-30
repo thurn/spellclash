@@ -13,9 +13,7 @@
 // limitations under the License.
 
 use std::collections::BTreeMap;
-use std::sync::Arc;
-
-use data::core::primitives::PlayerName;
+use primitives::game_primitives::PlayerName;
 use data::game_states::game_state::{DebugActAsPlayer, GameState};
 use data::prompts::prompt::Prompt;
 use rules::legality::legal_actions;

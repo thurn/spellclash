@@ -12,12 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::actions::game_action::{CombatAction, GameAction};
 use data::actions::prompt_action::PromptAction;
-use data::core::primitives::{CardId, PlayerName};
-use data::game_states::game_state::GameState;
 use data::prompts::prompt::{Prompt, PromptResponse, PromptType, SelectedOrder};
 use data::prompts::select_order_prompt::CardOrderLocation;
+use primitives::game_primitives::{CardId, PlayerName};
 use tracing::instrument;
 
 pub enum PromptExecutionResult {

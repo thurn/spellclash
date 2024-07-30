@@ -12,10 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::card_definitions::registry::{QueryFn, Registered, Registry};
-use crate::card_states::zones::ToCardId;
-use crate::core::function_types::{CardPredicate, Predicate};
-use crate::core::primitives::{HasSource, Source, Timestamp};
+use primitives::game_primitives::{Source, Timestamp};
+use crate::core::function_types::Predicate;
 use crate::delegates::layer::{EffectSortingKey, Layer};
 use crate::delegates::query_value::QueryValue;
 use crate::game_states::game_state::GameState;

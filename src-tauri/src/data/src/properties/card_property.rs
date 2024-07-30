@@ -16,17 +16,15 @@ use std::marker::PhantomData;
 use std::ops::Add;
 
 use enumset::{EnumSet, EnumSetType};
+use primitives::game_primitives::{HasSource, Source, Timestamp};
 use utils::outcome;
 use utils::outcome::Outcome;
 
-use crate::card_definitions::registry::Registry;
-use crate::card_states::zones::ToCardId;
-use crate::core::primitives::{AbilityId, CardId, HasSource, PermanentId, Source, Timestamp};
 use crate::delegates::delegate_type::DelegateType;
 use crate::delegates::layer::{EffectSortingKey, Layer};
 use crate::delegates::query_value::{ChangeText, EnumSets, Ints, QueryValue};
 use crate::events::event_context::EventContext;
-use crate::game_states::game_state::{GameState, TurnData};
+use crate::game_states::game_state::GameState;
 use crate::properties::card_modifier::CardModifier;
 use crate::properties::duration::Duration;
 use crate::properties::flag::Flag;

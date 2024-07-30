@@ -16,7 +16,6 @@ use std::collections::BTreeMap;
 use std::fmt::Debug;
 
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, EntityId, PlayerName};
 use data::game_states::game_state::{GameOperationMode, GameState};
 use data::player_states::player_state::{PlayerQueries, PlayerType};
 use data::printed_cards::card_subtypes::LandType;
@@ -29,6 +28,7 @@ use data::prompts::select_order_prompt::{CardOrderLocation, Quantity, SelectOrde
 use data::text_strings::Text;
 use enumset::EnumSet;
 use maplit::btreemap;
+use primitives::game_primitives::{CardId, EntityId, PlayerName};
 use rand::prelude::SliceRandom;
 use tokio::sync::oneshot;
 use tracing::info;

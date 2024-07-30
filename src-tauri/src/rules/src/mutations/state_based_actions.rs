@@ -12,21 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::cell::Cell;
-
 use data::card_states::zones::ZoneQueries;
-use data::core::numerics::{LifeValue, Toughness};
-use data::core::primitives::{Source, StackItemId, Zone};
 use data::events::game_events;
 use data::game_states::game_state::{GameState, GameStatus};
 use data::game_states::state_based_event::StateBasedEvent;
 use data::player_states::player_state::PlayerQueries;
 use enumset::EnumSet;
-use itertools::any;
 use tracing::instrument;
+use primitives::game_primitives::{Source, StackItemId, Zone};
 use utils::outcome;
-use utils::outcome::{IsSuccess, Outcome};
-
 use crate::mutations::move_card;
 use crate::queries::{card_queries, player_queries};
 

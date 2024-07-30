@@ -12,15 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
-
-use crate::card_states::zones::{HasZones, ToCardId, Zones};
-use crate::core::primitives::{
-    AbilityId, AbilityNumber, CardId, HasSource, PlayerName, Source, Timestamp,
-};
-use crate::game_states::game_state::TurnData;
-use crate::properties::duration::Duration;
-
+use primitives::game_primitives::AbilityId;
+use crate::card_states::zones::HasZones;
 /// Context for an ability while it is being created, used to register
 /// callbacks, etc
 #[derive(Copy, Clone)]

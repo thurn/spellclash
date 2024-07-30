@@ -17,17 +17,14 @@ use std::collections::{BTreeMap, BTreeSet};
 use data::card_states::zones::ZoneQueries;
 use data::core::numerics;
 use data::core::numerics::Damage;
-use data::core::primitives::{CardId, CardType, PlayerName, Source};
 use data::game_states::combat_state::{
-    AttackTarget, AttackerMap, BlockerId, CombatState, ProposedAttackers, ProposedBlockers,
+    AttackerMap, AttackTarget, BlockerId, CombatState, ProposedAttackers, ProposedBlockers,
 };
 use data::game_states::game_phase_step::GamePhaseStep;
 use data::game_states::game_state::GameState;
 use data::game_states::this_turn_state::ThisTurnState;
-use enumset::EnumSet;
+use primitives::game_primitives::{CardType, PlayerName, Source};
 use utils::outcome;
-use utils::outcome::Outcome;
-
 use crate::mutations::{change_controller, library, permanents, players, state_based_actions};
 use crate::queries::{card_queries, player_queries};
 

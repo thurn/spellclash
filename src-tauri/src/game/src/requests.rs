@@ -12,16 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::sync::Arc;
-
-use data::core::primitives::{GameId, UserId};
 use data::game_states::game_state::GameState;
 use data::prompts::game_update::UpdateChannel;
 use data::users::user_state::UserState;
 use database::sqlite_database::SqliteDatabase;
-use oracle::card_database;
-
-use crate::game_creation::{game_serialization, initialize_game};
+use primitives::game_primitives::{GameId, UserId};
+use crate::game_creation::game_serialization;
 
 /// Looks up a user by ID in the database.
 pub fn fetch_user(database: SqliteDatabase, user_id: UserId) -> UserState {

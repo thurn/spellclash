@@ -13,9 +13,9 @@
 // limitations under the License.
 
 use enumset::{EnumSet, EnumSetType};
+use primitives::game_primitives::{AbilityId, CardId, EntityId, PermanentId, PlayerName};
 
 use crate::core::numerics::ManaValue;
-use crate::core::primitives::{AbilityId, CardId, EntityId, PermanentId, PlayerName};
 use crate::printed_cards::printed_card::Face;
 
 /// Describes a proposed series of a choices for a user to play a card as part

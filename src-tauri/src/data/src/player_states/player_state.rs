@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use primitives::game_primitives::{
+    CardId, EntityId, HasController, HasPlayerName, PlayerName, UserId,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::card_states::counters::Counters;
 use crate::core::numerics::LifeValue;
-use crate::core::primitives::{CardId, EntityId, HasController, HasPlayerName, PlayerName, UserId};
 use crate::decks::deck_name::DeckName;
 use crate::player_states::game_agent::{GameAgent, GameAgentImpl, PromptAgentImpl};
 use crate::player_states::mana_pool::ManaPool;

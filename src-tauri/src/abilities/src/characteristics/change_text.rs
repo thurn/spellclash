@@ -12,24 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::io::Read;
-
-use data::card_states::card_state::ControlChangingEffect;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{Color, HasSource, PermanentId, PlayerName, SpellId, COLORS};
-use data::delegates::delegate_type::DelegateType;
 use data::delegates::layer::Layer;
 use data::delegates::query_value::{ChangeText, EnumSets};
 use data::events::event_context::EventContext;
-use data::game_states::effect_state::EffectState;
 use data::game_states::game_state::GameState;
-use data::printed_cards::card_subtypes::{LandType, BASIC_LANDS};
-use data::properties::card_modifier::CardModifier;
+use data::printed_cards::card_subtypes::{BASIC_LANDS, LandType};
 use data::properties::duration::Duration;
 use data::text_strings::Text;
 use either::Either;
+use primitives::game_primitives::{Color, COLORS, HasSource, PermanentId, PlayerName, SpellId};
 use rules::prompt_handling::prompts;
-use utils::outcome;
 use utils::outcome::Outcome;
 
 pub type LandSubtypesOrColors = Either<(LandType, LandType), (Color, Color)>;

@@ -14,22 +14,17 @@
 
 use std::collections::BTreeMap;
 
-use data::actions::debug_action::DebugGameAction;
 use data::actions::game_action::CombatAction;
 #[allow(unused)] // Used in docs
 use data::actions::game_action::GameAction;
-use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, CardType, PlayerName, Source};
 use data::game_states::combat_state::{
-    AttackTarget, AttackerId, BlockerId, BlockerMap, CombatState, ProposedAttackers,
+    AttackerId, AttackTarget, BlockerId, BlockerMap, CombatState,
 };
 use data::game_states::game_state::GameState;
 use tracing::instrument;
-use utils::outcome;
-use utils::outcome::Outcome;
-
+use primitives::game_primitives::{CardType, PlayerName, Source};
 use crate::mutations::permanents;
-use crate::queries::{card_queries, combat_queries, player_queries};
+use crate::queries::{combat_queries, player_queries};
 
 #[instrument(name = "combat_actions_execute", level = "debug", skip(game))]
 pub fn execute(game: &mut GameState, player: PlayerName, action: CombatAction) {

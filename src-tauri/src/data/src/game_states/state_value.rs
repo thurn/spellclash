@@ -13,8 +13,8 @@
 // limitations under the License.
 
 use either::Either;
+use primitives::game_primitives::{CardId, Color, EntityId, PermanentId, PlayerName};
 
-use crate::core::primitives::{CardId, Color, EntityId, PermanentId, PlayerName};
 use crate::printed_cards::card_subtypes::LandType;
 
 #[derive(Debug, Clone)]

@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_states::card_kind::CardKind;
 use data::card_states::card_state::CardState;
-use data::card_states::play_card_plan::{ManaPaymentPlan, PlayAs, PlayCardPlan, PlayCardTiming};
+use data::card_states::play_card_plan::{PlayAs, PlayCardPlan, PlayCardTiming};
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, CardType, HasController, PlayerName, Source};
 use data::game_states::game_state::GameState;
 use data::printed_cards::layout::CardLayout;
-use data::printed_cards::printed_card::{Face, PrintedCardFace};
+use data::printed_cards::printed_card::PrintedCardFace;
 use enumset::EnumSet;
+use primitives::game_primitives::{CardId, CardType, HasController, PlayerName, Source};
 
 use crate::queries::player_queries;
 

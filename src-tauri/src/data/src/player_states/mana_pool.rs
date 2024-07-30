@@ -15,7 +15,7 @@
 use enum_map::EnumMap;
 
 use crate::core::numerics::ManaValue;
-use crate::core::primitives::ManaColor;
+use primitives::game_primitives::ManaColor;
 
 /// Represents mana currently in a player's mana pool.
 ///

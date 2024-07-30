@@ -16,7 +16,7 @@ use dyn_clone::DynClone;
 
 use crate::card_definitions::registry;
 use crate::card_definitions::registry::{QueryFn, Registered, Registry};
-use crate::core::primitives::Source;
+use primitives::game_primitives::Source;
 use crate::delegates::query_value::QueryValue;
 use crate::game_states::game_state::GameState;
 

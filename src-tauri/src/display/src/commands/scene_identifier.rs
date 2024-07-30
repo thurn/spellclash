@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::GameId;
+use primitives::game_primitives::GameId;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 

@@ -12,42 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::sync::Arc;
-
 use data::actions::new_game_action::NewGameAction;
-use data::card_definitions::card_name;
-use data::card_states::card_kind::CardKind;
-use data::card_states::zones::Zones;
-use data::core::numerics::LifeValue;
-use data::core::primitives::{GameId, PlayerName, Source, UserId};
-use data::decks::deck::Deck;
-use data::decks::deck_name;
-use data::decks::deck_name::DeckName;
-use data::game_states::game_phase_step::GamePhaseStep;
-use data::game_states::game_state::{
-    DebugConfiguration, GameConfiguration, GameState, GameStatus, TurnData,
-};
-use data::game_states::history_data::GameHistory;
-use data::game_states::oracle::Oracle;
-use data::player_states::player_state::{PlayerType, Players};
-use data::printed_cards::printed_card_id;
+use data::player_states::player_state::PlayerType;
 use data::users::user_state::UserActivity;
 use database::sqlite_database::SqliteDatabase;
 use display::commands::scene_identifier::SceneIdentifier;
 use display::core::display_state::DisplayState;
 use display::rendering::render;
-use enumset::EnumSet;
-use maplit::hashmap;
-use oracle::oracle_impl::OracleImpl;
-use rand_xoshiro::rand_core::SeedableRng;
-use rand_xoshiro::Xoshiro256StarStar;
-use rules::mutations::library;
-use rules::steps::step;
-use tracing::info;
 use uuid::Uuid;
-
+use primitives::game_primitives::{GameId, PlayerName, Source, UserId};
 use crate::game_creation::{game_serialization, new_game};
-use crate::server_data::{Client, ClientData, GameResponse};
+use crate::server_data::Client;
 use crate::{game_action_server, requests};
 
 pub fn create(database: SqliteDatabase, client: &mut Client, action: NewGameAction) {

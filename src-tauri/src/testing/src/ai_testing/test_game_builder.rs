@@ -15,10 +15,10 @@
 use data::card_definitions::card_name::CardName;
 use data::card_states::card_state::CardFacing;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{PlayerName, Source, Zone};
 use data::game_states::game_phase_step::GamePhaseStep;
 use data::game_states::game_state::GameState;
 use data::printed_cards::printed_card::Face;
+use primitives::game_primitives::{PlayerName, Source, Zone};
 use rules::mutations::move_card;
 
 #[derive(Debug, Clone, Default)]

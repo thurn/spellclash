@@ -18,12 +18,12 @@ use std::time::{Duration, Instant};
 use data::actions::agent_action::AgentAction;
 use data::actions::game_action::GameAction;
 use data::actions::prompt_action::PromptAction;
-use data::core::primitives;
 use data::game_states::game_state::{GameOperationMode, GameState};
 use data::player_states::game_agent::{GameAgentImpl, PromptAgentImpl};
 use data::prompts::prompt::Prompt;
+use primitives::game_primitives;
 use rules::legality::legal_actions::LegalActions;
-use rules::legality::{legal_actions, legal_prompt_actions};
+use rules::legality::legal_prompt_actions;
 use tracing::{subscriber, Level};
 use utils::command_line;
 use utils::command_line::TracingStyle;
@@ -39,7 +39,7 @@ where
     TSelector: SelectionAlgorithm<GameState, TEvaluator> + Clone,
     TEvaluator: StateEvaluator<GameState> + Clone,
 {
-    fn select_action(&self, game: &GameState, player: primitives::PlayerName) -> GameAction {
+    fn select_action(&self, game: &GameState, player: game_primitives::PlayerName) -> GameAction {
         let mut copy = game.shallow_clone();
         copy.operation_mode = GameOperationMode::AgentSearch(player);
         select_action_impl(self, copy, player).as_game_action()
@@ -49,7 +49,7 @@ where
         &self,
         game: &mut GameState,
         prompt: &Prompt,
-        player: primitives::PlayerName,
+        player: game_primitives::PlayerName,
     ) -> PromptAction {
         let legal =
             legal_prompt_actions::compute(prompt, player, LegalActions { for_human_player: false })
@@ -70,7 +70,7 @@ where
         &self,
         game: &GameState,
         prompt: &Prompt,
-        player: primitives::PlayerName,
+        player: game_primitives::PlayerName,
     ) -> PromptAction {
         let mut copy = game.shallow_clone();
         copy.operation_mode = GameOperationMode::AgentSearch(player);

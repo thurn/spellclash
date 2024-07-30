@@ -13,28 +13,22 @@
 // limitations under the License.
 
 use std::collections::{BTreeSet, VecDeque};
-use std::sync::Arc;
 
 use ai_core::core::agent_state::AgentState;
 use enumset::EnumSet;
+#[allow(unused_imports)] // Used in docs
+use primitives::game_primitives::{CardId, StackAbilityId};
+use primitives::game_primitives::{
+    GameId, HasPlayerName, PermanentId, PlayerName, StackItemId, Timestamp, UserId,
+};
 use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};
 
 use crate::actions::agent_action::AgentAction;
-use crate::actions::game_action::GameAction;
-use crate::actions::user_action::UserAction;
 use crate::card_states::card_state::CardState;
 use crate::card_states::stack_ability_state::StackAbilityState;
 use crate::card_states::zones::{HasZones, ToCardId, ZoneQueries, Zones};
 use crate::core::numerics::TurnNumber;
-use crate::core::primitives::{
-    AbilityId, EventId, HasController, ObjectId, PermanentId, Timestamp,
-};
-#[allow(unused_imports)] // Used in docs
-use crate::core::primitives::{
-    CardId, EntityId, GameId, HasPlayerName, HasSource, PlayerName, StackAbilityId, StackItemId,
-    UserId, Zone,
-};
 use crate::events::game_events::GlobalEvents;
 use crate::game_states::ability_state::AbilityState;
 use crate::game_states::combat_state::CombatState;
@@ -42,7 +36,6 @@ use crate::game_states::game_phase_step::GamePhaseStep;
 use crate::game_states::history_data::{GameHistory, HistoryCounters, HistoryEvent};
 use crate::game_states::oracle::Oracle;
 use crate::game_states::state_based_event::StateBasedEvent;
-use crate::game_states::this_turn_state::ThisTurnState;
 use crate::player_states::player_map::PlayerMap;
 use crate::player_states::player_state::{PlayerQueries, PlayerState, Players};
 use crate::prompts::game_update::UpdateChannel;

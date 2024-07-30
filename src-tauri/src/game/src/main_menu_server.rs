@@ -17,7 +17,6 @@ use std::time::Duration;
 
 use data::actions::new_game_action::{NewGameAction, NewGameDebugOptions};
 use data::actions::user_action::UserAction;
-use data::core::primitives::{PlayerName, UserId};
 use data::decks::deck_name;
 use data::game_states::game_state::{DebugActAsPlayer, DebugConfiguration};
 use data::player_states::game_agent::{
@@ -34,7 +33,7 @@ use display::core::main_menu_view::MainMenuView;
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::info;
 use uuid::{uuid, Uuid};
-
+use primitives::game_primitives::{PlayerName, UserId};
 use crate::server_data::{Client, ClientData, GameResponse};
 
 /// Connect to the main menu scene

@@ -16,7 +16,7 @@ use std::sync::mpsc::Sender;
 use std::sync::Arc;
 
 use data::actions::user_action::UserAction;
-use data::core::primitives::UserId;
+use primitives::game_primitives::UserId;
 use data::prompts::select_order_prompt::CardOrderLocation;
 use data::users::user_state::{UserActivity, UserState};
 use database::sqlite_database::SqliteDatabase;

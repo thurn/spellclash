@@ -13,9 +13,9 @@
 // limitations under the License.
 
 use data::card_definitions::ability_definition::TargetSelector;
-use data::core::primitives::{EntityId, PlayerName, Source};
 use data::game_states::game_state::GameState;
 use either::Either;
+use primitives::game_primitives::{EntityId, PlayerName, Source};
 
 /// A target selector that selects from either of two other target selectors.
 pub struct PairSelector<T: TargetSelector, U: TargetSelector> {

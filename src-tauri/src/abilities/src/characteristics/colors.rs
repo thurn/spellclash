@@ -12,16 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_states::zones::{ToCardId, ZoneQueries};
-use data::core::primitives::{Color, HasSource, PermanentId};
-use data::delegates::delegate_type::DelegateType;
+use data::card_states::zones::ZoneQueries;
 use data::delegates::layer::Layer;
-use data::delegates::query_value::{EnumSets, QueryValue};
+use data::delegates::query_value::EnumSets;
 use data::events::event_context::EventContext;
 use data::game_states::game_state::GameState;
-use data::properties::card_modifier::CardModifier;
 use data::properties::duration::Duration;
 use enumset::EnumSet;
+use primitives::game_primitives::{Color, HasSource, PermanentId};
 use utils::outcome::Outcome;
 
 pub fn set_this_turn(

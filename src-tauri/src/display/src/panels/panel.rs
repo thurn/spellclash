@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use data::core::panel_address::{GamePanelAddress, UserPanelAddress};
-use data::core::primitives::PlayerName;
+use primitives::game_primitives::PlayerName;
 use data::game_states::game_state::GameState;
 
 use crate::panels::debug_panel;

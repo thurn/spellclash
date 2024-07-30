@@ -14,9 +14,9 @@
 
 use data::card_states::play_card_plan::{PlayCardPlan, PlayCardTiming};
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, PlayerName, Source, Zone};
 use data::game_states::game_state::GameState;
 use data::player_states::player_state::PlayerQueries;
+use primitives::game_primitives::{CardId, PlayerName, Source, Zone};
 use utils::outcome;
 use utils::outcome::Outcome;
 

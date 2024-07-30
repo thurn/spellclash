@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::core::primitives::{CardId, EntityId, PermanentId, PlayerName};
+use primitives::game_primitives::{CardId, PermanentId, PlayerName};
 
 /// Represents an event which *may* result in changes to the game state when
 /// state-based actions are checked.

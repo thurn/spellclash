@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::actions::game_action::GameAction;
 use data::actions::prompt_action::PromptAction;
-use data::core::primitives::{CardId, PlayerName};
-use data::game_states::game_state::GameState;
 use data::prompts::pick_number_prompt::PickNumberPrompt;
 use data::prompts::prompt::{Prompt, PromptType};
 use data::prompts::select_order_prompt::{CardOrderLocation, Quantity, SelectOrderPrompt};
+use primitives::game_primitives::{CardId, PlayerName};
 use tracing::instrument;
 
 use crate::legality::legal_actions::LegalActions;

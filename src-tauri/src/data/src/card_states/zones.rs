@@ -18,30 +18,26 @@ use std::hash::Hash;
 
 use either::Either;
 use enumset::EnumSet;
-use log::debug;
+use primitives::game_primitives::{
+    AbilityId, CardId, EntityId, HasController, HasPlayerName, ObjectId, PermanentId, PlayerName,
+    SpellId, StackAbilityId, StackItemId, Timestamp, Zone,
+};
 use rand::prelude::SliceRandom;
 use rand_xoshiro::Xoshiro256StarStar;
 use slotmap::SlotMap;
 use utils::outcome;
-use utils::outcome::{Outcome, Success};
+use utils::outcome::Outcome;
 
-use crate::card_definitions::card_name::CardName;
 use crate::card_states::card_kind::CardKind;
 use crate::card_states::card_reference::CardReference;
 use crate::card_states::card_state::{CardFacing, CardState, PhasingState, TappedState};
 use crate::card_states::counters::Counters;
 use crate::card_states::custom_card_state::CustomCardStateList;
 use crate::card_states::stack_ability_state::StackAbilityState;
-use crate::core::numerics::Damage;
-use crate::core::primitives::{
-    AbilityId, CardId, EntityId, HasController, HasObjectId, HasPlayerName, HasSource, ObjectId,
-    PermanentId, PlayerName, StackAbilityId, StackItemId, Timestamp, Zone, ALL_POSSIBLE_PLAYERS,
-};
 use crate::events::card_events::CardEvents;
 #[allow(unused)] // Used in docs
 use crate::game_states::game_state::GameState;
 use crate::game_states::game_state::TurnData;
-use crate::printed_cards::printed_card_id::PrintedCardId;
 use crate::properties::card_properties::CardProperties;
 
 pub trait ZoneQueries {
@@ -108,6 +104,47 @@ pub trait ZoneQueries {
 /// Identifies a struct that can be converted into a [CardId].
 pub trait ToCardId: Copy + Debug {
     fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId>;
+}
+
+impl ToCardId for EntityId {
+    fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+        match self {
+            EntityId::Card(card_id, object_id) => {
+                if zones.zones().card(*card_id)?.object_id == *object_id {
+                    Some(*card_id)
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    }
+}
+
+impl ToCardId for PermanentId {
+    fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+        if zones.zones().card(self.card_id)?.object_id == self.object_id {
+            Some(self.card_id)
+        } else {
+            None
+        }
+    }
+}
+
+impl ToCardId for SpellId {
+    fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+        if zones.zones().card(self.card_id)?.object_id == self.object_id {
+            Some(self.card_id)
+        } else {
+            None
+        }
+    }
+}
+
+impl ToCardId for AbilityId {
+    fn to_card_id(&self, _: &impl HasZones) -> Option<CardId> {
+        Some(self.card_id)
+    }
 }
 
 impl ToCardId for CardId {

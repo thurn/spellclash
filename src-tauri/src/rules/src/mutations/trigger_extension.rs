@@ -14,19 +14,13 @@
 
 use data::card_states::stack_ability_state::{StackAbilityCustomEffect, StackAbilityState};
 use data::card_states::zones::ZoneQueries;
-use data::core::function_types::{Effect, Predicate};
-use data::core::primitives::{
-    AbilityId, EventId, HasSource, PermanentId, PlayerName, Source, StackItemId,
-};
 use data::delegates::delegate_type::DelegateType;
 use data::delegates::scope::AbilityScope;
 use data::events::event_context::EventContext;
-use data::events::game_event::{GameEvent, GameEventCallback};
+use data::events::game_event::GameEvent;
 use data::game_states::game_state::GameState;
 use enumset::EnumSet;
-use utils::outcome;
-use utils::outcome::Outcome;
-
+use primitives::game_primitives::{AbilityId, EventId, HasSource, PermanentId, PlayerName, Source, StackItemId};
 /// Extensions to event delegates for triggering abilities.
 ///
 /// This is primarily implemented as a trait to prevent crate cyclic

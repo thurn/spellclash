@@ -15,7 +15,6 @@
 use std::iter;
 
 use data::card_definitions::card_name::CardName;
-use data::core::primitives::{CardSupertype, CardType, Color, ManaColor};
 use data::printed_cards::card_subtypes::{
     ArtifactSubtype, BattleSubtype, CardSubtypes, CreatureType, DungeonSubtype, EnchantmentSubtype,
     InstantOrSorcerySubtype, LandType, PlaneSubtype, PlaneswalkerSubtype,
@@ -24,13 +23,14 @@ use data::printed_cards::database_card::DatabaseCardFace;
 use data::printed_cards::layout::{CardLayout, FaceLayout};
 use data::printed_cards::mana_cost::{ManaCost, ManaCostItem};
 use data::printed_cards::printed_card::{
-    Face, PrintedCard, PrintedCardFace, PrintedCardFaceVariant,
+    Face, PrintedCard, PrintedCardFace,
 };
 use data::printed_cards::printed_primitives::{
-    AttractionLight, PrintedLoyalty, PrintedPower, PrintedToughness,
+    PrintedPower, PrintedToughness,
 };
 use enumset::EnumSet;
 use regex::Regex;
+use primitives::game_primitives::{CardSupertype, CardType, Color, ManaColor};
 
 /// Turns a [DatabaseCardFace] list into a [PrintedCard].
 ///

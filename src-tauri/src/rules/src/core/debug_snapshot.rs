@@ -17,9 +17,9 @@ use std::fmt::Debug;
 use data::card_states::card_state::CardState;
 use data::card_states::zones::{HasZones, ToCardId, ZoneQueries};
 use data::core::function_types::CardPredicate;
-use data::core::primitives::{CardId, HasPlayerName, PlayerName, Source, Zone};
 use data::game_states::game_state::GameState;
 use data::player_states::player_state::{PlayerQueries, PlayerState};
+use primitives::game_primitives::{CardId, HasPlayerName, PlayerName, Source, Zone};
 
 use crate::predicates::card_predicates;
 

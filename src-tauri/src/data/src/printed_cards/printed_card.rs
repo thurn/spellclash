@@ -18,10 +18,9 @@ use enumset::{EnumSet, EnumSetType};
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use uuid::Uuid;
-
+use primitives::game_primitives::{CardSupertype, CardType, Color};
 use crate::card_definitions::card_name::CardName;
 use crate::core::numerics::ManaValue;
-use crate::core::primitives::{CardSupertype, CardType, Color};
 use crate::printed_cards::card_subtypes::CardSubtypes;
 use crate::printed_cards::layout::{CardLayout, FaceLayout};
 use crate::printed_cards::mana_cost::ManaCost;

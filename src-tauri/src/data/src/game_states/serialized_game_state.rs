@@ -12,12 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::BTreeMap;
-
 use serde::{Deserialize, Serialize};
-
-use crate::actions::game_action::GameAction;
-use crate::core::primitives::{GameId, PlayerName};
+use primitives::game_primitives::{GameId, PlayerName};
 use crate::decks::deck_name::DeckName;
 use crate::game_states::game_state::DebugConfiguration;
 use crate::game_states::history_data::TakenGameAction;

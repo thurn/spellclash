@@ -18,15 +18,13 @@ use data::card_states::card_state::TappedState;
 use data::card_states::iter_matching::{IterMatching, IterOptional};
 use data::card_states::zones::ZoneQueries;
 use data::core::card_tags::CardTag;
-use data::core::primitives::{CardType, HasController, PermanentId, PlayerName, Source};
 use data::delegates::game_delegate_data::{CanAttackTarget, CanBeBlocked};
 use data::game_states::combat_state::{
-    AttackTarget, AttackerId, BlockerId, BlockerMap, CombatState,
+    AttackerId, AttackTarget, BlockerId, BlockerMap, CombatState,
 };
 use data::game_states::game_state::GameState;
 use enumset::EnumSet;
-
-use crate::core::debug_snapshot;
+use primitives::game_primitives::{CardType, HasController, PermanentId, PlayerName, Source};
 use crate::predicates::card_predicates;
 use crate::queries::{card_queries, player_queries};
 

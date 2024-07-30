@@ -17,27 +17,21 @@ use std::iter;
 use data::card_definitions::ability_definition::{Ability, AbilityType};
 use data::card_definitions::definitions;
 use data::card_states::iter_matching::IterMatching;
-use data::card_states::play_card_plan::{PlayAs, PlayCardPlan, PlayCardTiming};
+use data::card_states::play_card_plan::{PlayCardPlan, PlayCardTiming};
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{
-    AbilityId, CardId, EntityId, HasController, PlayerName, Source, Zone,
-};
-use data::events::event_context::EventContext;
 use data::game_states::game_state::GameState;
 use data::prompts::entity_choice_prompt::Choice;
 use data::text_strings::Text;
 use either::Either;
-use enum_iterator::Sequence;
-use enumset::EnumSet;
+use primitives::game_primitives::{
+    AbilityId, CardId, EntityId, HasController, PlayerName, Source, Zone,
+};
 use tracing::instrument;
-use utils::bools::FilterSome;
 use utils::outcome::Outcome;
 
 use crate::planner::spell_planner;
 use crate::play_cards::{pick_face_to_play, play_card_executor};
 use crate::prompt_handling::prompts;
-use crate::queries::player_queries;
-
 /// Plays a card.
 ///
 /// This will prompt the player for all required choices to play the card, and

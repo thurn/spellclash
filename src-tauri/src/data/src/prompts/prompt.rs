@@ -14,14 +14,13 @@
 
 use std::collections::BTreeMap;
 
+use primitives::game_primitives::{CardId, EntityId, PlayerName};
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use strum::EnumDiscriminants;
 
-use crate::core::primitives::{CardId, EntityId, PlayerName};
-use crate::printed_cards::card_subtypes::LandType;
 use crate::prompts::entity_choice_prompt::EntityChoicePrompt;
-use crate::prompts::multiple_choice_prompt::{MultipleChoicePrompt, MultipleChoicePromptTrait};
+use crate::prompts::multiple_choice_prompt::MultipleChoicePromptTrait;
 use crate::prompts::pick_number_prompt::PickNumberPrompt;
 use crate::prompts::play_cards_prompt::PlayCardsPrompt;
 use crate::prompts::select_order_prompt::{CardOrderLocation, SelectOrderPrompt};

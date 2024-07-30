@@ -15,7 +15,7 @@
 use color_eyre::owo_colors::Effect;
 use dyn_clone::DynClone;
 
-use crate::core::primitives::Source;
+use primitives::game_primitives::Source;
 use crate::delegates::delegate_type::DelegateType;
 use crate::delegates::layer::{EffectSortingKey, Layer};
 use crate::delegates::query_value::QueryValue;

@@ -16,12 +16,12 @@ use data::actions::debug_action::DebugGameAction;
 use data::actions::game_action::GameAction;
 use data::card_states::zones::ZoneQueries;
 use data::core::numerics::LifeValue;
-use data::core::primitives::{CardType, PlayerName, Source, Zone};
 use data::game_states::game_state::GameState;
 use data::player_states::player_state::PlayerQueries;
 use data::prompts::pick_number_prompt::PickNumberPrompt;
 use data::text_strings::Text;
 use tracing::{debug, instrument};
+use primitives::game_primitives::{CardType, PlayerName, Source, Zone};
 use utils::outcome;
 use utils::outcome::Outcome;
 

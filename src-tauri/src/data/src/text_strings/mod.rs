@@ -15,9 +15,9 @@
 use std::fmt::{Display, Formatter};
 
 use either::Either;
+use primitives::game_primitives::Color;
 use serde::{Deserialize, Serialize};
 
-use crate::core::primitives::Color;
 use crate::printed_cards::card_subtypes::LandType;
 
 /// Canonical text displayed in the user interface, suitable for localization
@@ -38,6 +38,12 @@ impl<T: Into<Text>, U: Into<Text>> From<Either<T, U>> for Text {
             Either::Left(left) => left.into(),
             Either::Right(right) => right.into(),
         }
+    }
+}
+
+impl From<Color> for Text {
+    fn from(value: Color) -> Self {
+        Text::Color(value)
     }
 }
 

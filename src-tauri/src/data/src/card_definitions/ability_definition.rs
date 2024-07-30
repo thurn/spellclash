@@ -13,16 +13,9 @@
 // limitations under the License.
 
 use std::iter;
-use std::iter::Empty;
-use std::marker::PhantomData;
-
-use enumset::EnumSet;
-use utils::outcome::Outcome;
-
+use primitives::game_primitives::{EntityId, PlayerName, Source};
 use crate::card_states::card_state::CardState;
 use crate::card_states::zones::ZoneQueries;
-use crate::core::primitives::{CardId, EntityId, PlayerName, Source, Zone, ALL_ZONES};
-use crate::costs::cost::Cost;
 use crate::delegates::scope::AbilityScope;
 use crate::events::card_events::CardEvents;
 use crate::events::event_context::EventContext;

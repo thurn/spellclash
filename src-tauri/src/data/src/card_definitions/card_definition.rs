@@ -14,7 +14,7 @@
 
 use crate::card_definitions::ability_definition::Ability;
 use crate::card_definitions::card_name::CardName;
-use crate::core::primitives::AbilityNumber;
+use primitives::game_primitives::AbilityNumber;
 #[allow(unused)] // Used in docs
 use crate::printed_cards::printed_card::PrintedCard;
 

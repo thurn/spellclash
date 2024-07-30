@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::PlayerName;
+use primitives::game_primitives::PlayerName;
 use data::game_states::game_state::GameState;
-use enumset::{enum_set, EnumSet};
+use enumset::EnumSet;
 
 /// Returns the next player in turn order after the given [PlayerName].
 ///

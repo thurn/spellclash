@@ -10,6 +10,7 @@ bench = false
 
 [dependencies]
 data = { path = "../data", version = "0.0.0" }
+primitives = { path = "../primitives", version = "0.0.0" }
 rules = { path = "../rules", version = "0.0.0" }
 utils = { path = "../utils", version = "0.0.0" }
 

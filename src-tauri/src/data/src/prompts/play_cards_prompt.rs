@@ -12,11 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
-
-use crate::core::primitives::{CardId, Zone};
-use crate::game_states::game_state::GameState;
-
+use primitives::game_primitives::{CardId, Zone};
 /// A prompt shown to the user to allow them to play one or more cards from a
 /// set of cards.
 #[derive(Clone, Debug)]

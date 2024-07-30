@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use primitives::game_primitives::CardId;
 use serde::Deserialize;
 use slotmap::__impl::Serialize;
 
 use crate::actions::debug_action::DebugGameAction;
 use crate::actions::prompt_action::PromptAction;
 use crate::actions::user_action::UserAction;
-use crate::core::primitives::CardId;
 use crate::game_states::combat_state::{AttackTarget, AttackerId, BlockerId};
 
 /// Actions within a combat phase

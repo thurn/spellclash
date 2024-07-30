@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 use std::iter;
 
 use either::Either;
-
-use crate::core::primitives::{AbilityId, CardId, EntityId, EventId, PermanentId, Timestamp};
+use primitives::game_primitives::{AbilityId, CardId, EntityId, EventId, PermanentId, Timestamp};
 
 #[derive(Debug, Clone)]
 struct AbilityEventId {

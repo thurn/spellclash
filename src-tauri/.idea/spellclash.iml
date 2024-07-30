@@ -20,6 +20,7 @@
       <sourceFolder url="file://$MODULE_DIR$/benchmarks/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/invokable/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/invokable_macro/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/primitives/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

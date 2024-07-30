@@ -16,10 +16,9 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use enum_iterator::Sequence;
 use enumset::{EnumSet, EnumSetType};
+use primitives::game_primitives::CardId;
 use serde::{Deserialize, Serialize};
 use specta::Type;
-
-use crate::core::primitives::CardId;
 
 /// Possible locations in which cards can be ordered.
 #[derive(Debug, Hash, Ord, PartialOrd, EnumSetType, Type, Sequence, Serialize, Deserialize)]

@@ -12,6 +12,7 @@ bench = false
 data = { path = "../data", version = "0.0.0" }
 database = { path = "../database", version = "0.0.0" }
 oracle = { path = "../oracle", version = "0.0.0" }
+primitives = { path = "../primitives", version = "0.0.0" }
 utils = { path = "../utils", version = "0.0.0" }
 
 color-eyre = "0.6.2"

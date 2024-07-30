@@ -13,10 +13,10 @@
 // limitations under the License.
 
 use data::card_states::zones::{ToCardId, ZoneQueries};
-use data::core::primitives::{AbilityId, EventId, HasController, Source};
 use data::events::card_events::CardEvents;
 use data::events::event_context::EventContext;
 use data::game_states::game_state::GameState;
+use primitives::game_primitives::{AbilityId, EventId, HasController, Source};
 use utils::outcome;
 use utils::outcome::Outcome;
 

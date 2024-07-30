@@ -13,9 +13,9 @@
 // limitations under the License.
 
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{Color, Source};
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandType;
+use primitives::game_primitives::{Color, Source};
 
 /// Returns the [LandType] which has replaced the given `subtype` for the
 /// card providing the given [Source], if any. Otherwise, returns the original

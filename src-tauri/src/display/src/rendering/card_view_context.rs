@@ -13,10 +13,10 @@
 // limitations under the License.
 
 use data::card_states::card_state::{CardFacing, CardState};
-use data::core::primitives::CardId;
 use data::game_states::game_state::GameState;
 use data::printed_cards::printed_card::{Face, PrintedCard};
 use data::printed_cards::printed_card_id::PrintedCardId;
+use primitives::game_primitives::CardId;
 
 /// Provides the context in which a card view is being displayed, i.e. either
 /// during an active game or in a deck editor.

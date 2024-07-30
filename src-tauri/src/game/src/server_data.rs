@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::{GameId, UserId};
 use display::commands::command::Command;
 use display::commands::scene_identifier::SceneIdentifier;
 use display::panels::modal_panel::{ModalPanel, PanelData};
@@ -20,6 +19,7 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use tokio::sync::mpsc::UnboundedSender;
 use uuid::Uuid;
+use primitives::game_primitives::{GameId, UserId};
 
 #[derive(Debug, Clone)]
 pub struct Client {

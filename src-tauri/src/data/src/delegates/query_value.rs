@@ -15,14 +15,8 @@
 use std::ops::Add;
 
 use enumset::{EnumSet, EnumSetType};
-
-use crate::card_definitions::registry::Registry;
-use crate::card_states::zones::ToCardId;
-use crate::core::function_types::CardPredicate;
-use crate::core::primitives::{HasSource, Timestamp};
+use primitives::game_primitives::Timestamp;
 use crate::delegates::layer::{EffectSortingKey, Layer};
-use crate::game_states::game_state::GameState;
-
 /// Marker trait for the return value of queries
 pub trait QueryValue {
     fn effect_sorting_key(&self) -> Option<EffectSortingKey>;

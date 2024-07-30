@@ -14,7 +14,6 @@
 
 use data::card_states::card_kind::CardKind;
 use data::card_states::zones::Zones;
-use data::core::primitives::{EventId, GameId, PlayerName, Source, UserId};
 use data::decks::deck::Deck;
 use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
@@ -27,7 +26,7 @@ use data::game_states::game_state::{
 use data::game_states::history_data::GameHistory;
 use data::game_states::oracle::Oracle;
 use data::game_states::this_turn_state::ThisTurnState;
-use data::player_states::player_state::{PlayerState, PlayerType, Players};
+use data::player_states::player_state::{Players, PlayerState, PlayerType};
 use data::printed_cards::printed_card_id;
 use database::sqlite_database::SqliteDatabase;
 use enumset::EnumSet;
@@ -38,7 +37,7 @@ use rand_xoshiro::Xoshiro256StarStar;
 use rules::mutations::library;
 use rules::steps::step;
 use tracing::info;
-
+use primitives::game_primitives::{EventId, GameId, PlayerName, Source, UserId};
 use crate::game_creation::initialize_game;
 
 /// Creates a new game using the provided Game ID, User IDs and decks and draws

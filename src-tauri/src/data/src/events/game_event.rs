@@ -16,10 +16,9 @@ use std::fmt::{Debug, Formatter};
 
 use enumset::EnumSet;
 use invokable::{CardIdent, InvokableType};
-
+use primitives::game_primitives::{AbilityId, HasController, Source, Zone};
 use crate::card_states::zones::ZoneQueries;
 use crate::core::function_types::Mutation;
-use crate::core::primitives::{AbilityId, HasController, Source, Zone};
 use crate::delegates::delegate_type::DelegateType;
 use crate::delegates::scope::AbilityScope;
 use crate::events::event_context::EventContext;

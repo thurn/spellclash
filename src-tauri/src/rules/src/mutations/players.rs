@@ -13,11 +13,11 @@
 // limitations under the License.
 
 use data::core::numerics::{Damage, LifeValue};
-use data::core::primitives::{PlayerName, Source};
 use data::game_states::game_state::GameState;
 use data::game_states::state_based_event::StateBasedEvent;
 use data::player_states::player_state::PlayerQueries;
 use tracing::debug;
+use primitives::game_primitives::{PlayerName, Source};
 use utils::outcome;
 use utils::outcome::Outcome;
 

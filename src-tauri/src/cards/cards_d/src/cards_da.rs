@@ -22,7 +22,7 @@ use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 use data::card_definitions::registry::Registry;
-use data::core::primitives::Color;
+use primitives::game_primitives::Color;
 use data::printed_cards::card_subtypes::CreatureType;
 use rules::mutations::permanents;
 use rules::predicates::card_predicates;

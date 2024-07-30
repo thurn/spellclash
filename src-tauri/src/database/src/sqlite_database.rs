@@ -15,13 +15,13 @@
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, MutexGuard};
 
-use data::core::primitives::{GameId, UserId};
 use data::game_states::serialized_game_state::SerializedGameState;
 use data::printed_cards::database_card::DatabaseCardFace;
 use data::printed_cards::printed_card_id::PrintedCardId;
 use data::users::user_state::UserState;
 use rusqlite::{Connection, Error, OptionalExtension};
 use serde_json::{de, ser};
+use primitives::game_primitives::{GameId, UserId};
 
 /// SQLite database connection.
 ///

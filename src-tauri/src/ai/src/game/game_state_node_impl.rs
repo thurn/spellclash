@@ -14,10 +14,9 @@
 
 use ai_core::core::agent_state::AgentState;
 use data::actions::agent_action::AgentAction;
-use data::core::primitives;
-use data::game_states::game_phase_step::GamePhaseStep;
 use data::game_states::game_state;
 use data::game_states::game_state::GameState;
+use primitives::game_primitives;
 use rules::action_handlers::actions;
 use rules::action_handlers::actions::ExecuteAction;
 use rules::legality::legal_actions;
@@ -27,13 +26,13 @@ use crate::core::game_state_node::{GameStateNode, GameStatus};
 
 impl GameStateNode for GameState {
     type Action = AgentAction;
-    type PlayerName = primitives::PlayerName;
+    type PlayerName = game_primitives::PlayerName;
 
     fn make_copy(&self) -> Self {
         self.shallow_clone()
     }
 
-    fn status(&self) -> GameStatus<primitives::PlayerName> {
+    fn status(&self) -> GameStatus<game_primitives::PlayerName> {
         match self.status {
             game_state::GameStatus::GameOver { winners } => GameStatus::Completed { winners },
             _ => GameStatus::InProgress {
@@ -44,13 +43,13 @@ impl GameStateNode for GameState {
 
     fn legal_actions<'a>(
         &'a self,
-        player: primitives::PlayerName,
+        player: game_primitives::PlayerName,
     ) -> Box<dyn Iterator<Item = AgentAction> + 'a> {
         let legal = legal_actions::compute(self, player, LegalActions { for_human_player: false });
         Box::new(legal.into_iter().map(AgentAction::GameAction))
     }
 
-    fn execute_action(&mut self, player: primitives::PlayerName, action: AgentAction) {
+    fn execute_action(&mut self, player: game_primitives::PlayerName, action: AgentAction) {
         actions::execute(self, player, action.as_game_action(), ExecuteAction {
             skip_undo_tracking: true,
             validate: false,

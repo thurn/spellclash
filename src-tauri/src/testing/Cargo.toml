@@ -23,6 +23,7 @@ all_cards = { path = "../cards/all_cards", version = "0.0.0" }
 data = { path = "../data", version = "0.0.0" }
 database = { path = "../database", version = "0.0.0" }
 game = { path = "../game", version = "0.0.0" }
+primitives = { path = "../primitives", version = "0.0.0" }
 rules = { path = "../rules", version = "0.0.0" }
 utils = { path = "../utils", version = "0.0.0" }
 

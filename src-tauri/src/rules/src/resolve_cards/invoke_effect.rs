@@ -14,11 +14,10 @@
 
 use data::card_definitions::ability_definition::Ability;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{
-    AbilityId, CardId, EntityId, EventId, HasController, PlayerName, Source, StackAbilityId,
-    StackItemId,
-};
 use data::game_states::game_state::GameState;
+use primitives::game_primitives::{
+    AbilityId, EntityId, EventId, HasController, PlayerName, Source, StackAbilityId, StackItemId,
+};
 use utils::outcome;
 use utils::outcome::Outcome;
 

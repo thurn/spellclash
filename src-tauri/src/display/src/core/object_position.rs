@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::CardId;
 use data::prompts::select_order_prompt::CardOrderLocation;
+use primitives::game_primitives::CardId;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 

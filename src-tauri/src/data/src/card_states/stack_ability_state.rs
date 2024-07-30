@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#[allow(unused)] // Used in docs
-use crate::card_states::zones::Zones;
-use crate::card_states::zones::{HasZones, ToCardId};
-use crate::core::function_types::Effect;
-use crate::core::primitives::{
-    AbilityId, CardId, EntityId, EventId, HasController, HasPlayerName, ObjectId, PlayerName,
+use primitives::game_primitives::{
+    AbilityId, EntityId, EventId, HasController, HasPlayerName, ObjectId, PlayerName,
     StackAbilityId,
 };
+
+use crate::card_states::zones::HasZones;
+#[allow(unused)] // Used in docs
+use crate::card_states::zones::Zones;
+use crate::core::function_types::Effect;
 use crate::events::event_context::EventContext;
 use crate::game_states::game_state::GameState;
 

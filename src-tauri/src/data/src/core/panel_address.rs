@@ -14,7 +14,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::core::primitives::PlayerName;
+use primitives::game_primitives::PlayerName;
 
 /// Identifier for a piece of UI which can be contextually displayed.
 ///

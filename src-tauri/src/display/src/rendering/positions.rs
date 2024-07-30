@@ -14,11 +14,10 @@
 
 use data::card_states::card_state::CardState;
 use data::card_states::stack_ability_state::StackAbilityState;
-use data::core::primitives::{CardId, CardType, EntityId, HasController, PlayerName, Zone};
 use data::game_states::game_state::GameState;
 use data::prompts::prompt::PromptType;
-use data::prompts::select_order_prompt::{CardOrderLocation, SelectOrderPrompt};
-
+use data::prompts::select_order_prompt::CardOrderLocation;
+use primitives::game_primitives::{CardType, EntityId, HasController, PlayerName, Zone};
 use crate::core::object_position::{BattlefieldPosition, ObjectPosition, Position};
 use crate::core::response_builder::ResponseBuilder;
 

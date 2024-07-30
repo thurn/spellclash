@@ -20,7 +20,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::actions::game_action::GameAction;
 use crate::actions::prompt_action::PromptAction;
-use crate::core::primitives::PlayerName;
+use primitives::game_primitives::PlayerName;
 use crate::game_states::game_state::GameState;
 use crate::game_states::oracle::Oracle;
 use crate::prompts::prompt::Prompt;

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::core::primitives::Source;
+use primitives::game_primitives::Source;
 use crate::events::event_context::EventContext;
 use crate::events::game_event::GameEvent;
 use crate::game_states::game_state::GameState;

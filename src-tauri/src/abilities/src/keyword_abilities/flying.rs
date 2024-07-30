@@ -12,23 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_definitions::ability_definition::{Ability, StaticAbility};
-use data::card_definitions::registry::{QueryFn, Registry};
 use data::card_states::zones::ZoneQueries;
 use data::core::card_tags::CardTag;
-use data::core::primitives::{HasSource, PermanentId, Source};
-use data::delegates::delegate_type::DelegateType;
 use data::delegates::game_delegate_data::CanBeBlocked;
 use data::delegates::layer::Layer;
-use data::delegates::query_value::{EnumSets, QueryValue};
+use data::delegates::query_value::EnumSets;
 use data::events::event_context::EventContext;
 use data::game_states::game_state::GameState;
-use data::printed_cards::card_subtypes::CreatureType;
-use data::properties::card_modifier::CardModifier;
 use data::properties::duration::Duration;
 use data::properties::flag::Flag;
 use enumset::EnumSet;
-use rules::queries::combat_queries;
+use primitives::game_primitives::{HasSource, PermanentId, Source};
 use utils::outcome::Outcome;
 
 /// > 702.9a. Flying is an evasion ability.

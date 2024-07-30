@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::core::primitives::PlayerName;
+use primitives::game_primitives::PlayerName;
 use data::game_states::game_state::{GameState, GameStatus};
 
 use crate::commands::command::{Command, DisplayGameMessageCommand};
 use crate::core::display_state::DisplayState;
 use crate::core::game_message::GameMessage;
 use crate::core::response_builder::{AllowActions, ResponseBuilder, ResponseState};
-use crate::rendering::{animations, sync};
+use crate::rendering::sync;
 
 /// Returns a series of [Command]s which fully describe the current state of the
 /// provided game

@@ -12,19 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::iter;
-
 use data::actions::game_action::GameAction;
 use data::card_states::zones::ZoneQueries;
-use data::core::primitives::{CardId, PlayerName, Source};
 use data::game_states::combat_state::{CombatState, CombatStateKind};
 use data::game_states::game_state::{GameState, GameStatus};
-use data::printed_cards::printed_card::Face;
 use data::prompts::prompt::Prompt;
 use tracing::instrument;
-
+use primitives::game_primitives::{PlayerName, Source};
 use crate::legality::legal_combat_actions;
-use crate::play_cards::{pick_face_to_play, play_card};
+use crate::play_cards::play_card;
 
 #[derive(Debug, Clone, Copy)]
 pub struct LegalActions {

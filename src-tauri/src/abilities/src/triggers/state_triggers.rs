@@ -12,18 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use data::card_definitions::ability_definition::{Ability, AbilityData, TriggeredAbility};
+use data::card_definitions::ability_definition::{Ability, TriggeredAbility};
 use data::card_states::iter_matching::IterMatching;
 use data::card_states::zones::ZoneQueries;
 use data::core::function_types::{CardMutation, CardPredicate};
-use data::core::primitives::{AbilityId, CardId, HasSource, PermanentId, Zone};
-use data::events::game_event::GameEventCallback;
-use data::game_states::game_state::GameState;
 use enumset::EnumSet;
+use primitives::game_primitives::{AbilityId, CardId, HasSource, PermanentId, Zone};
 use rules::mutations::trigger_extension::TriggerExt;
-use utils::outcome;
-use utils::outcome::Outcome;
-
 /// If this card's controller controls no permanents matching `predicate`,
 /// applies `mutation` to it.
 pub fn when_controls_no(

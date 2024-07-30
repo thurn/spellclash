@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 use crate::actions::game_action::GameAction;
 use crate::actions::user_action::UserAction;
 use crate::core::numerics::LifeValue;
-use crate::core::primitives::PlayerName;
+use primitives::game_primitives::PlayerName;
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Ord, PartialOrd, Serialize, Deserialize)]
 pub enum DebugGameAction {
