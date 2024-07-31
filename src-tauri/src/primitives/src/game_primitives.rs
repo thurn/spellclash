@@ -290,12 +290,12 @@ pub const RULES_TIMESTAMP: Timestamp = Timestamp(0);
 )]
 pub struct PermanentId {
     pub object_id: ObjectId,
-    pub card_id: CardId,
+    pub internal_card_id: CardId,
 }
 
 impl PermanentId {
     pub fn new(object_id: ObjectId, card_id: CardId) -> Self {
-        Self { object_id, card_id }
+        Self { object_id, internal_card_id: card_id }
     }
 }
 
@@ -307,7 +307,7 @@ impl HasObjectId for PermanentId {
 
 impl From<PermanentId> for EntityId {
     fn from(value: PermanentId) -> Self {
-        EntityId::Card(value.card_id, value.object_id)
+        EntityId::Card(value.internal_card_id, value.object_id)
     }
 }
 
@@ -328,12 +328,12 @@ impl TryFrom<EntityId> for PermanentId {
 )]
 pub struct SpellId {
     pub object_id: ObjectId,
-    pub card_id: CardId,
+    pub internal_card_id: CardId,
 }
 
 impl SpellId {
     pub fn new(object_id: ObjectId, card_id: CardId) -> Self {
-        Self { object_id, card_id }
+        Self { object_id, internal_card_id: card_id }
     }
 }
 
@@ -345,7 +345,7 @@ impl HasObjectId for SpellId {
 
 impl From<SpellId> for EntityId {
     fn from(value: SpellId) -> Self {
-        EntityId::Card(value.card_id, value.object_id)
+        EntityId::Card(value.internal_card_id, value.object_id)
     }
 }
 

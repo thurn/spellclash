@@ -23,6 +23,8 @@ use primitives::game_primitives::{
 use utils::outcome;
 use utils::outcome::Outcome;
 
+use crate::dispatcher::dispatch;
+
 /// Causes `new_controller` to gain control of the [CardId] card.
 ///
 /// The caller of this function is responsible for removing this status via
@@ -49,7 +51,7 @@ pub fn gain_control(
             .push(ControlChangingEffect { event_id, controller: new_controller });
 
         if let Some(id) = permanent_id {
-            card_events::dispatch(
+            dispatch::card_event(
                 game,
                 card_id,
                 |c| &c.controller_changed,
@@ -94,7 +96,7 @@ pub fn remove_control(game: &mut GameState, event_id: EventId, card_id: CardId) 
         card.last_changed_control = turn;
         let permanent_id = card.permanent_id();
         if let Some(id) = permanent_id {
-            card_events::dispatch(
+            dispatch::card_event(
                 game,
                 card_id,
                 |c| &c.controller_changed,

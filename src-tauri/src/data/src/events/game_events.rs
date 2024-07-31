@@ -23,17 +23,3 @@ pub struct GlobalEvents {
     /// Invoked every time game state-triggered abilities are checked.
     pub state_triggered_ability: GameEvent<()>,
 }
-
-pub fn dispatch<TArg: 'static>(
-    game: &mut GameState,
-    event: fn(&GlobalEvents) -> &GameEvent<TArg>,
-    source: Source,
-    arg: TArg,
-) {
-    for i in 0..event(&game.events).callbacks.len() {
-        if let Some(context) = event(&game.events).callbacks[i].build_context(game, source) {
-            let function = event(&game.events).callbacks[i].function.clone();
-            function.invoke(game, context, &arg);
-        }
-    }
-}

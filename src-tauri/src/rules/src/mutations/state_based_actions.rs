@@ -22,6 +22,7 @@ use primitives::game_primitives::{Source, StackItemId, Zone};
 use tracing::instrument;
 use utils::outcome;
 
+use crate::dispatcher::dispatch;
 use crate::mutations::move_card;
 use crate::queries::{card_queries, player_queries};
 
@@ -171,7 +172,7 @@ pub fn check_state_triggered_abilities(game: &mut GameState) -> bool {
     {
         // Only run the check if it's not already running to prevent infinite loops.
         game.checking_state_triggered_abilities = true;
-        game_events::dispatch(game, |e| &e.state_triggered_ability, Source::Game, ());
+        dispatch::game_event(game, |e| &e.state_triggered_ability, Source::Game, ());
         game.checking_state_triggered_abilities = false;
         true
     } else {

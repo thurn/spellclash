@@ -27,6 +27,8 @@ use tracing::debug;
 use utils::outcome;
 use utils::outcome::Outcome;
 
+use crate::dispatcher::dispatch;
+
 /// Moves a card to a new zone, updates indices, assigns a new
 /// [EntityId] to it, and fires all relevant events.
 ///
@@ -41,7 +43,7 @@ pub fn run(game: &mut GameState, source: impl HasSource, id: impl ToCardId, new:
     debug!(?card_id, ?old, ?new, "Moving card to zone");
 
     if old == Zone::Battlefield {
-        card_events::dispatch(
+        dispatch::card_event(
             game,
             id,
             |e| &e.will_leave_battlefield,
@@ -51,7 +53,7 @@ pub fn run(game: &mut GameState, source: impl HasSource, id: impl ToCardId, new:
     }
 
     if new == Zone::Battlefield {
-        card_events::dispatch(
+        dispatch::card_event(
             game,
             id,
             |e| &e.will_enter_battlefield,

@@ -29,7 +29,7 @@ pub fn run(
     stack_ability_id: Option<StackAbilityId>,
     ability: &dyn Ability,
 ) -> Outcome {
-    let mut context = dispatch::build_event_context(game, ability_id)?;
+    let mut context = dispatch::build_invocation_context(game, ability_id)?;
     match stack_ability_id {
         Some(stack_ability_id) => {
             let stack_ability = game.stack_ability(stack_ability_id);

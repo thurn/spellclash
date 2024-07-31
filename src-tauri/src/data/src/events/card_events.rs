@@ -45,22 +45,3 @@ pub struct CardEvents {
     /// to its owner's control.
     pub controller_changed: GameEvent<PermanentControllerChangedEvent>,
 }
-
-pub fn dispatch<TArg: 'static>(
-    game: &mut GameState,
-    id: impl ToCardId,
-    event: fn(&CardEvents) -> &GameEvent<TArg>,
-    source: Source,
-    arg: &TArg,
-) -> Outcome {
-    for i in 0..event(&game.card(id)?.events).callbacks.len() {
-        if let Some(context) =
-            event(&game.card(id)?.events).callbacks[i].build_context(game, source)
-        {
-            let function = event(&game.card(id)?.events).callbacks[i].function.clone();
-            function.invoke(game, context, arg);
-        }
-    }
-
-    outcome::OK
-}

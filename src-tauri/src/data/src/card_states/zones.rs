@@ -123,8 +123,8 @@ impl ToCardId for EntityId {
 
 impl ToCardId for PermanentId {
     fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
-        if zones.zones().card(self.card_id)?.object_id == self.object_id {
-            Some(self.card_id)
+        if zones.zones().card(self.internal_card_id)?.object_id == self.object_id {
+            Some(self.internal_card_id)
         } else {
             None
         }
@@ -133,8 +133,8 @@ impl ToCardId for PermanentId {
 
 impl ToCardId for SpellId {
     fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
-        if zones.zones().card(self.card_id)?.object_id == self.object_id {
-            Some(self.card_id)
+        if zones.zones().card(self.internal_card_id)?.object_id == self.object_id {
+            Some(self.internal_card_id)
         } else {
             None
         }
