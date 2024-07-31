@@ -22,8 +22,8 @@ use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 use data::card_definitions::registry::Registry;
-use primitives::game_primitives::Color;
 use data::printed_cards::card_subtypes::CreatureType;
+use primitives::game_primitives::Color;
 use rules::mutations::permanents;
 use rules::predicates::card_predicates;
 
@@ -31,12 +31,8 @@ pub fn dance_of_the_skywise(_: &mut Registry) -> CardDefinition {
     CardDefinition::new(card_name::DANCE_OF_THE_SKYWISE).ability(
         SpellAbility::new().targets(targets::creature_you_control()).effect(move |g, c, target| {
             colors::set_this_turn(g, c, target, Color::Blue);
-            creature_types::set_this_turn(
-                g,
-                c,
-                target,
-                CreatureType::Dragon | CreatureType::Illusion,
-            );
+            let types = CreatureType::Dragon | CreatureType::Illusion;
+            creature_types::set_this_turn(g, c, target, types);
             base_power_toughness::set_this_turn(g, c, target, 4, 4);
             lose_all_abilities::this_turn(g, target, c.event_id);
             flying::gain_this_turn(g, c, target);

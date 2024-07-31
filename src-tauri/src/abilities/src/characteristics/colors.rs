@@ -20,17 +20,19 @@ use data::game_states::game_state::GameState;
 use data::properties::duration::Duration;
 use enumset::EnumSet;
 use primitives::game_primitives::{Color, HasSource, PermanentId};
+use rules::queries::text_change_queries;
 use utils::outcome::Outcome;
 
 pub fn set_this_turn(
     game: &mut GameState,
     context: EventContext,
     id: PermanentId,
-    colors: impl Into<EnumSet<Color>>,
+    new_color: Color,
 ) -> Outcome {
+    let color = text_change_queries::color(game, context.source(), new_color);
     game.card_mut(id)?.properties.colors.add_effect(
         context,
         Duration::WhileOnBattlefieldThisTurn(id, context.current_turn),
-        EnumSets::set(Layer::ColorChangingEffects, context, colors.into()),
+        EnumSets::set(Layer::ColorChangingEffects, context, color),
     )
 }
