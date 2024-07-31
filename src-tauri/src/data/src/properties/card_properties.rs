@@ -13,7 +13,9 @@
 // limitations under the License.
 
 use std::fmt::{Debug, Formatter};
+
 use primitives::game_primitives::Color;
+
 use crate::core::card_tags::CardTag;
 use crate::core::numerics::{Power, Toughness};
 use crate::delegates::game_delegate_data::{CanAttackTarget, CanBeBlocked};

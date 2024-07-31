@@ -16,6 +16,7 @@ use std::ops::Add;
 
 use enumset::{EnumSet, EnumSetType};
 use primitives::game_primitives::Timestamp;
+
 use crate::delegates::layer::{EffectSortingKey, Layer};
 /// Marker trait for the return value of queries
 pub trait QueryValue {

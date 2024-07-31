@@ -13,9 +13,10 @@
 // limitations under the License.
 
 use std::collections::BTreeMap;
-use primitives::game_primitives::PlayerName;
+
 use data::game_states::game_state::{DebugActAsPlayer, GameState};
 use data::prompts::prompt::Prompt;
+use primitives::game_primitives::PlayerName;
 use rules::legality::legal_actions;
 
 use crate::commands::command::{Command, SceneView};

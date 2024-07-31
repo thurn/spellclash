@@ -14,7 +14,6 @@
 
 use all_cards::card_list;
 use data::card_definitions::card_name;
-use primitives::game_primitives::GameId;
 use data::decks::deck_name;
 use data::decks::deck_name::DeckName;
 use data::game_states::game_phase_step::GamePhaseStep;
@@ -22,6 +21,7 @@ use data::game_states::game_state::{DebugConfiguration, GameState, GameStatus};
 use data::player_states::player_state::PlayerType;
 use database::sqlite_database::SqliteDatabase;
 use game::game_creation::new_game;
+use primitives::game_primitives::GameId;
 use utils::paths;
 use uuid::Uuid;
 

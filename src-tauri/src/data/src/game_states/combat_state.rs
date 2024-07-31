@@ -15,8 +15,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use enum_kinds::EnumKind;
-use serde::{Deserialize, Serialize};
 use primitives::game_primitives::{PermanentId, PlayerName};
+use serde::{Deserialize, Serialize};
 /// Entity which has been declared as an attacker
 pub type AttackerId = PermanentId;
 

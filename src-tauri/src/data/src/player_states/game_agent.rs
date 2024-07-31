@@ -16,11 +16,11 @@ use std::fmt::Debug;
 use std::time::{Duration, Instant};
 
 use dyn_clone::DynClone;
+use primitives::game_primitives::PlayerName;
 use serde::{Deserialize, Serialize};
 
 use crate::actions::game_action::GameAction;
 use crate::actions::prompt_action::PromptAction;
-use primitives::game_primitives::PlayerName;
 use crate::game_states::game_state::GameState;
 use crate::game_states::oracle::Oracle;
 use crate::prompts::prompt::Prompt;

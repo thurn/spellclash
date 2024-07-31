@@ -20,11 +20,12 @@ use data::card_states::zones::ZoneQueries;
 use data::core::card_tags::CardTag;
 use data::delegates::game_delegate_data::{CanAttackTarget, CanBeBlocked};
 use data::game_states::combat_state::{
-    AttackerId, AttackTarget, BlockerId, BlockerMap, CombatState,
+    AttackTarget, AttackerId, BlockerId, BlockerMap, CombatState,
 };
 use data::game_states::game_state::GameState;
 use enumset::EnumSet;
 use primitives::game_primitives::{CardType, HasController, PermanentId, PlayerName, Source};
+
 use crate::predicates::card_predicates;
 use crate::queries::{card_queries, player_queries};
 

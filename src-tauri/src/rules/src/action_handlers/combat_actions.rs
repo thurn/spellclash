@@ -18,11 +18,12 @@ use data::actions::game_action::CombatAction;
 #[allow(unused)] // Used in docs
 use data::actions::game_action::GameAction;
 use data::game_states::combat_state::{
-    AttackerId, AttackTarget, BlockerId, BlockerMap, CombatState,
+    AttackTarget, AttackerId, BlockerId, BlockerMap, CombatState,
 };
 use data::game_states::game_state::GameState;
-use tracing::instrument;
 use primitives::game_primitives::{CardType, PlayerName, Source};
+use tracing::instrument;
+
 use crate::mutations::permanents;
 use crate::queries::{combat_queries, player_queries};
 

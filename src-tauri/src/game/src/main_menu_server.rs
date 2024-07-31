@@ -30,10 +30,11 @@ use display::commands::command::{Command, SceneView};
 use display::commands::scene_identifier::SceneIdentifier;
 use display::core::game_view::GameButtonView;
 use display::core::main_menu_view::MainMenuView;
+use primitives::game_primitives::{PlayerName, UserId};
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::info;
 use uuid::{uuid, Uuid};
-use primitives::game_primitives::{PlayerName, UserId};
+
 use crate::server_data::{Client, ClientData, GameResponse};
 
 /// Connect to the main menu scene

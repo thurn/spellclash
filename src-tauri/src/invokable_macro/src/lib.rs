@@ -14,7 +14,6 @@
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::Data;
 
 #[proc_macro_derive(Invokable)]
 pub fn invokable_macro_derive(input: TokenStream) -> TokenStream {
@@ -27,26 +26,11 @@ pub fn invokable_macro_derive(input: TokenStream) -> TokenStream {
 }
 
 fn impl_invokable(ast: &syn::DeriveInput) -> TokenStream {
-    let Data::Struct(data) = &ast.data else {
-        panic!("Expected Invokable to be applied to a struct.");
-    };
-    let mut fields = vec![];
-    for field in &data.fields {
-        let name = field.ident.as_ref().expect("Expected named struct field");
-        fields.push(quote! {
-            self.#name.initialize(id);
-        });
-    }
-
     let name = &ast.ident;
     let gen = quote! {
         use invokable::InvokableType;
-        use invokable::CardIdent;
 
         impl InvokableType for #name {
-            fn initialize(&self, id: CardIdent) {
-                #( #fields )*
-            }
         }
     };
     gen.into()

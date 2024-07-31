@@ -13,9 +13,10 @@
 // limitations under the License.
 
 use data::card_states::zones::ZoneQueries;
-use primitives::game_primitives::PlayerName;
 use data::game_states::game_state::GameState;
+use primitives::game_primitives::PlayerName;
 use tracing::instrument;
+
 use crate::queries::player_queries;
 use crate::resolve_cards::resolve;
 use crate::steps::step;

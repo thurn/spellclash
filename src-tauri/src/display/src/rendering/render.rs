@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use primitives::game_primitives::PlayerName;
 use data::game_states::game_state::{GameState, GameStatus};
+use primitives::game_primitives::PlayerName;
 
 use crate::commands::command::{Command, DisplayGameMessageCommand};
 use crate::core::display_state::DisplayState;

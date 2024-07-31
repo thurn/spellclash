@@ -17,11 +17,11 @@ use data::delegates::layer::Layer;
 use data::delegates::query_value::{ChangeText, EnumSets};
 use data::events::event_context::EventContext;
 use data::game_states::game_state::GameState;
-use data::printed_cards::card_subtypes::{BASIC_LANDS, LandType};
+use data::printed_cards::card_subtypes::{LandType, BASIC_LANDS};
 use data::properties::duration::Duration;
 use data::text_strings::Text;
 use either::Either;
-use primitives::game_primitives::{Color, COLORS, HasSource, PermanentId, PlayerName, SpellId};
+use primitives::game_primitives::{Color, HasSource, PermanentId, PlayerName, SpellId, COLORS};
 use rules::prompt_handling::prompts;
 use utils::outcome::Outcome;
 

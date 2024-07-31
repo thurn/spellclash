@@ -15,10 +15,11 @@
 use std::iter;
 
 use enumset::{EnumSet, EnumSetType};
+use primitives::game_primitives::{CardSupertype, CardType, Color};
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use uuid::Uuid;
-use primitives::game_primitives::{CardSupertype, CardType, Color};
+
 use crate::card_definitions::card_name::CardName;
 use crate::core::numerics::ManaValue;
 use crate::printed_cards::card_subtypes::CardSubtypes;

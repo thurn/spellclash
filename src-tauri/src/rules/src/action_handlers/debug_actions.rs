@@ -20,8 +20,8 @@ use data::game_states::game_state::GameState;
 use data::player_states::player_state::PlayerQueries;
 use data::prompts::pick_number_prompt::PickNumberPrompt;
 use data::text_strings::Text;
-use tracing::{debug, instrument};
 use primitives::game_primitives::{CardType, PlayerName, Source, Zone};
+use tracing::{debug, instrument};
 use utils::outcome;
 use utils::outcome::Outcome;
 

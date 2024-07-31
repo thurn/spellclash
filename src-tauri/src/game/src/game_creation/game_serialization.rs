@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use primitives::game_primitives::PlayerName;
 use data::game_states::game_state::{GameOperationMode, GameState};
 use data::game_states::history_data::TakenGameAction;
 use data::game_states::serialized_game_state::{SerializedGameState, SerializedGameVersion};
 use data::player_states::player_map::PlayerMap;
 use data::player_states::player_state::PlayerQueries;
 use database::sqlite_database::SqliteDatabase;
+use primitives::game_primitives::PlayerName;
 use rules::action_handlers::actions;
 use rules::action_handlers::actions::ExecuteAction;
 use rules::legality::legal_actions;

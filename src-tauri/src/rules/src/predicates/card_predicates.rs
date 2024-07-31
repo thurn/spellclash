@@ -16,6 +16,7 @@ use data::card_states::zones::ToCardId;
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandType;
 use primitives::game_primitives::{CardType, Color, PermanentId, Source};
+
 use crate::queries::{card_queries, text_change_queries};
 
 pub fn always_true(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {

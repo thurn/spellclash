@@ -15,8 +15,8 @@
 use data::actions::debug_action::DebugGameAction;
 use data::actions::game_action::GameAction;
 use data::actions::user_action::{PanelTransition, UserAction};
-use primitives::game_primitives::PlayerName;
 use data::game_states::game_state::GameState;
+use primitives::game_primitives::PlayerName;
 
 use crate::core::game_view::GameButtonView;
 use crate::panels::modal_panel::{DebugPanel, ModalPanel, PanelData};

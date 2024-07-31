@@ -17,6 +17,7 @@ use data::prompts::game_update::UpdateChannel;
 use data::users::user_state::UserState;
 use database::sqlite_database::SqliteDatabase;
 use primitives::game_primitives::{GameId, UserId};
+
 use crate::game_creation::game_serialization;
 
 /// Looks up a user by ID in the database.

@@ -20,7 +20,9 @@ use data::events::event_context::EventContext;
 use data::events::game_event::GameEvent;
 use data::game_states::game_state::GameState;
 use enumset::EnumSet;
-use primitives::game_primitives::{AbilityId, EventId, HasSource, PermanentId, PlayerName, Source, StackItemId};
+use primitives::game_primitives::{
+    AbilityId, EventId, HasSource, PermanentId, PlayerName, Source, StackItemId,
+};
 /// Extensions to event delegates for triggering abilities.
 ///
 /// This is primarily implemented as a trait to prevent crate cyclic

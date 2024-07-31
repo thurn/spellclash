@@ -14,8 +14,9 @@
 
 use std::fmt::{Debug, Formatter};
 
-use serde::{Deserialize, Serialize};
 use primitives::game_primitives::GameId;
+use serde::{Deserialize, Serialize};
+
 use crate::actions::user_action::UserAction;
 use crate::decks::deck_name::DeckName;
 use crate::game_states::game_state::DebugConfiguration;

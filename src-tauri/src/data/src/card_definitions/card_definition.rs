@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use primitives::game_primitives::AbilityNumber;
+
 use crate::card_definitions::ability_definition::Ability;
 use crate::card_definitions::card_name::CardName;
-use primitives::game_primitives::AbilityNumber;
 #[allow(unused)] // Used in docs
 use crate::printed_cards::printed_card::PrintedCard;
 

@@ -18,6 +18,7 @@ use data::delegates::game_delegate_data::CanAttackTarget;
 use data::game_states::combat_state::{CombatState, ProposedAttackers};
 use data::game_states::game_state::GameState;
 use primitives::game_primitives::{PlayerName, Source};
+
 #[allow(unused)] // Used in docs
 use crate::legality::legal_actions;
 use crate::legality::legal_actions::LegalActions;

@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
-
 use primitives::game_primitives::ManaColor;
+use serde::{Deserialize, Serialize};
 
 /// Represents the printed mana cost of a card or ability
 #[derive(Debug, Clone, Default)]

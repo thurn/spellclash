@@ -12,9 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#[derive(Copy, Clone, Debug)]
-pub struct CardIdent(pub u64);
-
-pub trait InvokableType {
-    fn initialize(&self, id: CardIdent);
-}
+pub trait InvokableType {}

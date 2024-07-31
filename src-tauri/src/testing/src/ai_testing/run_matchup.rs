@@ -18,9 +18,9 @@ use ai::core::game_state_node::{GameStateNode, GameStatus};
 use ai::game::agents;
 use ai::game::agents::AgentName;
 use clap::{Parser, ValueEnum};
-use primitives::game_primitives::PlayerName;
 use data::decks::deck_name;
 use data::game_states::game_state::GameState;
+use primitives::game_primitives::PlayerName;
 
 use crate::ai_testing::test_games;
 

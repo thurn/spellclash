@@ -19,8 +19,9 @@ use database::sqlite_database::SqliteDatabase;
 use display::commands::scene_identifier::SceneIdentifier;
 use display::core::display_state::DisplayState;
 use display::rendering::render;
-use uuid::Uuid;
 use primitives::game_primitives::{GameId, PlayerName, Source, UserId};
+use uuid::Uuid;
+
 use crate::game_creation::{game_serialization, new_game};
 use crate::server_data::Client;
 use crate::{game_action_server, requests};

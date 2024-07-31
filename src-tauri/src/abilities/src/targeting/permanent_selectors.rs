@@ -17,8 +17,9 @@ use data::card_states::zones::ZoneQueries;
 use data::core::function_types::CardPredicate;
 use data::game_states::game_state::GameState;
 use primitives::game_primitives::{EntityId, HasSource, PermanentId, PlayerName, Source};
-use crate::targeting::player_set::PlayerSet;
+
 use crate::targeting::player_set;
+use crate::targeting::player_set::PlayerSet;
 
 pub struct SinglePermanentSelector<TFn>
 where

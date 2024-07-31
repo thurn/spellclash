@@ -17,8 +17,9 @@ use data::card_states::zones::ZoneQueries;
 use data::game_states::combat_state::{CombatState, CombatStateKind};
 use data::game_states::game_state::{GameState, GameStatus};
 use data::prompts::prompt::Prompt;
-use tracing::instrument;
 use primitives::game_primitives::{PlayerName, Source};
+use tracing::instrument;
+
 use crate::legality::legal_combat_actions;
 use crate::play_cards::play_card;
 

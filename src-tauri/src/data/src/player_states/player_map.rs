@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
-
 use primitives::game_primitives::PlayerName;
+use serde::{Deserialize, Serialize};
 
 /// Data structure which holds information about each player in a game
 #[derive(Debug, Clone, Serialize, Deserialize)]

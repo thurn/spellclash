@@ -13,7 +13,9 @@
 // limitations under the License.
 
 use std::iter;
+
 use primitives::game_primitives::{EntityId, PlayerName, Source};
+
 use crate::card_states::card_state::CardState;
 use crate::card_states::zones::ZoneQueries;
 use crate::delegates::scope::AbilityScope;

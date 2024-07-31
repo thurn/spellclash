@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use primitives::game_primitives::{GameId, UserId};
 use serde::Deserialize;
 use slotmap::__impl::Serialize;
-use primitives::game_primitives::{GameId, UserId};
 /// Holds state for a user.
 ///
 /// A 'user' is an operator of this software outside of the context of any game.

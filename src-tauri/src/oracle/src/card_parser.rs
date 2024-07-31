@@ -22,15 +22,11 @@ use data::printed_cards::card_subtypes::{
 use data::printed_cards::database_card::DatabaseCardFace;
 use data::printed_cards::layout::{CardLayout, FaceLayout};
 use data::printed_cards::mana_cost::{ManaCost, ManaCostItem};
-use data::printed_cards::printed_card::{
-    Face, PrintedCard, PrintedCardFace,
-};
-use data::printed_cards::printed_primitives::{
-    PrintedPower, PrintedToughness,
-};
+use data::printed_cards::printed_card::{Face, PrintedCard, PrintedCardFace};
+use data::printed_cards::printed_primitives::{PrintedPower, PrintedToughness};
 use enumset::EnumSet;
-use regex::Regex;
 use primitives::game_primitives::{CardSupertype, CardType, Color, ManaColor};
+use regex::Regex;
 
 /// Turns a [DatabaseCardFace] list into a [PrintedCard].
 ///

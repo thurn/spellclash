@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde::{Deserialize, Serialize};
-
 use primitives::game_primitives::PlayerName;
+use serde::{Deserialize, Serialize};
 
 /// Identifier for a piece of UI which can be contextually displayed.
 ///
