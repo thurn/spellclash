@@ -21,7 +21,7 @@ use crate::core::numerics::{Power, Toughness};
 use crate::delegates::game_delegate_data::{CanAttackTarget, CanBeBlocked};
 use crate::delegates::query_value::{ChangeText, EnumSets, Ints};
 use crate::printed_cards::card_subtypes::{CreatureType, LandType};
-use crate::properties::card_property::{CardArgumentProperty, CardProperty};
+use crate::properties::card_property::CardProperty;
 use crate::properties::flag::Flag;
 
 #[derive(Default, Clone)]
@@ -30,10 +30,10 @@ pub struct CardProperties {
     pub tags: CardProperty<EnumSets<CardTag>>,
 
     /// Can this creature attack the indicated target?
-    pub can_attack_target: CardArgumentProperty<CanAttackTarget, Flag<CanAttackTarget>>,
+    pub can_attack_target: CardProperty<Flag<CanAttackTarget>>,
 
     /// Can this creature be blocked by the indicated blocker?
-    pub can_be_blocked: CardArgumentProperty<CanBeBlocked, Flag<CanBeBlocked>>,
+    pub can_be_blocked: CardProperty<Flag<CanBeBlocked>>,
 
     /// Does this card have haste?
     pub has_haste: CardProperty<Flag<()>>,

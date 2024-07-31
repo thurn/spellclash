@@ -25,7 +25,7 @@ use crate::properties::duration::Duration;
 use crate::properties::query_condition::QueryCondition;
 
 #[derive(Clone)]
-pub struct CardModifier<TModifier: QueryValue> {
+pub struct CardModifier<TModifier> {
     pub source: Source,
     pub duration: Duration,
     pub delegate_type: DelegateType,

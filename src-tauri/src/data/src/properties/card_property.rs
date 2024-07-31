@@ -30,8 +30,6 @@ use crate::properties::card_modifier::CardModifier;
 use crate::properties::duration::Duration;
 use crate::properties::flag::Flag;
 
-pub type CardProperty<TModifier> = CardArgumentProperty<(), TModifier>;
-
 /// Represents a permanent card losing all its current abilities as of a given
 /// [Timestamp].
 #[derive(Clone)]
@@ -41,19 +39,18 @@ pub struct LostAllAbilities {
 }
 
 #[derive(Clone)]
-pub struct CardArgumentProperty<TArg, TModifier: QueryValue> {
+pub struct CardProperty<TModifier> {
     modifiers: Vec<CardModifier<TModifier>>,
     lost_all_abilities: Option<LostAllAbilities>,
-    phantom_data: PhantomData<TArg>,
 }
 
-impl<TArg, TModifier: QueryValue> Default for CardArgumentProperty<TArg, TModifier> {
+impl<TModifier: QueryValue> Default for CardProperty<TModifier> {
     fn default() -> Self {
-        Self { modifiers: vec![], lost_all_abilities: None, phantom_data: PhantomData }
+        Self { modifiers: vec![], lost_all_abilities: None }
     }
 }
 
-impl<TArg, TModifier: QueryValue> CardArgumentProperty<TArg, TModifier> {
+impl<TModifier: QueryValue> CardProperty<TModifier> {
     pub fn add(&mut self, modifier: CardModifier<TModifier>) {
         self.modifiers.push(modifier);
     }
@@ -99,27 +96,9 @@ impl<TArg, TModifier: QueryValue> CardArgumentProperty<TArg, TModifier> {
     }
 }
 
-impl<TResult: EnumSetType> CardArgumentProperty<(), EnumSets<TResult>> {
+impl<T: EnumSetType> CardProperty<EnumSets<T>> {
     #[must_use]
-    pub fn query(
-        &self,
-        game: &GameState,
-        source: Source,
-        current: EnumSet<TResult>,
-    ) -> EnumSet<TResult> {
-        self.query_with(game, source, &(), current)
-    }
-}
-
-impl<TArg, TResult: EnumSetType> CardArgumentProperty<TArg, EnumSets<TResult>> {
-    #[must_use]
-    pub fn query_with(
-        &self,
-        game: &GameState,
-        _: Source,
-        arg: &TArg,
-        current: EnumSet<TResult>,
-    ) -> EnumSet<TResult> {
+    pub fn query(&self, game: &GameState, _: Source, current: EnumSet<T>) -> EnumSet<T> {
         let mut largest_key = EffectSortingKey::default();
         let mut result = current;
         for modifier in &self.modifiers {
@@ -148,14 +127,14 @@ impl<TArg, TResult: EnumSetType> CardArgumentProperty<TArg, EnumSets<TResult>> {
     }
 }
 
-impl CardArgumentProperty<(), Flag<()>> {
+impl CardProperty<Flag<()>> {
     #[must_use]
     pub fn query(&self, game: &GameState, source: Source, current: bool) -> Option<bool> {
         self.query_with(game, source, &(), current)
     }
 }
 
-impl<TArg> CardArgumentProperty<TArg, Flag<TArg>> {
+impl<TArg> CardProperty<Flag<TArg>> {
     #[must_use]
     pub fn query_with(
         &self,
@@ -194,16 +173,9 @@ impl<TArg> CardArgumentProperty<TArg, Flag<TArg>> {
     }
 }
 
-impl<T: Default + Copy + Add<Output = T>> CardArgumentProperty<(), Ints<T>> {
+impl<T: Default + Copy + Add<Output = T>> CardProperty<Ints<T>> {
     #[must_use]
-    pub fn query(&self, game: &GameState, source: Source, current: T) -> T {
-        self.query_with(game, source, &(), current)
-    }
-}
-
-impl<TArg, T: Default + Copy + Add<Output = T>> CardArgumentProperty<TArg, Ints<T>> {
-    #[must_use]
-    pub fn query_with(&self, game: &GameState, _: Source, arg: &TArg, current: T) -> T {
+    pub fn query(&self, game: &GameState, _: Source, current: T) -> T {
         let mut largest_key = EffectSortingKey::default();
         let mut result = current;
         let mut add = T::default();
@@ -228,16 +200,9 @@ impl<TArg, T: Default + Copy + Add<Output = T>> CardArgumentProperty<TArg, Ints<
     }
 }
 
-impl<TResult: EnumSetType> CardArgumentProperty<(), ChangeText<TResult>> {
+impl<TResult: EnumSetType> CardProperty<ChangeText<TResult>> {
     #[must_use]
-    pub fn query(&self, game: &GameState, source: Source, current: TResult) -> TResult {
-        self.query_with(game, source, &(), current)
-    }
-}
-
-impl<TArg, TResult: EnumSetType> CardArgumentProperty<TArg, ChangeText<TResult>> {
-    #[must_use]
-    pub fn query_with(&self, game: &GameState, _: Source, arg: &TArg, current: TResult) -> TResult {
+    pub fn query(&self, game: &GameState, _: Source, current: TResult) -> TResult {
         let mut largest_key = EffectSortingKey::default();
         let mut result = current;
         for modifier in &self.modifiers {
