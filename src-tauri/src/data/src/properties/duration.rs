@@ -18,7 +18,7 @@ use crate::card_states::zones::ZoneQueries;
 use crate::game_states::game_state::{GameState, TurnData};
 
 /// Controls how long an effect should apply to the game.
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub enum Duration {
     /// Effect applies until the end of the game
     Continuous,

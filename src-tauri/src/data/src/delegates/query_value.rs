@@ -15,8 +15,9 @@
 use std::ops::Add;
 
 use enumset::{EnumSet, EnumSetType};
-use primitives::game_primitives::Timestamp;
+use primitives::game_primitives::{Timestamp, RULES_TIMESTAMP};
 
+use crate::core::modifier_data::ModifierMode;
 use crate::delegates::layer::{EffectSortingKey, Layer};
 /// Marker trait for the return value of queries
 pub trait QueryValue {
@@ -70,6 +71,10 @@ impl<T: EnumSetType> EnumSets<T> {
         value: impl Into<EnumSet<T>>,
     ) -> EnumSets<T> {
         Self::Add(EffectSortingKey::new(layer, timestamp.into()), value.into())
+    }
+
+    pub fn add_with_mode(mode: ModifierMode, value: impl Into<EnumSet<T>>) -> EnumSets<T> {
+        Self::Add(mode.sorting_key(), value.into())
     }
 
     pub fn replace(layer: Layer, timestamp: impl Into<Timestamp>, old: T, new: T) -> EnumSets<T> {

@@ -12,17 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use data::card_definitions::ability_definition::{Ability, StaticAbility};
 use data::card_states::zones::ZoneQueries;
 use data::core::card_tags::CardTag;
+use data::core::modifier_data::ModifierMode;
 use data::delegates::game_delegate_data::CanBeBlocked;
 use data::delegates::layer::Layer;
 use data::delegates::query_value::EnumSets;
 use data::events::event_context::EventContext;
 use data::game_states::game_state::GameState;
+use data::properties::card_properties::CardProperties;
 use data::properties::duration::Duration;
 use data::properties::flag::Flag;
 use enumset::EnumSet;
-use primitives::game_primitives::{HasSource, PermanentId, Source};
+use primitives::game_primitives::{HasSource, PermanentId, Source, Timestamp, RULES_TIMESTAMP};
+use utils::outcome;
 use utils::outcome::Outcome;
 
 /// > 702.9a. Flying is an evasion ability.
@@ -35,16 +39,21 @@ use utils::outcome::Outcome;
 /// > 702.9c. Multiple instances of flying on the same creature are redundant.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R7029>
+pub fn ability() -> impl Ability {
+    StaticAbility::new().properties(|scope, properties| {
+        gain(ModifierMode::StaticAbility, properties);
+    })
+}
+
+/// Causes the [PermanentId] permanent to gain flying until the end of the turn.
 pub fn gain_this_turn(game: &mut GameState, context: EventContext, id: PermanentId) -> Outcome {
-    let turn = game.turn;
-    game.card_mut(id)?.properties.tags.add_effect(
-        context,
-        Duration::WhileOnBattlefieldThisTurn(id, turn),
-        EnumSets::add(Layer::AbilityModifyingEffects, context, CardTag::Flying),
-    );
-    game.card_mut(id)?.properties.can_be_blocked.add_effect(
-        context,
-        Duration::WhileOnBattlefieldThisTurn(id, turn),
+    gain(ModifierMode::add_ability_this_turn(context, id), &mut game.card_mut(id)?.properties)
+}
+
+fn gain(mode: ModifierMode, properties: &mut CardProperties) -> Outcome {
+    properties.tags.add_with_mode(mode, EnumSets::add_with_mode(mode, CardTag::Flying));
+    properties.can_be_blocked.add_with_mode(
+        mode,
         Flag::and(move |g, s, data: &CanBeBlocked| {
             Some(
                 g.card(data.blocker_id)?

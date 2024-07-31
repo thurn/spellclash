@@ -12,12 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use data::card_definitions::ability_definition::{Ability, StaticAbility};
 use data::card_states::zones::ZoneQueries;
 use data::core::card_tags::CardTag;
+use data::core::modifier_data::ModifierMode;
 use data::delegates::layer::Layer;
 use data::delegates::query_value::EnumSets;
 use data::events::event_context::EventContext;
 use data::game_states::game_state::GameState;
+use data::properties::card_properties::CardProperties;
 use data::properties::duration::Duration;
 use data::properties::flag::Flag;
 use primitives::game_primitives::{HasSource, PermanentId};
@@ -37,16 +40,19 @@ use utils::outcome::Outcome;
 /// > 702.10d. Multiple instances of haste on the same creature are redundant.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R70210>
+
+pub fn ability() -> impl Ability {
+    StaticAbility::new().properties(|scope, properties| {
+        gain(ModifierMode::StaticAbility, properties);
+    })
+}
+
+/// Causes the [PermanentId] permanent to gain haste until the end of the turn.
 pub fn gain_this_turn(game: &mut GameState, context: EventContext, id: PermanentId) -> Outcome {
-    let turn = game.turn;
-    game.card_mut(id)?.properties.tags.add_effect(
-        context,
-        Duration::WhileOnBattlefieldThisTurn(id, turn),
-        EnumSets::add(Layer::AbilityModifyingEffects, context, CardTag::Haste),
-    );
-    game.card_mut(id)?.properties.has_haste.add_effect(
-        context,
-        Duration::WhileOnBattlefieldThisTurn(id, turn),
-        Flag::overwrite(Layer::AbilityModifyingEffects, context.event_id.timestamp(), true),
-    )
+    gain(ModifierMode::add_ability_this_turn(context, id), &mut game.card_mut(id)?.properties)
+}
+
+fn gain(mode: ModifierMode, properties: &mut CardProperties) -> Outcome {
+    properties.tags.add_with_mode(mode, EnumSets::add_with_mode(mode, CardTag::Haste));
+    properties.has_haste.add_with_mode(mode, Flag::set_with_mode(mode, true))
 }

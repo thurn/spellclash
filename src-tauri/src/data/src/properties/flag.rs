@@ -15,6 +15,7 @@
 use primitives::game_primitives::{Source, Timestamp};
 
 use crate::core::function_types::Predicate;
+use crate::core::modifier_data::ModifierMode;
 use crate::delegates::layer::{EffectSortingKey, Layer};
 use crate::delegates::query_value::QueryValue;
 use crate::game_states::game_state::GameState;
@@ -27,8 +28,12 @@ pub enum Flag<TArg: 'static> {
 }
 
 impl<TArg: 'static> Flag<TArg> {
-    pub fn overwrite(layer: Layer, timestamp: impl Into<Timestamp>, value: bool) -> Flag<TArg> {
+    pub fn set(layer: Layer, timestamp: impl Into<Timestamp>, value: bool) -> Flag<TArg> {
         Self::Overwrite(EffectSortingKey::new(layer, timestamp.into()), value)
+    }
+
+    pub fn set_with_mode(mode: ModifierMode, value: bool) -> Flag<TArg> {
+        Self::Overwrite(mode.sorting_key(), value)
     }
 
     pub fn and(

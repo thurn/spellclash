@@ -281,6 +281,9 @@ pub trait HasObjectId {
 )]
 pub struct Timestamp(pub u64);
 
+/// Timestamp for effects created by a card's rules text
+pub const RULES_TIMESTAMP: Timestamp = Timestamp(0);
+
 /// Unique identifier for a permanent on the battlefield
 #[derive(
     Debug, Clone, Copy, Default, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize,

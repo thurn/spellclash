@@ -20,6 +20,7 @@ use primitives::game_primitives::{HasSource, Source, Timestamp};
 use utils::outcome;
 use utils::outcome::Outcome;
 
+use crate::core::modifier_data::ModifierMode;
 use crate::delegates::delegate_type::DelegateType;
 use crate::delegates::layer::{EffectSortingKey, Layer};
 use crate::delegates::query_value::{ChangeText, EnumSets, Ints, QueryValue};
@@ -69,16 +70,27 @@ impl<TArg, TModifier: QueryValue> CardArgumentProperty<TArg, TModifier> {
     /// Applies an effect modifier to this card for a given [Duration].
     pub fn add_effect(
         &mut self,
-        context: EventContext,
+        source: impl HasSource,
         duration: Duration,
         modifier: TModifier,
     ) -> Outcome {
         self.add(CardModifier {
-            source: context.source(),
+            source: source.source(),
             duration,
             delegate_type: DelegateType::Effect,
             effect: modifier,
         });
+        outcome::OK
+    }
+
+    /// Adds a modifier to this card with a given [ModifierMode].
+    pub fn add_with_mode(&mut self, mode: ModifierMode, modifier: TModifier) -> Outcome {
+        match mode {
+            ModifierMode::StaticAbility => self.add_static(modifier),
+            ModifierMode::Effect(context, _, duration) => {
+                self.add_effect(context, duration, modifier);
+            }
+        }
         outcome::OK
     }
 
