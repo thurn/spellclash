@@ -35,8 +35,9 @@ pub struct CardProperties {
     /// Can this creature be blocked by the indicated blocker?
     pub can_be_blocked: CardProperty<Flag<CanBeBlocked>>,
 
-    /// Does this card have haste?
-    pub has_haste: CardProperty<Flag<()>>,
+    /// 'Haste' effect. Can this creature attack on the same turn it is played,
+    /// or immediately after switching controllers?
+    pub can_attack_same_turn: CardProperty<Flag<()>>,
 
     /// Queries the colors of a card.
     ///

@@ -55,5 +55,5 @@ pub fn gain_this_turn(game: &mut GameState, context: EventContext, id: Permanent
 
 fn gain(mode: ModifierMode, properties: &mut CardProperties) -> Outcome {
     properties.tags.add_with_mode(mode, EnumSets::add_with_mode(mode, CardTag::Haste));
-    properties.has_haste.add_with_mode(mode, Flag::set_with_mode(mode, true))
+    properties.can_attack_same_turn.add_with_mode(mode, Flag::set_with_mode(mode, true))
 }

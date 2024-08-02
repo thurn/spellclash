@@ -43,8 +43,8 @@ pub fn can_attack(game: &GameState, source: Source, attacker_id: AttackerId) -> 
     let card = game.card(attacker_id)?;
     let types = card_queries::card_types(game, source, card.id)?;
     let mut result = true;
-    result &= card.last_changed_control != turn || has_haste(game, source, attacker_id)?;
-    result &= card.entered_current_zone != turn || has_haste(game, source, attacker_id)?;
+    result &= card.last_changed_control != turn || can_attack_same_turn(game, source, attacker_id)?;
+    result &= card.entered_current_zone != turn || can_attack_same_turn(game, source, attacker_id)?;
     result &= card.controller() == turn.active_player;
     result &= card.tapped_state == TappedState::Untapped;
     result &= types.contains(CardType::Creature);
@@ -56,8 +56,12 @@ pub fn can_attack(game: &GameState, source: Source, attacker_id: AttackerId) -> 
 }
 
 /// Returns true if the indicated permanent has the 'haste' ability.
-pub fn has_haste(game: &GameState, source: Source, permanent_id: PermanentId) -> Option<bool> {
-    game.card(permanent_id)?.properties.has_haste.query(game, source, false)
+pub fn can_attack_same_turn(
+    game: &GameState,
+    source: Source,
+    permanent_id: PermanentId,
+) -> Option<bool> {
+    game.card(permanent_id)?.properties.can_attack_same_turn.query(game, source, false)
 }
 
 /// Returns true if the indicated permanent has the 'flying' ability.

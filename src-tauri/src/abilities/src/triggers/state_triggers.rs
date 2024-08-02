@@ -27,6 +27,8 @@ pub fn when_controls_no(
 ) -> impl Ability {
     TriggeredAbility::new()
         .events(move |s, e| {
+            // Only add this check while the card is on the battlefield, since
+            // it is quite expensive.
             e.will_enter_battlefield.add_ability(s, EnumSet::all(), move |g, c, _| {
                 g.events.state_triggered_ability.add_state_trigger(s, move |g, _, _| {
                     g.battlefield(c.controller).none_matching(g, c.source(), predicate)
