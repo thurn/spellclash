@@ -222,9 +222,9 @@ fn find_deck(name: DeckName) -> Deck {
         deck_name::DANDAN => Deck {
             cards: btreemap! {
                 printed_card_id::ISLAND => 30,
-                printed_card_id::SUPPLANT_FORM => 15,
+                printed_card_id::INSIDIOUS_WILL => 15,
                 printed_card_id::DANDAN => 15,
-                printed_card_id::DANCE_OF_THE_SKYWISE => 15,
+                printed_card_id::CRYSTAL_SPRAY => 15,
             },
         },
         _ => {

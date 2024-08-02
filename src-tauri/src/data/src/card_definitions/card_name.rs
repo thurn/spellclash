@@ -80,3 +80,4 @@ pub const RAY_OF_COMMAND: CardName = CardName(uuid!("adf41d29-403d-4936-9689-314
 pub const GIANT_GROWTH: CardName = CardName(uuid!("5748ebf1-24e3-499d-ab7c-c2cebd462a24"));
 pub const CRYSTAL_SPRAY: CardName = CardName(uuid!("fe371e3a-976f-41d8-ad58-4b3b61415d71"));
 pub const SUPPLANT_FORM: CardName = CardName(uuid!("7e49f689-996a-477e-a327-32b69fbc0d85"));
+pub const INSIDIOUS_WILL: CardName = CardName(uuid!("8088d110-2314-45c3-b6ee-3f55d1f388e4"));

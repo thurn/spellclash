@@ -12,5 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod cards_in;
-pub mod cards_is;
+use abilities::targeting::targets;
+use data::card_definitions::ability_definition::SpellAbility;
+use data::card_definitions::card_definition::CardDefinition;
+use data::card_definitions::card_name;
+use rules::mutations::spells;
+
+pub fn insidious_will() -> CardDefinition {
+    CardDefinition::new(card_name::INSIDIOUS_WILL).ability(
+        SpellAbility::new().targets(targets::spell()).effect(|g, s, target| {
+            spells::counter(g, s, target);
+        }),
+    )
+}

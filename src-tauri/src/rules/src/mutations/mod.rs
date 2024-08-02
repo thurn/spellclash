@@ -19,5 +19,6 @@ pub mod move_card;
 pub mod permanents;
 pub mod players;
 pub mod priority;
+pub mod spells;
 pub mod state_based_actions;
 pub mod trigger_extension;

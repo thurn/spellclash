@@ -105,3 +105,5 @@ pub const CRYSTAL_SPRAY: PrintedCardId =
     PrintedCardId(uuid!("8798a4f1-34bb-449d-a8cc-faf8bda8e0ab"));
 pub const SUPPLANT_FORM: PrintedCardId =
     PrintedCardId(uuid!("3df927c0-9aa9-450b-ab2a-ae12c5489d57"));
+pub const INSIDIOUS_WILL: PrintedCardId =
+    PrintedCardId(uuid!("8eafb2bb-58bf-4c6b-ae8f-91bcea12c7d2"));
