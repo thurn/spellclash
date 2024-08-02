@@ -14,8 +14,7 @@
 
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::card_definitions::registry::Registry;
 
-pub fn garruks_gorehorn(_: &mut Registry) -> CardDefinition {
+pub fn garruks_gorehorn() -> CardDefinition {
     CardDefinition::new(card_name::GARRUKS_GOREHORN)
 }

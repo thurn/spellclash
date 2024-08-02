@@ -14,8 +14,7 @@
 
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::card_definitions::registry::Registry;
 
-pub fn centaur_courser(_: &mut Registry) -> CardDefinition {
+pub fn centaur_courser() -> CardDefinition {
     CardDefinition::new(card_name::CENTAUR_COURSER)
 }

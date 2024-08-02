@@ -14,12 +14,11 @@
 
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::card_definitions::registry::Registry;
 
-pub fn alpine_grizzly(_: &mut Registry) -> CardDefinition {
+pub fn alpine_grizzly() -> CardDefinition {
     CardDefinition::new(card_name::ALPINE_GRIZZLY)
 }
 
-pub fn alpha_tyrranax(_: &mut Registry) -> CardDefinition {
+pub fn alpha_tyrranax() -> CardDefinition {
     CardDefinition::new(card_name::ALPHA_TYRRANAX)
 }

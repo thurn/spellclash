@@ -14,8 +14,7 @@
 
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::card_definitions::registry::Registry;
 
-pub fn spined_wurm(_: &mut Registry) -> CardDefinition {
+pub fn spined_wurm() -> CardDefinition {
     CardDefinition::new(card_name::SPINED_WURM)
 }

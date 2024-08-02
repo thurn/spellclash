@@ -14,8 +14,7 @@
 
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::card_definitions::registry::Registry;
 
-pub fn ancient_brontodon(_: &mut Registry) -> CardDefinition {
+pub fn ancient_brontodon() -> CardDefinition {
     CardDefinition::new(card_name::ANCIENT_BRONTODON)
 }

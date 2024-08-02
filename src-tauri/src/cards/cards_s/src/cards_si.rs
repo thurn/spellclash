@@ -14,8 +14,7 @@
 
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::card_definitions::registry::Registry;
 
-pub fn silverback_ape(_: &mut Registry) -> CardDefinition {
+pub fn silverback_ape() -> CardDefinition {
     CardDefinition::new(card_name::SILVERBACK_APE)
 }

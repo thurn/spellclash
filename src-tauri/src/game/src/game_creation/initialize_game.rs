@@ -43,7 +43,6 @@ pub fn run(database: SqliteDatabase, game: &mut GameState) {
         }
     }
 
-    let registry = definitions::registry();
     let all_card_ids = game.zones.all_cards().map(|card| card.id).collect::<Vec<_>>();
     for card_id in all_card_ids {
         outcome::execute(|| {

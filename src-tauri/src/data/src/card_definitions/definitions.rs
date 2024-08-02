@@ -20,15 +20,13 @@ use once_cell::sync::Lazy;
 
 use crate::card_definitions::card_definition::CardDefinition;
 use crate::card_definitions::card_name::CardName;
-use crate::card_definitions::registry::Registry;
 
-pub type CardFn = fn(&mut Registry) -> CardDefinition;
+pub type CardFn = fn() -> CardDefinition;
 
 pub static DEFINITIONS: Lazy<DashSet<(u64, CardFn)>> = Lazy::new(DashSet::new);
 
 struct CardMap {
     cards: BTreeMap<CardName, CardDefinition>,
-    registry: Registry,
 }
 
 /// Contains [CardDefinition]s for all known cards, keyed by [CardName]
@@ -36,13 +34,12 @@ static CARDS: Lazy<CardMap> = Lazy::new(|| {
     let mut map = BTreeMap::new();
     let mut functions = DEFINITIONS.clone().into_iter().collect::<Vec<_>>();
     functions.sort_by_key(|(id, _)| *id);
-    let mut registry = Registry::default();
     for (_, card_fn) in functions {
-        let card = card_fn(&mut registry);
+        let card = card_fn();
         assert!(!map.contains_key(&card.card_name()), "Duplicate card name found");
         map.insert(card.card_name(), card);
     }
-    CardMap { cards: map, registry }
+    CardMap { cards: map }
 });
 
 /// Returns an iterator over all known card definitions in an undefined order
@@ -60,8 +57,4 @@ pub fn get(name: CardName) -> &'static CardDefinition {
         .cards
         .get(&name)
         .unwrap_or_else(|| panic!("Card {name:?} not found. Call card_list::initialize() first."))
-}
-
-pub fn registry() -> &'static Registry {
-    &CARDS.registry
 }

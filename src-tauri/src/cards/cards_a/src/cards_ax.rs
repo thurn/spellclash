@@ -14,8 +14,7 @@
 
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::card_definitions::registry::Registry;
 
-pub fn axebane_stag(_: &mut Registry) -> CardDefinition {
+pub fn axebane_stag() -> CardDefinition {
     CardDefinition::new(card_name::AXEBANE_STAG)
 }

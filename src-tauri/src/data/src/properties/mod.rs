@@ -19,4 +19,3 @@ pub mod card_property_data;
 pub mod duration;
 pub mod flag;
 pub mod property_value;
-pub mod query_condition;

@@ -21,13 +21,12 @@ use abilities::triggers::state_triggers;
 use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::card_definitions::registry::Registry;
 use data::printed_cards::card_subtypes::CreatureType;
 use primitives::game_primitives::Color;
 use rules::mutations::permanents;
 use rules::predicates::card_predicates;
 
-pub fn dance_of_the_skywise(_: &mut Registry) -> CardDefinition {
+pub fn dance_of_the_skywise() -> CardDefinition {
     CardDefinition::new(card_name::DANCE_OF_THE_SKYWISE).ability(
         SpellAbility::new().targets(targets::creature_you_control()).effect(move |g, c, target| {
             colors::set_this_turn(g, c, target, Color::Blue);
@@ -40,7 +39,7 @@ pub fn dance_of_the_skywise(_: &mut Registry) -> CardDefinition {
     )
 }
 
-pub fn dandan(_: &mut Registry) -> CardDefinition {
+pub fn dandan() -> CardDefinition {
     CardDefinition::new(card_name::DANDAN)
         .ability(attack_restrictions::cannot_attack_unless_defender_controls(
             card_predicates::island,

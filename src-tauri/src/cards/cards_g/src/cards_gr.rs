@@ -14,12 +14,11 @@
 
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::card_definitions::registry::Registry;
 
-pub fn grizzly_bears(_: &mut Registry) -> CardDefinition {
+pub fn grizzly_bears() -> CardDefinition {
     CardDefinition::new(card_name::GRIZZLY_BEARS)
 }
 
-pub fn grizzled_outrider(_: &mut Registry) -> CardDefinition {
+pub fn grizzled_outrider() -> CardDefinition {
     CardDefinition::new(card_name::GRIZZLED_OUTRIDER)
 }

@@ -14,8 +14,7 @@
 
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::card_definitions::registry::Registry;
 
-pub fn canopy_gorger(_: &mut Registry) -> CardDefinition {
+pub fn canopy_gorger() -> CardDefinition {
     CardDefinition::new(card_name::CANOPY_GORGER)
 }

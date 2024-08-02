@@ -17,13 +17,12 @@ use abilities::targeting::targets;
 use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use data::card_definitions::registry::Registry;
 use primitives::game_primitives::HasSource;
 use rules::dispatcher::dispatch;
 use rules::mutations::trigger_extension::TriggerExt;
 use rules::mutations::{change_controller, permanents};
 
-pub fn ray_of_command(_: &mut Registry) -> CardDefinition {
+pub fn ray_of_command() -> CardDefinition {
     CardDefinition::new(card_name::RAY_OF_COMMAND).ability(
         SpellAbility::new().targets(targets::creature_opponent_controls()).effect(
             |g, c, target| {
