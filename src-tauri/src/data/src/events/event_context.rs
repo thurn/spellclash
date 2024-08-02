@@ -39,8 +39,8 @@ pub struct EventContext {
 }
 
 impl EventContext {
-    pub fn scope(&self) -> AbilityScope {
-        AbilityScope { ability_id: self.this }
+    pub fn timestamp(&self) -> Timestamp {
+        self.event_id.into()
     }
 }
 

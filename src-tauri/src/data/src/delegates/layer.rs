@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use primitives::game_primitives::Timestamp;
+use primitives::game_primitives::{Timestamp, PRINTED_TEXT_TIMESTAMP};
 
 /// Represents a layer or sublayer for resolving continuous effects.
 ///
@@ -26,7 +26,7 @@ use primitives::game_primitives::Timestamp;
 /// <https://yawgatog.com/resources/magic-rules/#R6131>
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Layer {
-    GameRules,
+    PrintedText,
     CopyEffects,
     FaceDownEffects,
     ControlChangingCharacteristicEffects,
@@ -50,6 +50,9 @@ pub struct EffectSortingKey {
     pub layer: Option<Layer>,
     pub timestamp: Option<Timestamp>,
 }
+
+pub const PRINTED_RULE_SORTING_KEY: EffectSortingKey =
+    EffectSortingKey { layer: Some(Layer::PrintedText), timestamp: Some(PRINTED_TEXT_TIMESTAMP) };
 
 impl EffectSortingKey {
     pub fn new(layer: Layer, timestamp: Timestamp) -> Self {

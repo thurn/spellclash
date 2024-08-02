@@ -211,7 +211,7 @@ impl Default for Zones {
             all_cards: Default::default(),
             stack_abilities: Default::default(),
             next_object_id: ObjectId(100),
-            next_timestamp: Timestamp(1),
+            next_timestamp: Timestamp(10),
             libraries: Default::default(),
             hands: Default::default(),
             graveyards: Default::default(),
@@ -347,6 +347,7 @@ impl Zones {
             entered_current_zone: current_turn,
             last_changed_control: current_turn,
             previous_object_id: None,
+            lost_all_abilities: vec![],
             printed_card_reference: Some(reference.printed_card_reference),
         });
 

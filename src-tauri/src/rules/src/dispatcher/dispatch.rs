@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use data::card_states::zones::{ToCardId, ZoneQueries};
+use data::core::rule_type;
 use data::events::card_events::CardEvents;
 use data::events::event_context::EventContext;
 use data::events::game_event::{GameEvent, GameEventCallback};
@@ -41,8 +42,11 @@ pub fn game_event<TArg: 'static>(
         outcome::execute(|| {
             let callback = &event(&game.events).callbacks[i];
             let mut context = build_callback_context(callback, game, source)?;
-            // Do this later to avoid generating IDs when the function isn't going to run
+
+            // Do this after checking validity to avoid generating IDs when the function
+            // isn't going to run
             context.event_id = EventId(game.zones.new_timestamp().0);
+
             let function = event(&game.events).callbacks[i].function.clone();
             function.invoke(game, context, &arg);
             outcome::OK
@@ -61,8 +65,11 @@ pub fn card_event<TArg: 'static>(
         outcome::execute(|| {
             let callback = &event(&game.card(id)?.events).callbacks[i];
             let mut context = build_callback_context(callback, game, source)?;
-            // Do this later to avoid generating IDs when the function isn't going to run
+
+            // Do this after checking validity to avoid generating IDs when the function
+            // isn't going to run
             context.event_id = EventId(game.zones.new_timestamp().0);
+
             let function = event(&game.card(id)?.events).callbacks[i].function.clone();
             function.invoke(game, context, arg);
             outcome::OK
@@ -100,6 +107,15 @@ fn build_callback_context<TArg>(
     if !callback.zones.contains(card.zone) {
         return None;
     };
+
+    if !rule_type::is_active(
+        game,
+        callback.duration,
+        callback.rule_type,
+        callback.effect_sorting_key,
+    ) {
+        return None;
+    }
 
     Some(EventContext {
         event_id: EventId::default(),

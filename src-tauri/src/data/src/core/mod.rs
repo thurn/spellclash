@@ -17,3 +17,4 @@ pub mod function_types;
 pub mod modifier_data;
 pub mod numerics;
 pub mod panel_address;
+pub mod rule_type;

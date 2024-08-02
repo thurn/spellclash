@@ -17,16 +17,21 @@ use data::card_states::iter_matching::IterMatching;
 use data::card_states::zones::ZoneQueries;
 use data::core::function_types::CardPredicate;
 use data::delegates::game_delegate_data::CanAttackTarget;
+use data::delegates::layer::Layer;
 use data::properties::flag::Flag;
-use primitives::game_primitives::{PermanentId, Source, Zone};
+use primitives::game_primitives::{PermanentId, Source, Zone, PRINTED_TEXT_TIMESTAMP};
+
 /// Prevent this creature from attacking unless the defending player controls a
 /// permanent matching the given predicate.
 pub fn cannot_attack_unless_defender_controls(
     predicate: impl CardPredicate<PermanentId>,
 ) -> impl Ability {
-    StaticAbility::new().properties(move |c, p| {
-        p.can_attack_target.add_static(Flag::and(move |g, s, data: &CanAttackTarget| {
-            g.battlefield(data.target.defending_player()).any_matching(g, s, predicate)
-        }))
+    StaticAbility::new().properties(move |s, p| {
+        p.can_attack_target.add_ability(
+            s,
+            Flag::and(move |g, source, data: &CanAttackTarget| {
+                g.battlefield(data.target.defending_player()).any_matching(g, source, predicate)
+            }),
+        )
     })
 }

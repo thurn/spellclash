@@ -14,15 +14,16 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use primitives::game_primitives::EventId;
+use primitives::game_primitives::{CardId, EventId, PermanentId, Timestamp};
 
 use crate::game_states::effect_state::EffectState;
 use crate::game_states::state_value::StateValue;
 use crate::game_states::this_turn_state::ThisTurnState;
+use crate::properties::duration::Duration;
 
 /// Stores state information associated with abilities in an ongoing
 /// game.
-#[derive(Debug, Default, Clone)]
+#[derive(Default, Clone)]
 pub struct AbilityState {
     /// State which persists for the duration of the current turn.
     pub this_turn: ThisTurnState,

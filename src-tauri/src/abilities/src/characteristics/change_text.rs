@@ -73,7 +73,7 @@ fn change_spell_color_text(
 ) -> Outcome {
     game.card_mut(spell_id)?.properties.change_color_text.add_effect(
         context,
-        Duration::WhileOnStackOrBattlefield(spell_id),
+        Duration::WhileOnStackOrBattlefieldThisTurn(spell_id, context.current_turn),
         ChangeText::replace(context.event_id, old_color, new_color),
     )
 }
@@ -108,12 +108,12 @@ fn change_spell_land_type_text(
     let turn = game.turn;
     game.card_mut(spell_id)?.properties.land_types.add_effect(
         context,
-        Duration::WhileOnStackOrBattlefield(spell_id),
+        Duration::WhileOnStackOrBattlefieldThisTurn(spell_id, context.current_turn),
         EnumSets::replace(Layer::TextChangingEffects, context.event_id, old_type, new_type),
     );
     game.card_mut(spell_id)?.properties.change_land_type_text.add_effect(
         context,
-        Duration::WhileOnStackOrBattlefield(spell_id),
+        Duration::WhileOnStackOrBattlefieldThisTurn(spell_id, context.current_turn),
         ChangeText::replace(context.event_id, old_type, new_type),
     )
 }

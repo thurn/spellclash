@@ -20,16 +20,21 @@ use primitives::game_primitives::{AbilityId, HasController, Source, Zone};
 
 use crate::card_states::zones::ZoneQueries;
 use crate::core::function_types::Mutation;
+use crate::core::rule_type::RuleType;
 use crate::delegates::delegate_type::DelegateType;
+use crate::delegates::layer::{EffectSortingKey, PRINTED_RULE_SORTING_KEY};
 use crate::delegates::scope::AbilityScope;
 use crate::events::event_context::EventContext;
 use crate::game_states::game_state::GameState;
+use crate::properties::duration::Duration;
 
 #[derive(Clone)]
 pub struct GameEventCallback<TArg> {
     pub ability_id: AbilityId,
     pub zones: EnumSet<Zone>,
-    pub delegate_type: DelegateType,
+    pub duration: Duration,
+    pub rule_type: RuleType,
+    pub effect_sorting_key: Option<EffectSortingKey>,
     pub function: Box<dyn Mutation<TArg>>,
 }
 
@@ -51,6 +56,8 @@ impl<TArg> Default for GameEvent<TArg> {
 }
 
 impl<TArg> GameEvent<TArg> {
+    /// Adds an event callback for a printed ability of a card which only fires
+    /// while this card is on the battlefield.
     pub fn add_battlefield_ability(
         &mut self,
         scope: AbilityScope,
@@ -59,6 +66,7 @@ impl<TArg> GameEvent<TArg> {
         self.add_ability(scope, Zone::Battlefield, function);
     }
 
+    /// Adds an event callback for a printed ability of a card.
     pub fn add_ability(
         &mut self,
         scope: AbilityScope,
@@ -68,21 +76,29 @@ impl<TArg> GameEvent<TArg> {
         self.callbacks.push(GameEventCallback {
             ability_id: scope.ability_id,
             zones: zones.into(),
-            delegate_type: DelegateType::Ability,
+            duration: Duration::Continuous,
+            rule_type: RuleType::Ability(scope.ability_id.card_id),
+            effect_sorting_key: Some(PRINTED_RULE_SORTING_KEY),
             function: Box::new(function),
         });
     }
 
+    /// Adds an effect callback.
+    ///
+    /// Unlike ability callbacks, this function will still be invoked if the
+    /// owning card loses all abilities.
     pub fn add_effect(
         &mut self,
-        scope: AbilityScope,
+        context: EventContext,
         zones: impl Into<EnumSet<Zone>>,
         function: impl Fn(&mut GameState, EventContext, &TArg) + Copy + Send + Sync + 'static,
     ) {
         self.callbacks.push(GameEventCallback {
-            ability_id: scope.ability_id,
+            ability_id: context.this,
             zones: zones.into(),
-            delegate_type: DelegateType::Effect,
+            duration: Duration::Continuous,
+            rule_type: RuleType::Effect,
+            effect_sorting_key: None,
             function: Box::new(function),
         });
     }

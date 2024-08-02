@@ -23,9 +23,11 @@ use primitives::game_primitives::{
 };
 use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};
+use utils::outcome;
+use utils::outcome::Outcome;
 
 use crate::actions::agent_action::AgentAction;
-use crate::card_states::card_state::CardState;
+use crate::card_states::card_state::{CardState, LostAllAbilities};
 use crate::card_states::stack_ability_state::StackAbilityState;
 use crate::card_states::zones::{HasZones, ToCardId, ZoneQueries, Zones};
 use crate::core::numerics::TurnNumber;
@@ -40,6 +42,7 @@ use crate::player_states::player_map::PlayerMap;
 use crate::player_states::player_state::{PlayerQueries, PlayerState, Players};
 use crate::prompts::game_update::UpdateChannel;
 use crate::prompts::prompt::PromptResponse;
+use crate::properties::duration::Duration;
 
 /// The high-level activity which this [GameState] is being used for.
 #[derive(Debug, Clone)]
@@ -215,10 +218,16 @@ impl GameState {
         }
     }
 
-    /// Checks if a permanent has lost all abilities this turn, and returns the
-    /// [Timestamp] at which all abilities were removed.
-    pub fn has_lost_all_abilities(&self, id: PermanentId) -> Option<Timestamp> {
-        self.ability_state.this_turn.has_lost_all_abilities(id)
+    /// Checks if a card has lost all abilities, and returns the [Timestamp] at
+    /// which all abilities were removed.
+    pub fn has_lost_all_abilities(&self, id: CardId) -> Option<Timestamp> {
+        let mut highest = None;
+        for lost in &self.card(id)?.lost_all_abilities {
+            if lost.duration.is_active(self) && highest < Some(lost.timestamp) {
+                highest = Some(lost.timestamp);
+            }
+        }
+        highest
     }
 }
 

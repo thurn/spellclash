@@ -21,9 +21,11 @@ use utils::outcome;
 use utils::outcome::Outcome;
 
 use crate::core::modifier_data::ModifierMode;
+use crate::core::rule_type::RuleType;
 use crate::delegates::delegate_type::DelegateType;
 use crate::delegates::layer::{EffectSortingKey, Layer};
 use crate::delegates::query_value::{ChangeText, EnumSets, Ints, QueryValue};
+use crate::delegates::scope::AbilityScope;
 use crate::events::event_context::EventContext;
 use crate::game_states::game_state::GameState;
 use crate::properties::card_modifier::CardModifier;
@@ -41,12 +43,11 @@ pub struct LostAllAbilities {
 #[derive(Clone)]
 pub struct CardProperty<TModifier> {
     modifiers: Vec<CardModifier<TModifier>>,
-    lost_all_abilities: Option<LostAllAbilities>,
 }
 
 impl<TModifier: QueryValue> Default for CardProperty<TModifier> {
     fn default() -> Self {
-        Self { modifiers: vec![], lost_all_abilities: None }
+        Self { modifiers: vec![] }
     }
 }
 
@@ -55,11 +56,11 @@ impl<TModifier: QueryValue> CardProperty<TModifier> {
         self.modifiers.push(modifier);
     }
 
-    pub fn add_static(&mut self, effect: TModifier) {
+    pub fn add_ability(&mut self, scope: AbilityScope, effect: TModifier) {
         self.add(CardModifier {
             source: Source::Game,
             duration: Duration::Continuous,
-            delegate_type: DelegateType::Ability,
+            rule_type: RuleType::Ability(scope.ability_id.card_id),
             effect,
         });
     }
@@ -74,7 +75,7 @@ impl<TModifier: QueryValue> CardProperty<TModifier> {
         self.add(CardModifier {
             source: source.source(),
             duration,
-            delegate_type: DelegateType::Effect,
+            rule_type: RuleType::Effect,
             effect: modifier,
         });
         outcome::OK
@@ -83,16 +84,12 @@ impl<TModifier: QueryValue> CardProperty<TModifier> {
     /// Adds a modifier to this card with a given [ModifierMode].
     pub fn add_with_mode(&mut self, mode: ModifierMode, modifier: TModifier) -> Outcome {
         match mode {
-            ModifierMode::StaticAbility => self.add_static(modifier),
+            ModifierMode::PrintedAbility(scope) => self.add_ability(scope, modifier),
             ModifierMode::Effect(context, _, duration) => {
                 self.add_effect(context, duration, modifier);
             }
         }
         outcome::OK
-    }
-
-    pub fn set_lost_all_abilities(&mut self, lost_all_abilities: LostAllAbilities) {
-        self.lost_all_abilities = Some(lost_all_abilities);
     }
 }
 
@@ -102,7 +99,7 @@ impl<T: EnumSetType> CardProperty<EnumSets<T>> {
         let mut largest_key = EffectSortingKey::default();
         let mut result = current;
         for modifier in &self.modifiers {
-            if !modifier.active(game, &self.lost_all_abilities) {
+            if !modifier.active(game) {
                 continue;
             }
 
@@ -148,7 +145,7 @@ impl<TArg> CardProperty<Flag<TArg>> {
         let mut and = true;
         let mut or = false;
         for modifier in &self.modifiers {
-            if !modifier.active(game, &self.lost_all_abilities) {
+            if !modifier.active(game) {
                 continue;
             }
 
@@ -180,7 +177,7 @@ impl<T: Default + Copy + Add<Output = T>> CardProperty<Ints<T>> {
         let mut result = current;
         let mut add = T::default();
         for modifier in &self.modifiers {
-            if !modifier.active(game, &self.lost_all_abilities) {
+            if !modifier.active(game) {
                 continue;
             }
 
@@ -206,7 +203,7 @@ impl<TResult: EnumSetType> CardProperty<ChangeText<TResult>> {
         let mut largest_key = EffectSortingKey::default();
         let mut result = current;
         for modifier in &self.modifiers {
-            if !modifier.active(game, &self.lost_all_abilities) {
+            if !modifier.active(game) {
                 continue;
             }
 

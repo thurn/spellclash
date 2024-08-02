@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use enumset::EnumSet;
@@ -37,6 +38,7 @@ use crate::game_states::game_state::{GameState, TurnData};
 use crate::printed_cards::printed_card::{Face, PrintedCard, PrintedCardFace};
 use crate::printed_cards::printed_card_id::PrintedCardId;
 use crate::properties::card_properties::CardProperties;
+use crate::properties::duration::Duration;
 
 /// Represents the state of a card or card-like object.
 ///
@@ -46,7 +48,7 @@ use crate::properties::card_properties::CardProperties;
 /// - A copy of a card on the stack
 /// - A token
 /// - An emblem
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct CardState {
     /// Unique identifier for this card in the [Zones] struct.
     ///
@@ -190,6 +192,9 @@ pub struct CardState {
     /// obtained its current [ObjectId], if any.
     pub previous_object_id: Option<ObjectId>,
 
+    /// Instances in which this card has lost all abilities.
+    pub lost_all_abilities: Vec<LostAllAbilities>,
+
     /// Printed Card associated with this card. Use the [Self::printed] method
     /// instead of accessing this directly.
     ///
@@ -295,4 +300,14 @@ pub struct ControlChangingEffect {
 pub enum PhasingState {
     PhasedIn,
     PhasedOut,
+}
+
+/// Stores information about a card which has lost all abilities.
+#[derive(Clone)]
+pub struct LostAllAbilities {
+    /// Duration for which the card has lost all abilities.
+    pub duration: Duration,
+
+    /// Timestamp at which the card lost all abilities.
+    pub timestamp: Timestamp,
 }

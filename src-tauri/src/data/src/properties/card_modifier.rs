@@ -16,6 +16,8 @@ use color_eyre::owo_colors::Effect;
 use dyn_clone::DynClone;
 use primitives::game_primitives::Source;
 
+use crate::core::rule_type;
+use crate::core::rule_type::RuleType;
 use crate::delegates::delegate_type::DelegateType;
 use crate::delegates::layer::{EffectSortingKey, Layer};
 use crate::delegates::query_value::QueryValue;
@@ -28,27 +30,13 @@ use crate::properties::query_condition::QueryCondition;
 pub struct CardModifier<TModifier> {
     pub source: Source,
     pub duration: Duration,
-    pub delegate_type: DelegateType,
+    pub rule_type: RuleType,
     pub effect: TModifier,
 }
 
 impl<TModifier: QueryValue> CardModifier<TModifier> {
-    pub fn active(&self, game: &GameState, lost_all_abilities: &Option<LostAllAbilities>) -> bool {
-        if !self.duration.is_active(game) {
-            return false;
-        }
-
-        if let Some(lost_all) = lost_all_abilities {
-            if let Some(k) = self.effect.effect_sorting_key() {
-                if self.delegate_type == DelegateType::Ability
-                    && k < EffectSortingKey::new(Layer::AbilityModifyingEffects, lost_all.timestamp)
-                    && lost_all.duration.is_active(game)
-                {
-                    return false;
-                }
-            }
-        }
-
-        true
+    /// Returns true if this modifier should currently be applied to the game.
+    pub fn active(&self, game: &GameState) -> bool {
+        rule_type::is_active(game, self.duration, self.rule_type, self.effect.effect_sorting_key())
     }
 }

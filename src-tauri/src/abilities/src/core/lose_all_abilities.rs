@@ -12,35 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use data::card_states::card_state::LostAllAbilities;
 use data::card_states::zones::ZoneQueries;
+use data::events::event_context::EventContext;
 use data::game_states::game_state::GameState;
-use data::properties::card_property::LostAllAbilities;
+use data::printed_cards::card_subtypes::CreatureType;
 use data::properties::duration::Duration;
-use primitives::game_primitives::{PermanentId, Timestamp};
+use enumset::EnumSet;
+use primitives::game_primitives::PermanentId;
+use utils::outcome;
+use utils::outcome::Outcome;
 
-/// Causes the [PermanentId] permanent to lose all abilities for the duration of
-/// the current turn.
-pub fn this_turn(game: &mut GameState, permanent_id: PermanentId, timestamp: impl Into<Timestamp>) {
-    let turn = game.turn;
-    let timestamp = timestamp.into();
-    game.ability_state.this_turn.set_lost_all_abilities(permanent_id, timestamp);
-    if let Some(card) = game.card_mut(permanent_id) {
-        let lost = LostAllAbilities {
-            timestamp,
-            duration: Duration::WhileOnBattlefieldThisTurn(permanent_id, turn),
-        };
-        card.properties.tags.set_lost_all_abilities(lost.clone());
-        card.properties.can_attack_target.set_lost_all_abilities(lost.clone());
-        card.properties.can_be_blocked.set_lost_all_abilities(lost.clone());
-        card.properties.has_haste.set_lost_all_abilities(lost.clone());
-        card.properties.colors.set_lost_all_abilities(lost.clone());
-        card.properties.creature_types.set_lost_all_abilities(lost.clone());
-        card.properties.land_types.set_lost_all_abilities(lost.clone());
-        card.properties.change_land_type_text.set_lost_all_abilities(lost.clone());
-        card.properties.change_color_text.set_lost_all_abilities(lost.clone());
-        card.properties.power.set_lost_all_abilities(lost.clone());
-        card.properties.base_power.set_lost_all_abilities(lost.clone());
-        card.properties.toughness.set_lost_all_abilities(lost.clone());
-        card.properties.base_toughness.set_lost_all_abilities(lost.clone());
-    }
+/// Marks a permanent as having lost all abilities while it is on the
+/// battlefield this turn.
+pub fn set_this_turn(game: &mut GameState, context: EventContext, id: PermanentId) -> Outcome {
+    game.card_mut(id)?.lost_all_abilities.push(LostAllAbilities {
+        duration: Duration::WhileOnBattlefieldThisTurn(id, context.current_turn),
+        timestamp: context.timestamp(),
+    });
+    outcome::OK
 }

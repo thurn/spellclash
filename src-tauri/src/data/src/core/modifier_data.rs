@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use primitives::game_primitives::{PermanentId, Source, RULES_TIMESTAMP};
+use primitives::game_primitives::{PermanentId, Source, PRINTED_TEXT_TIMESTAMP};
 
-use crate::delegates::layer::{EffectSortingKey, Layer};
+use crate::delegates::layer::{EffectSortingKey, Layer, PRINTED_RULE_SORTING_KEY};
+use crate::delegates::scope::AbilityScope;
 use crate::events::event_context::EventContext;
 use crate::properties::duration::Duration;
 
@@ -22,7 +23,7 @@ use crate::properties::duration::Duration;
 #[derive(Clone, Copy)]
 pub enum ModifierMode {
     /// Modifier based on an ability printed on a card.
-    StaticAbility,
+    PrintedAbility(AbilityScope),
 
     /// Modifier created by a game effect.
     Effect(EventContext, Layer, Duration),
@@ -41,7 +42,7 @@ impl ModifierMode {
 
     pub fn sorting_key(&self) -> EffectSortingKey {
         match self {
-            ModifierMode::StaticAbility => EffectSortingKey::new(Layer::GameRules, RULES_TIMESTAMP),
+            ModifierMode::PrintedAbility(_) => PRINTED_RULE_SORTING_KEY,
             ModifierMode::Effect(context, layer, _) => {
                 EffectSortingKey::new(*layer, context.event_id.timestamp())
             }

@@ -15,7 +15,7 @@
 use std::ops::Add;
 
 use enumset::{EnumSet, EnumSetType};
-use primitives::game_primitives::{Timestamp, RULES_TIMESTAMP};
+use primitives::game_primitives::{Timestamp, PRINTED_TEXT_TIMESTAMP};
 
 use crate::core::modifier_data::ModifierMode;
 use crate::delegates::layer::{EffectSortingKey, Layer};

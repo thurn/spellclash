@@ -60,8 +60,8 @@ pub trait TriggerExt<TArg> {
     );
 
     /// Equivalent to [Self::add_trigger], but only triggers if the ability is
-    /// not currently on the stack. Used to implement state-based triggers.
-    fn add_trigger_if_not_on_stack(
+    /// not currently on the stack.
+    fn add_state_trigger(
         &mut self,
         scope: AbilityScope,
         predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Send + Sync + 'static,
@@ -88,7 +88,7 @@ impl<TArg: Clone> TriggerExt<TArg> for GameEvent<TArg> {
         predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Send + Sync + 'static,
         effect: impl Fn(&mut GameState, EventContext) + Copy + Send + Sync + 'static,
     ) {
-        self.add_effect(context.scope(), EnumSet::all(), move |g, c, arg| {
+        self.add_effect(context, EnumSet::all(), move |g, c, arg| {
             if g.has_card(permanent_id)
                 && !g.ability_state.fired_one_time_effects.contains(&context.event_id)
                 && predicate(g, c.original_source, arg) == Some(true)
@@ -100,7 +100,7 @@ impl<TArg: Clone> TriggerExt<TArg> for GameEvent<TArg> {
         });
     }
 
-    fn add_trigger_if_not_on_stack(
+    fn add_state_trigger(
         &mut self,
         scope: AbilityScope,
         predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Send + Sync + 'static,

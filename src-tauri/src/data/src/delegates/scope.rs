@@ -15,8 +15,12 @@
 use primitives::game_primitives::AbilityId;
 
 use crate::card_states::zones::HasZones;
+
 /// Context for an ability while it is being created, used to register
-/// callbacks, etc
+/// callbacks, etc.
+///
+/// This type should only be used during initialization. An API that accepts an
+/// ability scope is assumed to be creating a printed ability of a card.
 #[derive(Copy, Clone)]
 pub struct AbilityScope {
     /// ID of this ability

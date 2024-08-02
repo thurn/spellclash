@@ -15,6 +15,7 @@
 use primitives::game_primitives::{HasObjectId, PermanentId, SpellId, Zone};
 
 use crate::card_states::zones::ZoneQueries;
+use crate::game_states::game_phase_step::GamePhaseStep;
 use crate::game_states::game_state::{GameState, TurnData};
 
 /// Controls how long an effect should apply to the game.
@@ -30,8 +31,8 @@ pub enum Duration {
     WhileOnStack(SpellId),
 
     /// Effect applies while the [SpellId] spell is on the stack or after it has
-    /// resolved and is on the battlefield.
-    WhileOnStackOrBattlefield(SpellId),
+    /// resolved and is on the battlefield this turn.
+    WhileOnStackOrBattlefieldThisTurn(SpellId, TurnData),
 
     /// Effect applies while the [PermanentId] permanent is on the battlefield
     /// during the [TurnData] turn.
@@ -50,13 +51,16 @@ impl Duration {
             Duration::Continuous => true,
             Duration::WhileOnBattlefield(permanent_id) => game.has_card(*permanent_id),
             Duration::WhileOnStack(spell_id) => game.has_card(*spell_id),
-            Duration::WhileOnStackOrBattlefield(spell_id) => {
-                game.has_card(*spell_id)
+            Duration::WhileOnStackOrBattlefieldThisTurn(spell_id, turn) => {
+                let exists = game.has_card(*spell_id)
                     || (game.card(*spell_id)?.zone == Zone::Battlefield
-                        && game.card(*spell_id)?.previous_object_id == Some(spell_id.object_id()))
+                        && game.card(*spell_id)?.previous_object_id == Some(spell_id.object_id()));
+                exists && game.turn == *turn && game.step != GamePhaseStep::Cleanup
             }
             Duration::WhileOnBattlefieldThisTurn(permanent_id, turn) => {
-                game.turn == *turn && game.has_card(*permanent_id)
+                game.turn == *turn
+                    && game.has_card(*permanent_id)
+                    && game.step != GamePhaseStep::Cleanup
             }
         })
     }

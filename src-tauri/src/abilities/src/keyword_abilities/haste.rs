@@ -26,6 +26,8 @@ use data::properties::flag::Flag;
 use primitives::game_primitives::{HasSource, PermanentId};
 use utils::outcome::Outcome;
 
+/// The Haste ability.
+///
 /// > 702.10a. Haste is a static ability.
 ///
 /// > 702.10b. If a creature has haste, it can attack even if it hasn't been
@@ -40,10 +42,9 @@ use utils::outcome::Outcome;
 /// > 702.10d. Multiple instances of haste on the same creature are redundant.
 ///
 /// <https://yawgatog.com/resources/magic-rules/#R70210>
-
 pub fn ability() -> impl Ability {
     StaticAbility::new().properties(|scope, properties| {
-        gain(ModifierMode::StaticAbility, properties);
+        gain(ModifierMode::PrintedAbility(scope), properties);
     })
 }
 

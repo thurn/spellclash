@@ -25,10 +25,14 @@ use data::properties::card_properties::CardProperties;
 use data::properties::duration::Duration;
 use data::properties::flag::Flag;
 use enumset::EnumSet;
-use primitives::game_primitives::{HasSource, PermanentId, Source, Timestamp, RULES_TIMESTAMP};
+use primitives::game_primitives::{
+    HasSource, PermanentId, Source, Timestamp, PRINTED_TEXT_TIMESTAMP,
+};
 use utils::outcome;
 use utils::outcome::Outcome;
 
+/// The Flying ability.
+///
 /// > 702.9a. Flying is an evasion ability.
 ///
 /// > 702.9b. A creature with flying can't be blocked except by creatures with
@@ -41,7 +45,7 @@ use utils::outcome::Outcome;
 /// <https://yawgatog.com/resources/magic-rules/#R7029>
 pub fn ability() -> impl Ability {
     StaticAbility::new().properties(|scope, properties| {
-        gain(ModifierMode::StaticAbility, properties);
+        gain(ModifierMode::PrintedAbility(scope), properties);
     })
 }
 
