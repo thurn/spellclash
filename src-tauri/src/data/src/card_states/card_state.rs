@@ -17,8 +17,8 @@ use std::sync::Arc;
 
 use enumset::EnumSet;
 use primitives::game_primitives::{
-    AbilityId, CardId, EntityId, EventId, HasController, HasPlayerName, ObjectId, PermanentId,
-    PlayerName, Timestamp, Zone,
+    AbilityId, CardId, EntityId, EventId, HasController, HasPlayerName, HasSource, ObjectId,
+    PermanentId, PlayerName, Timestamp, Zone,
 };
 use serde::Deserialize;
 use slotmap::__impl::Serialize;
@@ -31,6 +31,7 @@ use crate::card_states::custom_card_state::CustomCardStateList;
 #[allow(unused)] // Used in docs
 use crate::card_states::zones::Zones;
 use crate::card_states::zones::{HasZones, ToCardId};
+use crate::core::card_tags::CardTag;
 use crate::core::numerics::Damage;
 use crate::events::card_events::CardEvents;
 #[allow(unused)] // Used in docs
@@ -219,6 +220,12 @@ impl CardState {
         } else {
             None
         }
+    }
+
+    /// Queries the whether the current set of [CardTag]s for this card contains
+    /// a given tag.
+    pub fn has_tag(&self, game: &GameState, source: impl HasSource, tag: CardTag) -> Option<bool> {
+        Some(self.properties.tags.query(game, source.source(), EnumSet::empty()).contains(tag))
     }
 }
 

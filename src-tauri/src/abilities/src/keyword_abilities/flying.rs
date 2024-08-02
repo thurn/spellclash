@@ -59,13 +59,7 @@ fn gain(mode: ModifierMode, properties: &mut CardProperties) -> Outcome {
     properties.can_be_blocked.add_with_mode(
         mode,
         Flag::and(move |g, s, data: &CanBeBlocked| {
-            Some(
-                g.card(data.blocker_id)?
-                    .properties
-                    .tags
-                    .query(g, s, EnumSet::empty())
-                    .contains(CardTag::Flying),
-            )
+            g.card(data.blocker_id)?.has_tag(g, s, CardTag::Flying)
         }),
     )
 }
