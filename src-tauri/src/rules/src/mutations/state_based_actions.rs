@@ -87,7 +87,10 @@ fn state_based_actions(game: &mut GameState) -> bool {
                         performed_action = true;
                     }
                     StateBasedEvent::GainedPoisonCounters(_) => {}
-                    StateBasedEvent::TokenLeftBattlefield(_) => {}
+                    StateBasedEvent::TokenLeftBattlefield(card_id) => {
+                        game.zones.destroy_card(card_id)?;
+                        performed_action = true;
+                    }
                     StateBasedEvent::CopyLeftStackOrBattlefield(_) => {}
                     StateBasedEvent::CreatureToughnessChanged(permanent_id) => {
                         if card_queries::toughness(game, Source::Game, permanent_id)? <= 0 {

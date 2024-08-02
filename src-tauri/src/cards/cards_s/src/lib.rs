@@ -15,4 +15,5 @@
 pub mod cards_sc;
 pub mod cards_si;
 pub mod cards_sp;
+pub mod cards_su;
 pub mod cards_sw;

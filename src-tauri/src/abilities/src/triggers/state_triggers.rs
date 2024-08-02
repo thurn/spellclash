@@ -19,6 +19,7 @@ use data::core::function_types::{CardMutation, CardPredicate};
 use enumset::EnumSet;
 use primitives::game_primitives::{AbilityId, CardId, HasSource, PermanentId, Zone};
 use rules::mutations::trigger_extension::TriggerExt;
+
 /// If this card's controller controls no permanents matching `predicate`,
 /// applies `mutation` to it.
 pub fn when_controls_no(
@@ -26,16 +27,9 @@ pub fn when_controls_no(
     mutation: impl CardMutation<CardId>,
 ) -> impl Ability {
     TriggeredAbility::new()
-        .events(move |s, e| {
-            // Only add this check while the card is on the battlefield, since
-            // it is quite expensive.
-            e.will_enter_battlefield.add_ability(s, EnumSet::all(), move |g, c, _| {
-                g.events.state_triggered_ability.add_state_trigger(s, move |g, _, _| {
-                    g.battlefield(c.controller).none_matching(g, c.source(), predicate)
-                });
-            });
-            e.will_leave_battlefield.add_ability(s, EnumSet::all(), move |g, _, _| {
-                g.events.state_triggered_ability.remove_callbacks(s.ability_id);
+        .global_events(move |s, events| {
+            events.state_triggered_ability.add_state_trigger(s, move |g, c, _| {
+                g.battlefield(c.controller).none_matching(g, c.source(), predicate)
             });
         })
         .effect(move |g, c| {

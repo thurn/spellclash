@@ -83,3 +83,8 @@ pub fn deal_damage(
 pub fn sacrifice(game: &mut GameState, source: impl HasSource, id: impl ToCardId) -> Outcome {
     move_card::run(game, source.source(), id, Zone::Graveyard)
 }
+
+/// Returns a permanent to its owner's hand.
+pub fn return_to_hand(game: &mut GameState, source: impl HasSource, id: impl ToCardId) -> Outcome {
+    move_card::run(game, source.source(), id, Zone::Hand)
+}

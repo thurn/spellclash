@@ -31,7 +31,7 @@ use database::sqlite_database::SqliteDatabase;
 use enumset::EnumSet;
 use maplit::btreemap;
 use oracle::oracle_impl::OracleImpl;
-use primitives::game_primitives::{EventId, GameId, PlayerName, Source, UserId};
+use primitives::game_primitives::{EventId, GameId, PlayerName, Source, UserId, Zone};
 use rand::SeedableRng;
 use rand_xoshiro::Xoshiro256StarStar;
 use rules::mutations::library;
@@ -143,7 +143,13 @@ fn create_cards_in_deck(
     cards.sort();
     for (&id, &quantity) in &cards {
         for _ in 0..quantity {
-            zones.create_card_in_library(oracle.card(id), CardKind::Normal, owner, turn);
+            zones.create_card_in_zone(
+                oracle.card(id),
+                Zone::Library,
+                CardKind::Normal,
+                owner,
+                turn,
+            );
         }
     }
 }
@@ -216,7 +222,7 @@ fn find_deck(name: DeckName) -> Deck {
         deck_name::DANDAN => Deck {
             cards: btreemap! {
                 printed_card_id::ISLAND => 30,
-                printed_card_id::CRYSTAL_SPRAY => 15,
+                printed_card_id::SUPPLANT_FORM => 15,
                 printed_card_id::DANDAN => 15,
                 printed_card_id::DANCE_OF_THE_SKYWISE => 15,
             },

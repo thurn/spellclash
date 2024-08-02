@@ -123,6 +123,9 @@ pub struct RevealedCardView {
     /// True if this card represents an ability
     pub is_ability: bool,
 
+    /// True if this card represents a token
+    pub is_token: bool,
+
     /// Action to take when this card is clicked, if any.
     pub click_action: Option<UserAction>,
 

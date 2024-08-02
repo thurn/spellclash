@@ -484,6 +484,7 @@ export type RevealedCardView = {
    * True if this card represents an ability
    */
   isAbility: boolean;
+  isToken: boolean;
   /**
    * Action to take when this card is clicked, if any.
    */

@@ -15,6 +15,7 @@
 use data::actions::game_action::{CombatAction, GameAction};
 use data::actions::prompt_action::PromptAction;
 use data::actions::user_action::UserAction;
+use data::card_states::card_kind::CardKind;
 use data::card_states::card_state::{CardFacing, CardState, TappedState};
 use data::card_states::zones::ZoneQueries;
 use data::game_states::game_state::GameState;
@@ -52,6 +53,7 @@ pub fn card_view(builder: &ResponseBuilder, context: &CardViewContext) -> CardVi
             face: card_face(&context.printed().face),
             status: context.query_or(None, |game, card| card_status(builder, game, card)),
             is_ability: false,
+            is_token: context.query_or(false, |_, card| card.kind == CardKind::TokenOrStackCopy),
             click_action: context.query_or(None, |game, card| card_action(builder, game, card)),
             can_drag: context.query_or(false, |game, card| can_drag(builder, game, card)),
             face_b: context.printed().face_b.as_ref().map(card_face),

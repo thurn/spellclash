@@ -41,6 +41,7 @@ pub fn stack_ability_view(
             },
             status: None,
             is_ability: true,
+            is_token: false,
             click_action: None,
             can_drag: false,
             face_b: None,

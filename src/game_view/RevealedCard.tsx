@@ -55,6 +55,8 @@ export function RevealedCard({ revealed }: Props): ReactNode {
   } else if (revealed.isAbility) {
     borderClass = 'border-2 border-pink-300';
     label = 'ability';
+  } else if (revealed.isToken) {
+    label = 'token';
   }
 
   if (revealed.canDrag) {

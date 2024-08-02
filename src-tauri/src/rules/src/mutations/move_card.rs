@@ -85,6 +85,9 @@ fn on_leave_zone(game: &mut GameState, card_id: CardId, zone: Zone) -> Outcome {
             card.tapped_state = TappedState::Untapped;
             card.damage = 0;
             card.attached_to = None;
+            if card.kind == CardKind::TokenOrStackCopy {
+                game.add_state_based_event(StateBasedEvent::TokenLeftBattlefield(card_id));
+            }
         }
         _ => {}
     }
@@ -111,7 +114,7 @@ fn on_enter_zone(game: &mut GameState, card_id: CardId, zone: Zone) -> Outcome {
         _ => {}
     }
 
-    if card.kind == CardKind::Token && zone != Zone::Battlefield {
+    if card.kind == CardKind::TokenOrStackCopy && zone != Zone::Battlefield {
         game.add_state_based_event(StateBasedEvent::TokenLeftBattlefield(card_id));
     }
 

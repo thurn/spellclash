@@ -13,3 +13,4 @@
 // limitations under the License.
 
 pub mod debug_snapshot;
+pub mod initialize_card;

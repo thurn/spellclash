@@ -42,9 +42,10 @@ pub fn initialize() {
     DEFINITIONS.insert((35, cards_s::cards_sc::scaled_wurm));
     DEFINITIONS.insert((36, cards_s::cards_si::silverback_ape));
     DEFINITIONS.insert((37, cards_s::cards_sp::spined_wurm));
-    DEFINITIONS.insert((38, cards_s::cards_sw::swordwise_centaur));
-    DEFINITIONS.insert((39, cards_t::cards_te::terrain_elemental));
-    DEFINITIONS.insert((40, cards_v::cards_va::vastwood_gorger));
-    DEFINITIONS.insert((41, cards_v::cards_vo::vorstclaw));
-    DEFINITIONS.insert((42, cards_w::cards_wh::whiptail_wurm));
+    DEFINITIONS.insert((38, cards_s::cards_su::supplant_form));
+    DEFINITIONS.insert((39, cards_s::cards_sw::swordwise_centaur));
+    DEFINITIONS.insert((40, cards_t::cards_te::terrain_elemental));
+    DEFINITIONS.insert((41, cards_v::cards_va::vastwood_gorger));
+    DEFINITIONS.insert((42, cards_v::cards_vo::vorstclaw));
+    DEFINITIONS.insert((43, cards_w::cards_wh::whiptail_wurm));
 }

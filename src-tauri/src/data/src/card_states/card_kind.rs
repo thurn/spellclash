@@ -22,10 +22,11 @@ use crate::card_states::card_state::CardState;
 pub enum CardKind {
     /// Standard magic card
     Normal,
-    /// Token created on the battlefield by an effect
-    Token,
+
+    /// Token created on the battlefield by an effect or a copy of a card on the
+    /// stack.
+    TokenOrStackCopy,
+
     /// Emblem, usually created by a planeswalker
     Emblem,
-    /// Copy of another card on the stack
-    CardCopyOnStack,
 }

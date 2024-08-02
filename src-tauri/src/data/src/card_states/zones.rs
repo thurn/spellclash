@@ -311,17 +311,20 @@ impl Zones {
     }
 
     /// Creates a new named card, owned & controlled by the `owner` player in
-    /// the player's library.
+    /// the the given [Zone]. Returns the ID of the new card.
     ///
-    /// The card is created in a face-down state and is not visible to any
-    /// player. The card is assigned a [CardId] and [EntityId] on creation.
-    pub fn create_card_in_library(
+    /// Note that the card is created in a face-down state and is not visible to
+    /// any player, *even* if [Zone] is a public zone.
+    ///
+    /// The card is assigned a [CardId] and [EntityId] on creation.
+    pub fn create_card_in_zone(
         &mut self,
         reference: CardReference,
+        zone: Zone,
         kind: CardKind,
         owner: PlayerName,
         current_turn: TurnData,
-    ) -> &CardState {
+    ) -> CardId {
         let id = self.all_cards.insert(CardState {
             id: CardId::default(),
             object_id: ObjectId(0),
@@ -333,7 +336,7 @@ impl Zones {
             properties: CardProperties::default(),
             events: CardEvents::default(),
             control_changing_effects: vec![],
-            zone: Zone::Library,
+            zone,
             facing: CardFacing::FaceDown,
             cast_as: EnumSet::empty(),
             tapped_state: TappedState::Untapped,
@@ -351,7 +354,6 @@ impl Zones {
             printed_card_reference: Some(reference.printed_card_reference),
         });
 
-        self.add_to_zone(owner, id, Zone::Library);
         let object_id = self.new_object_id();
         let timestamp = self.new_timestamp();
 
@@ -359,7 +361,9 @@ impl Zones {
         card.id = id;
         card.object_id = object_id;
         card.timestamp = timestamp;
-        card
+
+        self.add_to_zone(owner, id, zone);
+        id
     }
 
     /// Creates a new triggered ability.
@@ -408,6 +412,17 @@ impl Zones {
         self.stack_abilities.remove(stack_ability_id);
     }
 
+    /// Removes a card from the game entirely.
+    ///
+    /// This is most commonly used via a state-based action to remove token
+    /// cards that have left the battlefield.
+    pub fn destroy_card(&mut self, id: CardId) -> Outcome {
+        let card = self.card(id)?;
+        self.remove_from_zone(card.owner, card.id, card.zone);
+        self.all_cards.remove(id);
+        outcome::OK
+    }
+
     /// Moves a card to a new zone, updates indices, and assigns a new
     /// [ObjectId] to it. Do not call this method directly, use the `move_card`
     /// module instead.
@@ -416,7 +431,7 @@ impl Zones {
     ///
     /// Returns None if this card was not found in the previous zone.
     pub fn move_card(&mut self, id: impl ToCardId, zone: Zone, new_object_id: ObjectId) -> Outcome {
-        let card = self.card_mut(id)?;
+        let card = self.card(id)?;
         let card_id = card.id;
         let old_zone = card.zone;
         let owner = card.owner;

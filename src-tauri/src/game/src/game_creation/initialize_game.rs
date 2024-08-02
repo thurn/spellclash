@@ -30,6 +30,7 @@ use data::player_states::player_state::{PlayerQueries, PlayerType};
 use database::sqlite_database::SqliteDatabase;
 use oracle::card_database;
 use primitives::game_primitives::{AbilityId, PlayerName};
+use rules::core::initialize_card;
 use utils::outcome;
 
 pub fn run(database: SqliteDatabase, game: &mut GameState) {
@@ -45,18 +46,7 @@ pub fn run(database: SqliteDatabase, game: &mut GameState) {
 
     let all_card_ids = game.zones.all_cards().map(|card| card.id).collect::<Vec<_>>();
     for card_id in all_card_ids {
-        outcome::execute(|| {
-            let name = game.card(card_id)?.card_name;
-            for (number, ability) in definitions::get(name).iterate_abilities() {
-                let ability_id = AbilityId { card_id, number };
-                let ability_scope = AbilityScope { ability_id };
-                let card = game.card_mut(card_id)?;
-                ability.add_properties(ability_scope, card);
-                ability.add_card_events(ability_scope, &mut card.events);
-                ability.add_global_events(ability_scope, &mut game.events);
-            }
-            outcome::OK
-        });
+        initialize_card::run(game, card_id);
     }
 }
 

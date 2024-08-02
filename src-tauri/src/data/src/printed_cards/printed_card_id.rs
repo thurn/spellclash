@@ -103,3 +103,5 @@ pub const GIANT_GROWTH: PrintedCardId =
     PrintedCardId(uuid!("6b712e6e-eb48-4a71-b95d-ce343966b236"));
 pub const CRYSTAL_SPRAY: PrintedCardId =
     PrintedCardId(uuid!("8798a4f1-34bb-449d-a8cc-faf8bda8e0ab"));
+pub const SUPPLANT_FORM: PrintedCardId =
+    PrintedCardId(uuid!("3df927c0-9aa9-450b-ab2a-ae12c5489d57"));

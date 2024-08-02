@@ -79,3 +79,4 @@ pub const DANCE_OF_THE_SKYWISE: CardName = CardName(uuid!("5ab0ab9b-c143-4315-89
 pub const RAY_OF_COMMAND: CardName = CardName(uuid!("adf41d29-403d-4936-9689-3148d103e700"));
 pub const GIANT_GROWTH: CardName = CardName(uuid!("5748ebf1-24e3-499d-ab7c-c2cebd462a24"));
 pub const CRYSTAL_SPRAY: CardName = CardName(uuid!("fe371e3a-976f-41d8-ad58-4b3b61415d71"));
+pub const SUPPLANT_FORM: CardName = CardName(uuid!("7e49f689-996a-477e-a327-32b69fbc0d85"));

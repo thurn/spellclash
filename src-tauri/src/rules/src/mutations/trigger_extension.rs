@@ -39,7 +39,11 @@ pub trait TriggerExt<TArg> {
     fn add_trigger(
         &mut self,
         scope: AbilityScope,
-        predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Send + Sync + 'static,
+        predicate: impl Fn(&GameState, EventContext, &TArg) -> Option<bool>
+            + Copy
+            + Send
+            + Sync
+            + 'static,
     );
 
     /// Trigger an effect the next time a predicate is true, associated with a
@@ -55,7 +59,11 @@ pub trait TriggerExt<TArg> {
         &mut self,
         context: EventContext,
         permanent_id: PermanentId,
-        predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Send + Sync + 'static,
+        predicate: impl Fn(&GameState, EventContext, &TArg) -> Option<bool>
+            + Copy
+            + Send
+            + Sync
+            + 'static,
         effect: impl Fn(&mut GameState, EventContext) + Copy + Send + Sync + 'static,
     );
 
@@ -64,7 +72,11 @@ pub trait TriggerExt<TArg> {
     fn add_state_trigger(
         &mut self,
         scope: AbilityScope,
-        predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Send + Sync + 'static,
+        predicate: impl Fn(&GameState, EventContext, &TArg) -> Option<bool>
+            + Copy
+            + Send
+            + Sync
+            + 'static,
     );
 }
 
@@ -72,10 +84,14 @@ impl<TArg: Clone> TriggerExt<TArg> for GameEvent<TArg> {
     fn add_trigger(
         &mut self,
         scope: AbilityScope,
-        predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Send + Sync + 'static,
+        predicate: impl Fn(&GameState, EventContext, &TArg) -> Option<bool>
+            + Copy
+            + Send
+            + Sync
+            + 'static,
     ) {
         self.add_battlefield_ability(scope, move |g, c, arg| {
-            if predicate(g, c.source(), arg) == Some(true) {
+            if predicate(g, c, arg) == Some(true) {
                 trigger_ability(g, c.this, c.controller);
             }
         });
@@ -85,13 +101,17 @@ impl<TArg: Clone> TriggerExt<TArg> for GameEvent<TArg> {
         &mut self,
         context: EventContext,
         permanent_id: PermanentId,
-        predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Send + Sync + 'static,
+        predicate: impl Fn(&GameState, EventContext, &TArg) -> Option<bool>
+            + Copy
+            + Send
+            + Sync
+            + 'static,
         effect: impl Fn(&mut GameState, EventContext) + Copy + Send + Sync + 'static,
     ) {
         self.add_effect(context, EnumSet::all(), move |g, c, arg| {
             if g.has_card(permanent_id)
                 && !g.ability_state.fired_one_time_effects.contains(&context.event_id)
-                && predicate(g, c.original_source, arg) == Some(true)
+                && predicate(g, c, arg) == Some(true)
             {
                 let ability = g.zones.create_triggered_ability(c.this, c.controller, vec![]);
                 ability.custom_effect = Some(StackAbilityCustomEffect::new(c.event_id, effect));
@@ -103,10 +123,14 @@ impl<TArg: Clone> TriggerExt<TArg> for GameEvent<TArg> {
     fn add_state_trigger(
         &mut self,
         scope: AbilityScope,
-        predicate: impl Fn(&GameState, Source, &TArg) -> Option<bool> + Copy + Send + Sync + 'static,
+        predicate: impl Fn(&GameState, EventContext, &TArg) -> Option<bool>
+            + Copy
+            + Send
+            + Sync
+            + 'static,
     ) {
         self.add_battlefield_ability(scope, move |g, c, arg| {
-            if predicate(g, c.source(), arg) == Some(true) && !is_ability_on_stack(g, c.this) {
+            if predicate(g, c, arg) == Some(true) && !is_ability_on_stack(g, c.this) {
                 trigger_ability(g, c.this, c.controller);
             }
         });

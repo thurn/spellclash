@@ -29,6 +29,7 @@ use primitives::game_primitives::{
 use tracing::instrument;
 use utils::outcome::Outcome;
 
+use crate::core::debug_snapshot;
 use crate::planner::spell_planner;
 use crate::play_cards::{pick_face_to_play, play_card_executor};
 use crate::prompt_handling::prompts;
@@ -43,7 +44,8 @@ pub fn execute(
     card_id: CardId,
 ) -> Outcome {
     let mut plans = pick_face_to_play::play_as(game, player, source, card_id);
-    assert_eq!(plans.len(), 1, "TODO: handle multiple faces");
+    assert!(!plans.is_empty(), "No valid plans to play card");
+    assert_eq!(plans.len(), 1, "TODO: Handle playing cards with multiple faces");
     let mut plan = plans.remove(0);
 
     let prompt_lists = targeted_abilities(game, card_id)
@@ -102,13 +104,13 @@ pub fn can_play_card_as(
 ) -> bool {
     match plan.play_as.timing {
         PlayCardTiming::Land => true,
-        _ => can_pick_targets(game, source, card_id, plan),
+        _ => has_valid_targets(game, source, card_id, plan),
     }
 }
 
 /// Check whether a [PlayCardPlan] could allow a card to be played
 /// with valid targets.
-pub fn can_pick_targets(
+pub fn has_valid_targets(
     game: &GameState,
     source: Source,
     card_id: CardId,

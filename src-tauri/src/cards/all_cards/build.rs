@@ -79,7 +79,7 @@ fn main() {
 
 fn find_functions(path: impl AsRef<Path>) -> Vec<String> {
     let mut result = vec![];
-    let re = Regex::new(r"pub fn (?P<name>\w+)\(\w+: &mut Registry\) -> CardDefinition").expect("Invalid regex");
+    let re = Regex::new(r"pub fn (?P<name>\w+)\(\) -> CardDefinition").expect("Invalid regex");
     for l in BufReader::new(File::open(path).expect("File not found")).lines() {
         let line = l.expect("Error reading line");
         if let Some(captures) = re.captures(&line) {
