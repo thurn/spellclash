@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+pub mod ability_scope;
 pub mod card_tags;
 pub mod function_types;
+pub mod layer;
 pub mod modifier_data;
 pub mod numerics;
 pub mod panel_address;

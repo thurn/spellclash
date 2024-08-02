@@ -22,8 +22,8 @@ use primitives::game_primitives::Source;
 use serde::{Deserialize, Serialize};
 use utils::outcome::Outcome;
 
-use crate::delegates::query_value::QueryValue;
 use crate::game_states::game_state::GameState;
+use crate::properties::property_value::PropertyValue;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Registered<F: Send + Sync + Default + 'static> {

@@ -17,8 +17,8 @@ use primitives::game_primitives::Source;
 
 use crate::card_definitions::registry;
 use crate::card_definitions::registry::{QueryFn, Registered, Registry};
-use crate::delegates::query_value::QueryValue;
 use crate::game_states::game_state::GameState;
+use crate::properties::property_value::PropertyValue;
 
 #[derive(Clone)]
 pub enum QueryCondition<TArg: 'static> {

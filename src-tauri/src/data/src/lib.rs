@@ -21,7 +21,6 @@ pub mod card_states;
 pub mod core;
 pub mod costs;
 pub mod decks;
-pub mod delegates;
 pub mod events;
 pub mod game_states;
 pub mod player_states;

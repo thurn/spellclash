@@ -15,15 +15,15 @@
 use data::card_definitions::ability_definition::{Ability, StaticAbility};
 use data::card_states::zones::ZoneQueries;
 use data::core::card_tags::CardTag;
+use data::core::layer::Layer;
 use data::core::modifier_data::ModifierMode;
-use data::delegates::game_delegate_data::CanBeBlocked;
-use data::delegates::layer::Layer;
-use data::delegates::query_value::EnumSets;
 use data::events::event_context::EventContext;
 use data::game_states::game_state::GameState;
 use data::properties::card_properties::CardProperties;
+use data::properties::card_property_data::CanBeBlocked;
 use data::properties::duration::Duration;
 use data::properties::flag::Flag;
+use data::properties::property_value::EnumSets;
 use enumset::EnumSet;
 use primitives::game_primitives::{
     HasSource, PermanentId, Source, Timestamp, PRINTED_TEXT_TIMESTAMP,

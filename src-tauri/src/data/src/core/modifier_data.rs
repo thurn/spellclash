@@ -14,8 +14,8 @@
 
 use primitives::game_primitives::{PermanentId, Source, PRINTED_TEXT_TIMESTAMP};
 
-use crate::delegates::layer::{EffectSortingKey, Layer, PRINTED_RULE_SORTING_KEY};
-use crate::delegates::scope::AbilityScope;
+use crate::core::ability_scope::AbilityScope;
+use crate::core::layer::{EffectSortingKey, Layer, PRINTED_RULE_SORTING_KEY};
 use crate::events::event_context::EventContext;
 use crate::properties::duration::Duration;
 

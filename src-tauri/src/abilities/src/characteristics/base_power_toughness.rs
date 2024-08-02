@@ -13,12 +13,12 @@
 // limitations under the License.
 
 use data::card_states::zones::ZoneQueries;
+use data::core::layer::Layer;
 use data::core::numerics::{Power, Toughness};
-use data::delegates::layer::Layer;
-use data::delegates::query_value::Ints;
 use data::events::event_context::EventContext;
 use data::game_states::game_state::GameState;
 use data::properties::duration::Duration;
+use data::properties::property_value::Ints;
 use primitives::game_primitives::{HasSource, PermanentId};
 use utils::outcome::Outcome;
 

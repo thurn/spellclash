@@ -14,8 +14,7 @@
 
 use data::card_states::stack_ability_state::{StackAbilityCustomEffect, StackAbilityState};
 use data::card_states::zones::ZoneQueries;
-use data::delegates::delegate_type::DelegateType;
-use data::delegates::scope::AbilityScope;
+use data::core::ability_scope::AbilityScope;
 use data::events::event_context::EventContext;
 use data::events::game_event::GameEvent;
 use data::game_states::game_state::GameState;
@@ -23,6 +22,7 @@ use enumset::EnumSet;
 use primitives::game_primitives::{
     AbilityId, EventId, HasSource, PermanentId, PlayerName, Source, StackItemId,
 };
+
 /// Extensions to event delegates for triggering abilities.
 ///
 /// This is primarily implemented as a trait to prevent crate cyclic
@@ -34,8 +34,8 @@ pub trait TriggerExt<TArg> {
     /// Fires only while this card is on the battlefield. The ability will be
     /// placed on the stack the next time a player would receive priority.
     ///
-    /// This creates a delegate using [DelegateType::Ability], meaning the
-    /// trigger will not fire if the owning card loses all abilities.
+    /// This creates an ability callback, meaning the trigger will not fire if
+    /// the owning card loses all abilities.
     fn add_trigger(
         &mut self,
         scope: AbilityScope,
@@ -49,8 +49,8 @@ pub trait TriggerExt<TArg> {
     /// [EventContext] in order to only be applied once. The effect will only
     /// trigger if the [PermanentId] permanent is still on the battlefield.
 
-    /// This creates a delegate using [DelegateType::Effect], meaning the
-    /// trigger *will* still fire if the owning card loses all abilities.
+    /// This creates an effect callback, meaning the trigger *will* still fire
+    /// if the owning card loses all abilities.
     fn add_one_time_trigger(
         &mut self,
         context: EventContext,

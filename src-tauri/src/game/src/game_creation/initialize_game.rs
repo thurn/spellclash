@@ -23,7 +23,7 @@ use ai::monte_carlo::uct1::Uct1;
 use ai::tree_search::iterative_deepening_search::IterativeDeepeningSearch;
 use data::card_definitions::definitions;
 use data::card_states::zones::ZoneQueries;
-use data::delegates::scope::AbilityScope;
+use data::core::ability_scope::AbilityScope;
 use data::game_states::game_state::GameState;
 use data::player_states::game_agent::{AgentType, GameAgent};
 use data::player_states::player_state::{PlayerQueries, PlayerType};

@@ -18,7 +18,7 @@ use primitives::game_primitives::{EntityId, PlayerName, Source};
 
 use crate::card_states::card_state::CardState;
 use crate::card_states::zones::ZoneQueries;
-use crate::delegates::scope::AbilityScope;
+use crate::core::ability_scope::AbilityScope;
 use crate::events::card_events::CardEvents;
 use crate::events::event_context::EventContext;
 use crate::events::game_events::GlobalEvents;

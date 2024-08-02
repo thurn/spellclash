@@ -15,10 +15,10 @@
 use primitives::game_primitives::{Source, Timestamp};
 
 use crate::core::function_types::Predicate;
+use crate::core::layer::{EffectSortingKey, Layer};
 use crate::core::modifier_data::ModifierMode;
-use crate::delegates::layer::{EffectSortingKey, Layer};
-use crate::delegates::query_value::QueryValue;
 use crate::game_states::game_state::GameState;
+use crate::properties::property_value::PropertyValue;
 
 #[derive(Clone)]
 pub enum Flag<TArg: 'static> {
@@ -49,7 +49,7 @@ impl<TArg: 'static> Flag<TArg> {
     }
 }
 
-impl<TArg> QueryValue for Flag<TArg> {
+impl<TArg> PropertyValue for Flag<TArg> {
     fn effect_sorting_key(&self) -> Option<EffectSortingKey> {
         match self {
             Flag::Overwrite(key, _) => Some(*key),

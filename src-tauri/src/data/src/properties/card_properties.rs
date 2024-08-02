@@ -18,11 +18,11 @@ use primitives::game_primitives::Color;
 
 use crate::core::card_tags::CardTag;
 use crate::core::numerics::{Power, Toughness};
-use crate::delegates::game_delegate_data::{CanAttackTarget, CanBeBlocked};
-use crate::delegates::query_value::{ChangeText, EnumSets, Ints};
 use crate::printed_cards::card_subtypes::{CreatureType, LandType};
 use crate::properties::card_property::CardProperty;
+use crate::properties::card_property_data::{CanAttackTarget, CanBeBlocked};
 use crate::properties::flag::Flag;
+use crate::properties::property_value::{ChangeText, EnumSets, Ints};
 
 #[derive(Default, Clone)]
 pub struct CardProperties {

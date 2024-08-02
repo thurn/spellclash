@@ -19,11 +19,10 @@ use invokable::InvokableType;
 use primitives::game_primitives::{AbilityId, HasController, Source, Zone};
 
 use crate::card_states::zones::ZoneQueries;
+use crate::core::ability_scope::AbilityScope;
 use crate::core::function_types::Mutation;
+use crate::core::layer::{EffectSortingKey, PRINTED_RULE_SORTING_KEY};
 use crate::core::rule_type::RuleType;
-use crate::delegates::delegate_type::DelegateType;
-use crate::delegates::layer::{EffectSortingKey, PRINTED_RULE_SORTING_KEY};
-use crate::delegates::scope::AbilityScope;
 use crate::events::event_context::EventContext;
 use crate::game_states::game_state::GameState;
 use crate::properties::duration::Duration;

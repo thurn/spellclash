@@ -14,9 +14,9 @@
 
 use data::actions::game_action::{CombatAction, GameAction};
 use data::card_states::zones::ZoneQueries;
-use data::delegates::game_delegate_data::CanAttackTarget;
 use data::game_states::combat_state::{CombatState, ProposedAttackers};
 use data::game_states::game_state::GameState;
+use data::properties::card_property_data::CanAttackTarget;
 use primitives::game_primitives::{PlayerName, Source};
 
 #[allow(unused)] // Used in docs

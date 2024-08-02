@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use primitives::game_primitives::{CardId, PermanentId};
+use primitives::game_primitives::CardId;
 
 use crate::card_states::zones::{HasZones, ToCardId};
 use crate::game_states::combat_state::{AttackTarget, AttackerId, BlockerId};
@@ -40,12 +40,4 @@ impl ToCardId for CanBeBlocked {
     fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
         self.attacker_id.to_card_id(zones)
     }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct WillEnterBattlefieldEvent {
-    pub card_id: CardId,
-
-    /// Note that this is *not yet* the current [PermanentId] of this entity.
-    pub future_permanent_id: PermanentId,
 }

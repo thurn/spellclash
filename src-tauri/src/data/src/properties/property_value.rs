@@ -17,10 +17,11 @@ use std::ops::Add;
 use enumset::{EnumSet, EnumSetType};
 use primitives::game_primitives::{Timestamp, PRINTED_TEXT_TIMESTAMP};
 
+use crate::core::layer::{EffectSortingKey, Layer};
 use crate::core::modifier_data::ModifierMode;
-use crate::delegates::layer::{EffectSortingKey, Layer};
+
 /// Marker trait for the return value of queries
-pub trait QueryValue {
+pub trait PropertyValue {
     fn effect_sorting_key(&self) -> Option<EffectSortingKey>;
 }
 
@@ -40,7 +41,7 @@ impl<T: Default + Add<Output = T>> Ints<T> {
     }
 }
 
-impl<T: Default + Add<Output = T>> QueryValue for Ints<T> {
+impl<T: Default + Add<Output = T>> PropertyValue for Ints<T> {
     fn effect_sorting_key(&self) -> Option<EffectSortingKey> {
         match self {
             Self::Set(key, _) => Some(*key),
@@ -82,7 +83,7 @@ impl<T: EnumSetType> EnumSets<T> {
     }
 }
 
-impl<T: EnumSetType> QueryValue for EnumSets<T> {
+impl<T: EnumSetType> PropertyValue for EnumSets<T> {
     fn effect_sorting_key(&self) -> Option<EffectSortingKey> {
         match self {
             Self::Set(key, _) => Some(*key),
@@ -103,7 +104,7 @@ impl<T: EnumSetType> ChangeText<T> {
     }
 }
 
-impl<T: EnumSetType> QueryValue for ChangeText<T> {
+impl<T: EnumSetType> PropertyValue for ChangeText<T> {
     fn effect_sorting_key(&self) -> Option<EffectSortingKey> {
         match self {
             Self::Replace(timestamp, _, _) => {

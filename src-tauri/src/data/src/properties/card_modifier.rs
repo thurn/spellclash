@@ -16,14 +16,13 @@ use color_eyre::owo_colors::Effect;
 use dyn_clone::DynClone;
 use primitives::game_primitives::Source;
 
+use crate::core::layer::{EffectSortingKey, Layer};
 use crate::core::rule_type;
 use crate::core::rule_type::RuleType;
-use crate::delegates::delegate_type::DelegateType;
-use crate::delegates::layer::{EffectSortingKey, Layer};
-use crate::delegates::query_value::QueryValue;
 use crate::game_states::game_state::GameState;
 use crate::properties::card_property::LostAllAbilities;
 use crate::properties::duration::Duration;
+use crate::properties::property_value::PropertyValue;
 use crate::properties::query_condition::QueryCondition;
 
 #[derive(Clone)]
@@ -34,7 +33,7 @@ pub struct CardModifier<TModifier> {
     pub effect: TModifier,
 }
 
-impl<TModifier: QueryValue> CardModifier<TModifier> {
+impl<TModifier: PropertyValue> CardModifier<TModifier> {
     /// Returns true if this modifier should currently be applied to the game.
     pub fn active(&self, game: &GameState) -> bool {
         rule_type::is_active(game, self.duration, self.rule_type, self.effect.effect_sorting_key())

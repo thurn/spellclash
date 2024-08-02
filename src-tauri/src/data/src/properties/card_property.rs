@@ -20,17 +20,16 @@ use primitives::game_primitives::{HasSource, Source, Timestamp};
 use utils::outcome;
 use utils::outcome::Outcome;
 
+use crate::core::ability_scope::AbilityScope;
+use crate::core::layer::{EffectSortingKey, Layer};
 use crate::core::modifier_data::ModifierMode;
 use crate::core::rule_type::RuleType;
-use crate::delegates::delegate_type::DelegateType;
-use crate::delegates::layer::{EffectSortingKey, Layer};
-use crate::delegates::query_value::{ChangeText, EnumSets, Ints, QueryValue};
-use crate::delegates::scope::AbilityScope;
 use crate::events::event_context::EventContext;
 use crate::game_states::game_state::GameState;
 use crate::properties::card_modifier::CardModifier;
 use crate::properties::duration::Duration;
 use crate::properties::flag::Flag;
+use crate::properties::property_value::{ChangeText, EnumSets, Ints, PropertyValue};
 
 /// Represents a permanent card losing all its current abilities as of a given
 /// [Timestamp].
@@ -45,13 +44,13 @@ pub struct CardProperty<TModifier> {
     modifiers: Vec<CardModifier<TModifier>>,
 }
 
-impl<TModifier: QueryValue> Default for CardProperty<TModifier> {
+impl<TModifier: PropertyValue> Default for CardProperty<TModifier> {
     fn default() -> Self {
         Self { modifiers: vec![] }
     }
 }
 
-impl<TModifier: QueryValue> CardProperty<TModifier> {
+impl<TModifier: PropertyValue> CardProperty<TModifier> {
     pub fn add(&mut self, modifier: CardModifier<TModifier>) {
         self.modifiers.push(modifier);
     }

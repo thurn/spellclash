@@ -16,8 +16,8 @@ use data::card_definitions::ability_definition::{Ability, StaticAbility};
 use data::card_states::iter_matching::IterMatching;
 use data::card_states::zones::ZoneQueries;
 use data::core::function_types::CardPredicate;
-use data::delegates::game_delegate_data::CanAttackTarget;
-use data::delegates::layer::Layer;
+use data::core::layer::Layer;
+use data::properties::card_property_data::CanAttackTarget;
 use data::properties::flag::Flag;
 use primitives::game_primitives::{PermanentId, Source, Zone, PRINTED_TEXT_TIMESTAMP};
 

@@ -18,11 +18,11 @@ use data::card_states::card_state::TappedState;
 use data::card_states::iter_matching::{IterMatching, IterOptional};
 use data::card_states::zones::ZoneQueries;
 use data::core::card_tags::CardTag;
-use data::delegates::game_delegate_data::{CanAttackTarget, CanBeBlocked};
 use data::game_states::combat_state::{
     AttackTarget, AttackerId, BlockerId, BlockerMap, CombatState,
 };
 use data::game_states::game_state::GameState;
+use data::properties::card_property_data::{CanAttackTarget, CanBeBlocked};
 use enumset::EnumSet;
 use primitives::game_primitives::{CardType, HasController, PermanentId, PlayerName, Source};
 

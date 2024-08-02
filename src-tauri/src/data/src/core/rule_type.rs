@@ -14,7 +14,7 @@
 
 use primitives::game_primitives::{AbilityId, CardId, PermanentId};
 
-use crate::delegates::layer::{EffectSortingKey, Layer, PRINTED_RULE_SORTING_KEY};
+use crate::core::layer::{EffectSortingKey, Layer, PRINTED_RULE_SORTING_KEY};
 use crate::game_states::game_state::GameState;
 use crate::properties::duration::Duration;
 
