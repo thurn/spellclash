@@ -17,6 +17,7 @@ use enumset::EnumSet;
 use primitives::game_primitives::{PlayerName, Source};
 use rules::queries::player_queries;
 
+/// Possible sets of players that can be targeted
 #[derive(Clone, Copy, Eq, PartialEq, Debug)]
 pub enum PlayerSet {
     /// Search the set of all players in the game
@@ -29,6 +30,7 @@ pub enum PlayerSet {
     Opponents,
 }
 
+/// Returns the set of players represented by the provided [PlayerSet].
 pub fn players_in_set(
     game: &GameState,
     controller: PlayerName,

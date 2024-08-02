@@ -78,7 +78,7 @@ pub fn gain_control_this_turn(
     id: impl ToCardId,
 ) -> Outcome {
     let card_id = id.to_card_id(game)?;
-    game.ability_state.this_turn.add_control_changing_effect(event_id, card_id);
+    game.ability_state.add_control_changing_effect(event_id, card_id);
     gain_control(game, source.source(), new_controller, event_id, card_id)
 }
 

@@ -22,7 +22,6 @@ use data::game_states::combat_state::{
 };
 use data::game_states::game_phase_step::GamePhaseStep;
 use data::game_states::game_state::GameState;
-use data::game_states::this_turn_state::ThisTurnState;
 use primitives::game_primitives::{CardType, PlayerName, Source};
 use utils::outcome;
 
@@ -292,10 +291,9 @@ fn cleanup(game: &mut GameState) {
         card.damage = 0;
     }
 
-    for (event_id, target_id) in game.ability_state.this_turn.remove_control_changing_effects() {
+    for (event_id, target_id) in game.ability_state.remove_control_changing_effects() {
         change_controller::remove_control(game, event_id, target_id);
     }
-    game.ability_state.this_turn = ThisTurnState::default();
 
     // > 514.3. Normally, no player receives priority during the cleanup step, so no
     // > spells can be cast and no abilities can be activated. However, this rule is
