@@ -77,7 +77,6 @@ fn on_leave_zone(game: &mut GameState, card_id: CardId, zone: Zone) -> Outcome {
     match zone {
         Zone::Stack => {
             let card = game.card_mut(card_id)?;
-            card.cast_as.clear();
             card.targets.clear();
         }
         Zone::Battlefield => {
@@ -98,6 +97,10 @@ fn on_enter_zone(game: &mut GameState, card_id: CardId, zone: Zone) -> Outcome {
     let turn = game.turn;
     let card = game.card_mut(card_id)?;
     card.entered_current_zone = turn;
+
+    if zone != Zone::Stack && zone != Zone::Battlefield {
+        card.cast_choices = None;
+    }
 
     match zone {
         Zone::Stack | Zone::Battlefield | Zone::Graveyard => {

@@ -22,49 +22,9 @@ use crate::printed_cards::printed_card::Face;
 /// of the "play card" game action.
 #[derive(Debug, Clone)]
 pub struct PlayCardPlan {
-    /// The player who is playing this card
-    pub controller: PlayerName,
-
-    /// The face or faces of this card which the player is casting and the
-    /// timing restriction used for playing this card.
-    ///
-    /// This will be a single face for most cards, but split cards with the
-    /// "Fuse" ability can be cast using multiple faces at once.
-    pub play_as: PlayAs,
-
-    /// Modal choices for this spell
-    ///
-    /// > 601.2b. If the spell is modal, the player announces the mode choice
-    /// > (see rule 700.2).
-    /// <https://yawgatog.com/resources/magic-rules/#R6012b>
-    pub modes: EnumSet<ModalChoice>,
-
-    /// Identifies an ability which provides an alternative cost which will be
-    /// used to cast this spell
-    pub alternative_cost: Option<AbilityId>,
-
-    /// Identifies abilities adding additional choices the caster has chosen for
-    /// this spell, such as optional costs like Kicker.
-    ///
-    /// > 601.2b. If the spell has alternative or additional costs that will be
-    /// > paid as it's being cast such as buyback or kicker costs (see rules
-    /// > 118.8 and 118.9), the player announces their intentions to pay any or
-    /// > all of those costs (see rule 601.2f). A player can't apply two
-    /// > alternative methods of casting or two alternative costs to a single
-    /// > spell.
-    /// <https://yawgatog.com/resources/magic-rules/#R6012b>
-    pub additional_choices: Vec<CastSpellPlanAdditionalChoice>,
-
-    /// The chosen value for an "X" variable in a spell's casting cost
-    ///
-    /// > 601.2b. If the spell has a variable cost that will be paid as it's
-    /// > being cast (such as an {X} in its mana cost; see rule 107.3), the
-    /// > player announces the value of that variable. If the value of that
-    /// > variable is defined in the text of the spell by a choice that player
-    /// > would make later in the announcement or resolution of the spell, that
-    /// > player makes that choice at this time instead of that later time.
-    /// <https://yawgatog.com/resources/magic-rules/#R6012b>
-    pub variable: Option<ManaValue>,
+    /// Choices made as part of playing a card prior to target selection &
+    /// paying mana costs
+    pub choices: PlayCardChoices,
 
     /// Targets the player has chosen for this spell
     ///
@@ -82,16 +42,71 @@ pub struct PlayCardPlan {
 impl PlayCardPlan {
     pub fn new(controller: PlayerName, play_as: PlayAs) -> Self {
         Self {
-            controller,
-            play_as,
-            modes: EnumSet::new(),
-            alternative_cost: None,
-            additional_choices: Vec::new(),
-            variable: None,
+            choices: PlayCardChoices {
+                controller,
+                play_as,
+                modes: Vec::new(),
+                alternative_cost: None,
+                additional_choices: Vec::new(),
+                variable: None,
+            },
             targets: Vec::new(),
             mana_payment: ManaPaymentPlan::default(),
         }
     }
+}
+
+/// Choices made as part of playing a card prior to target selection & paying
+/// mana costs.
+#[derive(Debug, Clone)]
+pub struct PlayCardChoices {
+    /// The player who is playing this card
+    pub controller: PlayerName,
+
+    /// The face or faces of this card which the player is casting and the
+    /// timing restriction used for playing this card.
+    ///
+    /// This will be a single face for most cards, but split cards with the
+    /// "Fuse" ability can be cast using multiple faces at once.
+    pub play_as: PlayAs,
+
+    /// Modal choices selected for this spell
+    ///
+    /// > 601.2b. If the spell is modal, the player announces the mode choice
+    /// > (see rule 700.2).
+    /// <https://yawgatog.com/resources/magic-rules/#R6012b>
+    pub modes: Vec<ModalChoice>,
+
+    /// Identifies an ability which provides an alternative cost or casting
+    /// method which will be used to cast this spell
+    ///
+    /// > A player can't apply two alternative methods of casting or two
+    /// > alternative costs to a single spell.
+    ///
+    /// <https://yawgatog.com/resources/magic-rules/#R6012b>
+    pub alternative_cost: Option<AbilityId>,
+
+    /// Identifies abilities adding additional choices the caster has chosen for
+    /// this spell, such as optional costs like Kicker.
+    ///
+    /// > 601.2b. If the spell has alternative or additional costs that will be
+    /// > paid as it's being cast such as buyback or kicker costs (see rules
+    /// > 118.8 and 118.9), the player announces their intentions to pay any or
+    /// > all of those costs (see rule 601.2f).
+    ///
+    /// <https://yawgatog.com/resources/magic-rules/#R6012b>
+    pub additional_choices: Vec<CastSpellPlanAdditionalChoice>,
+
+    /// The chosen value for an "X" variable in a spell's casting cost
+    ///
+    /// > 601.2b. If the spell has a variable cost that will be paid as it's
+    /// > being cast (such as an {X} in its mana cost; see rule 107.3), the
+    /// > player announces the value of that variable. If the value of that
+    /// > variable is defined in the text of the spell by a choice that player
+    /// > would make later in the announcement or resolution of the spell, that
+    /// > player makes that choice at this time instead of that later time.
+    /// <https://yawgatog.com/resources/magic-rules/#R6012b>
+    pub variable: Option<ManaValue>,
 }
 
 /// Describes a user's proposed plan for paying mana costs for a spell.
@@ -138,21 +153,15 @@ impl PlayAs {
     }
 }
 
-/// A choice of mode a user makes while casting a spell.
+/// A choice of mode a user makes while casting a spell. Index position within
+/// the choice list.
 ///
 /// > 700.2. A spell or ability is modal if it has two or more options in a
 /// > bulleted list preceded by instructions for a player to choose a number of
 /// > those options, such as "Choose one --." Each of those options is a mode.
 /// <https://yawgatog.com/resources/magic-rules/#R7002>
-#[derive(Debug, EnumSetType)]
-pub enum ModalChoice {
-    One,
-    Two,
-    Three,
-    Four,
-    Fix,
-    Six,
-}
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub struct ModalChoice(pub usize);
 
 /// Extra choices a player can make while casting a spell
 #[derive(Debug, Clone)]

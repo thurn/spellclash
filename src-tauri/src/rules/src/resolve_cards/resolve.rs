@@ -48,11 +48,12 @@ pub fn resolve_top_of_stack(game: &mut GameState) {
 
 fn resolve_top_card_of_stack(game: &mut GameState, card_id: CardId) -> Outcome {
     debug!(?card_id, "Resolving top card of stack");
+    let choices = game.card(card_id)?.cast_choices.clone();
     let definition = definitions::get(game.card(card_id)?.card_name);
     for (ability_number, ability) in definition.iterate_abilities() {
         if ability.get_ability_type() == AbilityType::Spell {
             let ability_id = AbilityId { card_id, number: ability_number };
-            invoke_effect::run(game, ability_id, None, ability);
+            invoke_effect::run(game, ability_id, None, ability, &choices);
         }
     }
 
@@ -67,8 +68,8 @@ fn resolve_top_card_of_stack(game: &mut GameState, card_id: CardId) -> Outcome {
             // > 608.3a. If the object that's resolving has no targets, it becomes a permanent and
             // > enters the battlefield under the control of the spell's controller.
             // <https://yawgatog.com/resources/magic-rules/#R6083a>
-            let face = if card.cast_as.len() == 1 {
-                card.cast_as.iter().next().unwrap()
+            let face = if card_queries::cast_as_faces(card).len() == 1 {
+                card_queries::cast_as_faces(card).iter().next().unwrap()
             } else {
                 panic!("Expected only a single face!");
             };
@@ -89,10 +90,11 @@ fn resolve_top_card_of_stack(game: &mut GameState, card_id: CardId) -> Outcome {
 
 fn resolve_top_ability_of_stack(game: &mut GameState, stack_ability_id: StackAbilityId) -> Outcome {
     debug!(?stack_ability_id, "Resolving top ability of stack");
+    let choices = game.stack_ability(stack_ability_id).choices.clone();
     let ability_id = game.stack_ability(stack_ability_id).ability_id;
     let ability_definition =
         definitions::get(game.card(ability_id.card_id)?.card_name).get_ability(ability_id.number);
-    invoke_effect::run(game, ability_id, Some(stack_ability_id), ability_definition);
+    invoke_effect::run(game, ability_id, Some(stack_ability_id), ability_definition, &choices);
     game.zones.remove_stack_ability(stack_ability_id);
     outcome::OK
 }

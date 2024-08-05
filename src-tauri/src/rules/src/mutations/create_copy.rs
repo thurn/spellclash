@@ -17,7 +17,7 @@ use data::card_states::card_state::CardFacing;
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::game_states::game_state::GameState;
 use data::printed_cards::printed_card::Face;
-use primitives::game_primitives::{PermanentId, PlayerName, Zone};
+use primitives::game_primitives::{PermanentId, PlayerName, SpellId, Zone};
 use tracing::Instrument;
 use utils::outcome;
 use utils::outcome::Outcome;
@@ -31,8 +31,9 @@ pub fn of_permanent(game: &mut GameState, id: PermanentId, owner: PlayerName) ->
     on_battlefield_of_card(game, id, owner, game.card(id)?.facing)
 }
 
-/// Creates a copy of a card, which does not need to be on the battlefield, as a
-/// token owned by the [PlayerName] player using the provided [CardFacing].
+/// Creates a copy of a card, which does not need to currently be on the
+/// battlefield, as a token owned by the [PlayerName] player using the provided
+/// [CardFacing].
 pub fn on_battlefield_of_card(
     game: &mut GameState,
     id: impl ToCardId,
@@ -52,4 +53,8 @@ pub fn on_battlefield_of_card(
     game.card_mut(new_card_id)?.facing = facing;
     game.card_mut(new_card_id)?.revealed_to = all_players;
     initialize_card::run(game, new_card_id)
+}
+
+pub fn of_spell(game: &mut GameState, id: SpellId, owner: PlayerName) -> Outcome {
+    todo!("Implement create_copy::of_spell")
 }

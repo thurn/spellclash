@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use data::card_definitions::ability_definition::Ability;
+use data::card_states::play_card_plan::PlayCardChoices;
 use data::card_states::zones::ZoneQueries;
 use data::game_states::game_state::GameState;
 use primitives::game_primitives::{
@@ -28,6 +29,7 @@ pub fn run(
     ability_id: AbilityId,
     stack_ability_id: Option<StackAbilityId>,
     ability: &dyn Ability,
+    choices: &Option<PlayCardChoices>,
 ) -> Outcome {
     let mut context = dispatch::build_invocation_context(game, ability_id)?;
     match stack_ability_id {
@@ -40,12 +42,12 @@ pub fn run(
                 let effect = custom_effect.effect.clone();
                 effect.invoke(game, context);
             } else {
-                ability.invoke_effect(game, context);
+                ability.invoke_effect(game, context, choices);
             }
         }
         _ => {
             let card = game.card(ability_id)?;
-            ability.invoke_effect(game, context);
+            ability.invoke_effect(game, context, choices);
         }
     };
     outcome::OK

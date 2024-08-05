@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use data::card_states::card_state::CardState;
 use data::card_states::play_card_plan::PlayCardPlan;
 use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::core::numerics::{Power, Toughness};
@@ -20,7 +21,7 @@ use data::printed_cards::card_subtypes::{CreatureType, LandType};
 use data::printed_cards::layout::CardLayout;
 #[allow(unused)] // Used in docs
 use data::printed_cards::mana_cost::{ManaCost, ManaCostItem};
-use data::printed_cards::printed_card::PrintedCardFace;
+use data::printed_cards::printed_card::{Face, PrintedCardFace};
 use data::printed_cards::printed_primitives::{PrintedPower, PrintedToughness};
 use enumset::EnumSet;
 use primitives::game_primitives::{CardId, CardType, Color, Source, Zone};
@@ -106,11 +107,12 @@ pub fn characteristic_faces(
             }
         }
         Zone::Stack => {
-            if card.cast_as.len() == 1 {
-                CharacteristicFaces::Face(card.printed().face(card.cast_as.iter().next().unwrap()))
+            let cast_as = cast_as_faces(card);
+            if cast_as.len() == 1 {
+                CharacteristicFaces::Face(card.printed().face(cast_as.iter().next().unwrap()))
             } else {
                 CharacteristicFaces::MultipleFaces(
-                    card.cast_as.iter().map(|face| card.printed().face(face)).collect(),
+                    cast_as.iter().map(|face| card.printed().face(face)).collect(),
                 )
             }
         }
@@ -121,6 +123,12 @@ pub fn characteristic_faces(
             _ => CharacteristicFaces::Face(&card.printed().face),
         },
     })
+}
+
+/// Returns the set of faces used to cast the indicated card, or an empty set if
+/// this card has not been cast.
+pub fn cast_as_faces(card: &CardState) -> EnumSet<Face> {
+    card.cast_choices.as_ref().map(|choices| choices.play_as.faces).unwrap_or_default()
 }
 
 /// Returns the set of current card types on a card's characteristic faces.
@@ -199,7 +207,8 @@ pub fn mana_cost_for_casting_card(
     id: CardId,
     plan: &PlayCardPlan,
 ) -> Option<ManaCost> {
-    let mut cost = game.card(id)?.printed().face(plan.play_as.single_face()).mana_cost.clone();
+    let mut cost =
+        game.card(id)?.printed().face(plan.choices.play_as.single_face()).mana_cost.clone();
     cost.items.sort();
     Some(cost)
 }

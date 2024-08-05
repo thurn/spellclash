@@ -29,3 +29,11 @@ use crate::mutations::move_card;
 pub fn counter(game: &mut GameState, source: impl HasSource, target: SpellId) -> Outcome {
     move_card::run(game, source, target, Zone::Graveyard)
 }
+
+pub fn choose_new_targets(
+    game: &mut GameState,
+    source: impl HasSource,
+    target: SpellId,
+) -> Outcome {
+    todo!("Implement choose_new_targets")
+}

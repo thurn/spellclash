@@ -16,3 +16,4 @@ pub mod ability_definition;
 pub mod card_definition;
 pub mod card_name;
 pub mod definitions;
+pub mod modal_effect;

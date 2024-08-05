@@ -17,7 +17,7 @@ use std::iter;
 use data::card_definitions::ability_definition::{Ability, AbilityType};
 use data::card_definitions::definitions;
 use data::card_states::iter_matching::IterMatching;
-use data::card_states::play_card_plan::{PlayCardPlan, PlayCardTiming};
+use data::card_states::play_card_plan::{PlayCardChoices, PlayCardPlan, PlayCardTiming};
 use data::card_states::zones::ZoneQueries;
 use data::game_states::game_state::GameState;
 use data::prompts::entity_choice_prompt::Choice;
@@ -51,7 +51,7 @@ pub fn execute(
     let prompt_lists = targeted_abilities(game, card_id)
         .map(|(s, ability)| {
             ability
-                .valid_targets(game, player, s)
+                .valid_targets(game, &plan.choices, s)
                 .map(|entity_id| Choice { entity_id })
                 .collect::<Vec<_>>()
         })
@@ -102,7 +102,7 @@ pub fn can_play_card_as(
     card_id: CardId,
     plan: &mut PlayCardPlan,
 ) -> bool {
-    match plan.play_as.timing {
+    match plan.choices.play_as.timing {
         PlayCardTiming::Land => true,
         _ => has_valid_targets(game, source, card_id, plan),
     }
@@ -117,7 +117,7 @@ pub fn has_valid_targets(
     plan: &mut PlayCardPlan,
 ) -> bool {
     if targeted_abilities(game, card_id).next().is_some() {
-        for list in valid_target_lists(game, plan.controller, card_id) {
+        for list in valid_target_lists(game, &plan.choices, card_id) {
             plan.targets = list;
             if can_pay_mana_costs(game, source, card_id, plan) {
                 return true;
@@ -149,17 +149,17 @@ fn targeted_abilities(
     ))
 }
 
-fn valid_target_lists(
-    game: &GameState,
-    controller: PlayerName,
+fn valid_target_lists<'a>(
+    game: &'a GameState,
+    choices: &'a PlayCardChoices,
     card_id: CardId,
-) -> impl Iterator<Item = Vec<EntityId>> + '_ {
+) -> impl Iterator<Item = Vec<EntityId>> + 'a {
     let Some(card) = game.card(card_id) else {
         return Either::Left(iter::empty());
     };
 
     Either::Right(targeted_abilities(game, card_id).flat_map(move |(scope, ability)| {
-        ability.valid_targets(game, controller, scope).map(|entity_id| vec![entity_id])
+        ability.valid_targets(game, choices, scope).map(|entity_id| vec![entity_id])
     }))
 }
 

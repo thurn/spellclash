@@ -338,7 +338,7 @@ impl Zones {
             control_changing_effects: vec![],
             zone,
             facing: CardFacing::FaceDown,
-            cast_as: EnumSet::empty(),
+            cast_choices: None,
             tapped_state: TappedState::Untapped,
             phasing_state: PhasingState::PhasedIn,
             revealed_to: EnumSet::empty(),
@@ -386,6 +386,7 @@ impl Zones {
             placed_on_stack: false,
             owner,
             controller: owner,
+            choices: None,
             targets,
             custom_effect: None,
         });

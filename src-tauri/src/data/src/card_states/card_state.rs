@@ -28,6 +28,7 @@ use crate::card_definitions::card_name::CardName;
 use crate::card_states::card_kind::CardKind;
 use crate::card_states::counters::Counters;
 use crate::card_states::custom_card_state::CustomCardStateList;
+use crate::card_states::play_card_plan::PlayCardChoices;
 #[allow(unused)] // Used in docs
 use crate::card_states::zones::Zones;
 use crate::card_states::zones::{HasZones, ToCardId};
@@ -132,11 +133,12 @@ pub struct CardState {
     ///   it there
     pub facing: CardFacing,
 
-    /// The set of faces used to cast this card while it is on the stack.
+    /// Choices made when casting this card during the most recent time it was
+    /// on the stack. Note that there are numerous ways in which cards may
+    /// exist on the battlefield without having being cast.
     ///
-    /// This is a single face except in the face of a split card cast with the
-    /// "Fuse" ability.
-    pub cast_as: EnumSet<Face>,
+    /// Cleared when a card moves to a zone other than the stack or battlefield.
+    pub cast_choices: Option<PlayCardChoices>,
 
     /// Whether this card is current tapped.
     ///

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use data::card_definitions::ability_definition::TargetSelector;
+use data::card_states::play_card_plan::PlayCardChoices;
 use data::card_states::zones::ZoneQueries;
 use data::core::function_types::CardPredicate;
 use data::game_states::game_state::GameState;
@@ -47,12 +48,13 @@ where
     fn valid_targets<'a>(
         &'a self,
         game: &'a GameState,
-        controller: PlayerName,
+        choices: &'a PlayCardChoices,
         source: Source,
     ) -> Box<dyn Iterator<Item = EntityId> + 'a> {
         Box::new(
-            player_set::players_in_set(game, controller, source, self.players).iter().flat_map(
-                move |player| {
+            player_set::players_in_set(game, choices.controller, source, self.players)
+                .iter()
+                .flat_map(move |player| {
                     game.battlefield(player).iter().filter_map(move |&permanent_id| {
                         if (self.predicate)(game, source.source(), permanent_id) == Some(true) {
                             Some(permanent_id.into())
@@ -60,8 +62,7 @@ where
                             None
                         }
                     })
-                },
-            ),
+                }),
         )
     }
 

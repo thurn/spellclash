@@ -16,12 +16,22 @@ use abilities::targeting::targets;
 use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
-use rules::mutations::spells;
+use data::card_definitions::modal_effect::{AbilityMode, ModalEffect};
+use rules::mutations::{create_copy, spells};
 
 pub fn insidious_will() -> CardDefinition {
     CardDefinition::new(card_name::INSIDIOUS_WILL).ability(
-        SpellAbility::new().targets(targets::spell()).effect(|g, s, target| {
-            spells::counter(g, s, target);
-        }),
+        SpellAbility::new().modal_effect(
+            ModalEffect::new()
+                .mode(AbilityMode::new().targets(targets::spell()).effect(|g, c, target| {
+                    spells::counter(g, c, target);
+                }))
+                .mode(AbilityMode::new().targets(targets::spell()).effect(|g, c, target| {
+                    spells::choose_new_targets(g, c, target);
+                }))
+                .mode(AbilityMode::new().targets(targets::spell()).effect(|g, c, target| {
+                    create_copy::of_spell(g, target, c.controller);
+                })),
+        ),
     )
 }

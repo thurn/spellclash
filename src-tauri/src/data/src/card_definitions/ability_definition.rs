@@ -16,7 +16,9 @@ use std::iter;
 
 use primitives::game_primitives::{EntityId, PlayerName, Source};
 
+use crate::card_definitions::modal_effect::ModalEffect;
 use crate::card_states::card_state::CardState;
+use crate::card_states::play_card_plan::PlayCardChoices;
 use crate::card_states::zones::ZoneQueries;
 use crate::core::ability_scope::AbilityScope;
 use crate::events::card_events::CardEvents;
@@ -49,25 +51,34 @@ pub trait AbilityData: Sync + Send {
 }
 
 pub trait Ability: AbilityData {
-    /// Returns true if this ability requires targets.
+    /// Returns true if this ability could require targets to be chosen.
+    ///
+    /// This will return true even if e.g. targets are part of an additional
+    /// cost or only required in a certain mode.
     fn requires_targets(&self) -> bool;
 
     /// Returns an iterator over entities which could be targeted by this
-    /// ability in the current game state. Returns an empty iterator if there
-    /// are no valid targets or this is an untargeted ability that
-    /// requires no targets.
+    /// ability in the current game state, given a set of [PlayCardChoices].
+    ///
+    /// Returns an empty iterator if there are no valid targets or this is an
+    /// untargeted ability that requires no targets.
     fn valid_targets<'a>(
         &'a self,
         game: &'a GameState,
-        controller: PlayerName,
+        choices: &'a PlayCardChoices,
         source: Source,
     ) -> Box<dyn Iterator<Item = EntityId> + 'a>;
 
-    /// Invokes the effect of this ability.
+    /// Invokes the effect of this ability, given a set of [PlayCardChoices].
     ///
     /// This is a no-op if invoked on an ability with no effect, like a static
     /// ability.
-    fn invoke_effect(&self, game: &mut GameState, context: EventContext);
+    fn invoke_effect(
+        &self,
+        game: &mut GameState,
+        context: EventContext,
+        choices: &Option<PlayCardChoices>,
+    );
 }
 
 pub trait TargetSelector: Sync + Send {
@@ -76,7 +87,7 @@ pub trait TargetSelector: Sync + Send {
     fn valid_targets<'a>(
         &'a self,
         game: &'a GameState,
-        controller: PlayerName,
+        choices: &'a PlayCardChoices,
         source: Source,
     ) -> Box<dyn Iterator<Item = EntityId> + 'a>;
 
@@ -158,15 +169,15 @@ pub type GlobalEventsFn = Box<dyn Fn(AbilityScope, &mut GlobalEvents) + Send + S
 pub type CardEventsFn = Box<dyn Fn(AbilityScope, &mut CardEvents) + Send + Sync + 'static>;
 
 pub struct AbilityBuilder<TEffect> {
-    ability_type: AbilityType,
+    pub(crate) ability_type: AbilityType,
 
-    properties: Option<PropertiesFn>,
+    pub(crate) properties: Option<PropertiesFn>,
 
-    global_events: Option<GlobalEventsFn>,
+    pub(crate) global_events: Option<GlobalEventsFn>,
 
-    card_events: Option<CardEventsFn>,
+    pub(crate) card_events: Option<CardEventsFn>,
 
-    effect: TEffect,
+    pub(crate) effect: TEffect,
 }
 
 impl<TEffect> AbilityBuilder<TEffect> {
@@ -203,6 +214,16 @@ impl AbilityBuilder<NoEffect> {
         AbilityBuilder {
             ability_type: self.ability_type,
             effect: UntargetedEffect { function: effect },
+            properties: self.properties,
+            global_events: self.global_events,
+            card_events: self.card_events,
+        }
+    }
+
+    pub fn modal_effect(self, effect: ModalEffect) -> AbilityBuilder<ModalEffect> {
+        AbilityBuilder {
+            ability_type: self.ability_type,
+            effect,
             properties: self.properties,
             global_events: self.global_events,
             card_events: self.card_events,
@@ -282,14 +303,19 @@ where
     fn valid_targets(
         &self,
         game: &GameState,
-        controller: PlayerName,
+        choices: &PlayCardChoices,
         source: Source,
     ) -> Box<dyn Iterator<Item = EntityId>> {
         Box::new(iter::empty())
     }
 
     #[doc(hidden)]
-    fn invoke_effect(&self, game: &mut GameState, context: EventContext) {
+    fn invoke_effect(
+        &self,
+        game: &mut GameState,
+        context: EventContext,
+        _: &Option<PlayCardChoices>,
+    ) {
         (self.effect.function)(game, context)
     }
 }
@@ -308,14 +334,19 @@ where
     fn valid_targets<'a>(
         &'a self,
         game: &'a GameState,
-        controller: PlayerName,
+        choices: &'a PlayCardChoices,
         source: Source,
     ) -> Box<dyn Iterator<Item = EntityId> + 'a> {
-        self.effect.selector.valid_targets(game, controller, source)
+        self.effect.selector.valid_targets(game, choices, source)
     }
 
     #[doc(hidden)]
-    fn invoke_effect(&self, game: &mut GameState, context: EventContext) {
+    fn invoke_effect(
+        &self,
+        game: &mut GameState,
+        context: EventContext,
+        _: &Option<PlayCardChoices>,
+    ) {
         let Some(targets) = game.card(context.this).map(|c| &c.targets) else {
             return;
         };
@@ -336,14 +367,20 @@ impl Ability for AbilityBuilder<StaticEffect> {
     fn valid_targets(
         &self,
         game: &GameState,
-        controller: PlayerName,
+        choices: &PlayCardChoices,
         source: Source,
     ) -> Box<dyn Iterator<Item = EntityId>> {
         Box::new(iter::empty())
     }
 
     #[doc(hidden)]
-    fn invoke_effect(&self, game: &mut GameState, context: EventContext) {}
+    fn invoke_effect(
+        &self,
+        game: &mut GameState,
+        context: EventContext,
+        _: &Option<PlayCardChoices>,
+    ) {
+    }
 }
 
 pub struct DelayedTrigger<TDelayed> {

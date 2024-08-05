@@ -17,6 +17,7 @@ use primitives::game_primitives::{
     StackAbilityId,
 };
 
+use crate::card_states::play_card_plan::PlayCardChoices;
 use crate::card_states::zones::HasZones;
 #[allow(unused)] // Used in docs
 use crate::card_states::zones::Zones;
@@ -68,6 +69,12 @@ pub struct StackAbilityState {
 
     /// The player who can currently make decisions about this ability.
     pub controller: PlayerName,
+
+    /// Choices made when placing this ability on the stack.
+    ///
+    /// Generally the only choice which is applicable to stack abilities is a
+    /// selection of modes for a modal triggered or activated ability.
+    pub choices: Option<PlayCardChoices>,
 
     /// Targets for this ability, selected when it is placed on the stack.
     pub targets: Vec<EntityId>,
