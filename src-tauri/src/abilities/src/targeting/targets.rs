@@ -14,7 +14,8 @@
 
 use data::card_definitions::ability_definition::TargetSelector;
 use either::Either;
-use primitives::game_primitives::{PermanentId, SpellId};
+use enumset::EnumSet;
+use primitives::game_primitives::{CardType, PermanentId, SpellId};
 use rules::predicates::card_predicates;
 
 use crate::targeting::pair_selector::PairSelector;
@@ -50,4 +51,9 @@ pub fn spell() -> impl TargetSelector<Target = SpellId> {
 /// Target any spell or permanent
 pub fn spell_or_permanent() -> impl TargetSelector<Target = Either<SpellId, PermanentId>> {
     PairSelector { first: spell(), second: permanent() }
+}
+
+/// Target any spell on the stack.
+pub fn spell_with_types(types: EnumSet<CardType>) -> impl TargetSelector<Target = SpellId> {
+    SingleSpellSelector::new(PlayerSet::AllPlayers, card_predicates::has_types(types))
 }

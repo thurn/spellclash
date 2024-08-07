@@ -13,9 +13,11 @@
 // limitations under the License.
 
 use data::card_states::zones::ToCardId;
+use data::core::function_types::CardPredicate;
 use data::game_states::game_state::GameState;
 use data::printed_cards::card_subtypes::LandType;
-use primitives::game_primitives::{CardType, Color, PermanentId, Source};
+use enumset::EnumSet;
+use primitives::game_primitives::{CardType, Color, PermanentId, Source, SpellId};
 
 use crate::queries::{card_queries, text_change_queries};
 
@@ -41,6 +43,15 @@ pub fn nonland(game: &GameState, source: Source, id: impl ToCardId) -> Option<bo
 
 pub fn battle(game: &GameState, source: Source, id: impl ToCardId) -> Option<bool> {
     Some(card_queries::card_types(game, source, id)?.contains(CardType::Battle))
+}
+
+/// Returns a [CardPredicate] which checks whether a card has a given set of
+/// [CardType]s.
+pub fn has_types(input_types: EnumSet<CardType>) -> impl CardPredicate<SpellId> {
+    move |game, source, id| {
+        let card_types = card_queries::card_types(game, source, id)?;
+        Some(input_types.iter().all(|t| card_types.contains(t)))
+    }
 }
 
 /// Returns true if the given card is a plains.
