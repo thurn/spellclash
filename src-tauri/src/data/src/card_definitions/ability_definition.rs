@@ -18,7 +18,7 @@ use primitives::game_primitives::{EntityId, PlayerName, Source};
 
 use crate::card_definitions::modal_effect::ModalEffect;
 use crate::card_states::card_state::CardState;
-use crate::card_states::play_card_plan::PlayCardChoices;
+use crate::card_states::play_card_plan::{ModalChoice, PlayCardChoices};
 use crate::card_states::zones::ZoneQueries;
 use crate::core::ability_scope::AbilityScope;
 use crate::events::card_events::CardEvents;
@@ -51,9 +51,24 @@ pub trait AbilityData: Sync + Send {
 }
 
 pub trait Ability: AbilityData {
+    /// Returns true if this ability is modal.
+    fn is_modal(&self) -> bool {
+        false
+    }
+
+    /// Returns an iterator over the modes of this ability, given a set of
+    /// [PlayCardChoices]. This does *not* consider modes which can be legally
+    /// chosen, e.g. based on availability of targets.
+    ///
+    /// Returns an empty iterator if there are no valid modes or this is ability
+    /// is not modal.
+    fn modes<'a>(&'a self) -> Box<dyn Iterator<Item = ModalChoice> + 'a> {
+        Box::new(iter::empty())
+    }
+
     /// Returns true if this ability could require targets to be chosen.
     ///
-    /// This will return true even if e.g. targets are part of an additional
+    /// This should return true even if e.g. targets are part of an additional
     /// cost or only required in a certain mode.
     fn requires_targets(&self) -> bool;
 
@@ -67,7 +82,9 @@ pub trait Ability: AbilityData {
         game: &'a GameState,
         choices: &'a PlayCardChoices,
         source: Source,
-    ) -> Box<dyn Iterator<Item = EntityId> + 'a>;
+    ) -> Box<dyn Iterator<Item = EntityId> + 'a> {
+        Box::new(iter::empty())
+    }
 
     /// Invokes the effect of this ability, given a set of [PlayCardChoices].
     ///
@@ -300,16 +317,6 @@ where
     }
 
     #[doc(hidden)]
-    fn valid_targets(
-        &self,
-        game: &GameState,
-        choices: &PlayCardChoices,
-        source: Source,
-    ) -> Box<dyn Iterator<Item = EntityId>> {
-        Box::new(iter::empty())
-    }
-
-    #[doc(hidden)]
     fn invoke_effect(
         &self,
         game: &mut GameState,
@@ -361,16 +368,6 @@ impl Ability for AbilityBuilder<StaticEffect> {
     #[doc(hidden)]
     fn requires_targets(&self) -> bool {
         false
-    }
-
-    #[doc(hidden)]
-    fn valid_targets(
-        &self,
-        game: &GameState,
-        choices: &PlayCardChoices,
-        source: Source,
-    ) -> Box<dyn Iterator<Item = EntityId>> {
-        Box::new(iter::empty())
     }
 
     #[doc(hidden)]

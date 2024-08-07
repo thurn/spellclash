@@ -58,6 +58,14 @@ impl AbilityMode {
 }
 
 impl Ability for AbilityBuilder<ModalEffect> {
+    fn is_modal(&self) -> bool {
+        true
+    }
+
+    fn modes<'a>(&'a self) -> Box<dyn Iterator<Item = ModalChoice> + 'a> {
+        Box::new(self.effect.modes.iter().enumerate().map(|(i, _)| ModalChoice(i)))
+    }
+
     fn requires_targets(&self) -> bool {
         self.effect.modes.iter().any(|mode| mode.requires_targets())
     }
@@ -85,7 +93,7 @@ impl Ability for AbilityBuilder<ModalEffect> {
         choices: &Option<PlayCardChoices>,
     ) {
         let Some(modal_choices) = choices.as_ref().map(|c| &c.modes) else {
-            return;
+            panic!("Expected modal choices for modal effect");
         };
 
         for (i, mode) in self.effect.modes.iter().enumerate() {

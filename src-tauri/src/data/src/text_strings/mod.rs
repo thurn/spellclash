@@ -18,6 +18,7 @@ use either::Either;
 use primitives::game_primitives::Color;
 use serde::{Deserialize, Serialize};
 
+use crate::card_states::play_card_plan::ModalChoice;
 use crate::printed_cards::card_subtypes::LandType;
 
 /// Canonical text displayed in the user interface, suitable for localization
@@ -25,7 +26,9 @@ use crate::printed_cards::card_subtypes::LandType;
 pub enum Text {
     HandToTopOfLibraryPrompt,
     SelectNumber,
+    SelectMode,
     SelectTarget,
+    ModalChoice(ModalChoice),
     Color(Color),
     LandSubtype(LandType),
     SelectTypeToChange,
@@ -54,7 +57,9 @@ impl Display for Text {
                 write!(f, "Choose a card from your hand to put on top of your library.")
             }
             Text::SelectNumber => write!(f, "Select number"),
+            Text::SelectMode => write!(f, "Select mode"),
             Text::SelectTarget => write!(f, "Select target"),
+            Text::ModalChoice(choice) => write!(f, "Mode {}", choice),
             Text::Color(color) => write!(f, "{}", color),
             Text::LandSubtype(subtype) => write!(f, "{}", subtype),
             Text::SelectTypeToChange => write!(f, "Select type to change"),

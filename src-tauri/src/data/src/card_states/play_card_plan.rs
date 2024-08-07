@@ -12,11 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::fmt::{Display, Formatter};
+
 use enumset::{EnumSet, EnumSetType};
-use primitives::game_primitives::{AbilityId, CardId, EntityId, PermanentId, PlayerName};
+use primitives::game_primitives::{AbilityId, CardId, Color, EntityId, PermanentId, PlayerName};
 
 use crate::core::numerics::ManaValue;
 use crate::printed_cards::printed_card::Face;
+use crate::text_strings::Text;
 
 /// Describes a proposed series of a choices for a user to play a card as part
 /// of the "play card" game action.
@@ -162,6 +165,18 @@ impl PlayAs {
 /// <https://yawgatog.com/resources/magic-rules/#R7002>
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub struct ModalChoice(pub usize);
+
+impl Display for ModalChoice {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0 + 1)
+    }
+}
+
+impl From<ModalChoice> for Text {
+    fn from(value: ModalChoice) -> Self {
+        Text::ModalChoice(value)
+    }
+}
 
 /// Extra choices a player can make while casting a spell
 #[derive(Debug, Clone)]
