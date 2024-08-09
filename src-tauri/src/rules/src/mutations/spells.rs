@@ -34,7 +34,7 @@ pub fn counter(game: &mut GameState, source: impl HasSource, target: SpellId) ->
     move_card::run(game, source, target, Zone::Graveyard)
 }
 
-/// Allows a player to choose new targets for a spell.
+/// Allows a player to choose new targets for a spell on the stack.
 ///
 /// > 115.7. Some effects allow a player to change the target(s) of a spell or
 /// > ability, and other effects allow a player to choose new targets for a
@@ -55,7 +55,7 @@ pub fn choose_new_targets(
     game: &mut GameState,
     source: impl HasSource,
     player: PlayerName,
-    target: SpellId,
+    target: impl ToCardId,
 ) -> Outcome {
     let card_id = target.to_card_id(game)?;
     let mut plan = PlayCardPlan {

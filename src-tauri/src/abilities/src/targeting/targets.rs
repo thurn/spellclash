@@ -53,7 +53,7 @@ pub fn spell_or_permanent() -> impl TargetSelector<Target = Either<SpellId, Perm
     PairSelector { first: spell(), second: permanent() }
 }
 
-/// Target any spell on the stack.
-pub fn spell_with_types(types: EnumSet<CardType>) -> impl TargetSelector<Target = SpellId> {
-    SingleSpellSelector::new(PlayerSet::AllPlayers, card_predicates::has_types(types))
+/// Target any spell on the stack with any of the given [CardType]s.
+pub fn spell_with_type(types: EnumSet<CardType>) -> impl TargetSelector<Target = SpellId> {
+    SingleSpellSelector::new(PlayerSet::AllPlayers, card_predicates::has_any_types_in(types))
 }

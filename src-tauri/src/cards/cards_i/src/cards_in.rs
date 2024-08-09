@@ -18,6 +18,7 @@ use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 use data::card_definitions::modal_effect::{AbilityMode, ModalEffect};
 use primitives::game_primitives::CardType;
+use rules::mutations::create_copy::ChooseNewTargets;
 use rules::mutations::{create_copy, spells};
 
 pub fn insidious_will() -> CardDefinition {
@@ -32,9 +33,15 @@ pub fn insidious_will() -> CardDefinition {
                 }))
                 .mode(
                     AbilityMode::new()
-                        .targets(targets::spell_with_types(CardType::Instant | CardType::Sorcery))
+                        .targets(targets::spell_with_type(CardType::Instant | CardType::Sorcery))
                         .effect(|g, c, target| {
-                            create_copy::of_spell(g, target, c.controller);
+                            create_copy::of_spell(
+                                g,
+                                c,
+                                target,
+                                c.controller,
+                                ChooseNewTargets::Yes,
+                            );
                         }),
                 ),
         ),

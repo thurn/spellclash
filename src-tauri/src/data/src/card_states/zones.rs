@@ -314,7 +314,7 @@ impl Zones {
     /// the the given [Zone]. Returns the ID of the new card.
     ///
     /// Note that the card is created in a face-down state and is not visible to
-    /// any player, *even* if [Zone] is a public zone.
+    /// any player, **even if** [Zone] is a public zone.
     ///
     /// The card is assigned a [CardId] and [EntityId] on creation.
     pub fn create_card_in_zone(

@@ -17,17 +17,25 @@ use data::card_definitions::ability_definition::SpellAbility;
 use data::card_definitions::card_definition::CardDefinition;
 use data::card_definitions::card_name;
 use data::card_states::zones::ZoneQueries;
-use primitives::game_primitives::PermanentId;
+use primitives::game_primitives::{PermanentId, Zone};
 use rules::mutations::{create_copy, permanents};
 
 pub fn supplant_form() -> CardDefinition {
     CardDefinition::new(card_name::SUPPLANT_FORM).ability(
-        SpellAbility::new().targets(targets::creature()).effect(|g, s, target: PermanentId| {
+        SpellAbility::new().targets(targets::creature()).effect(|g, c, target: PermanentId| {
             if let Some(card) = g.card(target) {
-                // Store facing before target leaves battlefield
-                let (card_id, facing) = (card.id, card.facing);
-                permanents::return_to_hand(g, s, card_id);
-                create_copy::on_battlefield_of_card(g, card_id, s.controller, facing);
+                // Store card state before target leaves battlefield
+                let (card_id, facing, choices) = (card.id, card.facing, card.cast_choices.clone());
+                permanents::return_to_hand(g, c, card_id);
+                create_copy::of_card_in_zone(
+                    g,
+                    c,
+                    card_id,
+                    c.controller,
+                    Zone::Battlefield,
+                    facing,
+                    choices,
+                );
             }
         }),
     )
