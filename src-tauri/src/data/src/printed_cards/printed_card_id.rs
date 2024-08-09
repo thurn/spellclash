@@ -107,3 +107,5 @@ pub const SUPPLANT_FORM: PrintedCardId =
     PrintedCardId(uuid!("3df927c0-9aa9-450b-ab2a-ae12c5489d57"));
 pub const INSIDIOUS_WILL: PrintedCardId =
     PrintedCardId(uuid!("8eafb2bb-58bf-4c6b-ae8f-91bcea12c7d2"));
+pub const MYSTIC_RETRIEVAL: PrintedCardId =
+    PrintedCardId(uuid!("281a685a-bd02-43bf-8700-2207c65bbbb1"));

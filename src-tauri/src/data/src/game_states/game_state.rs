@@ -19,7 +19,7 @@ use enumset::EnumSet;
 #[allow(unused_imports)] // Used in docs
 use primitives::game_primitives::{CardId, StackAbilityId};
 use primitives::game_primitives::{
-    GameId, HasPlayerName, PermanentId, PlayerName, StackItemId, Timestamp, UserId,
+    GameId, GraveyardCardId, HasPlayerName, PermanentId, PlayerName, StackItemId, Timestamp, UserId,
 };
 use rand_xoshiro::Xoshiro256StarStar;
 use serde::{Deserialize, Serialize};
@@ -262,7 +262,7 @@ impl ZoneQueries for GameState {
         self.zones.hand(player)
     }
 
-    fn graveyard(&self, player: impl HasPlayerName) -> &VecDeque<CardId> {
+    fn graveyard(&self, player: impl HasPlayerName) -> &VecDeque<GraveyardCardId> {
         self.zones.graveyard(player)
     }
 

@@ -17,8 +17,8 @@ use std::sync::Arc;
 
 use enumset::EnumSet;
 use primitives::game_primitives::{
-    AbilityId, CardId, EntityId, EventId, HasController, HasPlayerName, HasSource, ObjectId,
-    PermanentId, PlayerName, SpellId, Timestamp, Zone,
+    AbilityId, CardId, EntityId, EventId, GraveyardCardId, HasController, HasPlayerName, HasSource,
+    ObjectId, PermanentId, PlayerName, SpellId, Timestamp, Zone,
 };
 use serde::Deserialize;
 use slotmap::__impl::Serialize;
@@ -228,6 +228,15 @@ impl CardState {
     pub fn spell_id(&self) -> Option<SpellId> {
         if self.zone == Zone::Stack {
             Some(SpellId::new(self.object_id, self.id))
+        } else {
+            None
+        }
+    }
+
+    /// Returns this card's [GraveyardCardId] if it is in a graveyard.
+    pub fn graveyard_card_id(&self) -> Option<GraveyardCardId> {
+        if self.zone == Zone::Graveyard {
+            Some(GraveyardCardId::new(self.object_id, self.id))
         } else {
             None
         }

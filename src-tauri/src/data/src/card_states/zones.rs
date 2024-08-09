@@ -19,8 +19,8 @@ use std::hash::Hash;
 use either::Either;
 use enumset::EnumSet;
 use primitives::game_primitives::{
-    AbilityId, CardId, EntityId, HasController, HasPlayerName, ObjectId, PermanentId, PlayerName,
-    SpellId, StackAbilityId, StackItemId, Timestamp, Zone,
+    AbilityId, CardId, EntityId, GraveyardCardId, HasController, HasPlayerName, ObjectId,
+    PermanentId, PlayerName, SpellId, StackAbilityId, StackItemId, Timestamp, Zone,
 };
 use rand::prelude::SliceRandom;
 use rand_xoshiro::Xoshiro256StarStar;
@@ -74,7 +74,7 @@ pub trait ZoneQueries {
 
     /// Returns the IDs of cards and card-like objects owned by a player in
     /// their graveyard, in order (`.back()` element in result is top card).
-    fn graveyard(&self, player: impl HasPlayerName) -> &VecDeque<CardId>;
+    fn graveyard(&self, player: impl HasPlayerName) -> &VecDeque<GraveyardCardId>;
 
     /// Returns the IDs of cards and card-like objects ***controlled*** by a
     /// player on the battlefield
@@ -141,6 +141,16 @@ impl ToCardId for SpellId {
     }
 }
 
+impl ToCardId for GraveyardCardId {
+    fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+        if zones.zones().card(self.internal_card_id)?.object_id == self.object_id {
+            Some(self.internal_card_id)
+        } else {
+            None
+        }
+    }
+}
+
 impl ToCardId for StackItemId {
     fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
         match self {
@@ -197,9 +207,9 @@ pub struct Zones {
     /// Next timestamp to use for zone moves.
     next_timestamp: Timestamp,
 
-    libraries: OrderedZone,
+    libraries: OrderedZone<CardId>,
     hands: UnorderedZone<CardId>,
-    graveyards: OrderedZone,
+    graveyards: OrderedZone<GraveyardCardId>,
     battlefield_controlled: UnorderedZone<PermanentId>,
     battlefield_owned: UnorderedZone<PermanentId>,
     exile: UnorderedZone<CardId>,
@@ -269,7 +279,7 @@ impl ZoneQueries for Zones {
         self.hands.cards(player.player_name())
     }
 
-    fn graveyard(&self, player: impl HasPlayerName) -> &VecDeque<CardId> {
+    fn graveyard(&self, player: impl HasPlayerName) -> &VecDeque<GraveyardCardId> {
         self.graveyards.cards(player.player_name())
     }
 
@@ -473,7 +483,9 @@ impl Zones {
     ) -> Box<dyn Iterator<Item = CardId> + '_> {
         match zone {
             Zone::Hand => Box::new(self.hand(player).iter().copied()),
-            Zone::Graveyard => Box::new(self.graveyard(player).iter().copied()),
+            Zone::Graveyard => {
+                Box::new(self.graveyard(player).iter().filter_map(|&id| Some(self.card(id)?.id)))
+            }
             Zone::Library => Box::new(self.library(player).iter().copied()),
             Zone::Battlefield => {
                 Box::new(self.battlefield(player).iter().filter_map(|&id| Some(self.card(id)?.id)))
@@ -529,7 +541,13 @@ impl Zones {
     fn remove_from_zone(&mut self, owner: PlayerName, card_id: CardId, zone: Zone) {
         match zone {
             Zone::Hand => self.hands.remove(card_id, owner),
-            Zone::Graveyard => self.graveyards.remove(card_id, owner),
+            Zone::Graveyard => {
+                let Some(graveyard_id) = self.card(card_id).and_then(|c| c.graveyard_card_id())
+                else {
+                    return;
+                };
+                self.graveyards.remove(graveyard_id, owner)
+            }
             Zone::Library => self.libraries.remove(card_id, owner),
             Zone::Battlefield => {
                 let Some(permanent_id) = self.card(card_id).and_then(|c| c.permanent_id()) else {
@@ -575,7 +593,13 @@ impl Zones {
             Zone::Hand => {
                 self.hands.cards_mut(owner).insert(card_id);
             }
-            Zone::Graveyard => self.graveyards.cards_mut(owner).push_back(card_id),
+            Zone::Graveyard => {
+                let Some(graveyard_id) = self.card(card_id).and_then(|c| c.graveyard_card_id())
+                else {
+                    return;
+                };
+                self.graveyards.cards_mut(owner).push_back(graveyard_id)
+            }
             Zone::Battlefield => {
                 let Some(permanent_id) = self.card(card_id).and_then(|c| c.permanent_id()) else {
                     return;
@@ -616,7 +640,7 @@ impl Zones {
 }
 
 #[derive(Default, Debug, Clone)]
-struct UnorderedZone<T: ToCardId + Hash + Eq + PartialEq + Debug + Ord> {
+struct UnorderedZone<T> {
     player1: BTreeSet<T>,
     player2: BTreeSet<T>,
     player3: BTreeSet<T>,
@@ -654,15 +678,15 @@ impl<T: ToCardId + Hash + Eq + PartialEq + Debug + Ord> UnorderedZone<T> {
 }
 
 #[derive(Default, Debug, Clone)]
-struct OrderedZone {
-    player1: VecDeque<CardId>,
-    player2: VecDeque<CardId>,
-    player3: VecDeque<CardId>,
-    player4: VecDeque<CardId>,
+struct OrderedZone<T> {
+    player1: VecDeque<T>,
+    player2: VecDeque<T>,
+    player3: VecDeque<T>,
+    player4: VecDeque<T>,
 }
 
-impl OrderedZone {
-    pub fn cards(&self, player_name: PlayerName) -> &VecDeque<CardId> {
+impl<T: ToCardId + Hash + Eq + PartialEq + Debug + Ord> OrderedZone<T> {
+    pub fn cards(&self, player_name: PlayerName) -> &VecDeque<T> {
         match player_name {
             PlayerName::One => &self.player1,
             PlayerName::Two => &self.player2,
@@ -671,7 +695,7 @@ impl OrderedZone {
         }
     }
 
-    pub fn cards_mut(&mut self, player_name: PlayerName) -> &mut VecDeque<CardId> {
+    pub fn cards_mut(&mut self, player_name: PlayerName) -> &mut VecDeque<T> {
         match player_name {
             PlayerName::One => &mut self.player1,
             PlayerName::Two => &mut self.player2,
@@ -684,7 +708,7 @@ impl OrderedZone {
     ///
     /// The search is started from the top card in the zone. Panics if this
     /// card is not present in this zone owned by `owner`.
-    pub fn remove(&mut self, card_id: CardId, owner: PlayerName) {
+    pub fn remove(&mut self, card_id: T, owner: PlayerName) {
         if let Some((i, _)) =
             self.cards_mut(owner).iter().enumerate().rev().find(|(_, &id)| id == card_id)
         {

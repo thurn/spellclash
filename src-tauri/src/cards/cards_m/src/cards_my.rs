@@ -12,4 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod cards_my;
+use data::card_definitions::card_definition::CardDefinition;
+use data::card_definitions::card_name;
+
+pub fn mystic_retrieval() -> CardDefinition {
+    CardDefinition::new(card_name::MYSTIC_RETRIEVAL)
+}

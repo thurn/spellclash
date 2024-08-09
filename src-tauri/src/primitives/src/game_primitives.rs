@@ -360,6 +360,44 @@ impl TryFrom<EntityId> for SpellId {
     }
 }
 
+/// Unique identifier for a card in a graveyard
+#[derive(
+    Debug, Clone, Copy, Default, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize,
+)]
+pub struct GraveyardCardId {
+    pub object_id: ObjectId,
+    pub internal_card_id: CardId,
+}
+
+impl GraveyardCardId {
+    pub fn new(object_id: ObjectId, card_id: CardId) -> Self {
+        Self { object_id, internal_card_id: card_id }
+    }
+}
+
+impl HasObjectId for GraveyardCardId {
+    fn object_id(&self) -> ObjectId {
+        self.object_id
+    }
+}
+
+impl From<GraveyardCardId> for EntityId {
+    fn from(value: GraveyardCardId) -> Self {
+        EntityId::Card(value.internal_card_id, value.object_id)
+    }
+}
+
+impl TryFrom<EntityId> for GraveyardCardId {
+    type Error = ();
+
+    fn try_from(value: EntityId) -> Result<Self, Self::Error> {
+        match value {
+            EntityId::Card(card_id, object_id) => Ok(Self::new(object_id, card_id)),
+            _ => Err(()),
+        }
+    }
+}
+
 /// A unique identifier for an event.
 ///
 /// Each instance of an callback function being invoked gets its own event ID.
