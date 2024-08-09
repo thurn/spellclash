@@ -409,21 +409,14 @@ pub struct AbilityId {
 /// Identifies a card or an activated or triggered ability on the stack.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize)]
 pub enum StackItemId {
-    Card(CardId),
+    Spell(SpellId),
     StackAbility(StackAbilityId),
 }
 
 impl StackItemId {
-    pub fn card_id(&self) -> Option<CardId> {
-        match self {
-            StackItemId::Card(card_id) => Some(*card_id),
-            StackItemId::StackAbility(_) => None,
-        }
-    }
-
     pub fn stack_ability_id(&self) -> Option<StackAbilityId> {
         match self {
-            StackItemId::Card(_) => None,
+            StackItemId::Spell(_) => None,
             StackItemId::StackAbility(stack_ability_id) => Some(*stack_ability_id),
         }
     }

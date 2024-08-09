@@ -141,6 +141,15 @@ impl ToCardId for SpellId {
     }
 }
 
+impl ToCardId for StackItemId {
+    fn to_card_id(&self, zones: &impl HasZones) -> Option<CardId> {
+        match self {
+            StackItemId::Spell(spell_id) => spell_id.to_card_id(zones),
+            StackItemId::StackAbility(_) => None,
+        }
+    }
+}
+
 impl ToCardId for AbilityId {
     fn to_card_id(&self, _: &impl HasZones) -> Option<CardId> {
         Some(self.card_id)
@@ -454,6 +463,9 @@ impl Zones {
 
     /// Returns an iterator over IDs of cards controlled by the [PlayerName]
     /// player in the indicated [Zone].
+    ///
+    /// Note that for the stack, this will return only the IDs of cards and not
+    /// abilities on the stack.
     pub fn cards_in_zone(
         &self,
         zone: Zone,
@@ -466,10 +478,9 @@ impl Zones {
             Zone::Battlefield => {
                 Box::new(self.battlefield(player).iter().filter_map(|&id| Some(self.card(id)?.id)))
             }
-            Zone::Stack => Box::new(self.stack.iter().filter_map(move |id| {
-                let id = id.card_id()?;
+            Zone::Stack => Box::new(self.stack.iter().filter_map(move |&id| {
                 if self.card(id)?.controller() == player {
-                    Some(id)
+                    Some(self.card(id)?.id)
                 } else {
                     None
                 }
@@ -537,12 +548,15 @@ impl Zones {
                 }
             }
             Zone::Stack => {
+                let Some(spell_id) = self.card(card_id).and_then(|c| c.spell_id()) else {
+                    return;
+                };
                 if let Some((i, _)) = self
                     .stack
                     .iter()
                     .enumerate()
                     .rev()
-                    .find(|(_, id)| id.card_id() == Some(card_id))
+                    .find(|(_, id)| **id == StackItemId::Spell(spell_id))
                 {
                     self.stack.remove(i);
                 } else {
@@ -572,7 +586,12 @@ impl Zones {
             Zone::Exiled => {
                 self.exile.cards_mut(owner).insert(card_id);
             }
-            Zone::Stack => self.stack.push(StackItemId::Card(card_id)),
+            Zone::Stack => {
+                let Some(spell_id) = self.card(card_id).and_then(|c| c.spell_id()) else {
+                    return;
+                };
+                self.stack.push(StackItemId::Spell(spell_id))
+            }
             Zone::Command => {
                 self.command_zone.cards_mut(owner).insert(card_id);
             }

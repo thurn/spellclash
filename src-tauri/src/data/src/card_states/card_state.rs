@@ -18,7 +18,7 @@ use std::sync::Arc;
 use enumset::EnumSet;
 use primitives::game_primitives::{
     AbilityId, CardId, EntityId, EventId, HasController, HasPlayerName, HasSource, ObjectId,
-    PermanentId, PlayerName, Timestamp, Zone,
+    PermanentId, PlayerName, SpellId, Timestamp, Zone,
 };
 use serde::Deserialize;
 use slotmap::__impl::Serialize;
@@ -219,6 +219,15 @@ impl CardState {
     pub fn permanent_id(&self) -> Option<PermanentId> {
         if self.zone == Zone::Battlefield {
             Some(PermanentId::new(self.object_id, self.id))
+        } else {
+            None
+        }
+    }
+
+    /// Returns this card's [SpellId] if it is on the stack.
+    pub fn spell_id(&self) -> Option<SpellId> {
+        if self.zone == Zone::Stack {
+            Some(SpellId::new(self.object_id, self.id))
         } else {
             None
         }

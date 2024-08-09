@@ -56,10 +56,9 @@ where
                 .iter()
                 .flat_map(move |player| {
                     game.stack().iter().filter_map(move |&stack_item_id| {
-                        let StackItemId::Card(card_id) = stack_item_id else {
+                        let StackItemId::Spell(spell_id) = stack_item_id else {
                             return None;
                         };
-                        let spell_id = SpellId::new(game.card(card_id)?.object_id, card_id);
                         if (self.predicate)(game, source, spell_id) == Some(true) {
                             Some(spell_id.into())
                         } else {

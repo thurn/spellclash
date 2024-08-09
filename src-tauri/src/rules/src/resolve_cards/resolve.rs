@@ -15,10 +15,12 @@
 use data::card_definitions::ability_definition::AbilityType;
 use data::card_definitions::definitions;
 use data::card_states::card_kind::CardKind;
-use data::card_states::zones::ZoneQueries;
+use data::card_states::zones::{ToCardId, ZoneQueries};
 use data::game_states::game_state::GameState;
 use enumset::EnumSet;
-use primitives::game_primitives::{AbilityId, CardId, Source, StackAbilityId, StackItemId, Zone};
+use primitives::game_primitives::{
+    AbilityId, CardId, Source, SpellId, StackAbilityId, StackItemId, Zone,
+};
 use tracing::{debug, info};
 use utils::outcome;
 use utils::outcome::Outcome;
@@ -36,8 +38,8 @@ use crate::resolve_cards::invoke_effect;
 /// See <https://yawgatog.com/resources/magic-rules/#R608>
 pub fn resolve_top_of_stack(game: &mut GameState) {
     match game.stack().last().copied() {
-        Some(StackItemId::Card(card_id)) => {
-            resolve_top_card_of_stack(game, card_id);
+        Some(StackItemId::Spell(spell_id)) => {
+            resolve_top_card_of_stack(game, spell_id);
         }
         Some(StackItemId::StackAbility(stack_ability_id)) => {
             resolve_top_ability_of_stack(game, stack_ability_id);
@@ -46,8 +48,9 @@ pub fn resolve_top_of_stack(game: &mut GameState) {
     }
 }
 
-fn resolve_top_card_of_stack(game: &mut GameState, card_id: CardId) -> Outcome {
-    debug!(?card_id, "Resolving top card of stack");
+fn resolve_top_card_of_stack(game: &mut GameState, spell_id: SpellId) -> Outcome {
+    debug!(?spell_id, "Resolving top card of stack");
+    let card_id = spell_id.to_card_id(game)?;
     let choices = game.card(card_id)?.cast_choices.clone();
     let definition = definitions::get(game.card(card_id)?.card_name);
     for (ability_number, ability) in definition.iterate_abilities() {
