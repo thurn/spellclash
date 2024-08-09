@@ -28,7 +28,7 @@ pub fn insidious_will() -> CardDefinition {
                     spells::counter(g, c, target);
                 }))
                 .mode(AbilityMode::new().targets(targets::spell()).effect(|g, c, target| {
-                    spells::choose_new_targets(g, c, target);
+                    spells::choose_new_targets(g, c, c.controller, target);
                 }))
                 .mode(
                     AbilityMode::new()

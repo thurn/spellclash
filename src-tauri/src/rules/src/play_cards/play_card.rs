@@ -46,7 +46,7 @@ pub fn execute(
 ) -> Outcome {
     let mut plan = select_face(game, player, source, card_id);
     select_modes(game, player, card_id, &mut plan);
-    select_targets(game, player, card_id, &mut plan);
+    select_targets(game, player, card_id, &mut plan, Text::SelectTarget);
     plan.mana_payment = spell_planner::mana_payment(game, source, card_id, &plan)
         .expect("Unable to pay mana for card");
     play_card_executor::execute_plan(game, player, card_id, source, plan)
@@ -66,7 +66,7 @@ fn select_face(
 
 fn select_modes(
     game: &mut GameState,
-    player: PlayerName,
+    prompted_player: PlayerName,
     card_id: CardId,
     plan: &mut PlayCardPlan,
 ) {
@@ -87,16 +87,26 @@ fn select_modes(
     }
 
     // TODO: Handle selecting multiple modes
-    let choice = prompts::multiple_choice(game, player, Text::SelectMode, valid_choices);
+    let choice = prompts::multiple_choice(game, prompted_player, Text::SelectMode, valid_choices);
     plan.choices.modes.clear();
     plan.choices.modes.push(choice);
 }
 
-fn select_targets(
+/// Given a [PlayCardPlan] which has been populated with a set of
+/// [PlayCardChoices] (e.g. selected modes, face to play, etc), prompt the user
+/// to pick targets for the [CardId] card and populate the [PlayCardPlan] with
+/// those targets.
+///
+/// Note that the `prompted_player` passed is the one making the choice, but the
+/// controller is the one described in the [PlayCardPlan]. These may be
+/// different players, e.g. if a player is selecting new targets for a spell on
+/// the stack.
+pub fn select_targets(
     game: &mut GameState,
-    player: PlayerName,
+    prompted_player: PlayerName,
     card_id: CardId,
     plan: &mut PlayCardPlan,
+    prompt_text: Text,
 ) {
     let prompt_lists = targeted_spell_abilities(game, card_id)
         .map(|(s, ability)| {
@@ -108,7 +118,7 @@ fn select_targets(
         .collect::<Vec<_>>();
     for choices in prompt_lists {
         assert!(!choices.is_empty(), "No valid targets available");
-        let response = prompts::choose_entity(game, player, Text::SelectTarget, choices);
+        let response = prompts::choose_entity(game, prompted_player, prompt_text, choices);
         plan.targets.push(response);
     }
 }
