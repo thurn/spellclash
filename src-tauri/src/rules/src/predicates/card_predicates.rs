@@ -47,7 +47,7 @@ pub fn battle(game: &GameState, source: Source, id: impl ToCardId) -> Option<boo
 
 /// Returns a [CardPredicate] which checks whether a card has any types from
 /// given set of [CardType]s.
-pub fn has_any_types_in(input_types: EnumSet<CardType>) -> impl CardPredicate<SpellId> {
+pub fn has_any_types_in<T: ToCardId>(input_types: EnumSet<CardType>) -> impl CardPredicate<T> {
     move |game, source, id| {
         let card_types = card_queries::card_types(game, source, id)?;
         Some(input_types.iter().any(|t| card_types.contains(t)))

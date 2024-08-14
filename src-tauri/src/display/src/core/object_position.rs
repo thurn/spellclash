@@ -90,7 +90,7 @@ pub enum Position {
     Blocking(DisplayPlayer, Vec<ClientCardId>),
 
     /// Object is being displayed in a card browser, e.g. to select from a list
-    /// of cards
+    /// of cards while searching
     Browser,
 
     /// Object is being displayed in a list of cards available to select in a

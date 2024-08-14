@@ -69,6 +69,7 @@ fn main() {
         let mut text = fs::read_to_string(out_path).expect("Error reading file");
         text.pop(); // Remove EOF
         if text == output {
+            // Result is identical to current file
             return;
         }
         fs::remove_file(out_path).expect("Error removing file");

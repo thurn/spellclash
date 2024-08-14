@@ -15,9 +15,10 @@
 use data::card_definitions::ability_definition::TargetSelector;
 use either::Either;
 use enumset::EnumSet;
-use primitives::game_primitives::{CardType, PermanentId, SpellId};
+use primitives::game_primitives::{CardType, GraveyardCardId, PermanentId, SpellId};
 use rules::predicates::card_predicates;
 
+use crate::targeting::graveyard_selectors::SingleGraveyardSelector;
 use crate::targeting::pair_selector::PairSelector;
 use crate::targeting::permanent_selectors::SinglePermanentSelector;
 use crate::targeting::player_set::PlayerSet;
@@ -48,12 +49,25 @@ pub fn spell() -> impl TargetSelector<Target = SpellId> {
     SingleSpellSelector::new(PlayerSet::AllPlayers, card_predicates::always_true)
 }
 
+/// Target any spell on the stack with any of the given [CardType]s.
+pub fn spell_with_type(types: EnumSet<CardType>) -> impl TargetSelector<Target = SpellId> {
+    SingleSpellSelector::new(PlayerSet::AllPlayers, card_predicates::has_any_types_in(types))
+}
+
 /// Target any spell or permanent
 pub fn spell_or_permanent() -> impl TargetSelector<Target = Either<SpellId, PermanentId>> {
     PairSelector { first: spell(), second: permanent() }
 }
 
-/// Target any spell on the stack with any of the given [CardType]s.
-pub fn spell_with_type(types: EnumSet<CardType>) -> impl TargetSelector<Target = SpellId> {
-    SingleSpellSelector::new(PlayerSet::AllPlayers, card_predicates::has_any_types_in(types))
+/// Target any spell in the controlling player's graveyard
+pub fn card_in_your_graveyard() -> impl TargetSelector<Target = GraveyardCardId> {
+    SingleGraveyardSelector::new(PlayerSet::You, card_predicates::always_true)
+}
+
+/// Target any spell in the controlling player's graveyard with any of the given
+/// [CardType]s.
+pub fn card_in_your_graveyard_with_type(
+    types: EnumSet<CardType>,
+) -> impl TargetSelector<Target = GraveyardCardId> {
+    SingleGraveyardSelector::new(PlayerSet::You, card_predicates::has_any_types_in(types))
 }

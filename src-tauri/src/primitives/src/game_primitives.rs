@@ -215,6 +215,16 @@ pub enum EntityId {
     StackAbility(StackAbilityId),
 }
 
+impl EntityId {
+    /// Returns true if this entity ID matches the given [CardId].
+    pub fn matches_card(&self, card_id: CardId) -> bool {
+        match self {
+            EntityId::Card(id, _) => *id == card_id,
+            _ => false,
+        }
+    }
+}
+
 pub const PLAYER_ONE_ID: EntityId = EntityId::Player(PlayerName::One);
 pub const PLAYER_TWO_ID: EntityId = EntityId::Player(PlayerName::Two);
 pub const PLAYER_THREE_ID: EntityId = EntityId::Player(PlayerName::Three);

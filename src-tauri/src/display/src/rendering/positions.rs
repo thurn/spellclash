@@ -75,7 +75,27 @@ pub fn discard(builder: &ResponseBuilder, player: PlayerName) -> Position {
 fn position_override(builder: &ResponseBuilder, card: &CardState) -> Option<ObjectPosition> {
     if let Some(prompt) = builder.current_prompt() {
         match &prompt.prompt_type {
-            PromptType::EntityChoice(_) => {}
+            PromptType::EntityChoice(data) => {
+                if card.zone == Zone::Battlefield || card.zone == Zone::Stack {
+                    // Entities on the battlefield or stack are displayed in their normal positions
+                    // during an entity choice prompt.
+                    return None;
+                }
+
+                if let Some((i, _)) = data
+                    .choices
+                    .iter()
+                    .enumerate()
+                    .find(|(_, choice)| choice.entity_id.matches_card(card.id))
+                {
+                    // Show entities in other zones in a selector
+                    return Some(ObjectPosition {
+                        position: Position::CardSelectionChoices,
+                        sorting_key: i as f64,
+                        sorting_sub_key: 0.0,
+                    });
+                }
+            }
             PromptType::SelectOrder(data) => {
                 for location in enum_iterator::all::<CardOrderLocation>() {
                     if let Some(i) =
